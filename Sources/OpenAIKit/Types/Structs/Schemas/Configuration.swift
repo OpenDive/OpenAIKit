@@ -1,5 +1,5 @@
 //
-//  OpenAI.swift
+//  Configuration.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
@@ -21,36 +21,9 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
-//
+//  
 
-import Foundation
-
-@available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, *)
-public class OpenAI {
-    private var config: Configuration
-    
-    public init(_ config: Configuration) {
-        self.config = config
-    }
-    
-    private func getServerUrl(path: String) async throws -> URL {
-        guard let result = URL(string: "https://api.openai.com/v1\(path)") else {
-            throw OpenAIError.invalidUrl
-        }
-        
-        return result
-    }
-}
-
-extension OpenAI: OpenAIProtocol {
-    public func generateImages(parameters param: ImageParameters) async throws -> ImageResponse {
-        guard !param.prompt.isEmpty else { throw OpenAIError.invalidPrompt }
-        
-        let serverUrl = try await getServerUrl(path: "/images/generations")
-        return try await URLSession.shared.decodeUrl(
-            with: serverUrl,
-            apiKey: config.apiKey,
-            body: param.body
-        )
-    }
+public struct Configuration {
+    let organization: String
+    let apiKey: String
 }

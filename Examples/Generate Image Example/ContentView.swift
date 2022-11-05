@@ -1,8 +1,26 @@
 //
 //  ContentView.swift
-//  Generate Image Example
+//  OpenAIKit
 //
-//  Created by Marcus Arnett on 11/4/22.
+//  Copyright (c) 2022 MarcoDotIO
+//
+//  Permission is hereby granted, free of charge, to any person obtaining a copy
+//  of this software and associated documentation files (the "Software"), to deal
+//  in the Software without restriction, including without limitation the rights
+//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the Software is
+//  furnished to do so, subject to the following conditions:
+//
+//  The above copyright notice and this permission notice shall be included in
+//  all copies or substantial portions of the Software.
+//
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+//  THE SOFTWARE.
 //
 
 import SwiftUI
@@ -19,17 +37,25 @@ struct ContentView: View {
         .padding()
         .task {
             do {
-                let apiKey = "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"
+                let config = Configuration(
+                    organization: "INSERT-ORGANIZATION-ID",
+                    apiKey: "INSERT-API-KEY"
+                )
                 
-                let openAi = OpenAI(key: apiKey)
+                let openAi = OpenAI(config)
                 
-                let imageParam = ImageParameters(prompt: "a red apple", resolution: .small, responseFormat: .base64Json)
+                let imageParam = ImageParameters(
+                    prompt: "a red apple",
+                    resolution: .small,
+                    responseFormat: .base64Json
+                )
+                
                 let result = try await openAi.generateImages(parameters: imageParam)
                 let b64_image = result.data[0].b64_json!
                 
                 self.image = UIImage(data: Data(base64Encoded: b64_image)!)!
             } catch {
-                print("DEBUG: ERROR DETAILS - \(error)")
+                print("ERROR DETAILS - \(error)")
             }
         }
     }

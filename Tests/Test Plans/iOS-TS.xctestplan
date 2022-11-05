@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "34DFFD4E-7557-4BE2-9AE5-AC7A0EBFC98A",
+      "name" : "Default",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false
+  },
+  "testTargets" : [
+    {
+        "target" : {
+            "containerPath" : "container:",
+            "identifier" : "OpenAIKitTests",
+            "name" : "OpenAITests"
+        }
+    }
+  ],
+  "version" : 1
+}
