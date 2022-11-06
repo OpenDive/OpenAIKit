@@ -314,7 +314,7 @@ final class OpenAIKitTests: XCTestCase {
             // Given
             let mockOpenAI = MockOpenAI()
             
-            let contentPolicyParameter = ContentPolicyParameters(input: "I will kill them.")
+            let contentPolicyParameter = ContentPolicyParameters(input: "I want to kill them.")
             
             // When
             let contentPolicyResult = try await mockOpenAI.checkContentPolicy(parameters: contentPolicyParameter)
