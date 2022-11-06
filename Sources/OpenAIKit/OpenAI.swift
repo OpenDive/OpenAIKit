@@ -53,4 +53,11 @@ extension OpenAI: OpenAIProtocol {
             body: param.body
         )
     }
+    
+    public func checkContentPolicy(
+        parameters param: OpenAIKit.ContentPolicyParameters
+    ) async throws -> ContentPolicyResponse {
+        let serverUrl = try await getServerUrl(path: "/moderations")
+        return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, body: param.body)
+    }
 }

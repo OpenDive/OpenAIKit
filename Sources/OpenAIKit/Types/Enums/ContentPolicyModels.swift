@@ -23,11 +23,7 @@
 //  THE SOFTWARE.
 //  
 
-enum MockOpenAIError: Error {
-    case urlBundleFailed
-    case dataCoersionFailed
-    case dataCodingFailed
-    case invalidUser
-    case invalidPrompt
-    case notImplemented
+public enum ContentPolicyModels: String, Codable {
+    case latest = "text-moderation-latest"
+    case stable = "text-moderation-stable"
 }

@@ -1,6 +1,6 @@
 //
-//  File.swift
-//  
+//  Content_Policy_ExampleApp.swift
+//  Content Policy Example
 //
 //  Copyright (c) 2022 MarcoDotIO
 //
@@ -23,11 +23,13 @@
 //  THE SOFTWARE.
 //  
 
-enum MockOpenAIError: Error {
-    case urlBundleFailed
-    case dataCoersionFailed
-    case dataCodingFailed
-    case invalidUser
-    case invalidPrompt
-    case notImplemented
+import SwiftUI
+
+@main
+struct Content_Policy_ExampleApp: App {
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+        }
+    }
 }

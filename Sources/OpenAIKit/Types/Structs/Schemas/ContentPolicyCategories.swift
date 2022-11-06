@@ -23,11 +23,22 @@
 //  THE SOFTWARE.
 //  
 
-enum MockOpenAIError: Error {
-    case urlBundleFailed
-    case dataCoersionFailed
-    case dataCodingFailed
-    case invalidUser
-    case invalidPrompt
-    case notImplemented
+public struct ContentPolicyCategories: Codable {
+    enum CodingKeys: String, CodingKey {
+        case hate
+        case hateWithThreatening = "hate/threatening"
+        case selfHarm = "self-harm"
+        case sexual
+        case sexualWithMinors = "sexual/minors"
+        case violence
+        case violenceWithGraphic = "violence/graphic"
+    }
+    
+    public let hate: Bool
+    public let hateWithThreatening: Bool
+    public let selfHarm: Bool
+    public let sexual: Bool
+    public let sexualWithMinors: Bool
+    public let violence: Bool
+    public let violenceWithGraphic: Bool
 }

@@ -308,4 +308,26 @@ final class OpenAIKitTests: XCTestCase {
             XCTFail("IMAGE NUMBER TEST FAILED WITH ERROR: \(error)")
         }
     }
+    
+    func testThatVerifiesOpenAIIsAbleToSendContentPolicyResult() async {
+        do {
+            // Given
+            let mockOpenAI = MockOpenAI()
+            
+            let contentPolicyParameter = ContentPolicyParameters(input: "I will kill them.")
+            
+            // When
+            let contentPolicyResult = try await mockOpenAI.checkContentPolicy(parameters: contentPolicyParameter)
+            
+            // Then
+            XCTAssertEqual(contentPolicyResult.id, "modr-69OQBfTkTYrcLo7k3oL3PxmpkUeoL", "Content Policy ID doesn't match.")
+            XCTAssertEqual(contentPolicyResult.model, "text-moderation-003", "Content Policy Model doesn't match.")
+            XCTAssertFalse(contentPolicyResult.results.isEmpty, "Content Policy Result is empty.")
+            XCTAssertEqual(contentPolicyResult.results[0].flagged, true, "Content Policy Flag doesn't match.")
+            XCTAssertEqual(contentPolicyResult.results[0].categories.hate, true, "Content Policy Category doesn't match.")
+            XCTAssertEqual(contentPolicyResult.results[0].categoryScores.hate, 0.4068171977996826, "Content Policy Category Score doesn't match.")
+        } catch {
+            XCTFail("CONTENT POLICY TEST FAILED WITH ERROR: \(error)")
+        }
+    }
 }

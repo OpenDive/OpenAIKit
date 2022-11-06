@@ -23,11 +23,14 @@
 //  THE SOFTWARE.
 //  
 
-enum MockOpenAIError: Error {
-    case urlBundleFailed
-    case dataCoersionFailed
-    case dataCodingFailed
-    case invalidUser
-    case invalidPrompt
-    case notImplemented
+public struct ContentPolicyResult: Codable {
+    enum CodingKeys: String, CodingKey {
+        case categories
+        case categoryScores = "category_scores"
+        case flagged
+    }
+    
+    public let categories: ContentPolicyCategories
+    public let categoryScores: ContentPolicyCategoryScore
+    public let flagged: Bool
 }

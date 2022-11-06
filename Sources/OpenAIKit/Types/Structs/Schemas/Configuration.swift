@@ -24,6 +24,11 @@
 //  
 
 public struct Configuration {
-    let organization: String
+    public let organization: String
     let apiKey: String
+    
+    public init(organization: String, apiKey: String) {
+        self.organization = organization
+        self.apiKey = apiKey
+    }
 }

@@ -6,11 +6,11 @@
 //
 
 public struct ImageParameters {
-    let prompt: String
-    let numberOfImages: Int
-    let resolution: ImageResolutions
-    let responseFormat: ResponseFormat
-    let user: String?
+    public let prompt: String
+    public let numberOfImages: Int
+    public let resolution: ImageResolutions
+    public let responseFormat: ResponseFormat
+    public let user: String?
     
     public init(
         prompt: String,

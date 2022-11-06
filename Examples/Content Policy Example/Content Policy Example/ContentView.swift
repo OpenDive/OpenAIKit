@@ -1,6 +1,6 @@
 //
-//  File.swift
-//  
+//  ContentView.swift
+//  Content Policy Example
 //
 //  Copyright (c) 2022 MarcoDotIO
 //
@@ -23,11 +23,41 @@
 //  THE SOFTWARE.
 //  
 
-enum MockOpenAIError: Error {
-    case urlBundleFailed
-    case dataCoersionFailed
-    case dataCodingFailed
-    case invalidUser
-    case invalidPrompt
-    case notImplemented
+import SwiftUI
+import OpenAIKit
+
+struct ContentView: View {
+    let input = "I want to kill them."
+    
+    @State private var isFlagged: Bool?
+    
+    var body: some View {
+        VStack {
+            Text("Input Text: \(input)")
+            
+            if let isFlagged = isFlagged {
+                Text("Flagged: \(isFlagged ? "Yes" : "No")")
+            }
+        }
+        .padding()
+        .task {
+            do {
+                let openAI = OpenAI(Configuration(organization: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY"))
+                
+                let contentParameter = ContentPolicyParameters(input: input)
+                
+                let contentResult = try await openAI.checkContentPolicy(parameters: contentParameter)
+                
+                self.isFlagged = contentResult.results[0].flagged
+            } catch {
+                print("CRASHED WITH ERROR - \(error)")
+            }
+        }
+    }
+}
+
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+    }
 }

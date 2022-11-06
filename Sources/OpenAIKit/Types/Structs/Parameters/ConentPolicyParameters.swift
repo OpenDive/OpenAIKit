@@ -23,11 +23,19 @@
 //  THE SOFTWARE.
 //  
 
-enum MockOpenAIError: Error {
-    case urlBundleFailed
-    case dataCoersionFailed
-    case dataCodingFailed
-    case invalidUser
-    case invalidPrompt
-    case notImplemented
+public struct ContentPolicyParameters {
+    public let input: String
+    public let model: ContentPolicyModels
+    
+    public init(
+        input: String,
+        model: ContentPolicyModels = .latest
+    ) {
+        self.input = input
+        self.model = model
+    }
+    
+    public var body: [String: Any] {
+        return ["input": input, "model": model.rawValue]
+    }
 }

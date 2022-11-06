@@ -75,4 +75,8 @@ class MockOpenAI: OpenAIProtocol {
         
         throw MockOpenAIError.invalidUser
     }
+    
+    func checkContentPolicy(parameters param: ContentPolicyParameters) async throws -> ContentPolicyResponse {
+        return try await getDecodedData(with: "ContentPolicyResponse") as ContentPolicyResponse
+    }
 }
