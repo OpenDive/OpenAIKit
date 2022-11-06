@@ -4,7 +4,7 @@ import Foundation
 // Most are private to help with having better Access Control.
 extension URLSession {
     /// Uses URLRequest to set up a HTTPMethod, and implement default values for the method cases.
-    private enum HTTPMethod: String {
+    public enum HTTPMethod: String {
         case get = "GET"
         case post = "POST"
     }
@@ -95,18 +95,28 @@ extension URLSession {
         _ type: T.Type = T.self,
         with url: URL,
         apiKey: String? = nil,
-        body: [String: Any]? = nil
+        body: [String: Any]? = nil,
+        method: HTTPMethod = .post,
+        bodyRequired: Bool = true
     ) async throws -> T {
         guard let apiKey = apiKey else { throw OpenAIError.noApiKey }
-        guard let body = body else { throw OpenAIError.noBody }
         
-        let jsonData = try? JSONSerialization.data(withJSONObject: body)
+        if (bodyRequired) {
+            guard let body = body else { throw OpenAIError.noBody }
+            
+            let jsonData = try? JSONSerialization.data(withJSONObject: body)
+            
+            let data = try await self.asyncData(with: url, method: method, headers: ["Authorization": "Bearer \(apiKey)"], body: jsonData)
+            
+            return try await self.decodeData(with: data)
+        }
         
-        let data = try await self.asyncData(with: url, headers: ["Authorization": "Bearer \(apiKey)"], body: jsonData)
+        if (!bodyRequired) {
+            let data = try await self.asyncData(with: url, method: method, headers: ["Authorization": "Bearer \(apiKey)"])
+            
+            return try await self.decodeData(with: data)
+        }
         
-        return try await self.decodeData(
-            with: data,
-            keyDecodingStrategy: .useDefaultKeys
-        )
+        throw OpenAIError.noBody
     }
 }

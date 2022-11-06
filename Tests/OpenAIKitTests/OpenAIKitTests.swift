@@ -27,6 +27,31 @@ import XCTest
 @testable import OpenAIKit
 
 final class OpenAIKitTests: XCTestCase {
+    func testThatVerifiesOpenAIIsAbleToFetchAListOfModels() async {
+        do {
+            // Given
+            let mockOpenAI = MockOpenAI()
+            
+            // When
+            let modelsResponse = try await mockOpenAI.listModels()
+            
+            // Then
+            XCTAssertEqual(modelsResponse.object, .list, "Model Response is not a list object.")
+            XCTAssertFalse(modelsResponse.data.isEmpty, "Model Response data is empty.")
+            XCTAssertEqual(modelsResponse.data[0].id, "curie-similarity", "Model Response doesn't contain Curie Similarity model.")
+            XCTAssertEqual(modelsResponse.data[0].object, .model, "Model type isn't a model.")
+            XCTAssertEqual(modelsResponse.data[0].created, 1651172510, "Model doesn't contain correct creation date.")
+            XCTAssertEqual(modelsResponse.data[0].ownedBy, "openai-dev", "Model doesn't have correct owner.")
+            XCTAssertEqual(modelsResponse.data[0].permission[0].id, "modelperm-IsQ2EglMd7hAnqD0cFuyDSg3", "Model permission ID isn't correct.")
+            XCTAssertEqual(modelsResponse.data[0].permission[0].object, .modelPermission, "Model permission isn't correct object type.")
+            XCTAssertFalse(modelsResponse.data[0].permission[0].allowCreateEngine, "Model shouldn't allow engine creation.")
+            XCTAssertTrue(modelsResponse.data[0].permission[0].allowView, "Model should allow viewing.")
+            XCTAssertNil(modelsResponse.data[0].permission[0].group, "Model group should be nil.")
+        } catch {
+            XCTFail("LIST MODELS TEST FAILED WITH ERROR: \(error)")
+        }
+    }
+    
     func testThatVerifiesOpenAIIsAbleToGenerateImageUsingGivenPrompts() async {
         do {
             // Given
