@@ -43,6 +43,16 @@ public class OpenAI {
 }
 
 extension OpenAI: OpenAIProtocol {
+    public func listModels() async throws -> ListModelResponse {
+        let serverUrl = try await getServerUrl(path: "/models")
+        return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, method: .get, bodyRequired: false)
+    }
+    
+    public func retrieveModel(modelId id: String) async throws -> Model {
+        let serverUrl = try await getServerUrl(path: "/models/\(id)")
+        return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, method: .get, bodyRequired: false)
+    }
+    
     public func generateImages(parameters param: ImageParameters) async throws -> ImageResponse {
         guard !param.prompt.isEmpty else { throw OpenAIError.invalidPrompt }
         
@@ -59,10 +69,5 @@ extension OpenAI: OpenAIProtocol {
     ) async throws -> ContentPolicyResponse {
         let serverUrl = try await getServerUrl(path: "/moderations")
         return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, body: param.body)
-    }
-    
-    public func listModels() async throws -> ListModelResponse {
-        let serverUrl = try await getServerUrl(path: "/models")
-        return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, method: .get, bodyRequired: false)
     }
 }

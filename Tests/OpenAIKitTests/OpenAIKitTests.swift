@@ -52,6 +52,29 @@ final class OpenAIKitTests: XCTestCase {
         }
     }
     
+    func testThartVerifiesOpenAIIsAbleToRetrieveModelUsingID() async {
+        do {
+            // Given
+            let mockOpenAI = MockOpenAI()
+            
+            // When
+            let model = try await mockOpenAI.retrieveModel(modelId: "text-davinci-001")
+            
+            // Then
+            XCTAssertEqual(model.id, "text-davinci-001", "Model Response doesn't contain Text Davinci model.")
+            XCTAssertEqual(model.object, .model, "Model type isn't a model.")
+            XCTAssertEqual(model.created, 1649364042, "Model doesn't contain correct creation date.")
+            XCTAssertEqual(model.ownedBy, "openai", "Model doesn't have correct owner.")
+            XCTAssertEqual(model.permission[0].id, "modelperm-MvTj8KLFdp5D24iGFdz8NIMj", "Model permission ID isn't correct.")
+            XCTAssertEqual(model.permission[0].object, .modelPermission, "Model permission isn't correct object type.")
+            XCTAssertFalse(model.permission[0].allowCreateEngine, "Model shouldn't allow engine creation.")
+            XCTAssertTrue(model.permission[0].allowView, "Model should allow viewing.")
+            XCTAssertNil(model.permission[0].group, "Model group should be nil.")
+        } catch {
+            XCTFail("RETRIEVE MODEL TEST FAILED WITH ERROR: \(error)")
+        }
+    }
+    
     func testThatVerifiesOpenAIIsAbleToGenerateImageUsingGivenPrompts() async {
         do {
             // Given

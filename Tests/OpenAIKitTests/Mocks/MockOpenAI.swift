@@ -49,6 +49,14 @@ class MockOpenAI: OpenAIProtocol {
         return result
     }
     
+    func listModels() async throws -> ListModelResponse {
+        return try await getDecodedData(with: "ModelsResponse") as ListModelResponse
+    }
+    
+    func retrieveModel(modelId id: String) async throws -> Model {
+        return try await getDecodedData(with: "RetrieveModelResponse") as Model
+    }
+    
     func generateImages(parameters param: ImageParameters) async throws -> ImageResponse {
         if let user = param.user {
             switch user {
@@ -78,9 +86,5 @@ class MockOpenAI: OpenAIProtocol {
     
     func checkContentPolicy(parameters param: ContentPolicyParameters) async throws -> ContentPolicyResponse {
         return try await getDecodedData(with: "ContentPolicyResponse") as ContentPolicyResponse
-    }
-    
-    func listModels() async throws -> ListModelResponse {
-        return try await getDecodedData(with: "ModelsResponse") as ListModelResponse
     }
 }
