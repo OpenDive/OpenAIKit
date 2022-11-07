@@ -23,14 +23,38 @@
 //  THE SOFTWARE.
 //  
 
-public struct CompletionUsage: Codable {
-    enum CodingKeys: String, CodingKey {
-        case promptTokens = "prompt_tokens"
-        case completionTokens = "completion_tokens"
-        case totalTokens = "total_tokens"
+public struct EditParameters {
+    public let model: String
+    public let input: String
+    public let instruction: String
+    public let numberOfEdits: Int
+    public let temperature: Double
+    public let topP: Double
+    
+    public init(
+        model: String,
+        input: String = "\"",
+        instruction: String,
+        numberOfEdits: Int = 1,
+        temperature: Double = 1.0,
+        topP: Double = 1.0
+    ) {
+        self.model = model
+        self.input = input
+        self.instruction = instruction
+        self.numberOfEdits = numberOfEdits
+        self.temperature = temperature
+        self.topP = topP
     }
     
-    public let promptTokens: Int
-    public let completionTokens: Int
-    public let totalTokens: Int
+    public var body: [String: Any] {
+        return [
+            "model": self.model,
+            "input": self.input,
+            "instruction": self.instruction,
+            "n": self.numberOfEdits,
+            "temperature": self.temperature,
+            "top_p": self.topP
+        ]
+    }
 }

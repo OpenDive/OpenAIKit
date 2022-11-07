@@ -23,16 +23,14 @@
 //  THE SOFTWARE.
 //  
 
-public struct CompletionChoice: Codable {
+public struct Usage: Codable {
     enum CodingKeys: String, CodingKey {
-        case text
-        case index
-        case logprobs
-        case finishReason = "finish_reason"
+        case promptTokens = "prompt_tokens"
+        case completionTokens = "completion_tokens"
+        case totalTokens = "total_tokens"
     }
     
-    public let text: String
-    public let index: Int
-    public let logprobs: Int?
-    public let finishReason: String
+    public let promptTokens: Int
+    public let completionTokens: Int
+    public let totalTokens: Int
 }

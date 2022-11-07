@@ -58,9 +58,12 @@ extension OpenAI: OpenAIProtocol {
         return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, body: param.body)
     }
     
+    public func generateEdit(parameters param: EditParameters) async throws -> EditResponse {
+        let serverUrl = try await getServerUrl(path: "/edits")
+        return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, body: param.body)
+    }
+    
     public func generateImages(parameters param: ImageParameters) async throws -> ImageResponse {
-        guard !param.prompt.isEmpty else { throw OpenAIError.invalidPrompt }
-        
         let serverUrl = try await getServerUrl(path: "/images/generations")
         return try await URLSession.shared.decodeUrl(
             with: serverUrl,

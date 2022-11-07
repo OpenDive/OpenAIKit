@@ -61,6 +61,10 @@ class MockOpenAI: OpenAIProtocol {
         return try await getDecodedData(with: "CompletionResponse") as CompletionResponse
     }
     
+    func generateEdit(parameters param: EditParameters) async throws -> EditResponse {
+        return try await getDecodedData(with: "EditResponse") as EditResponse
+    }
+    
     func generateImages(parameters param: ImageParameters) async throws -> ImageResponse {
         if let user = param.user {
             switch user {

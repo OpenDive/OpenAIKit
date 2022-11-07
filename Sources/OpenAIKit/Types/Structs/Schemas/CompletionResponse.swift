@@ -28,6 +28,6 @@ public struct CompletionResponse: Codable, Identifiable {
     public let object: OpenAIObject
     public let created: Int
     public let model: String
-    public let choices: [CompletionChoice]
-    public let usage: CompletionUsage
+    public let choices: [Choice]
+    public let usage: Usage
 }

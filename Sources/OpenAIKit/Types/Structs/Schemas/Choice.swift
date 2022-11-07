@@ -23,10 +23,16 @@
 //  THE SOFTWARE.
 //  
 
-public enum OpenAIObject: String, Codable {
-    case list
-    case model
-    case modelPermission = "model_permission"
-    case textCompletion = "text_completion"
-    case edit
+public struct Choice: Codable {
+    enum CodingKeys: String, CodingKey {
+        case text
+        case index
+        case logprobs
+        case finishReason = "finish_reason"
+    }
+    
+    public let text: String
+    public let index: Int
+    public let logprobs: Int?
+    public let finishReason: String?
 }

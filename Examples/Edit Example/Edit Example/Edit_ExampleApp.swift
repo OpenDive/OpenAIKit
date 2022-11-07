@@ -1,6 +1,6 @@
 //
-//  File.swift
-//  
+//  Edit_ExampleApp.swift
+//  Edit Example
 //
 //  Copyright (c) 2022 MarcoDotIO
 //
@@ -23,10 +23,13 @@
 //  THE SOFTWARE.
 //  
 
-public enum OpenAIObject: String, Codable {
-    case list
-    case model
-    case modelPermission = "model_permission"
-    case textCompletion = "text_completion"
-    case edit
+import SwiftUI
+
+@main
+struct Edit_ExampleApp: App {
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+        }
+    }
 }

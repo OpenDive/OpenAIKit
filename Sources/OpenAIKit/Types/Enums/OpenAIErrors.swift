@@ -3,5 +3,4 @@ public enum OpenAIError: Error {
     case noBody
     case promptThreshold
     case invalidUrl
-    case invalidPrompt
 }

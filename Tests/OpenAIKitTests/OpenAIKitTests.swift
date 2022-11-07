@@ -93,12 +93,35 @@ final class OpenAIKitTests: XCTestCase {
             XCTAssertTrue(completionResponse.choices[0].text.contains("This is a test"), "Completion Response has incorrect completion.")
             XCTAssertEqual(completionResponse.choices[0].index, 0, "Completion Response has incorrect index.")
             XCTAssertNil(completionResponse.choices[0].logprobs, "Completion Response shouldn't have logprobs.")
-            XCTAssertEqual(completionResponse.choices[0].finishReason, "length", "Completion Response has incorrect finish reason.")
+            XCTAssertEqual(completionResponse.choices[0].finishReason!, "length", "Completion Response has incorrect finish reason.")
             XCTAssertEqual(completionResponse.usage.promptTokens, 5, "Completion Response has incorrect prompt token usage.")
             XCTAssertEqual(completionResponse.usage.completionTokens, 6, "Completion Response has incorrect completion token usage.")
             XCTAssertEqual(completionResponse.usage.totalTokens, 11, "Completion Response has incorrect total token usage.")
         } catch {
             XCTFail("COMPLETION PROMPT TEST FAILED WITH ERROR: \(error)")
+        }
+    }
+    
+    func testThatVerifiesOpenAIIsAbleToGenerateEditsBasedOnInstruction() async {
+        do {
+            // Given
+            let mockOpenAI = MockOpenAI()
+            
+            let editParameter = EditParameters(model: "text-davinci-edit-001", input: "What day of the wek is it?", instruction: "Fix the spelling mistakes")
+            
+            // When
+            let editResponse = try await mockOpenAI.generateEdit(parameters: editParameter)
+            
+            // Then
+            XCTAssertEqual(editResponse.object, .edit, "Edit Response has incorrect object type.")
+            XCTAssertEqual(editResponse.created, 1667836642, "Edit Response has incorrect creation date.")
+            XCTAssertEqual(editResponse.choices[0].text, "What day of the week is it?", "Completion Response has incorrect completion.")
+            XCTAssertEqual(editResponse.choices[0].index, 0, "Edit Response has incorrect index.")
+            XCTAssertEqual(editResponse.usage.promptTokens, 25, "Edit Response has incorrect prompt token usage.")
+            XCTAssertEqual(editResponse.usage.completionTokens, 28, "Edit Response has incorrect completion token usage.")
+            XCTAssertEqual(editResponse.usage.totalTokens, 53, "Edit Response has incorrect total token usage.")
+        } catch {
+            XCTFail("EDIT INSTRUCTION TEST FAILED WITH ERROR: \(error)")
         }
     }
     

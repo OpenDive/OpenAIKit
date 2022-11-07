@@ -23,10 +23,9 @@
 //  THE SOFTWARE.
 //  
 
-public enum OpenAIObject: String, Codable {
-    case list
-    case model
-    case modelPermission = "model_permission"
-    case textCompletion = "text_completion"
-    case edit
+public struct EditResponse: Codable {
+    public let object: OpenAIObject
+    public let created: Int
+    public let choices: [Choice]
+    public let usage: Usage
 }
