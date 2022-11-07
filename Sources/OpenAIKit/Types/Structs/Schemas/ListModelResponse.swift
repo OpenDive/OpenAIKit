@@ -25,5 +25,5 @@
 
 public struct ListModelResponse: Codable {
     public let data: [Model]
-    public let object: ModelObject
+    public let object: OpenAIObject
 }

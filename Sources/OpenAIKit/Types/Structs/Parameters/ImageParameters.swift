@@ -31,7 +31,7 @@ public struct ImageParameters {
                                      "n": numberOfImages,
                                      "size": resolution.rawValue,
                                      "response_format": responseFormat.rawValue]
-        if let user = user {
+        if let user = self.user {
             result["user"] = user
         }
         

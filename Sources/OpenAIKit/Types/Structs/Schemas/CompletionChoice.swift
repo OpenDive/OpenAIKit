@@ -23,32 +23,16 @@
 //  THE SOFTWARE.
 //  
 
-public struct ModelPermission: Codable, Identifiable {
+public struct CompletionChoice: Codable {
     enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case created
-        case allowCreateEngine = "allow_create_engine"
-        case allowSampling = "allow_sampling"
-        case allowLogprobs = "allow_logprobs"
-        case allowSearchIndices = "allow_search_indices"
-        case allowView = "allow_view"
-        case allowFineTuning = "allow_fine_tuning"
-        case organization
-        case group
-        case isBlocking = "is_blocking"
+        case text
+        case index
+        case logprobs
+        case finishReason = "finish_reason"
     }
     
-    public let id: String
-    public let object: OpenAIObject
-    public let created: Int
-    public let allowCreateEngine: Bool
-    public let allowSampling: Bool
-    public let allowLogprobs: Bool
-    public let allowSearchIndices: Bool
-    public let allowView: Bool
-    public let allowFineTuning: Bool
-    public let organization: String
-    public let group: String?
-    public let isBlocking: Bool
+    public let text: String
+    public let index: Int
+    public let logprobs: Int?
+    public let finishReason: String
 }

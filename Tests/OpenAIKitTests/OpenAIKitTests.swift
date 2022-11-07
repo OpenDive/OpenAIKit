@@ -52,7 +52,7 @@ final class OpenAIKitTests: XCTestCase {
         }
     }
     
-    func testThartVerifiesOpenAIIsAbleToRetrieveModelUsingID() async {
+    func testThatVerifiesOpenAIIsAbleToRetrieveModelUsingID() async {
         do {
             // Given
             let mockOpenAI = MockOpenAI()
@@ -72,6 +72,33 @@ final class OpenAIKitTests: XCTestCase {
             XCTAssertNil(model.permission[0].group, "Model group should be nil.")
         } catch {
             XCTFail("RETRIEVE MODEL TEST FAILED WITH ERROR: \(error)")
+        }
+    }
+    
+    func testThatVerifiesOpenAIIsAbleToCompleteTextPrompts() async {
+        do {
+            // Given
+            let mockOpenAI = MockOpenAI()
+            
+            let completionParameter = CompletionParameters(model: "text-davinci-002")
+            
+            // When
+            let completionResponse = try await mockOpenAI.generateCompletion(parameters: completionParameter)
+            
+            // Then
+            XCTAssertEqual(completionResponse.id, "cmpl-69nq0IKF1lwssd3QdLnz4fQ4yCt4O", "Completion Response has incorrect ID.")
+            XCTAssertEqual(completionResponse.object, .textCompletion, "Completion Response has incorrect object type.")
+            XCTAssertEqual(completionResponse.created, 1667794548, "Completion Response has incorrect creation date.")
+            XCTAssertEqual(completionResponse.model, "text-davinci-002", "Completion Response has incorrect model.")
+            XCTAssertTrue(completionResponse.choices[0].text.contains("This is a test"), "Completion Response has incorrect completion.")
+            XCTAssertEqual(completionResponse.choices[0].index, 0, "Completion Response has incorrect index.")
+            XCTAssertNil(completionResponse.choices[0].logprobs, "Completion Response shouldn't have logprobs.")
+            XCTAssertEqual(completionResponse.choices[0].finishReason, "length", "Completion Response has incorrect finish reason.")
+            XCTAssertEqual(completionResponse.usage.promptTokens, 5, "Completion Response has incorrect prompt token usage.")
+            XCTAssertEqual(completionResponse.usage.completionTokens, 6, "Completion Response has incorrect completion token usage.")
+            XCTAssertEqual(completionResponse.usage.totalTokens, 11, "Completion Response has incorrect total token usage.")
+        } catch {
+            XCTFail("COMPLETION PROMPT TEST FAILED WITH ERROR: \(error)")
         }
     }
     

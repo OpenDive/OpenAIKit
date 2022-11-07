@@ -23,8 +23,9 @@
 //  THE SOFTWARE.
 //  
 
-public enum ModelObject: String, Codable {
+public enum OpenAIObject: String, Codable {
     case list
     case model
     case modelPermission = "model_permission"
+    case textCompletion = "text_completion"
 }

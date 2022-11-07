@@ -35,7 +35,7 @@ public struct Model: Codable, Identifiable {
     }
     
     public let id: String
-    public let object: ModelObject
+    public let object: OpenAIObject
     public let created: Int
     public let ownedBy: String
     public let permission: [ModelPermission]

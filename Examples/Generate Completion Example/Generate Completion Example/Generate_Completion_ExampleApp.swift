@@ -1,6 +1,6 @@
 //
-//  File.swift
-//  
+//  Generate_Completion_ExampleApp.swift
+//  Generate Completion Example
 //
 //  Copyright (c) 2022 MarcoDotIO
 //
@@ -23,32 +23,13 @@
 //  THE SOFTWARE.
 //  
 
-public struct ModelPermission: Codable, Identifiable {
-    enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case created
-        case allowCreateEngine = "allow_create_engine"
-        case allowSampling = "allow_sampling"
-        case allowLogprobs = "allow_logprobs"
-        case allowSearchIndices = "allow_search_indices"
-        case allowView = "allow_view"
-        case allowFineTuning = "allow_fine_tuning"
-        case organization
-        case group
-        case isBlocking = "is_blocking"
+import SwiftUI
+
+@main
+struct Generate_Completion_ExampleApp: App {
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+        }
     }
-    
-    public let id: String
-    public let object: OpenAIObject
-    public let created: Int
-    public let allowCreateEngine: Bool
-    public let allowSampling: Bool
-    public let allowLogprobs: Bool
-    public let allowSearchIndices: Bool
-    public let allowView: Bool
-    public let allowFineTuning: Bool
-    public let organization: String
-    public let group: String?
-    public let isBlocking: Bool
 }
