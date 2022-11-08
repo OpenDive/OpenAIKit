@@ -25,7 +25,6 @@
 
 import SwiftUI
 import OpenAIKit
-import Foundation
 
 struct ContentView: View {
     @State private var image: UIImage = UIImage()
@@ -51,7 +50,7 @@ struct ContentView: View {
                 )
                 
                 let result = try await openAi.generateImages(parameters: imageParam)
-                let b64_image = result.data[0].b64_json!
+                let b64_image = result.data[0].image
                 
                 self.image = UIImage(data: Data(base64Encoded: b64_image)!)!
             } catch {

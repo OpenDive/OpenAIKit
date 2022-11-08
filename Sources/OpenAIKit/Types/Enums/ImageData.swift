@@ -32,7 +32,7 @@ public enum ImageData: Codable {
     case url(String)
     case b64_json(String)
     
-    var image: String {
+    public var image: String {
         switch(self) {
             case let .b64_json(b64Json): return b64Json
             case let .url(url): return url

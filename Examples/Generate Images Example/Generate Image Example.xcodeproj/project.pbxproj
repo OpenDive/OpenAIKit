@@ -11,7 +11,7 @@
 		76A49FA62916030B001B7A12 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76A49FA52916030B001B7A12 /* ContentView.swift */; };
 		76A49FA82916030C001B7A12 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 76A49FA72916030C001B7A12 /* Assets.xcassets */; };
 		76A49FAB2916030C001B7A12 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 76A49FAA2916030C001B7A12 /* Preview Assets.xcassets */; };
-		76A49FB529160474001B7A12 /* OpenAIKit in Frameworks */ = {isa = PBXBuildFile; productRef = 76A49FB429160474001B7A12 /* OpenAIKit */; };
+		76A4A052291ABBA4001B7A12 /* OpenAIKit in Frameworks */ = {isa = PBXBuildFile; productRef = 76A4A051291ABBA4001B7A12 /* OpenAIKit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -21,6 +21,7 @@
 		76A49FA72916030C001B7A12 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		76A49FAA2916030C001B7A12 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		76A49FB329160419001B7A12 /* OpenAIKit */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = OpenAIKit; path = ..; sourceTree = "<group>"; };
+		76A4A050291ABB9E001B7A12 /* OpenAIKit */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = OpenAIKit; path = ../..; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -28,7 +29,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				76A49FB529160474001B7A12 /* OpenAIKit in Frameworks */,
+				76A4A052291ABBA4001B7A12 /* OpenAIKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -74,6 +75,7 @@
 		76A49FB229160419001B7A12 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				76A4A050291ABB9E001B7A12 /* OpenAIKit */,
 				76A49FB329160419001B7A12 /* OpenAIKit */,
 			);
 			name = Frameworks;
@@ -96,7 +98,7 @@
 			);
 			name = "Generate Image Example";
 			packageProductDependencies = (
-				76A49FB429160474001B7A12 /* OpenAIKit */,
+				76A4A051291ABBA4001B7A12 /* OpenAIKit */,
 			);
 			productName = "Generate Image Example";
 			productReference = 76A49FA02916030B001B7A12 /* Generate Image Example.app */;
@@ -362,7 +364,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		76A49FB429160474001B7A12 /* OpenAIKit */ = {
+		76A4A051291ABBA4001B7A12 /* OpenAIKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = OpenAIKit;
 		};
