@@ -141,14 +141,14 @@ final class OpenAIKitTests: XCTestCase {
             XCTAssertEqual(apple.created, 1667676516, "Created date of Apple is incorrect.")
             XCTAssertFalse(apple.data.isEmpty, "Contents of Apple is empty.")
             XCTAssertTrue(
-                apple.data[0].url!.contains("img-nsJnMAwG1wUsEx5kem6LWGvJ.png"),
+                apple.data[0].image.contains("img-nsJnMAwG1wUsEx5kem6LWGvJ.png"),
                 "Contents of Apple URL isn't valid."
             )
             
             XCTAssertEqual(otter.created, 1667661280, "Created date of Otter is incorrect.")
             XCTAssertFalse(otter.data.isEmpty, "Contents of Otter is empty.")
             XCTAssertTrue(
-                otter.data[0].url!.contains("img-byoTBAgSaGlyyTCGjnFhbSVx.png"),
+                otter.data[0].image.contains("img-byoTBAgSaGlyyTCGjnFhbSVx.png"),
                 "Contents of Otter URL isn't valid."
             )
         } catch {
@@ -197,14 +197,14 @@ final class OpenAIKitTests: XCTestCase {
             XCTAssertEqual(url.created, 1667661280, "Created date of url is incorrect.")
             XCTAssertFalse(url.data.isEmpty, "Contents of url is empty.")
             XCTAssertTrue(
-                url.data[0].url!.contains("img-byoTBAgSaGlyyTCGjnFhbSVx.png"),
+                url.data[0].image.contains("img-byoTBAgSaGlyyTCGjnFhbSVx.png"),
                 "Contents of url URL isn't valid."
             )
             
             XCTAssertEqual(b64.created, 1667615111, "Created date of b64 is incorrect.")
             XCTAssertFalse(b64.data.isEmpty, "Contents of b64 is empty.")
             XCTAssertTrue(
-                b64.data[0].b64_json!.contains("CAQAAAf8C/wL9AAACAQEA////AAH+/gD+/wD+AAH+AAD+Af//A"),
+                b64.data[0].image.contains("CAQAAAf8C/wL9AAACAQEA////AAH+/gD+/wD+AAH+AAD+Af//A"),
                 "Contents of b64 data isn't valid."
             )
         } catch {
@@ -264,42 +264,42 @@ final class OpenAIKitTests: XCTestCase {
             XCTAssertEqual(smallUrl.created, 1667661280, "Created date of smallUrl is incorrect.")
             XCTAssertFalse(smallUrl.data.isEmpty, "Contents of smallUrl is empty.")
             XCTAssertTrue(
-                smallUrl.data[0].url!.contains("img-byoTBAgSaGlyyTCGjnFhbSVx.png"),
+                smallUrl.data[0].image.contains("img-byoTBAgSaGlyyTCGjnFhbSVx.png"),
                 "Contents of smallUrl URL isn't valid."
             )
             
             XCTAssertEqual(smallB64.created, 1667615111, "Created date of smallB64 is incorrect.")
             XCTAssertFalse(smallB64.data.isEmpty, "Contents of smallB64 is empty.")
             XCTAssertTrue(
-                smallB64.data[0].b64_json!.contains("CAQAAAf8C/wL9AAACAQEA////AAH+/gD+/wD+AAH+AAD+Af//A"),
+                smallB64.data[0].image.contains("CAQAAAf8C/wL9AAACAQEA////AAH+/gD+/wD+AAH+AAD+Af//A"),
                 "Contents of smallB64 data isn't valid."
             )
             
             XCTAssertEqual(mediumUrl.created, 1667674510, "Created date of mediumUrl is incorrect.")
             XCTAssertFalse(mediumUrl.data.isEmpty, "Contents of mediumUrl is empty.")
             XCTAssertTrue(
-                mediumUrl.data[0].url!.contains("img-euW0HHRIAcFPddYSrH88KT5m.png"),
+                mediumUrl.data[0].image.contains("img-euW0HHRIAcFPddYSrH88KT5m.png"),
                 "Contents of mediumUrl URL isn't valid."
             )
             
             XCTAssertEqual(mediumB64.created, 1667674568, "Created date of mediumB64 is incorrect.")
             XCTAssertFalse(mediumB64.data.isEmpty, "Contents of mediumB64 is empty.")
             XCTAssertTrue(
-                mediumB64.data[0].b64_json!.contains("+/v/7AP0CAwL+9/3x8vL3+PoFBQr+Afj8AgEB/wEFAAMAAwcIB"),
+                mediumB64.data[0].image.contains("+/v/7AP0CAwL+9/3x8vL3+PoFBQr+Afj8AgEB/wEFAAMAAwcIB"),
                 "Contents of mediumB64 data isn't valid."
             )
             
             XCTAssertEqual(largeUrl.created, 1667674848, "Created date of largeUrl is incorrect.")
             XCTAssertFalse(largeUrl.data.isEmpty, "Contents of largeUrl is empty.")
             XCTAssertTrue(
-                largeUrl.data[0].url!.contains("img-8cl5NT9LdOxfxtb50M3SoMtg.png"),
+                largeUrl.data[0].image.contains("img-8cl5NT9LdOxfxtb50M3SoMtg.png"),
                 "Contents of largeUrl URL isn't valid."
             )
             
             XCTAssertEqual(largeB64.created, 1667674929, "Created date of smallB64 is incorrect.")
             XCTAssertFalse(largeB64.data.isEmpty, "Contents of smallB64 is empty.")
             XCTAssertTrue(
-                largeB64.data[0].b64_json!.contains("+BAEDAf7+/vv//gYAAQAB/gID/v38AgAA/v/+Af8BBPwA/AIAA"),
+                largeB64.data[0].image.contains("+BAEDAf7+/vv//gYAAQAB/gID/v38AgAA/v/+Af8BBPwA/AIAA"),
                 "Contents of smallB64 data isn't valid."
             )
         } catch {
@@ -355,7 +355,7 @@ final class OpenAIKitTests: XCTestCase {
             XCTAssertEqual(image1.created, 1667661280, "Created date of image1 is incorrect.")
             XCTAssertFalse(image1.data.isEmpty, "Contents of image1 is empty.")
             XCTAssertTrue(
-                image1.data[0].url!.contains("img-byoTBAgSaGlyyTCGjnFhbSVx.png"),
+                image1.data[0].image.contains("img-byoTBAgSaGlyyTCGjnFhbSVx.png"),
                 "Contents of image1 URL isn't valid."
             )
             
@@ -363,7 +363,7 @@ final class OpenAIKitTests: XCTestCase {
             XCTAssertFalse(image2.data.isEmpty, "Contents of image2 is empty.")
             image2.data.enumerated().forEach { (idx, response) in
                 XCTAssertTrue(
-                    response.url!.contains("org-3JlqS7fDgniMfkzHfwwEdBm3/user-a1pfIvdAwqSA0RVdjzqH921M"),
+                    response.image.contains("org-3JlqS7fDgniMfkzHfwwEdBm3/user-a1pfIvdAwqSA0RVdjzqH921M"),
                     "URL of image2 at index \(idx) isn't valid."
                 )
             }
@@ -372,7 +372,7 @@ final class OpenAIKitTests: XCTestCase {
             XCTAssertFalse(image10.data.isEmpty, "Contents of image10 is empty.")
             image10.data.enumerated().forEach { (idx, response) in
                 XCTAssertTrue(
-                    response.url!.contains("org-3JlqS7fDgniMfkzHfwwEdBm3/user-a1pfIvdAwqSA0RVdjzqH921M"),
+                    response.image.contains("org-3JlqS7fDgniMfkzHfwwEdBm3/user-a1pfIvdAwqSA0RVdjzqH921M"),
                     "URL of image10 at index \(idx) isn't valid."
                 )
             }
@@ -382,7 +382,7 @@ final class OpenAIKitTests: XCTestCase {
             XCTAssertFalse(image11.data.isEmpty, "Contents of image11 is empty.")
             image11.data.enumerated().forEach { (idx, response) in
                 XCTAssertTrue(
-                    response.url!.contains("org-3JlqS7fDgniMfkzHfwwEdBm3/user-a1pfIvdAwqSA0RVdjzqH921M"),
+                    response.image.contains("org-3JlqS7fDgniMfkzHfwwEdBm3/user-a1pfIvdAwqSA0RVdjzqH921M"),
                     "URL of image11 at index \(idx) isn't valid."
                 )
             }
@@ -391,7 +391,7 @@ final class OpenAIKitTests: XCTestCase {
             XCTAssertEqual(image0.created, 1667661280, "Created date of image0 is incorrect.")
             XCTAssertFalse(image0.data.isEmpty, "Contents of image0 is empty.")
             XCTAssertTrue(
-                image0.data[0].url!.contains("img-byoTBAgSaGlyyTCGjnFhbSVx.png"),
+                image0.data[0].image.contains("img-byoTBAgSaGlyyTCGjnFhbSVx.png"),
                 "Contents of image0 URL isn't valid."
             )
             
@@ -399,7 +399,7 @@ final class OpenAIKitTests: XCTestCase {
             XCTAssertEqual(imageNegative1.created, 1667661280, "Created date of imageNegative1 is incorrect.")
             XCTAssertFalse(imageNegative1.data.isEmpty, "Contents of imageNegative1 is empty.")
             XCTAssertTrue(
-                imageNegative1.data[0].url!.contains("img-byoTBAgSaGlyyTCGjnFhbSVx.png"),
+                imageNegative1.data[0].image.contains("img-byoTBAgSaGlyyTCGjnFhbSVx.png"),
                 "Contents of imageNegative1 URL isn't valid."
             )
         } catch {
