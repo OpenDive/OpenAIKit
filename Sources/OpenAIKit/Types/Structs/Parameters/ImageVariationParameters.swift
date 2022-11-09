@@ -25,10 +25,8 @@
 
 import Foundation
 
-public struct ImageEditParameters {
+public struct ImageVariationParameters {
     public var image: FormData
-    public var mask: FormData
-    public var prompt: String
     public var numberOfImages: Int
     public var resolution: ImageResolutions
     public var responseFormat: ResponseFormat
@@ -37,17 +35,12 @@ public struct ImageEditParameters {
     public init(
         image: Data,
         imageName: String,
-        mask: Data,
-        maskName: String,
-        prompt: String,
         @Clamped(range: 1...10) numberOfImages: Int = 1,
         resolution: ImageResolutions = .large,
         responseFormat: ResponseFormat = .url,
         user: String? = nil
     ) {
         self.image = FormData(data: image, mimeType: "image/png", fileName: imageName)
-        self.mask = FormData(data: mask, mimeType: "image/png", fileName: maskName)
-        self.prompt = prompt
         self.numberOfImages = numberOfImages
         self.resolution = resolution
         self.responseFormat = responseFormat
@@ -56,8 +49,6 @@ public struct ImageEditParameters {
     
     public var body: [String: Any] {
         var result: [String: Any] = ["image": self.image,
-                                     "mask": self.mask,
-                                     "prompt": self.prompt,
                                      "n": self.numberOfImages,
                                      "size": self.resolution.rawValue,
                                      "response_format": self.responseFormat.rawValue]

@@ -11,5 +11,7 @@ public protocol OpenAIProtocol {
     
     func generateImageEdits(parameters param: ImageEditParameters) async throws -> ImageResponse
     
+    func generateImageVariations(parameters param: ImageVariationParameters) async throws -> ImageResponse
+    
     func checkContentPolicy(parameters param: ContentPolicyParameters) async throws -> ContentPolicyResponse
 }
