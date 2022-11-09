@@ -24,22 +24,22 @@
 //  
 
 public struct CompletionParameters {
-    let model: String
-    let prompt: [String]
-    let suffix: String?
-    let maxTokens: Int
-    let temperature: Double
-    let topP: Double
-    let numberOfCompletions: Int
-    let stream: Bool
-    let logprobs: Int?
-    let echo: Bool
-    let stop: [String]?
-    let presencePenalty: Double
-    let frequencyPenalty: Double
-    let bestOf: Int
-    let logitBias: [String: Int]?
-    let user: String?
+    var model: String
+    var prompt: [String]
+    var suffix: String?
+    var maxTokens: Int
+    var temperature: Double
+    var topP: Double
+    var numberOfCompletions: Int
+    var stream: Bool
+    var logprobs: Int?
+    var echo: Bool
+    var stop: [String]?
+    var presencePenalty: Double
+    var frequencyPenalty: Double
+    var bestOf: Int
+    var logitBias: [String: Int]?
+    var user: String?
     
     public init(
         model: String,

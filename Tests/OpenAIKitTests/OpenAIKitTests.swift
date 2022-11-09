@@ -102,7 +102,7 @@ final class OpenAIKitTests: XCTestCase {
         }
     }
     
-    func testThatVerifiesOpenAIIsAbleToGenerateEditsBasedOnInstruction() async {
+    func testThatVerifiesOpenAIIsAbleToGenerateEditBasedOnInstruction() async {
         do {
             // Given
             let mockOpenAI = MockOpenAI()
@@ -125,7 +125,7 @@ final class OpenAIKitTests: XCTestCase {
         }
     }
     
-    func testThatVerifiesOpenAIIsAbleToGenerateImageUsingGivenPrompts() async {
+    func testThatVerifiesOpenAIIsAbleToGenerateImagesUsingGivenPrompts() async {
         do {
             // Given
             let mockOpenAI = MockOpenAI()
@@ -173,7 +173,7 @@ final class OpenAIKitTests: XCTestCase {
         }
     }
     
-    func testThatVerifiesOpenAIIsAbleToGenerateImageGivenDifferentResponseTypes() async {
+    func testThatVerifiesOpenAIIsAbleToGenerateImagesGivenDifferentResponseTypes() async {
         do {
             // Given
             let mockOpenAI = MockOpenAI()
@@ -212,7 +212,7 @@ final class OpenAIKitTests: XCTestCase {
         }
     }
     
-    func testThatVerifiesOpenAIIsAbleToGenerateImageGivenDifferentResolutions() async {
+    func testThatVerifiesOpenAIIsAbleToGenerateImagesGivenDifferentResolutions() async {
         do {
             // Given
             let mockOpenAI = MockOpenAI()
@@ -307,7 +307,7 @@ final class OpenAIKitTests: XCTestCase {
         }
     }
     
-    func testThatVerifiesOpenAIIsAbleToGenerateImageGivenDifferentImageAmounts() async {
+    func testThatVerifiesOpenAIIsAbleToGenerateImageGivenDifferentImageAmountsAndDoesNotGoOverNorUnderLimits() async {
         do {
             // Given
             let mockOpenAI = MockOpenAI()

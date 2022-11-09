@@ -23,19 +23,12 @@
 //  THE SOFTWARE.
 //  
 
-public struct ContentPolicyParameters {
-    public var input: String
-    public var model: ContentPolicyModels
-    
-    public init(
-        input: String,
-        model: ContentPolicyModels = .latest
-    ) {
-        self.input = input
-        self.model = model
+import Foundation
+
+extension NSMutableData {
+  func append(_ string: String) {
+    if let data = string.data(using: .utf8) {
+      self.append(data)
     }
-    
-    public var body: [String: Any] {
-        return ["input": self.input, "model": self.model.rawValue]
-    }
+  }
 }

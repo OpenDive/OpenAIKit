@@ -24,12 +24,12 @@
 //  
 
 public struct EditParameters {
-    public let model: String
-    public let input: String
-    public let instruction: String
-    public let numberOfEdits: Int
-    public let temperature: Double
-    public let topP: Double
+    public var model: String
+    public var input: String
+    public var instruction: String
+    public var numberOfEdits: Int
+    public var temperature: Double
+    public var topP: Double
     
     public init(
         model: String,

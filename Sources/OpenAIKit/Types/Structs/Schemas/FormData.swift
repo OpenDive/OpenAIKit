@@ -23,19 +23,10 @@
 //  THE SOFTWARE.
 //  
 
-public struct ContentPolicyParameters {
-    public var input: String
-    public var model: ContentPolicyModels
-    
-    public init(
-        input: String,
-        model: ContentPolicyModels = .latest
-    ) {
-        self.input = input
-        self.model = model
-    }
-    
-    public var body: [String: Any] {
-        return ["input": self.input, "model": self.model.rawValue]
-    }
+import Foundation
+
+public struct FormData {
+    public var data: Data
+    public var mimeType: String
+    public var fileName: String
 }

@@ -6,11 +6,11 @@
 //
 
 public struct ImageParameters {
-    public let prompt: String
-    public let numberOfImages: Int
-    public let resolution: ImageResolutions
-    public let responseFormat: ResponseFormat
-    public let user: String?
+    public var prompt: String
+    public var numberOfImages: Int
+    public var resolution: ImageResolutions
+    public var responseFormat: ResponseFormat
+    public var user: String?
     
     public init(
         prompt: String,
@@ -27,10 +27,10 @@ public struct ImageParameters {
     }
     
     public var body: [String: Any] {
-        var result: [String: Any] = ["prompt": prompt,
-                                     "n": numberOfImages,
-                                     "size": resolution.rawValue,
-                                     "response_format": responseFormat.rawValue]
+        var result: [String: Any] = ["prompt": self.prompt,
+                                     "n": self.numberOfImages,
+                                     "size": self.resolution.rawValue,
+                                     "response_format": self.responseFormat.rawValue]
         if let user = self.user {
             result["user"] = user
         }

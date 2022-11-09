@@ -97,23 +97,38 @@ extension URLSession {
         apiKey: String? = nil,
         body: [String: Any]? = nil,
         method: HTTPMethod = .post,
-        bodyRequired: Bool = true
+        bodyRequired: Bool = true,
+        formSubmission: Bool = false
     ) async throws -> T {
         guard let apiKey = apiKey else { throw OpenAIError.noApiKey }
         
         if (bodyRequired) {
             guard let body = body else { throw OpenAIError.noBody }
             
-            let jsonData = try? JSONSerialization.data(withJSONObject: body)
-            
-            let data = try await self.asyncData(with: url, method: method, headers: ["Authorization": "Bearer \(apiKey)"], body: jsonData)
-            
-            return try await self.decodeData(with: data)
+            if (formSubmission) {
+                let formRequest = FormDataHelper(formUrl: url)
+                
+                body.forEach { (key, value) in
+                    if let dataValue = value as? FormData {
+                        formRequest.addDataField(named: key, formData: dataValue)
+                    } else {
+                        formRequest.addTextField(named: key, value: "\(value)")
+                    }
+                }
+                
+                let request = formRequest.asURLRequest(apiKey: apiKey)
+                let data = try await asyncData(with: request)
+                
+                return try await self.decodeData(with: data)
+            } else {
+                let jsonData = try? JSONSerialization.data(withJSONObject: body)
+                let data = try await self.asyncData(with: url, method: method, headers: ["Authorization": "Bearer \(apiKey)"], body: jsonData)
+                return try await self.decodeData(with: data)
+            }
         }
         
-        if (!bodyRequired) {
+        if (!bodyRequired && !formSubmission) {
             let data = try await self.asyncData(with: url, method: method, headers: ["Authorization": "Bearer \(apiKey)"])
-            
             return try await self.decodeData(with: data)
         }
         

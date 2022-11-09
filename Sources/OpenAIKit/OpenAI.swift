@@ -72,6 +72,11 @@ extension OpenAI: OpenAIProtocol {
         )
     }
     
+    public func generateImageEdits(parameters param: ImageEditParameters) async throws -> ImageResponse {
+        let serverUrl = try await getServerUrl(path: "/images/edits")
+        return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, body: param.body, formSubmission: true)
+    }
+    
     public func checkContentPolicy(
         parameters param: OpenAIKit.ContentPolicyParameters
     ) async throws -> ContentPolicyResponse {

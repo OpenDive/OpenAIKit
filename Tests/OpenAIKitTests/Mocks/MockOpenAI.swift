@@ -92,6 +92,10 @@ class MockOpenAI: OpenAIProtocol {
         throw MockOpenAIError.invalidUser
     }
     
+    func generateImageEdits(parameters param: ImageEditParameters) async throws -> ImageResponse {
+        throw MockOpenAIError.notImplemented
+    }
+    
     func checkContentPolicy(parameters param: ContentPolicyParameters) async throws -> ContentPolicyResponse {
         return try await getDecodedData(with: "ContentPolicyResponse") as ContentPolicyResponse
     }
