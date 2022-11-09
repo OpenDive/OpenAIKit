@@ -82,6 +82,11 @@ extension OpenAI: OpenAIProtocol {
         return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, body: param.body, formSubmission: true)
     }
     
+    public func createEmbeddings(parameters param: EmbeddingsParameters) async throws -> EmbeddingsResponse {
+        let serverUrl = try await getServerUrl(path: "/embeddings")
+        return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, body: param.body)
+    }
+    
     public func checkContentPolicy(
         parameters param: OpenAIKit.ContentPolicyParameters
     ) async throws -> ContentPolicyResponse {

@@ -100,6 +100,10 @@ class MockOpenAI: OpenAIProtocol {
         throw MockOpenAIError.notImplemented
     }
     
+    func createEmbeddings(parameters param: EmbeddingsParameters) async throws -> EmbeddingsResponse {
+        return try await getDecodedData(with: "EmbeddingsResponse") as EmbeddingsResponse
+    }
+    
     func checkContentPolicy(parameters param: ContentPolicyParameters) async throws -> ContentPolicyResponse {
         return try await getDecodedData(with: "ContentPolicyResponse") as ContentPolicyResponse
     }

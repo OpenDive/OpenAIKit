@@ -1,6 +1,6 @@
 //
-//  File.swift
-//  
+//  Create_Embeddings_ExampleApp.swift
+//  Create Embeddings Example
 //
 //  Copyright (c) 2022 MarcoDotIO
 //
@@ -23,11 +23,13 @@
 //  THE SOFTWARE.
 //  
 
-public enum OpenAIObject: String, Codable {
-    case list
-    case model
-    case modelPermission = "model_permission"
-    case textCompletion = "text_completion"
-    case edit
-    case embedding
+import SwiftUI
+
+@main
+struct Create_Embeddings_ExampleApp: App {
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+        }
+    }
 }

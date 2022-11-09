@@ -13,5 +13,7 @@ public protocol OpenAIProtocol {
     
     func generateImageVariations(parameters param: ImageVariationParameters) async throws -> ImageResponse
     
+    func createEmbeddings(parameters param: EmbeddingsParameters) async throws -> EmbeddingsResponse
+    
     func checkContentPolicy(parameters param: ContentPolicyParameters) async throws -> ContentPolicyResponse
 }

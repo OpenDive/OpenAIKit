@@ -23,11 +23,24 @@
 //  THE SOFTWARE.
 //  
 
-public enum OpenAIObject: String, Codable {
-    case list
-    case model
-    case modelPermission = "model_permission"
-    case textCompletion = "text_completion"
-    case edit
-    case embedding
+public struct EmbeddingsParameters {
+    public var model: String
+    public var input: String
+    public var user: String?
+    
+    public init(model: String, input: String, user: String? = nil) {
+        self.model = model
+        self.input = input
+        self.user = user
+    }
+    
+    public var body: [String: Any] {
+        var result: [String: Any] = ["model": self.model, "input": self.input]
+        
+        if let user = user {
+            result["user"] = user
+        }
+        
+        return result
+    }
 }

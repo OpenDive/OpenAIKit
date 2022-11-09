@@ -407,6 +407,28 @@ final class OpenAIKitTests: XCTestCase {
         }
     }
     
+    func testThatVerifiesOpenAIIsAbleToReturnEmbeddingsForInput() async {
+        do {
+            // Given
+            let mockOpenAI = MockOpenAI()
+            let embeddingsParam = EmbeddingsParameters(model: "text-similarity-babbage-001", input: "The food was delicious and the waiter...")
+            
+            // When
+            let embeddingsResponse = try await mockOpenAI.createEmbeddings(parameters: embeddingsParam)
+            
+            // Then
+            XCTAssertEqual(embeddingsResponse.object, .list, "Embeddings Response is not a list object.")
+            XCTAssertEqual(embeddingsResponse.data[0].object, .embedding, "Embeddings data is not an embedding object.")
+            XCTAssertEqual(embeddingsResponse.data[0].embedding.count, 2048, "Embeddings data doesn't contain correct amount of floats.")
+            XCTAssertEqual(embeddingsResponse.data[0].embedding[0], 0.0028667077, "Embeddings data isn't correct.")
+            XCTAssertEqual(embeddingsResponse.data[0].index, 0, "Embeddings data index isn't correct.")
+            XCTAssertEqual(embeddingsResponse.usage.promptTokens, 8, "Prompt token amount isn't correct.")
+            XCTAssertEqual(embeddingsResponse.usage.totalTokens, 8, "Total token amount isn't correct.")
+        } catch {
+            XCTFail("EMBEDDINGS CREATION FAILED WITH ERROR - \(error)")
+        }
+    }
+    
     func testThatVerifiesOpenAIIsAbleToSendContentPolicyResult() async {
         do {
             // Given
