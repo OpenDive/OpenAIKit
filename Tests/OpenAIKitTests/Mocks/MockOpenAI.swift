@@ -112,6 +112,10 @@ class MockOpenAI: OpenAIProtocol {
         throw MockOpenAIError.notImplemented
     }
     
+    func deleteFile(fileId id: String) async throws -> DeleteFileResponse {
+        return try await getDecodedData(with: "DeleteFileResponse") as DeleteFileResponse
+    }
+    
     func checkContentPolicy(parameters param: ContentPolicyParameters) async throws -> ContentPolicyResponse {
         return try await getDecodedData(with: "ContentPolicyResponse") as ContentPolicyResponse
     }

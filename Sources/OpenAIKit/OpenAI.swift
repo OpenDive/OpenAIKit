@@ -93,8 +93,13 @@ extension OpenAI: OpenAIProtocol {
     }
     
     public func uploadFile(parameters param: UploadFileParameters) async throws -> File {
-        let serverURL = try await getServerUrl(path: "/files")
-        return try await URLSession.shared.decodeUrl(with: serverURL, apiKey: config.apiKey, body: param.body, formSubmission: true)
+        let serverUrl = try await getServerUrl(path: "/files")
+        return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, body: param.body, formSubmission: true)
+    }
+    
+    public func deleteFile(fileId id: String) async throws -> DeleteFileResponse {
+        let serverUrl = try await getServerUrl(path: "/files/\(id)")
+        return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, method: .delete, bodyRequired: false)
     }
     
     public func checkContentPolicy(

@@ -7,6 +7,7 @@ extension URLSession {
     public enum HTTPMethod: String {
         case get = "GET"
         case post = "POST"
+        case delete = "DELETE"
     }
     
     /// Decode a data object using `JSONDecoder.decode()`.

@@ -452,6 +452,23 @@ final class OpenAIKitTests: XCTestCase {
         }
     }
     
+    func testThatVerifiesOpenAIIsAbleToDeleteFileAndRespondWithResponse() async {
+        do {
+            // Given
+            let mockOpenAI = MockOpenAI()
+            
+            // When
+            let deleteFileResponse = try await mockOpenAI.deleteFile(fileId: "file-XjGxS3KTG0uNmNOK362iJua3")
+            
+            // Then
+            XCTAssertEqual(deleteFileResponse.id, "file-XjGxS3KTG0uNmNOK362iJua3", "File ID isn't correct.")
+            XCTAssertEqual(deleteFileResponse.object, .file, "File isn't file object.")
+            XCTAssertTrue(deleteFileResponse.deleted, "File isn't deleted.")
+        } catch {
+            XCTFail("DELETE FILE FAILED WITH ERROR - \(error)")
+        }
+    }
+    
     func testThatVerifiesOpenAIIsAbleToSendContentPolicyResult() async {
         do {
             // Given
