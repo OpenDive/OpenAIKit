@@ -21,5 +21,7 @@ public protocol OpenAIProtocol {
     
     func deleteFile(fileId id: String) async throws -> DeleteFileResponse
     
+    func retrieveFile(fileId id: String) async throws -> File
+    
     func checkContentPolicy(parameters param: ContentPolicyParameters) async throws -> ContentPolicyResponse
 }
