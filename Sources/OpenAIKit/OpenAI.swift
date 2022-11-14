@@ -26,7 +26,7 @@
 import Foundation
 
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, *)
-public class OpenAI {
+public final class OpenAI {
     private var config: Configuration
     
     public init(_ config: Configuration) {
@@ -85,6 +85,11 @@ extension OpenAI: OpenAIProtocol {
     public func createEmbeddings(parameters param: EmbeddingsParameters) async throws -> EmbeddingsResponse {
         let serverUrl = try await getServerUrl(path: "/embeddings")
         return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, body: param.body)
+    }
+    
+    public func listFiles() async throws -> ListFilesResponse {
+        let serverUrl = try await getServerUrl(path: "/files")
+        return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, method: .get, bodyRequired: false)
     }
     
     public func checkContentPolicy(

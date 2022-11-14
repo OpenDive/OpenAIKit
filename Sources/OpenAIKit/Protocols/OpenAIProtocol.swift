@@ -15,5 +15,7 @@ public protocol OpenAIProtocol {
     
     func createEmbeddings(parameters param: EmbeddingsParameters) async throws -> EmbeddingsResponse
     
+    func listFiles() async throws -> ListFilesResponse
+    
     func checkContentPolicy(parameters param: ContentPolicyParameters) async throws -> ContentPolicyResponse
 }

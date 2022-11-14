@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  File 2.swift
 //  
 //
 //  Copyright (c) 2022 MarcoDotIO
@@ -23,12 +23,7 @@
 //  THE SOFTWARE.
 //  
 
-public enum OpenAIObject: String, Codable {
-    case list
-    case model
-    case modelPermission = "model_permission"
-    case textCompletion = "text_completion"
-    case edit
-    case embedding
-    case file
+public struct ListFilesResponse: Codable {
+    public let object: OpenAIObject
+    public let data: [File]
 }

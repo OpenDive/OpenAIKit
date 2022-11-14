@@ -1,0 +1,15 @@
+{
+  "object": "list",
+  "data": [
+    {
+      "object": "file",
+      "id": "file-uvdyS3qukzhVrcvxOcjk0Xss",
+      "purpose": "fine-tune",
+      "filename": "sampleData.jsonl",
+      "bytes": 18950,
+      "created_at": 1668098746,
+      "status": "processed",
+      "status_details": null
+    }
+  ]
+}

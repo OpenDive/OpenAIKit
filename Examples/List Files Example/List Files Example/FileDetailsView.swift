@@ -1,6 +1,6 @@
 //
-//  File.swift
-//  
+//  FileDetailsView.swift
+//  List Files Example
 //
 //  Copyright (c) 2022 MarcoDotIO
 //
@@ -23,12 +23,20 @@
 //  THE SOFTWARE.
 //  
 
-public enum OpenAIObject: String, Codable {
-    case list
-    case model
-    case modelPermission = "model_permission"
-    case textCompletion = "text_completion"
-    case edit
-    case embedding
-    case file
+import SwiftUI
+import OpenAIKit
+
+struct FileDetailsView: View {
+    var file: File
+    
+    var body: some View {
+        VStack {
+            Text("ID: \(file.id)")
+            Text("Object: \(file.object.rawValue)")
+            Text("Bytes: \(file.bytes)")
+            Text("Created At: \(String(file.createdAt))")
+            Text("Filename: \(file.filename)")
+            Text("Purpose: \(file.purpose)")
+        }
+    }
 }

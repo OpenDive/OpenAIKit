@@ -429,6 +429,29 @@ final class OpenAIKitTests: XCTestCase {
         }
     }
     
+    func testThatVerifiesOpenAIIsAbleToReturnListedFiles() async {
+        do {
+            // Given
+            let mockOpenAI = MockOpenAI()
+            
+            // When
+            let filesResponse = try await mockOpenAI.listFiles()
+            
+            // Then
+            XCTAssertEqual(filesResponse.object, .list, "Files Response isn't list object.")
+            XCTAssertEqual(filesResponse.data[0].id, "file-uvdyS3qukzhVrcvxOcjk0Xss", "File ID isn't correct.")
+            XCTAssertEqual(filesResponse.data[0].object, .file, "File isn't file object.")
+            XCTAssertEqual(filesResponse.data[0].purpose, "fine-tune", "File Purpose isn't correct.")
+            XCTAssertEqual(filesResponse.data[0].filename, "sampleData.jsonl", "File name isn't correct")
+            XCTAssertEqual(filesResponse.data[0].bytes, 18950, "File size isn't correct.")
+            XCTAssertEqual(filesResponse.data[0].createdAt, 1668098746, "File creation date isn't correct.")
+            XCTAssertEqual(filesResponse.data[0].status, .processed, "File status isn't correct.")
+            XCTAssertNil(filesResponse.data[0].statusDetails, "File status details isn't nil.")
+        } catch {
+            XCTFail("LIST FILES FAILED WITH ERROR - \(error)")
+        }
+    }
+    
     func testThatVerifiesOpenAIIsAbleToSendContentPolicyResult() async {
         do {
             // Given

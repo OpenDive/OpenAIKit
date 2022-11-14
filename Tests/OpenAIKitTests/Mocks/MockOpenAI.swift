@@ -104,6 +104,10 @@ class MockOpenAI: OpenAIProtocol {
         return try await getDecodedData(with: "EmbeddingsResponse") as EmbeddingsResponse
     }
     
+    func listFiles() async throws -> ListFilesResponse {
+        return try await getDecodedData(with: "ListFilesResponse") as ListFilesResponse
+    }
+    
     func checkContentPolicy(parameters param: ContentPolicyParameters) async throws -> ContentPolicyResponse {
         return try await getDecodedData(with: "ContentPolicyResponse") as ContentPolicyResponse
     }

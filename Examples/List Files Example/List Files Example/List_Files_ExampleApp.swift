@@ -1,6 +1,6 @@
 //
-//  File.swift
-//  
+//  List_Files_ExampleApp.swift
+//  List Files Example
 //
 //  Copyright (c) 2022 MarcoDotIO
 //
@@ -23,12 +23,13 @@
 //  THE SOFTWARE.
 //  
 
-public enum OpenAIObject: String, Codable {
-    case list
-    case model
-    case modelPermission = "model_permission"
-    case textCompletion = "text_completion"
-    case edit
-    case embedding
-    case file
+import SwiftUI
+
+@main
+struct List_Files_ExampleApp: App {
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+        }
+    }
 }
