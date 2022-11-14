@@ -23,5 +23,7 @@ public protocol OpenAIProtocol {
     
     func retrieveFile(fileId id: String) async throws -> File
     
+    func retrieveFileContent(fileId id: String) async throws -> [FineTuneTraining]
+    
     func checkContentPolicy(parameters param: ContentPolicyParameters) async throws -> ContentPolicyResponse
 }

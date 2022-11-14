@@ -84,6 +84,29 @@ extension URLSession {
         }
     }
     
+    public func retrieveJsonLine<T: Decodable>(
+        _ type: T.Type = T.self,
+        with url: URL,
+        apiKey: String? = nil
+    ) async throws -> [T] {
+        guard let apiKey = apiKey else { throw OpenAIError.noApiKey }
+        
+        let jsonDecoder = JSONDecoder()
+        
+        let genData = try await URLSession.shared.asyncData(with: url, method: .get, headers: ["Authorization": "Bearer \(apiKey)"])
+        let genString = String(decoding: genData, as: UTF8.self)
+        
+        return try genString.components(separatedBy: .newlines)
+            .filter { $0 != "" }
+            .map { gen -> T? in
+                guard let data = gen.data(using: .utf8) else {
+                    throw OpenAIError.invalidData
+                }
+                return try? jsonDecoder.decode(T.self, from: data)
+            }
+            .compactMap { $0 }
+    }
+    
     /// Decode a `URL` to the type `T` using either `asyncData()` for the Production Server;
     /// or using `decode()` for the Mock Server.
     /// - Parameters:

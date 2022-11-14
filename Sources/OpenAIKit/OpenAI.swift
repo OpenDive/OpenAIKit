@@ -107,6 +107,11 @@ extension OpenAI: OpenAIProtocol {
         return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, method: .get, bodyRequired: false)
     }
     
+    public func retrieveFileContent(fileId id: String) async throws -> [FineTuneTraining] {
+        let serverUrl = try await getServerUrl(path: "/files/\(id)/content")
+        return try await URLSession.shared.retrieveJsonLine(with: serverUrl, apiKey: config.apiKey)
+    }
+    
     public func checkContentPolicy(
         parameters param: OpenAIKit.ContentPolicyParameters
     ) async throws -> ContentPolicyResponse {
