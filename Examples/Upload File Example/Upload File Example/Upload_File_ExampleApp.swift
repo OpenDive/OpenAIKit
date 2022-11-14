@@ -1,6 +1,6 @@
 //
-//  File.swift
-//  
+//  Upload_File_ExampleApp.swift
+//  Upload File Example
 //
 //  Copyright (c) 2022 MarcoDotIO
 //
@@ -23,24 +23,13 @@
 //  THE SOFTWARE.
 //  
 
-public struct File: Codable, Identifiable {
-    enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case bytes
-        case createdAt = "created_at"
-        case filename
-        case purpose
-        case status
-        case statusDetails = "status_details"
+import SwiftUI
+
+@main
+struct Upload_File_ExampleApp: App {
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+        }
     }
-    
-    public let id: String
-    public let object: OpenAIObject
-    public let bytes: Int
-    public let createdAt: Int
-    public let filename: String
-    public let purpose: String
-    public let status: FileStatus?
-    public let statusDetails: String?
 }

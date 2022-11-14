@@ -17,5 +17,7 @@ public protocol OpenAIProtocol {
     
     func listFiles() async throws -> ListFilesResponse
     
+    func uploadFile(parameters param: UploadFileParameters) async throws -> File
+    
     func checkContentPolicy(parameters param: ContentPolicyParameters) async throws -> ContentPolicyResponse
 }

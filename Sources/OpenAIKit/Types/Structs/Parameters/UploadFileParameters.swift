@@ -23,24 +23,22 @@
 //  THE SOFTWARE.
 //  
 
-public struct File: Codable, Identifiable {
-    enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case bytes
-        case createdAt = "created_at"
-        case filename
-        case purpose
-        case status
-        case statusDetails = "status_details"
+import Foundation
+
+public struct UploadFileParameters {
+    public var file: FormData
+    public var purpose: String
+    
+    public init(
+        file: Data,
+        fileName: String,
+        purpose: String
+    ) {
+        self.file = FormData(data: file, mimeType: "application/octet-stream", fileName: fileName)
+        self.purpose = purpose
     }
     
-    public let id: String
-    public let object: OpenAIObject
-    public let bytes: Int
-    public let createdAt: Int
-    public let filename: String
-    public let purpose: String
-    public let status: FileStatus?
-    public let statusDetails: String?
+    public var body: [String: Any] {
+        return ["file": self.file, "purpose": self.purpose]
+    }
 }

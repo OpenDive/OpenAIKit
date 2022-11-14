@@ -92,6 +92,11 @@ extension OpenAI: OpenAIProtocol {
         return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, method: .get, bodyRequired: false)
     }
     
+    public func uploadFile(parameters param: UploadFileParameters) async throws -> File {
+        let serverURL = try await getServerUrl(path: "/files")
+        return try await URLSession.shared.decodeUrl(with: serverURL, apiKey: config.apiKey, body: param.body, formSubmission: true)
+    }
+    
     public func checkContentPolicy(
         parameters param: OpenAIKit.ContentPolicyParameters
     ) async throws -> ContentPolicyResponse {
