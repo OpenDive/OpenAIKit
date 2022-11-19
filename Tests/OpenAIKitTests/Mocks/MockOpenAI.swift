@@ -132,6 +132,10 @@ class MockOpenAI: OpenAIProtocol {
         throw MockOpenAIError.notImplemented
     }
     
+    func retrieveFineTune(fineTune id: String) async throws -> FineTune {
+        throw MockOpenAIError.notImplemented
+    }
+    
     func checkContentPolicy(parameters param: ContentPolicyParameters) async throws -> ContentPolicyResponse {
         return try await getDecodedData(with: "ContentPolicyResponse") as ContentPolicyResponse
     }
