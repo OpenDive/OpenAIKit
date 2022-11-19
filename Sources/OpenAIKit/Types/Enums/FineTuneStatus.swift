@@ -1,6 +1,6 @@
 //
-//  File.swift
-//  
+//  FineTuneStatus.swift
+//  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
 //
