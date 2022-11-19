@@ -1,6 +1,6 @@
 //
-//  File.swift
-//  
+//  OpenAIErrorMessage.swift
+//  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
 //

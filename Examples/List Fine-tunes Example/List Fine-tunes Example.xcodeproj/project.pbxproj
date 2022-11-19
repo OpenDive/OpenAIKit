@@ -7,22 +7,22 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		76E5B74329295F8D0026C20E /* List_Fine_Tunes_ExampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76E5B74229295F8D0026C20E /* List_Fine_Tunes_ExampleApp.swift */; };
 		76E5B74529295F8D0026C20E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76E5B74429295F8D0026C20E /* ContentView.swift */; };
 		76E5B74729295F8E0026C20E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 76E5B74629295F8E0026C20E /* Assets.xcassets */; };
 		76E5B74A29295F8E0026C20E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 76E5B74929295F8E0026C20E /* Preview Assets.xcassets */; };
 		76E5B75329295FB00026C20E /* OpenAIKit in Frameworks */ = {isa = PBXBuildFile; productRef = 76E5B75229295FB00026C20E /* OpenAIKit */; };
 		76E5B755292960D40026C20E /* FineTuneDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76E5B754292960D40026C20E /* FineTuneDetails.swift */; };
+		76E5B7CF29298B8B0026C20E /* List_Fine_tunes_ExampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76E5B7CE29298B8B0026C20E /* List_Fine_tunes_ExampleApp.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		76E5B73F29295F8D0026C20E /* List Fine Tunes Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "List Fine Tunes Example.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		76E5B74229295F8D0026C20E /* List_Fine_Tunes_ExampleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = List_Fine_Tunes_ExampleApp.swift; sourceTree = "<group>"; };
 		76E5B74429295F8D0026C20E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		76E5B74629295F8E0026C20E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		76E5B74929295F8E0026C20E /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		76E5B75129295FAB0026C20E /* OpenAIKit */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = OpenAIKit; path = ../..; sourceTree = "<group>"; };
 		76E5B754292960D40026C20E /* FineTuneDetails.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FineTuneDetails.swift; sourceTree = "<group>"; };
+		76E5B7CE29298B8B0026C20E /* List_Fine_tunes_ExampleApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = List_Fine_tunes_ExampleApp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -40,7 +40,7 @@
 		76E5B73629295F8D0026C20E = {
 			isa = PBXGroup;
 			children = (
-				76E5B74129295F8D0026C20E /* List Fine Tunes Example */,
+				76E5B74129295F8D0026C20E /* List Fine-tunes Example */,
 				76E5B74029295F8D0026C20E /* Products */,
 				76E5B75029295FAB0026C20E /* Frameworks */,
 			);
@@ -54,16 +54,16 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		76E5B74129295F8D0026C20E /* List Fine Tunes Example */ = {
+		76E5B74129295F8D0026C20E /* List Fine-tunes Example */ = {
 			isa = PBXGroup;
 			children = (
 				76E5B754292960D40026C20E /* FineTuneDetails.swift */,
-				76E5B74229295F8D0026C20E /* List_Fine_Tunes_ExampleApp.swift */,
+				76E5B7CE29298B8B0026C20E /* List_Fine_tunes_ExampleApp.swift */,
 				76E5B74429295F8D0026C20E /* ContentView.swift */,
 				76E5B74629295F8E0026C20E /* Assets.xcassets */,
 				76E5B74829295F8E0026C20E /* Preview Content */,
 			);
-			path = "List Fine Tunes Example";
+			path = "List Fine-tunes Example";
 			sourceTree = "<group>";
 		};
 		76E5B74829295F8E0026C20E /* Preview Content */ = {
@@ -120,7 +120,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 76E5B73A29295F8D0026C20E /* Build configuration list for PBXProject "List Fine Tunes Example" */;
+			buildConfigurationList = 76E5B73A29295F8D0026C20E /* Build configuration list for PBXProject "List Fine-tunes Example" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -155,8 +155,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				76E5B7CF29298B8B0026C20E /* List_Fine_tunes_ExampleApp.swift in Sources */,
 				76E5B74529295F8D0026C20E /* ContentView.swift in Sources */,
-				76E5B74329295F8D0026C20E /* List_Fine_Tunes_ExampleApp.swift in Sources */,
 				76E5B755292960D40026C20E /* FineTuneDetails.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -285,7 +285,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"List Fine Tunes Example/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"List Fine-tunes Example/Preview Content\"";
 				DEVELOPMENT_TEAM = 8GNE6ML5WX;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -314,7 +314,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"List Fine Tunes Example/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"List Fine-tunes Example/Preview Content\"";
 				DEVELOPMENT_TEAM = 8GNE6ML5WX;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -339,7 +339,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		76E5B73A29295F8D0026C20E /* Build configuration list for PBXProject "List Fine Tunes Example" */ = {
+		76E5B73A29295F8D0026C20E /* Build configuration list for PBXProject "List Fine-tunes Example" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				76E5B74B29295F8E0026C20E /* Debug */,

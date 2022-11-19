@@ -1,6 +1,6 @@
 //
-//  File.swift
-//  
+//  NSMutableDataExtension.swift
+//  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
 //
