@@ -1,6 +1,6 @@
 //
 //  Generate_Completion_ExampleApp.swift
-//  Generate Completion Example
+//  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
 //

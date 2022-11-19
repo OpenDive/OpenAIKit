@@ -1,6 +1,6 @@
 //
 //  Edit_Image_ExampleApp.swift
-//  Edit Image Example
+//  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
 //

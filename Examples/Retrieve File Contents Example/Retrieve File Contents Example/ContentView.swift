@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  Retrieve File Contents Example
+//  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
 //

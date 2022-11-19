@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  Generate Completion Example
+//  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
 //

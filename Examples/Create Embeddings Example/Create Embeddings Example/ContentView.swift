@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  Create Embeddings Example
+//  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
 //
@@ -73,8 +73,8 @@ struct ContentView: View {
     }
 }
 
-//struct ContentView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        ContentView()
-//    }
-//}
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+    }
+}

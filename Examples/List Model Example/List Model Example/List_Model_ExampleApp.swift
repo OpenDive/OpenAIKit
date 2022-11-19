@@ -1,6 +1,6 @@
 //
 //  List_Model_ExampleApp.swift
-//  List Model Example
+//  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
 //

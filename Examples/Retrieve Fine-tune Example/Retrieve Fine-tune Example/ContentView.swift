@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  Retrieve Fine-tune Example
+//  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
 //

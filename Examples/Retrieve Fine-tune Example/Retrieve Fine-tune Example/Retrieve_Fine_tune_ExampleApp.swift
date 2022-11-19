@@ -1,6 +1,6 @@
 //
 //  Retrieve_Fine_tune_ExampleApp.swift
-//  Retrieve Fine-tune Example
+//  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
 //

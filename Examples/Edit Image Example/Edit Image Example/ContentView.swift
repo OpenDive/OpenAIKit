@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  Edit Image Example
+//  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
 //

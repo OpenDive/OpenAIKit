@@ -1,6 +1,6 @@
 //
 //  Generate_Image_ExampleApp.swift
-//  Generate Image Example
+//  OpenAIKit
 //
 //  Created by Marcus Arnett on 11/4/22.
 //

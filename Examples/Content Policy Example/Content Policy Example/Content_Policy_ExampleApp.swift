@@ -1,6 +1,6 @@
 //
 //  Content_Policy_ExampleApp.swift
-//  Content Policy Example
+//  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
 //

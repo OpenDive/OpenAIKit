@@ -1,6 +1,6 @@
 //
 //  FileDetailsView.swift
-//  List Files Example
+//  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
 //

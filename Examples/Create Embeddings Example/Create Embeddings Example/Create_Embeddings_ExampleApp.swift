@@ -1,6 +1,6 @@
 //
 //  Create_Embeddings_ExampleApp.swift
-//  Create Embeddings Example
+//  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
 //

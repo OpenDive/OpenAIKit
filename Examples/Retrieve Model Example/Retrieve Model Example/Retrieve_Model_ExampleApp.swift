@@ -1,6 +1,6 @@
 //
 //  Retrieve_Model_ExampleApp.swift
-//  Retrieve Model Example
+//  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
 //

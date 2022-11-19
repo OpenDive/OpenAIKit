@@ -1,6 +1,6 @@
 //
 //  Generate_Image_Variations_ExampleApp.swift
-//  Generate Image Variations Example
+//  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
 //

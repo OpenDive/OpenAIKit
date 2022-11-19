@@ -1,6 +1,6 @@
 //
 //  List_Fine_tune_Events_ExampleApp.swift
-//  List Fine-tune Events Example
+//  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
 //

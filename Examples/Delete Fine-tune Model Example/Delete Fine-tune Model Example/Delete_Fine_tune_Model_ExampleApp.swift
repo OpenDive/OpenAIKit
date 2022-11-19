@@ -1,6 +1,6 @@
 //
 //  Delete_Fine_tune_Model_ExampleApp.swift
-//  Delete Fine-tune Model Example
+//  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
 //

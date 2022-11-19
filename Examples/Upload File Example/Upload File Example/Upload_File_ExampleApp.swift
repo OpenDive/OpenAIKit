@@ -1,6 +1,6 @@
 //
 //  Upload_File_ExampleApp.swift
-//  Upload File Example
+//  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
 //

@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  Delete File Example
+//  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
 //

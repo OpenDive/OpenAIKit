@@ -1,6 +1,6 @@
 //
 //  Cancel_Fine_tune_ExampleApp.swift
-//  Cancel Fine-tune Example
+//  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
 //
