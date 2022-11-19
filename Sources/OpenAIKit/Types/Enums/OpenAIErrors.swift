@@ -4,4 +4,5 @@ public enum OpenAIError: Error {
     case promptThreshold
     case invalidUrl
     case invalidData
+    case notImplemented
 }

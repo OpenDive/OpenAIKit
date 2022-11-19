@@ -134,8 +134,8 @@ final class OpenAIKitTests: XCTestCase {
             let parameterOtter = ImageParameters(prompt: "A cute baby sea otter", user: "promptOtter")
             
             // When
-            let apple = try await mockOpenAI.generateImages(parameters: parameterApple)
-            let otter = try await mockOpenAI.generateImages(parameters: parameterOtter)
+            let apple = try await mockOpenAI.createImage(parameters: parameterApple)
+            let otter = try await mockOpenAI.createImage(parameters: parameterOtter)
             
             // Then
             XCTAssertEqual(apple.created, 1667676516, "Created date of Apple is incorrect.")
@@ -165,7 +165,7 @@ final class OpenAIKitTests: XCTestCase {
             let parameterEmptyPrompt = ImageParameters(prompt: "", user: "promptEmpty")
             
             // Then
-            let _ = try await mockOpenAI.generateImages(parameters: parameterEmptyPrompt)
+            let _ = try await mockOpenAI.createImage(parameters: parameterEmptyPrompt)
         } catch MockOpenAIError.invalidPrompt {
             XCTAssertTrue(true)
         } catch {
@@ -190,8 +190,8 @@ final class OpenAIKitTests: XCTestCase {
             )
             
             // When
-            let url = try await mockOpenAI.generateImages(parameters: parameterUrl)
-            let b64 = try await mockOpenAI.generateImages(parameters: parameterB64)
+            let url = try await mockOpenAI.createImage(parameters: parameterUrl)
+            let b64 = try await mockOpenAI.createImage(parameters: parameterB64)
             
             // Then
             XCTAssertEqual(url.created, 1667661280, "Created date of url is incorrect.")
@@ -251,14 +251,14 @@ final class OpenAIKitTests: XCTestCase {
             )
             
             // When
-            let smallUrl = try await mockOpenAI.generateImages(parameters: parameterSmallUrl)
-            let smallB64 = try await mockOpenAI.generateImages(parameters: parameterSmallB64)
+            let smallUrl = try await mockOpenAI.createImage(parameters: parameterSmallUrl)
+            let smallB64 = try await mockOpenAI.createImage(parameters: parameterSmallB64)
             
-            let mediumUrl = try await mockOpenAI.generateImages(parameters: parameterMediumUrl)
-            let mediumB64 = try await mockOpenAI.generateImages(parameters: parameterMediumB64)
+            let mediumUrl = try await mockOpenAI.createImage(parameters: parameterMediumUrl)
+            let mediumB64 = try await mockOpenAI.createImage(parameters: parameterMediumB64)
             
-            let largeUrl = try await mockOpenAI.generateImages(parameters: parameterLargeUrl)
-            let largeB64 = try await mockOpenAI.generateImages(parameters: parameterLargeB64)
+            let largeUrl = try await mockOpenAI.createImage(parameters: parameterLargeUrl)
+            let largeB64 = try await mockOpenAI.createImage(parameters: parameterLargeB64)
             
             // Then
             XCTAssertEqual(smallUrl.created, 1667661280, "Created date of smallUrl is incorrect.")
@@ -344,12 +344,12 @@ final class OpenAIKitTests: XCTestCase {
             )
             
             // When
-            let image1 = try await mockOpenAI.generateImages(parameters: image1Parameter)
-            let image2 = try await mockOpenAI.generateImages(parameters: image2Parameter)
-            let image10 = try await mockOpenAI.generateImages(parameters: image10Parameter)
-            let image11 = try await mockOpenAI.generateImages(parameters: image11Parameter)
-            let image0 = try await mockOpenAI.generateImages(parameters: image0Parameter)
-            let imageNegative1 = try await mockOpenAI.generateImages(parameters: imageNegative1Parameter)
+            let image1 = try await mockOpenAI.createImage(parameters: image1Parameter)
+            let image2 = try await mockOpenAI.createImage(parameters: image2Parameter)
+            let image10 = try await mockOpenAI.createImage(parameters: image10Parameter)
+            let image11 = try await mockOpenAI.createImage(parameters: image11Parameter)
+            let image0 = try await mockOpenAI.createImage(parameters: image0Parameter)
+            let imageNegative1 = try await mockOpenAI.createImage(parameters: imageNegative1Parameter)
             
             // Then
             XCTAssertEqual(image1.created, 1667661280, "Created date of image1 is incorrect.")
@@ -466,6 +466,37 @@ final class OpenAIKitTests: XCTestCase {
             XCTAssertTrue(deleteFileResponse.deleted, "File isn't deleted.")
         } catch {
             XCTFail("DELETE FILE FAILED WITH ERROR - \(error)")
+        }
+    }
+    
+    func testThatVerifiesOpenAIIsAbleToCreateFineTune() async {
+        do {
+            // Given
+            let mockOpenAI = MockOpenAI()
+            let createFineTuneParam = CreateFineTuneParameters(trainingFile: "file-PU0v1w7OsHXsauUpGOmFdAdl")
+            
+            // When
+            let fineTuneResponse = try await mockOpenAI.createFineTune(parameters: createFineTuneParam)
+            
+            // Then
+            XCTAssertEqual(fineTuneResponse.object, .fineTune, "Object is not a fine tune model")
+            XCTAssertEqual(fineTuneResponse.id, "ft-xZ8Sx0qndMWb8suLmNzm4SbK", "Fine Tune ID is not correct.")
+            XCTAssertEqual(fineTuneResponse.organizationId, "org-3JlqS7fDgniMfkzHfwwEdBm3", "Organization ID is not correct.")
+            XCTAssertEqual(fineTuneResponse.model, "curie", "Fine Tune Model type is not correct.")
+            XCTAssertEqual(fineTuneResponse.createdAt, 1668880695, "Created At date is not correct.")
+            XCTAssertEqual(fineTuneResponse.updatedAt, 1668880695, "Updated At date is not correct.")
+            
+            XCTAssertEqual(fineTuneResponse.hyperparams.nEpochs, 4, "n Epochs is not correct amount.")
+            XCTAssertEqual(fineTuneResponse.hyperparams.batchSize, 16, "Batch size is not correct amount.")
+            XCTAssertEqual(fineTuneResponse.hyperparams.promptLossWeight, 0.01, "Prompt Loss Weight is not correct amount.")
+            XCTAssertEqual(fineTuneResponse.hyperparams.learningRateMultiplier, 0.2, "Learning Rate Multiplier is not correct amount.")
+            
+            XCTAssertEqual(fineTuneResponse.events[0].object, .fineTuneEvent, "Object is not Fine Tune Event.")
+            XCTAssertEqual(fineTuneResponse.events[0].level, .info, "Level status is not correct.")
+            XCTAssertEqual(fineTuneResponse.events[0].message, "Created fine-tune: ft-xZ8Sx0qndMWb8suLmNzm4SbK", "Message is not correct.")
+            XCTAssertEqual(fineTuneResponse.events[0].createdAt, 1668880695, "Created At date is not correct.")
+        } catch {
+            XCTFail("CREATE FINE TUNE FAILED WITH ERROR - \(error)")
         }
     }
     

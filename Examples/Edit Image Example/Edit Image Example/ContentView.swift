@@ -44,14 +44,12 @@ struct ContentView: View {
                 
                 let openAI = OpenAI(config)
                 
-                guard let image = UIImage(named: "image")?.pngData() else { throw OpenAIError.invalidData }
-                guard let mask = UIImage(named: "mask")?.pngData() else { throw OpenAIError.invalidData }
+                guard let image = UIImage(named: "image") else { throw OpenAIError.invalidData }
+                guard let mask = UIImage(named: "mask") else { throw OpenAIError.invalidData }
                 
-                let imageEditParam = ImageEditParameters(
+                let imageEditParam = try ImageEditParameters(
                     image: image,
-                    imageName: "image.png",
                     mask: mask,
-                    maskName: "mask.png",
                     prompt: "A cute baby sea otter wearing a beret",
                     resolution: .small,
                     responseFormat: .base64Json
@@ -59,7 +57,7 @@ struct ContentView: View {
                 
                 let imageResponse = try await openAI.generateImageEdits(parameters: imageEditParam)
                 
-                self.image = UIImage(data: Data(base64Encoded: imageResponse.data[0].image)!)!
+                self.image = try openAI.decodeBase64Image(imageResponse.data[0].image)
             } catch {
                 print("ERROR - \(error)")
             }

@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  File 2.swift
 //  
 //
 //  Copyright (c) 2022 MarcoDotIO
@@ -23,14 +23,16 @@
 //  THE SOFTWARE.
 //  
 
-public enum OpenAIObject: String, Codable {
-    case list
-    case model
-    case modelPermission = "model_permission"
-    case textCompletion = "text_completion"
-    case edit
-    case embedding
-    case file
-    case fineTune = "fine-tune"
-    case fineTuneEvent = "fine-tune-event"
+public struct FineTuneEvent: Codable, Hashable {
+    enum CodingKeys: String, CodingKey {
+        case object
+        case createdAt = "created_at"
+        case level
+        case message
+    }
+    
+    public let object: OpenAIObject
+    public let createdAt: Int
+    public let level: FineTuneEventInfo
+    public let message: String
 }

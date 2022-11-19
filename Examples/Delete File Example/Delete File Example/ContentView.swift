@@ -27,7 +27,7 @@ import SwiftUI
 import OpenAIKit
 
 struct ContentView: View {
-    @State private var deleteFileResponse: DeleteFileResponse?
+    @State private var deleteFileResponse: DeleteObject?
     
     var body: some View {
         VStack {

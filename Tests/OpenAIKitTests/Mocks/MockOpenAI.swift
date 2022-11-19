@@ -65,7 +65,7 @@ class MockOpenAI: OpenAIProtocol {
         return try await getDecodedData(with: "EditResponse") as EditResponse
     }
     
-    func generateImages(parameters param: ImageParameters) async throws -> ImageResponse {
+    func createImage(parameters param: ImageParameters) async throws -> ImageResponse {
         if let user = param.user {
             switch user {
                 case "promptApple": return try await getDecodedData(with: "ImageApple") as ImageResponse
@@ -112,12 +112,20 @@ class MockOpenAI: OpenAIProtocol {
         throw MockOpenAIError.notImplemented
     }
     
-    func deleteFile(fileId id: String) async throws -> DeleteFileResponse {
-        return try await getDecodedData(with: "DeleteFileResponse") as DeleteFileResponse
+    func deleteFile(fileId id: String) async throws -> DeleteObject {
+        return try await getDecodedData(with: "DeleteFileResponse") as DeleteObject
     }
     
     func retrieveFile(fileId id: String) async throws -> File {
         throw MockOpenAIError.notImplemented
+    }
+    
+    func retrieveFileContent(fileId id: String) async throws -> [OpenAIKit.FineTuneTraining] {
+        throw MockOpenAIError.notImplemented
+    }
+    
+    func createFineTune(parameters param: CreateFineTuneParameters) async throws -> FineTune {
+        return try await getDecodedData(with: "CreateFineTuneResponse") as FineTune
     }
     
     func checkContentPolicy(parameters param: ContentPolicyParameters) async throws -> ContentPolicyResponse {

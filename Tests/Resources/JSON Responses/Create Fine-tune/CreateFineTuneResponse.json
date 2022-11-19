@@ -1,0 +1,39 @@
+{
+  "object": "fine-tune",
+  "id": "ft-xZ8Sx0qndMWb8suLmNzm4SbK",
+  "hyperparams": {
+    "n_epochs": 4,
+    "batch_size": 16,
+    "prompt_loss_weight": 0.01,
+    "learning_rate_multiplier": 0.2
+  },
+  "organization_id": "org-3JlqS7fDgniMfkzHfwwEdBm3",
+  "model": "curie",
+  "training_files": [
+    {
+      "object": "file",
+      "id": "file-PU0v1w7OsHXsauUpGOmFdAdl",
+      "purpose": "fine-tune",
+      "filename": "wiki-data.jsonl",
+      "bytes": 94332,
+      "created_at": 1668879931,
+      "status": "processed",
+      "status_details": null
+    }
+  ],
+  "validation_files": [],
+  "result_files": [],
+  "created_at": 1668880695,
+  "updated_at": 1668880695,
+  "status": "pending",
+  "fine_tuned_model": null,
+  "events": [
+    {
+      "object": "fine-tune-event",
+      "level": "info",
+      "message": "Created fine-tune: ft-xZ8Sx0qndMWb8suLmNzm4SbK",
+      "created_at": 1668880695
+    }
+  ]
+}
+

@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //  
 
-import Foundation
+import SwiftUI
 
 public struct ImageEditParameters {
     public var image: FormData
@@ -35,23 +35,28 @@ public struct ImageEditParameters {
     public var user: String?
     
     public init(
-        image: Data,
-        imageName: String,
-        mask: Data,
-        maskName: String,
+        image: UIImage,
+        mask: UIImage,
         prompt: String,
         @Clamped(range: 1...10) numberOfImages: Int = 1,
         resolution: ImageResolutions = .large,
         responseFormat: ResponseFormat = .url,
         user: String? = nil
-    ) {
-        self.image = FormData(data: image, mimeType: "image/png", fileName: imageName)
-        self.mask = FormData(data: mask, mimeType: "image/png", fileName: maskName)
-        self.prompt = prompt
-        self.numberOfImages = numberOfImages
-        self.resolution = resolution
-        self.responseFormat = responseFormat
-        self.user = user
+    ) throws {
+        do {
+            guard let imageData = image.pngData() else { throw OpenAIError.invalidData }
+            guard let maskData = mask.pngData() else { throw OpenAIError.invalidData }
+            
+            self.image = FormData(data: imageData, mimeType: "image/png", fileName: "image.png")
+            self.mask = FormData(data: maskData, mimeType: "image/png", fileName: "mask.png")
+            self.prompt = prompt
+            self.numberOfImages = numberOfImages
+            self.resolution = resolution
+            self.responseFormat = responseFormat
+            self.user = user
+        } catch {
+            throw OpenAIError.invalidData
+        }
     }
     
     public var body: [String: Any] {

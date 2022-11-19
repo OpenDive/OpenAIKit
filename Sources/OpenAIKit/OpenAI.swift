@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-import Foundation
+import SwiftUI
 
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, *)
 public final class OpenAI {
@@ -31,6 +31,17 @@ public final class OpenAI {
     
     public init(_ config: Configuration) {
         self.config = config
+    }
+    
+    public func decodeBase64Image(_ b64Data: String) throws -> UIImage {
+        do {
+            guard let data = Data(base64Encoded: b64Data) else { throw OpenAIError.invalidData }
+            guard let image = UIImage(data: data) else { throw OpenAIError.invalidData }
+            
+            return image
+        } catch {
+            throw OpenAIError.invalidData
+        }
     }
     
     private func getServerUrl(path: String) async throws -> URL {
@@ -63,7 +74,7 @@ extension OpenAI: OpenAIProtocol {
         return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, body: param.body)
     }
     
-    public func generateImages(parameters param: ImageParameters) async throws -> ImageResponse {
+    public func createImage(parameters param: ImageParameters) async throws -> ImageResponse {
         let serverUrl = try await getServerUrl(path: "/images/generations")
         return try await URLSession.shared.decodeUrl(
             with: serverUrl,
@@ -97,7 +108,7 @@ extension OpenAI: OpenAIProtocol {
         return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, body: param.body, formSubmission: true)
     }
     
-    public func deleteFile(fileId id: String) async throws -> DeleteFileResponse {
+    public func deleteFile(fileId id: String) async throws -> DeleteObject {
         let serverUrl = try await getServerUrl(path: "/files/\(id)")
         return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, method: .delete, bodyRequired: false)
     }
@@ -110,6 +121,11 @@ extension OpenAI: OpenAIProtocol {
     public func retrieveFileContent(fileId id: String) async throws -> [FineTuneTraining] {
         let serverUrl = try await getServerUrl(path: "/files/\(id)/content")
         return try await URLSession.shared.retrieveJsonLine(with: serverUrl, apiKey: config.apiKey)
+    }
+    
+    public func createFineTune(parameters param: CreateFineTuneParameters) async throws -> FineTune {
+        let serverUrl = try await getServerUrl(path: "/fine-tunes")
+        return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, body: param.body)
     }
     
     public func checkContentPolicy(

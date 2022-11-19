@@ -148,6 +148,8 @@ extension URLSession {
                 let jsonData = try? JSONSerialization.data(withJSONObject: body)
                 let data = try await self.asyncData(with: url, method: method, headers: ["Authorization": "Bearer \(apiKey)"], body: jsonData)
                 
+                print(String(decoding: data, as: UTF8.self))
+                
                 return try await self.decodeData(with: data)
             }
         }

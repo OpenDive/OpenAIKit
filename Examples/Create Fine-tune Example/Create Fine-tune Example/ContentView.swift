@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  Generate Image Variations Example
+//  Create Fine-tune Example
 //
 //  Copyright (c) 2022 MarcoDotIO
 //
@@ -27,14 +27,14 @@ import SwiftUI
 import OpenAIKit
 
 struct ContentView: View {
-    @State private var image: UIImage = UIImage()
+    @State private var fineTune: FineTune?
     
     var body: some View {
         VStack {
-            if (image == UIImage()) {
-                Text("Variation is loading...")
+            if let fineTune = fineTune {
+                FineTuneDetails(fineTune: fineTune)
             } else {
-                Image(uiImage: image)
+                Text("Starting fine tune...")
             }
         }
         .padding()
@@ -44,13 +44,9 @@ struct ContentView: View {
                 
                 let openAI = OpenAI(config)
                 
-                guard let image = UIImage(named: "image") else { throw OpenAIError.invalidData }
+                let createFineTuneParam = CreateFineTuneParameters(trainingFile: "INSERT-TRAINING-FILE-ID")
                 
-                let imageVariationParam = try ImageVariationParameters(image: image, resolution: .small, responseFormat: .base64Json)
-                
-                let variationResponse = try await openAI.generateImageVariations(parameters: imageVariationParam)
-                
-                self.image = try openAI.decodeBase64Image(variationResponse.data[0].image)
+                self.fineTune = try await openAI.createFineTune(parameters: createFineTuneParam)
             } catch {
                 print("ERROR - \(error)")
             }

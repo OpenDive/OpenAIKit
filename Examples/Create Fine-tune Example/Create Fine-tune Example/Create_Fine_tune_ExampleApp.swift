@@ -1,6 +1,6 @@
 //
-//  File.swift
-//  
+//  Create_Fine_tune_ExampleApp.swift
+//  Create Fine-tune Example
 //
 //  Copyright (c) 2022 MarcoDotIO
 //
@@ -23,14 +23,13 @@
 //  THE SOFTWARE.
 //  
 
-public enum OpenAIObject: String, Codable {
-    case list
-    case model
-    case modelPermission = "model_permission"
-    case textCompletion = "text_completion"
-    case edit
-    case embedding
-    case file
-    case fineTune = "fine-tune"
-    case fineTuneEvent = "fine-tune-event"
+import SwiftUI
+
+@main
+struct Create_Fine_tune_ExampleApp: App {
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+        }
+    }
 }

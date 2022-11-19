@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //  
 
-import Foundation
+import SwiftUI
 
 public struct ImageVariationParameters {
     public var image: FormData
@@ -33,18 +33,23 @@ public struct ImageVariationParameters {
     public var user: String?
     
     public init(
-        image: Data,
-        imageName: String,
+        image: UIImage,
         @Clamped(range: 1...10) numberOfImages: Int = 1,
         resolution: ImageResolutions = .large,
         responseFormat: ResponseFormat = .url,
         user: String? = nil
-    ) {
-        self.image = FormData(data: image, mimeType: "image/png", fileName: imageName)
-        self.numberOfImages = numberOfImages
-        self.resolution = resolution
-        self.responseFormat = responseFormat
-        self.user = user
+    ) throws {
+        do {
+            guard let imageData = image.pngData() else { throw OpenAIError.invalidData }
+            
+            self.image = FormData(data: imageData, mimeType: "image/png", fileName: "image.png")
+            self.numberOfImages = numberOfImages
+            self.resolution = resolution
+            self.responseFormat = responseFormat
+            self.user = user
+        } catch {
+            throw OpenAIError.invalidData
+        }
     }
     
     public var body: [String: Any] {

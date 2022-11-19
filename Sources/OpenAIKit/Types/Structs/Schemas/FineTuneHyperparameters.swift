@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  File 2.swift
 //  
 //
 //  Copyright (c) 2022 MarcoDotIO
@@ -23,14 +23,16 @@
 //  THE SOFTWARE.
 //  
 
-public enum OpenAIObject: String, Codable {
-    case list
-    case model
-    case modelPermission = "model_permission"
-    case textCompletion = "text_completion"
-    case edit
-    case embedding
-    case file
-    case fineTune = "fine-tune"
-    case fineTuneEvent = "fine-tune-event"
+public struct FineTuneHyperparamters: Codable {
+    enum CodingKeys: String, CodingKey {
+        case batchSize = "batch_size"
+        case learningRateMultiplier = "learning_rate_multiplier"
+        case nEpochs = "n_epochs"
+        case promptLossWeight = "prompt_loss_weight"
+    }
+    
+    public let batchSize: Int?
+    public let learningRateMultiplier: Double?
+    public let nEpochs: Int
+    public let promptLossWeight: Double
 }

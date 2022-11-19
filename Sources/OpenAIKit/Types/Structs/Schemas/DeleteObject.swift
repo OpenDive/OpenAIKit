@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //  
 
-public struct DeleteFileResponse: Codable {
+public struct DeleteObject: Codable {
     public let id: String
     public let object: OpenAIObject
     public let deleted: Bool

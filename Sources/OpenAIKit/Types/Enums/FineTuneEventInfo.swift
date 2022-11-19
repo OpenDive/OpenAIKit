@@ -23,14 +23,6 @@
 //  THE SOFTWARE.
 //  
 
-public enum OpenAIObject: String, Codable {
-    case list
-    case model
-    case modelPermission = "model_permission"
-    case textCompletion = "text_completion"
-    case edit
-    case embedding
-    case file
-    case fineTune = "fine-tune"
-    case fineTuneEvent = "fine-tune-event"
+public enum FineTuneEventInfo: String, Codable {
+    case info
 }
