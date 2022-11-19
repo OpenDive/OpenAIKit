@@ -28,10 +28,10 @@ import OpenAIKit
 
 struct ContentView: View {
     @State private var image: UIImage = UIImage()
-    
+
     var body: some View {
         VStack {
-            if (image == UIImage()) {
+            if image == UIImage() {
                 Text("Loading edit...")
             } else {
                 Image(uiImage: image)
@@ -41,12 +41,11 @@ struct ContentView: View {
         .task {
             do {
                 let config = Configuration(organization: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
-                
                 let openAI = OpenAI(config)
-                
+
                 guard let image = UIImage(named: "image") else { throw OpenAIError.invalidData }
                 guard let mask = UIImage(named: "mask") else { throw OpenAIError.invalidData }
-                
+
                 let imageEditParam = try ImageEditParameters(
                     image: image,
                     mask: mask,
@@ -54,9 +53,9 @@ struct ContentView: View {
                     resolution: .small,
                     responseFormat: .base64Json
                 )
-                
+
                 let imageResponse = try await openAI.generateImageEdits(parameters: imageEditParam)
-                
+
                 self.image = try openAI.decodeBase64Image(imageResponse.data[0].image)
             } catch {
                 print("ERROR - \(error)")

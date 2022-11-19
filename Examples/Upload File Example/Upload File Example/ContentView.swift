@@ -28,7 +28,7 @@ import OpenAIKit
 
 struct ContentView: View {
     @State private var file: File?
-    
+
     var body: some View {
         VStack {
             if let file = file {
@@ -46,14 +46,23 @@ struct ContentView: View {
         .padding()
         .task {
             do {
-                let config = Configuration(organization: "INSERT-ORGANIZATION-NAME", apiKey: "INSERT-API-KEY")
+                let config = Configuration(organization: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
                 let openAI = OpenAI(config)
-                
-                guard let urlFile = Bundle.main.url(forResource: "SampleData", withExtension: "jsonl") else { throw OpenAIError.invalidData }
+
+                guard let urlFile = Bundle.main.url(
+                    forResource: "SampleData",
+                    withExtension: "jsonl"
+                ) else {
+                    throw OpenAIError.invalidData
+                }
                 guard let jsonData = try? Data(contentsOf: urlFile) else { throw OpenAIError.invalidUrl }
-                
-                let uploadFileParam = UploadFileParameters(file: jsonData, fileName: "SampleData.jsonl", purpose: "fine-tune")
-                
+
+                let uploadFileParam = UploadFileParameters(
+                    file: jsonData,
+                    fileName: "SampleData.jsonl",
+                    purpose: "fine-tune"
+                )
+
                 self.file = try await openAI.uploadFile(parameters: uploadFileParam)
             } catch {
                 print("ERROR - \(error)")

@@ -38,7 +38,7 @@ public struct ModelPermission: Codable, Identifiable {
         case group
         case isBlocking = "is_blocking"
     }
-    
+
     public let id: String
     public let object: OpenAIObject
     public let created: Int

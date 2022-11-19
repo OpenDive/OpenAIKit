@@ -30,7 +30,7 @@ public struct Choice: Codable {
         case logprobs
         case finishReason = "finish_reason"
     }
-    
+
     public let text: String
     public let index: Int
     public let logprobs: Int?

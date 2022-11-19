@@ -32,7 +32,7 @@ let package = Package(
     products: [
         .library(
             name: "OpenAIKit",
-            targets: ["OpenAIKit"]),
+            targets: ["OpenAIKit"])
     ],
     dependencies: [
     ],

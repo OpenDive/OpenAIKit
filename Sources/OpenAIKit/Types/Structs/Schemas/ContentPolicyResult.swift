@@ -29,7 +29,7 @@ public struct ContentPolicyResult: Codable {
         case categoryScores = "category_scores"
         case flagged
     }
-    
+
     public let categories: ContentPolicyCategories
     public let categoryScores: ContentPolicyCategoryScore
     public let flagged: Bool

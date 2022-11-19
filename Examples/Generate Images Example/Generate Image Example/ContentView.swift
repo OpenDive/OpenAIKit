@@ -28,7 +28,7 @@ import OpenAIKit
 
 struct ContentView: View {
     @State private var image: UIImage = UIImage()
-    
+
     var body: some View {
         VStack {
             Image(uiImage: image)
@@ -40,19 +40,18 @@ struct ContentView: View {
                     organization: "INSERT-ORGANIZATION-ID",
                     apiKey: "INSERT-API-KEY"
                 )
-                
+
                 let openAi = OpenAI(config)
-                
                 let imageParam = ImageParameters(
                     prompt: "a red apple",
                     resolution: .small,
                     responseFormat: .base64Json
                 )
-                
+
                 let result = try await openAi.createImage(parameters: imageParam)
-                let b64_image = result.data[0].image
-                
-                self.image = UIImage(data: Data(base64Encoded: b64_image)!)!
+                let b64Image = result.data[0].image
+
+                self.image = try openAi.decodeBase64Image(b64Image)
             } catch {
                 print("ERROR DETAILS - \(error)")
             }

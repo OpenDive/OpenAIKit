@@ -30,7 +30,7 @@ public struct EditParameters {
     public var numberOfEdits: Int
     public var temperature: Double
     public var topP: Double
-    
+
     public init(
         model: String,
         input: String = "\"",
@@ -46,7 +46,7 @@ public struct EditParameters {
         self.temperature = temperature
         self.topP = topP
     }
-    
+
     public var body: [String: Any] {
         return [
             "model": self.model,

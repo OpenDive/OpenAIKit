@@ -29,7 +29,7 @@ public struct Usage: Codable {
         case completionTokens = "completion_tokens"
         case totalTokens = "total_tokens"
     }
-    
+
     public let promptTokens: Int
     public let completionTokens: Int
     public let totalTokens: Int

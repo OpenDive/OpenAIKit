@@ -33,7 +33,7 @@ public struct Model: Codable, Identifiable {
         case root
         case parent
     }
-    
+
     public let id: String
     public let object: OpenAIObject
     public let created: Int

@@ -27,4 +27,3 @@ public struct ImageResponse: Codable {
     public let created: Int
     public let data: [ImageData]
 }
-

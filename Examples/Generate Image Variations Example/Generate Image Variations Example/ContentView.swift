@@ -28,10 +28,10 @@ import OpenAIKit
 
 struct ContentView: View {
     @State private var image: UIImage = UIImage()
-    
+
     var body: some View {
         VStack {
-            if (image == UIImage()) {
+            if image == UIImage() {
                 Text("Variation is loading...")
             } else {
                 Image(uiImage: image)
@@ -40,16 +40,23 @@ struct ContentView: View {
         .padding()
         .task {
             do {
-                let config = Configuration(organization: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
-                
+                let config = Configuration(
+                    organization: "INSERT-ORGANIZATION-ID",
+                    apiKey: "INSERT-API-KEY"
+                )
                 let openAI = OpenAI(config)
-                
+
                 guard let image = UIImage(named: "image") else { throw OpenAIError.invalidData }
-                
-                let imageVariationParam = try ImageVariationParameters(image: image, resolution: .small, responseFormat: .base64Json)
-                
-                let variationResponse = try await openAI.generateImageVariations(parameters: imageVariationParam)
-                
+
+                let imageVariationParam = try ImageVariationParameters(
+                    image: image,
+                    resolution: .small,
+                    responseFormat: .base64Json
+                )
+                let variationResponse = try await openAI.generateImageVariations(
+                    parameters: imageVariationParam
+                )
+
                 self.image = try openAI.decodeBase64Image(variationResponse.data[0].image)
             } catch {
                 print("ERROR - \(error)")

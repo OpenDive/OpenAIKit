@@ -39,7 +39,7 @@ public struct FineTune: Codable, Identifiable {
         case trainingFiles = "training_files"
         case updatedAt = "updated_at"
     }
-    
+
     public let id: String
     public let object: OpenAIObject
     public let model: String
@@ -53,10 +53,10 @@ public struct FineTune: Codable, Identifiable {
     public let validationFiles: [File]
     public let trainingFiles: [File]
     public let updatedAt: Int
-    
+
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        
+
         self.id = try container.decode(String.self, forKey: .id)
         self.object = try container.decode(OpenAIObject.self, forKey: .object)
         self.model = try container.decode(String.self, forKey: .model)
@@ -69,7 +69,7 @@ public struct FineTune: Codable, Identifiable {
         self.validationFiles = try container.decode([File].self, forKey: .validationFiles)
         self.trainingFiles = try container.decode([File].self, forKey: .trainingFiles)
         self.updatedAt = try container.decode(Int.self, forKey: .updatedAt)
-        
+
         do {
             let events = try container.decode([FineTuneEvent].self, forKey: .events)
             self.events = events

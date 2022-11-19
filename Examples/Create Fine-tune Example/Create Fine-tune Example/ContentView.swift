@@ -28,7 +28,7 @@ import OpenAIKit
 
 struct ContentView: View {
     @State private var fineTune: FineTune?
-    
+
     var body: some View {
         VStack {
             if let fineTune = fineTune {
@@ -41,11 +41,9 @@ struct ContentView: View {
         .task {
             do {
                 let config = Configuration(organization: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
-                
                 let openAI = OpenAI(config)
-                
                 let createFineTuneParam = CreateFineTuneParameters(trainingFile: "INSERT-TRAINING-FILE-ID")
-                
+
                 self.fineTune = try await openAI.createFineTune(parameters: createFineTuneParam)
             } catch {
                 print("ERROR - \(error)")

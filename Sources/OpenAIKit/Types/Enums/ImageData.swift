@@ -26,28 +26,28 @@
 public enum ImageData: Codable {
     enum CodingKeys: String, CodingKey {
         case url
-        case b64_json
+        case b64Json = "b64_json"
     }
-    
+
     case url(String)
-    case b64_json(String)
-    
+    case b64Json(String)
+
     public var image: String {
-        switch(self) {
-            case let .b64_json(b64Json): return b64Json
-            case let .url(url): return url
+        switch self {
+        case let .b64Json(b64Json): return b64Json
+        case let .url(url): return url
         }
     }
-    
+
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        
+
         do {
             let urlAssociate = try container.decode(String.self, forKey: .url)
             self = .url(urlAssociate)
         } catch {
-            let b64Associate = try container.decode(String.self, forKey: .b64_json)
-            self = .b64_json(b64Associate)
+            let b64Associate = try container.decode(String.self, forKey: .b64Json)
+            self = .b64Json(b64Associate)
         }
     }
 }

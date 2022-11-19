@@ -28,7 +28,7 @@ import OpenAIKit
 
 struct ContentView: View {
     @State private var model: Model?
-    
+
     var body: some View {
         VStack {
             if let model = model {
@@ -38,7 +38,7 @@ struct ContentView: View {
                 Text("Owned By: \(model.ownedBy)")
                 Text("Root: \(model.root)")
                 Text("Parent: \(model.parent ?? "No Parent")").padding(.bottom)
-                
+
                 VStack {
                     Text("Model Permissions").bold().font(.title)
                     Text("ID: \(model.permission[0].id)")
@@ -63,9 +63,8 @@ struct ContentView: View {
         .task {
             do {
                 let config = Configuration(organization: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
-                
                 let openAI = OpenAI(config)
-                
+
                 self.model = try await openAI.retrieveModel(modelId: "text-davinci-001")
             } catch {
                 print("ERROR WITH - \(error)")

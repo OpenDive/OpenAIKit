@@ -28,7 +28,7 @@ import Foundation
 public struct UploadFileParameters {
     public var file: FormData
     public var purpose: String
-    
+
     public init(
         file: Data,
         fileName: String,
@@ -37,7 +37,7 @@ public struct UploadFileParameters {
         self.file = FormData(data: file, mimeType: "application/octet-stream", fileName: fileName)
         self.purpose = purpose
     }
-    
+
     public var body: [String: Any] {
         return ["file": self.file, "purpose": self.purpose]
     }

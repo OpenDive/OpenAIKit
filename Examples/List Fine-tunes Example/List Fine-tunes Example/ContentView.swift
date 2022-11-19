@@ -28,7 +28,7 @@ import OpenAIKit
 
 struct ContentView: View {
     @State private var listFineTunesResponse: ListFineTuneResponse?
-    
+
     var body: some View {
         NavigationView {
             VStack {
@@ -46,9 +46,8 @@ struct ContentView: View {
             .task {
                 do {
                     let config = Configuration(organization: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
-                    
                     let openAI = OpenAI(config)
-                    
+
                     self.listFineTunesResponse = try await openAI.listFineTunes()
                 } catch {
                     print("ERROR - \(error)")

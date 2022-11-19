@@ -28,19 +28,17 @@ import OpenAIKit
 
 struct ContentView: View {
     @State private var models = [Model]()
-    
+
     var body: some View {
         List(models) { model in
             Text("\(model.id)")
         }
         .task {
             do {
-                let config = Configuration(organization: "MarcoDotIO", apiKey: "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")
-                
+                let config = Configuration(organization: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
                 let openAi = OpenAI(config)
-                
                 let modelsResponse = try await openAi.listModels()
-                
+
                 self.models = modelsResponse.data
             } catch {
                 print("ERROR DETAILS - \(error)")

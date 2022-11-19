@@ -28,7 +28,7 @@ import OpenAIKit
 
 struct ContentView: View {
     @State private var deleteFileResponse: DeleteObject?
-    
+
     var body: some View {
         VStack {
             if let deleteFileResponse = deleteFileResponse {
@@ -45,7 +45,7 @@ struct ContentView: View {
             do {
                 let config = Configuration(organization: "INSERT-ORGANIZATION-NAME", apiKey: "INSERT-API-KEY")
                 let openAI = OpenAI(config)
-                
+
                 self.deleteFileResponse = try await openAI.deleteFile(fileId: "INSERT-FILE-ID")
             } catch {
                 print("ERROR - \(error)")

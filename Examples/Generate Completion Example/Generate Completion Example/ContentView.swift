@@ -29,11 +29,11 @@ import OpenAIKit
 struct ContentView: View {
     @State private var responseText: String?
     let prompt = "Say this is a test"
-    
+
     var body: some View {
         VStack {
             Text("Input Prompt: \(prompt)")
-            
+
             if let responseText = self.responseText {
                 Text("Output Text: \(responseText)")
             } else {
@@ -44,13 +44,15 @@ struct ContentView: View {
         .task {
             do {
                 let config = Configuration(organization: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
-                
                 let openAI = OpenAI(config)
-                
-                let completionParameter = CompletionParameters(model: "text-davinci-001", prompt: [prompt], maxTokens: 20, temperature: 0.98)
-                
+                let completionParameter = CompletionParameters(
+                    model: "text-davinci-001",
+                    prompt: [prompt],
+                    maxTokens: 20,
+                    temperature: 0.98
+                )
                 let completionResponse = try await openAI.generateCompletion(parameters: completionParameter)
-                
+
                 self.responseText = completionResponse.choices[0].text.replacingOccurrences(of: "\n", with: "")
             } catch {
                 print("ERROR DETAILS - \(error)")

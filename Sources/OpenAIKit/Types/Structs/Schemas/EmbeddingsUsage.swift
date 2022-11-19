@@ -28,7 +28,7 @@ public struct EmbeddingsUsage: Codable {
         case promptTokens = "prompt_tokens"
         case totalTokens = "total_tokens"
     }
-    
+
     public let promptTokens: Int
     public let totalTokens: Int
 }

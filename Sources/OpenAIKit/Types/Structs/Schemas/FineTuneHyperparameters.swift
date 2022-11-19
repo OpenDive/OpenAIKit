@@ -30,7 +30,7 @@ public struct FineTuneHyperparamters: Codable {
         case nEpochs = "n_epochs"
         case promptLossWeight = "prompt_loss_weight"
     }
-    
+
     public let batchSize: Int?
     public let learningRateMultiplier: Double?
     public let nEpochs: Int

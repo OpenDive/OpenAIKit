@@ -30,7 +30,7 @@ public struct FineTuneEvent: Codable, Hashable {
         case level
         case message
     }
-    
+
     public let object: OpenAIObject
     public let createdAt: Int
     public let level: FineTuneEventInfo

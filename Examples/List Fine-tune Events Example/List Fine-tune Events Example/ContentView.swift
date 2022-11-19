@@ -29,7 +29,7 @@ import OpenAIKit
 struct ContentView: View {
     @State private var events: [FineTuneEvent]?
     private let fineTuneId = "INSERT-FINE-TUNE-ID"
-    
+
     var body: some View {
         VStack {
             if let events {
@@ -53,11 +53,9 @@ struct ContentView: View {
         .task {
             do {
                 let config = Configuration(organization: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
-                
                 let openAI = OpenAI(config)
-                
                 let listFineTuneEventResponse = try await openAI.listFineTuneEvents(fineTune: fineTuneId)
-                
+
                 self.events = listFineTuneEventResponse.data
             } catch {
                 print("ERROR - \(error)")

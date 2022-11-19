@@ -28,7 +28,7 @@ import OpenAIKit
 
 struct ContentView: View {
     @State private var fineTune: FineTune?
-    
+
     var body: some View {
         VStack {
             if let fineTune {
@@ -39,11 +39,11 @@ struct ContentView: View {
                 Text("Created At: \(String(fineTune.createdAt))")
                 Text("Orgainization ID: \(fineTune.organizationId)")
                 Text("Status: \(fineTune.status.rawValue)")
-                
+
                 VStack {
                     Text("Events").bold().font(.title2)
-                    
-                    if (fineTune.events.isEmpty) {
+
+                    if fineTune.events.isEmpty {
                         Text("No Events logged")
                     } else {
                         ScrollView {
@@ -59,21 +59,21 @@ struct ContentView: View {
                         }
                     }
                 }
-                
+
                 VStack {
                     Text("Hyperparameters").bold().font(.title2)
                     Text("Batch Size: \(String(describing: fineTune.hyperparams.batchSize))")
-                    Text("Learning Rate Multiplier: \(String(describing: fineTune.hyperparams.learningRateMultiplier))")
+                    Text("Learning Rate Multiplier: \(fineTune.hyperparams.learningRateMultiplier)")
                     Text("n Epochs: \(fineTune.hyperparams.nEpochs)")
                     Text("Prompt Loss Weight: \(fineTune.hyperparams.promptLossWeight)")
                 }
-                
+
                 VStack {
                     VStack {
                         Text("Training Files").bold().font(.title2)
                         Text("ID: \(fineTune.trainingFiles[0].id)")
                     }
-                    
+
                     Text("Updated At: \(String(fineTune.updatedAt))")
                 }
             } else {
@@ -84,9 +84,8 @@ struct ContentView: View {
         .task {
             do {
                 let config = Configuration(organization: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
-                
                 let openAI = OpenAI(config)
-                
+
                 self.fineTune = try await openAI.cancelFineTune(fineTune: "INSERT-FINE-TUNE-ID")
             } catch {
                 print("ERROR - \(error)")

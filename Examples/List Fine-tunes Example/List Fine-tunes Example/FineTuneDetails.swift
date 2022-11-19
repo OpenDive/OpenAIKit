@@ -28,7 +28,7 @@ import OpenAIKit
 
 struct FineTuneDetails: View {
     let fineTune: FineTune
-    
+
     var body: some View {
         VStack {
             Text("Fine Tune Result:").bold().font(.title)
@@ -38,11 +38,11 @@ struct FineTuneDetails: View {
             Text("Created At: \(String(fineTune.createdAt))")
             Text("Orgainization ID: \(fineTune.organizationId)")
             Text("Status: \(fineTune.status.rawValue)")
-            
+
             VStack {
                 Text("Events").bold().font(.title2)
-                
-                if (fineTune.events.isEmpty) {
+
+                if fineTune.events.isEmpty {
                     Text("No Events logged")
                 } else {
                     ScrollView {
@@ -58,7 +58,7 @@ struct FineTuneDetails: View {
                     }
                 }
             }
-            
+
             VStack {
                 Text("Hyperparameters").bold().font(.title2)
                 Text("Batch Size: \(String(describing: fineTune.hyperparams.batchSize))")
@@ -66,13 +66,13 @@ struct FineTuneDetails: View {
                 Text("n Epochs: \(fineTune.hyperparams.nEpochs)")
                 Text("Prompt Loss Weight: \(fineTune.hyperparams.promptLossWeight)")
             }
-            
+
             VStack {
                 VStack {
                     Text("Training Files").bold().font(.title2)
                     Text("ID: \(fineTune.trainingFiles[0].id)")
                 }
-                
+
                 Text("Updated At: \(String(fineTune.updatedAt))")
             }
         }

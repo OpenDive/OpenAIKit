@@ -29,7 +29,7 @@ public struct ImageParameters {
     public var resolution: ImageResolutions
     public var responseFormat: ResponseFormat
     public var user: String?
-    
+
     public init(
         prompt: String,
         @Clamped(range: 1...10) numberofImages: Int = 1,
@@ -43,7 +43,7 @@ public struct ImageParameters {
         self.responseFormat = responseFormat
         self.user = user
     }
-    
+
     public var body: [String: Any] {
         var result: [String: Any] = ["prompt": self.prompt,
                                      "n": self.numberOfImages,
@@ -52,7 +52,7 @@ public struct ImageParameters {
         if let user = self.user {
             result["user"] = user
         }
-        
+
         return result
     }
 }

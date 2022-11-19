@@ -28,7 +28,7 @@ import OpenAIKit
 
 struct ContentView: View {
     @State private var file: File?
-    
+
     var body: some View {
         VStack {
             if let file = file {
@@ -48,7 +48,7 @@ struct ContentView: View {
             do {
                 let config = Configuration(organization: "INSERT-ORGANIZATION-NAME", apiKey: "INSERT-API-KEY")
                 let openAI = OpenAI(config)
-                
+
                 self.file = try await openAI.retrieveFile(fileId: "INSERT-FILE-ID")
             } catch {
                 print("ERROR - \(error)")

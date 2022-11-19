@@ -26,7 +26,7 @@
 public struct ContentPolicyParameters {
     public var input: String
     public var model: ContentPolicyModels
-    
+
     public init(
         input: String,
         model: ContentPolicyModels = .latest
@@ -34,7 +34,7 @@ public struct ContentPolicyParameters {
         self.input = input
         self.model = model
     }
-    
+
     public var body: [String: Any] {
         return ["input": self.input, "model": self.model.rawValue]
     }

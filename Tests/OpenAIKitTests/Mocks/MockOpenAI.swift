@@ -48,106 +48,106 @@ class MockOpenAI: OpenAIProtocol {
 
         return result
     }
-    
+
     func listModels() async throws -> ListModelResponse {
         return try await getDecodedData(with: "ModelsResponse") as ListModelResponse
     }
-    
+
     func retrieveModel(modelId id: String) async throws -> Model {
         return try await getDecodedData(with: "RetrieveModelResponse") as Model
     }
-    
+
     func generateCompletion(parameters param: CompletionParameters) async throws -> CompletionResponse {
         return try await getDecodedData(with: "CompletionResponse") as CompletionResponse
     }
-    
+
     func generateEdit(parameters param: EditParameters) async throws -> EditResponse {
         return try await getDecodedData(with: "EditResponse") as EditResponse
     }
-    
+
     func createImage(parameters param: ImageParameters) async throws -> ImageResponse {
         if let user = param.user {
             switch user {
-                case "promptApple": return try await getDecodedData(with: "ImageApple") as ImageResponse
-                case "promptOtter": return try await getDecodedData(with: "ImageOtter") as ImageResponse
-                case "promptEmpty": throw MockOpenAIError.invalidPrompt
-                case "number1": return try await getDecodedData(with: "ImageURL1") as ImageResponse
-                case "number2": return try await getDecodedData(with: "ImageURL2") as ImageResponse
-                case "number10": return try await getDecodedData(with: "ImageURL10") as ImageResponse
-                case "number11": return try await getDecodedData(with: "ImageURL11") as ImageResponse
-                case "number0": return try await getDecodedData(with: "ImageURL0") as ImageResponse
-                case "number-1": return try await getDecodedData(with: "ImageURL-1") as ImageResponse
-                case "sizeSmallURL": return try await getDecodedData(with: "ImageURLSmall") as ImageResponse
-                case "sizeSmallB64": return try await getDecodedData(with: "ImageB64Small") as ImageResponse
-                case "sizeMediumURL": return try await getDecodedData(with: "ImageURLMedium") as ImageResponse
-                case "sizeMediumB64": return try await getDecodedData(with: "ImageB64Medium") as ImageResponse
-                case "sizeLargeURL": return try await getDecodedData(with: "ImageURLLarge") as ImageResponse
-                case "sizeLargeB64": return try await getDecodedData(with: "ImageB64Large") as ImageResponse
-                case "responseURL": return try await getDecodedData(with: "ImageURL") as ImageResponse
-                case "responseB64": return try await getDecodedData(with: "ImageB64") as ImageResponse
-                default: throw MockOpenAIError.invalidUser
+            case "promptApple": return try await getDecodedData(with: "ImageApple") as ImageResponse
+            case "promptOtter": return try await getDecodedData(with: "ImageOtter") as ImageResponse
+            case "promptEmpty": throw MockOpenAIError.invalidPrompt
+            case "number1": return try await getDecodedData(with: "ImageURL1") as ImageResponse
+            case "number2": return try await getDecodedData(with: "ImageURL2") as ImageResponse
+            case "number10": return try await getDecodedData(with: "ImageURL10") as ImageResponse
+            case "number11": return try await getDecodedData(with: "ImageURL11") as ImageResponse
+            case "number0": return try await getDecodedData(with: "ImageURL0") as ImageResponse
+            case "number-1": return try await getDecodedData(with: "ImageURL-1") as ImageResponse
+            case "sizeSmallURL": return try await getDecodedData(with: "ImageURLSmall") as ImageResponse
+            case "sizeSmallB64": return try await getDecodedData(with: "ImageB64Small") as ImageResponse
+            case "sizeMediumURL": return try await getDecodedData(with: "ImageURLMedium") as ImageResponse
+            case "sizeMediumB64": return try await getDecodedData(with: "ImageB64Medium") as ImageResponse
+            case "sizeLargeURL": return try await getDecodedData(with: "ImageURLLarge") as ImageResponse
+            case "sizeLargeB64": return try await getDecodedData(with: "ImageB64Large") as ImageResponse
+            case "responseURL": return try await getDecodedData(with: "ImageURL") as ImageResponse
+            case "responseB64": return try await getDecodedData(with: "ImageB64") as ImageResponse
+            default: throw MockOpenAIError.invalidUser
             }
         }
-        
+
         throw MockOpenAIError.invalidUser
     }
-    
+
     func generateImageEdits(parameters param: ImageEditParameters) async throws -> ImageResponse {
         throw MockOpenAIError.notImplemented
     }
-    
+
     func generateImageVariations(parameters param: ImageVariationParameters) async throws -> ImageResponse {
         throw MockOpenAIError.notImplemented
     }
-    
+
     func createEmbeddings(parameters param: EmbeddingsParameters) async throws -> EmbeddingsResponse {
         return try await getDecodedData(with: "EmbeddingsResponse") as EmbeddingsResponse
     }
-    
+
     func listFiles() async throws -> ListFilesResponse {
         return try await getDecodedData(with: "ListFilesResponse") as ListFilesResponse
     }
-    
+
     func uploadFile(parameters param: UploadFileParameters) async throws -> File {
         throw MockOpenAIError.notImplemented
     }
-    
+
     func deleteFile(fileId id: String) async throws -> DeleteObject {
         return try await getDecodedData(with: "DeleteFileResponse") as DeleteObject
     }
-    
+
     func retrieveFile(fileId id: String) async throws -> File {
         throw MockOpenAIError.notImplemented
     }
-    
+
     func retrieveFileContent(fileId id: String) async throws -> [OpenAIKit.FineTuneTraining] {
         throw MockOpenAIError.notImplemented
     }
-    
+
     func createFineTune(parameters param: CreateFineTuneParameters) async throws -> FineTune {
         return try await getDecodedData(with: "CreateFineTuneResponse") as FineTune
     }
-    
+
     func listFineTunes() async throws -> ListFineTuneResponse {
         throw MockOpenAIError.notImplemented
     }
-    
+
     func retrieveFineTune(fineTune id: String) async throws -> FineTune {
         throw MockOpenAIError.notImplemented
     }
-    
+
     func cancelFineTune(fineTune id: String) async throws -> FineTune {
         throw MockOpenAIError.notImplemented
     }
-    
+
     func listFineTuneEvents(fineTune id: String) async throws -> FineTuneEventsResponse {
         throw MockOpenAIError.notImplemented
     }
-    
+
     func deleteFineTuneModel(model: String) async throws -> DeleteObject {
         throw MockOpenAIError.notImplemented
     }
-    
+
     func checkContentPolicy(parameters param: ContentPolicyParameters) async throws -> ContentPolicyResponse {
         return try await getDecodedData(with: "ContentPolicyResponse") as ContentPolicyResponse
     }

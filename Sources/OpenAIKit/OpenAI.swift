@@ -28,27 +28,32 @@ import SwiftUI
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, *)
 public final class OpenAI {
     private var config: Configuration
-    
+
     public init(_ config: Configuration) {
         self.config = config
     }
-    
+
     public func decodeBase64Image(_ b64Data: String) throws -> UIImage {
         do {
-            guard let data = Data(base64Encoded: b64Data) else { throw OpenAIError.invalidData }
-            guard let image = UIImage(data: data) else { throw OpenAIError.invalidData }
-            
+            guard let data = Data(base64Encoded: b64Data) else {
+                throw OpenAIError.invalidData
+            }
+
+            guard let image = UIImage(data: data) else {
+                throw OpenAIError.invalidData
+            }
+
             return image
         } catch {
             throw OpenAIError.invalidData
         }
     }
-    
+
     private func getServerUrl(path: String) async throws -> URL {
         guard let result = URL(string: "https://api.openai.com/v1\(path)") else {
             throw OpenAIError.invalidUrl
         }
-        
+
         return result
     }
 }
@@ -56,24 +61,42 @@ public final class OpenAI {
 extension OpenAI: OpenAIProtocol {
     public func listModels() async throws -> ListModelResponse {
         let serverUrl = try await getServerUrl(path: "/models")
-        return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, method: .get, bodyRequired: false)
+        return try await URLSession.shared.decodeUrl(
+            with: serverUrl,
+            apiKey: config.apiKey,
+            method: .get,
+            bodyRequired: false
+        )
     }
-    
+
     public func retrieveModel(modelId id: String) async throws -> Model {
         let serverUrl = try await getServerUrl(path: "/models/\(id)")
-        return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, method: .get, bodyRequired: false)
+        return try await URLSession.shared.decodeUrl(
+            with: serverUrl,
+            apiKey: config.apiKey,
+            method: .get,
+            bodyRequired: false
+        )
     }
-    
+
     public func generateCompletion(parameters param: CompletionParameters) async throws -> CompletionResponse {
         let serverUrl = try await getServerUrl(path: "/completions")
-        return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, body: param.body)
+        return try await URLSession.shared.decodeUrl(
+            with: serverUrl,
+            apiKey: config.apiKey,
+            body: param.body
+        )
     }
-    
+
     public func generateEdit(parameters param: EditParameters) async throws -> EditResponse {
         let serverUrl = try await getServerUrl(path: "/edits")
-        return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, body: param.body)
+        return try await URLSession.shared.decodeUrl(
+            with: serverUrl,
+            apiKey: config.apiKey,
+            body: param.body
+        )
     }
-    
+
     public func createImage(parameters param: ImageParameters) async throws -> ImageResponse {
         let serverUrl = try await getServerUrl(path: "/images/generations")
         return try await URLSession.shared.decodeUrl(
@@ -82,81 +105,151 @@ extension OpenAI: OpenAIProtocol {
             body: param.body
         )
     }
-    
+
     public func generateImageEdits(parameters param: ImageEditParameters) async throws -> ImageResponse {
         let serverUrl = try await getServerUrl(path: "/images/edits")
-        return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, body: param.body, formSubmission: true)
+        return try await URLSession.shared.decodeUrl(
+            with: serverUrl,
+            apiKey: config.apiKey,
+            body: param.body,
+            formSubmission: true
+        )
     }
-    
+
     public func generateImageVariations(parameters param: ImageVariationParameters) async throws -> ImageResponse {
         let serverUrl = try await getServerUrl(path: "/images/variations")
-        return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, body: param.body, formSubmission: true)
+        return try await URLSession.shared.decodeUrl(
+            with: serverUrl,
+            apiKey: config.apiKey,
+            body: param.body,
+            formSubmission: true
+        )
     }
-    
+
     public func createEmbeddings(parameters param: EmbeddingsParameters) async throws -> EmbeddingsResponse {
         let serverUrl = try await getServerUrl(path: "/embeddings")
-        return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, body: param.body)
+        return try await URLSession.shared.decodeUrl(
+            with: serverUrl,
+            apiKey: config.apiKey,
+            body: param.body
+        )
     }
-    
+
     public func listFiles() async throws -> ListFilesResponse {
         let serverUrl = try await getServerUrl(path: "/files")
-        return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, method: .get, bodyRequired: false)
+        return try await URLSession.shared.decodeUrl(
+            with: serverUrl,
+            apiKey: config.apiKey,
+            method: .get,
+            bodyRequired: false
+        )
     }
-    
+
     public func uploadFile(parameters param: UploadFileParameters) async throws -> File {
         let serverUrl = try await getServerUrl(path: "/files")
-        return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, body: param.body, formSubmission: true)
+        return try await URLSession.shared.decodeUrl(
+            with: serverUrl,
+            apiKey: config.apiKey,
+            body: param.body,
+            formSubmission: true
+        )
     }
-    
+
     public func deleteFile(fileId id: String) async throws -> DeleteObject {
         let serverUrl = try await getServerUrl(path: "/files/\(id)")
-        return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, method: .delete, bodyRequired: false)
+        return try await URLSession.shared.decodeUrl(
+            with: serverUrl,
+            apiKey: config.apiKey,
+            method: .delete,
+            bodyRequired: false
+        )
     }
-    
+
     public func retrieveFile(fileId id: String) async throws -> File {
         let serverUrl = try await getServerUrl(path: "/files/\(id)")
-        return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, method: .get, bodyRequired: false)
+        return try await URLSession.shared.decodeUrl(
+            with: serverUrl,
+            apiKey: config.apiKey,
+            method: .get,
+            bodyRequired: false
+        )
     }
-    
+
     public func retrieveFileContent(fileId id: String) async throws -> [FineTuneTraining] {
         let serverUrl = try await getServerUrl(path: "/files/\(id)/content")
-        return try await URLSession.shared.retrieveJsonLine(with: serverUrl, apiKey: config.apiKey)
+        return try await URLSession.shared.retrieveJsonLine(
+            with: serverUrl,
+            apiKey: config.apiKey
+        )
     }
-    
+
     public func createFineTune(parameters param: CreateFineTuneParameters) async throws -> FineTune {
         let serverUrl = try await getServerUrl(path: "/fine-tunes")
-        return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, body: param.body)
+        return try await URLSession.shared.decodeUrl(
+            with: serverUrl,
+            apiKey: config.apiKey,
+            body: param.body
+        )
     }
-    
+
     public func listFineTunes() async throws -> ListFineTuneResponse {
         let serverUrl = try await getServerUrl(path: "/fine-tunes")
-        return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, method: .get, bodyRequired: false)
+        return try await URLSession.shared.decodeUrl(
+            with: serverUrl,
+            apiKey: config.apiKey,
+            method: .get,
+            bodyRequired: false
+        )
     }
-    
+
     public func retrieveFineTune(fineTune id: String) async throws -> FineTune {
         let serverUrl = try await getServerUrl(path: "/fine-tunes/\(id)")
-        return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, method: .get, bodyRequired: false)
+        return try await URLSession.shared.decodeUrl(
+            with: serverUrl,
+            apiKey: config.apiKey,
+            method: .get,
+            bodyRequired: false
+        )
     }
-    
+
     public func cancelFineTune(fineTune id: String) async throws -> FineTune {
         let serverUrl = try await getServerUrl(path: "/fine-tunes/\(id)/cancel")
-        return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, method: .post, bodyRequired: false)
+        return try await URLSession.shared.decodeUrl(
+            with: serverUrl,
+            apiKey: config.apiKey,
+            method: .post,
+            bodyRequired: false
+        )
     }
-    
+
     public func listFineTuneEvents(fineTune id: String) async throws -> FineTuneEventsResponse {
         let serverUrl = try await getServerUrl(path: "/fine-tunes/\(id)/events")
-        return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, method: .get, bodyRequired: false)
+        return try await URLSession.shared.decodeUrl(
+            with: serverUrl,
+            apiKey: config.apiKey,
+            method: .get,
+            bodyRequired: false
+        )
     }
-    
+
     public func deleteFineTuneModel(model: String) async throws -> DeleteObject {
         let serverUrl = try await getServerUrl(path: "/models/\(model)")
-        return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, method: .delete, bodyRequired: false)
+        return try await URLSession.shared.decodeUrl(
+            with: serverUrl,
+            apiKey: config.apiKey,
+            method: .delete,
+            bodyRequired: false
+        )
     }
-    
+
     public func checkContentPolicy(
         parameters param: OpenAIKit.ContentPolicyParameters
     ) async throws -> ContentPolicyResponse {
         let serverUrl = try await getServerUrl(path: "/moderations")
-        return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, body: param.body)
+        return try await URLSession.shared.decodeUrl(
+            with: serverUrl,
+            apiKey: config.apiKey,
+            body: param.body
+        )
     }
 }

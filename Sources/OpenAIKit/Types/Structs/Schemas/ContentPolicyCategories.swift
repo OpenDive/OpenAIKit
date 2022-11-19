@@ -33,7 +33,7 @@ public struct ContentPolicyCategories: Codable {
         case violence
         case violenceWithGraphic = "violence/graphic"
     }
-    
+
     public let hate: Bool
     public let hateWithThreatening: Bool
     public let selfHarm: Bool

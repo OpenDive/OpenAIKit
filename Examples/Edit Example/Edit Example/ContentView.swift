@@ -30,7 +30,7 @@ struct ContentView: View {
     @State private var edit: String?
     let input = "What day of the wek is it?"
     let instruction = "Fix the spelling mistakes"
-    
+
     var body: some View {
         VStack {
             Text("Input: \(input)")
@@ -45,13 +45,14 @@ struct ContentView: View {
         .task {
             do {
                 let config = Configuration(organization: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
-                
                 let openAI = OpenAI(config)
-                
-                let editParameter = EditParameters(model: "text-davinci-edit-001", input: input, instruction: instruction)
-                
+                let editParameter = EditParameters(
+                    model: "text-davinci-edit-001",
+                    input: input,
+                    instruction: instruction
+                )
                 let editResponse = try await openAI.generateEdit(parameters: editParameter)
-                
+
                 self.edit = editResponse.choices[0].text
             } catch {
                 print("ERROR WITH - \(error)")

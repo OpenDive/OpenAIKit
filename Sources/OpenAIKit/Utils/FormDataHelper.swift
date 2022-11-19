@@ -28,21 +28,21 @@ import Foundation
 struct FormDataHelper {
     private let boundary: String = UUID().uuidString
     private let formBody = NSMutableData()
-    
+
     let formUrl: URL
-    
+
     init(formUrl: URL) {
         self.formUrl = formUrl
     }
-    
+
     func addTextField(named name: String, value: String) {
         self.formBody.append(textFormField(named: name, value: value))
     }
-    
+
     func addDataField(named name: String, formData: FormData) {
         self.formBody.append(dataFormField(named: name, formData: formData))
     }
-    
+
     func asURLRequest(apiKey: String) -> URLRequest {
         var request = URLRequest(url: formUrl)
 
@@ -52,10 +52,10 @@ struct FormDataHelper {
         self.formBody.append("--\(boundary)--")
         request.httpBody = self.formBody as Data
         request.allHTTPHeaderFields = ["Authorization": "Bearer \(apiKey)"]
-        
+
         return request
     }
-    
+
     private func textFormField(named name: String, value: String) -> String {
         var fieldString = "--\(boundary)\r\n"
         fieldString += "Content-Disposition: form-data; name=\"\(name)\"\r\n"
@@ -64,7 +64,7 @@ struct FormDataHelper {
 
         return fieldString
     }
-    
+
     private func dataFormField(named name: String, formData: FormData) -> Data {
         let fieldData = NSMutableData()
 

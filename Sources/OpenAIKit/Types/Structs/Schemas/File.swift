@@ -34,7 +34,7 @@ public struct File: Codable, Identifiable {
         case status
         case statusDetails = "status_details"
     }
-    
+
     public let id: String
     public let object: OpenAIObject
     public let bytes: Int

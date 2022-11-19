@@ -28,7 +28,7 @@ import OpenAIKit
 
 struct FineTuneDetails: View {
     let fineTune: FineTune
-    
+
     var body: some View {
         VStack {
             Text("Fine Tune Result:")
@@ -36,7 +36,7 @@ struct FineTuneDetails: View {
             Text("Object: \(fineTune.object.rawValue)")
             Text("Model: \(fineTune.model)")
             Text("Created At: \(String(fineTune.createdAt))")
-            
+
             VStack {
                 Text("Events")
                 ForEach(fineTune.events, id: \.self) { event in
@@ -46,7 +46,7 @@ struct FineTuneDetails: View {
                     Text("Message: \(event.message)")
                 }
             }
-            
+
             VStack {
                 Text("Hyperparameters")
                 Text("Batch Size: \(String(describing: fineTune.hyperparams.batchSize))")
@@ -54,16 +54,16 @@ struct FineTuneDetails: View {
                 Text("n Epochs: \(fineTune.hyperparams.nEpochs)")
                 Text("Prompt Loss Weight: \(fineTune.hyperparams.promptLossWeight)")
             }
-            
+
             Text("Orgainization ID: \(fineTune.organizationId)")
             Text("Status: \(fineTune.status.rawValue)")
-            
+
             VStack {
                 VStack {
                     Text("Training Files")
                     Text("ID: \(fineTune.trainingFiles[0].id)")
                 }
-                
+
                 Text("Updated At: \(String(fineTune.updatedAt))")
             }
         }

@@ -28,7 +28,7 @@ import OpenAIKit
 
 struct ContentView: View {
     @State private var files: [File]?
-    
+
     var body: some View {
         NavigationView {
             if let files = files {
@@ -49,11 +49,9 @@ struct ContentView: View {
         .task {
             do {
                 let config = Configuration(organization: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
-                
                 let openAI = OpenAI(config)
-                
                 let filesResponse = try await openAI.listFiles()
-                
+
                 self.files = filesResponse.data
             } catch {
                 print("ERROR - \(error)")

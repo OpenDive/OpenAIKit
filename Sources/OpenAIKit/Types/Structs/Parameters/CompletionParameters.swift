@@ -40,7 +40,7 @@ public struct CompletionParameters {
     var bestOf: Int
     var logitBias: [String: Int]?
     var user: String?
-    
+
     public init(
         model: String,
         prompt: [String] = ["<|endoftext|>"],
@@ -57,7 +57,7 @@ public struct CompletionParameters {
         @Clamped(range: -2.0...2.0) presencePenalty: Double = 0.0,
         @Clamped(range: -2.0...2.0) frequencyPenalty: Double = 0.0,
         bestOf: Int = 1,
-        logitBias: [String : Int]? = nil,
+        logitBias: [String: Int]? = nil,
         user: String? = nil
     ) {
         self.model = model
@@ -75,7 +75,7 @@ public struct CompletionParameters {
         self.bestOf = bestOf
         self.logitBias = logitBias
         self.user = user
-        
+
         if let logprobs = logprobs {
             if logprobs > maxLogprobs {
                 self.logprobs = maxLogprobs
@@ -88,7 +88,7 @@ public struct CompletionParameters {
             self.logprobs = nil
         }
     }
-    
+
     public var body: [String: Any] {
         var result: [String: Any] = [
             "model": self.model,
@@ -103,27 +103,27 @@ public struct CompletionParameters {
             "frequency_penalty": self.frequencyPenalty,
             "best_of": self.bestOf
         ]
-        
+
         if let suffix = self.suffix {
             result["suffix"] = suffix
         }
-        
+
         if let logprobs = self.logprobs {
             result["logprobs"] = logprobs
         }
-        
+
         if let stop = self.stop {
             result["stop"] = stop
         }
-        
+
         if let logitBias = self.logitBias {
             result["logit_bias"] = logitBias
         }
-        
+
         if let user = self.user {
             result["user"] = user
         }
-        
+
         return result
     }
 }

@@ -29,7 +29,7 @@ import OpenAIKit
 struct ContentView: View {
     @State private var deleted: DeleteObject?
     private let modelName = "INSERT-MODEL-NAME"
-    
+
     var body: some View {
         VStack {
             if let deleted {
@@ -45,9 +45,8 @@ struct ContentView: View {
         .task {
             do {
                 let config = Configuration(organization: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
-                
                 let openAI = OpenAI(config)
-                
+
                 self.deleted = try await openAI.deleteFineTuneModel(model: modelName)
             } catch {
                 print("ERROR - \(error)")

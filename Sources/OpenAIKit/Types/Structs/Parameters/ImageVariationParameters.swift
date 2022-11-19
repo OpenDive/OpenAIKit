@@ -31,7 +31,7 @@ public struct ImageVariationParameters {
     public var resolution: ImageResolutions
     public var responseFormat: ResponseFormat
     public var user: String?
-    
+
     public init(
         image: UIImage,
         @Clamped(range: 1...10) numberOfImages: Int = 1,
@@ -41,7 +41,7 @@ public struct ImageVariationParameters {
     ) throws {
         do {
             guard let imageData = image.pngData() else { throw OpenAIError.invalidData }
-            
+
             self.image = FormData(data: imageData, mimeType: "image/png", fileName: "image.png")
             self.numberOfImages = numberOfImages
             self.resolution = resolution
@@ -51,7 +51,7 @@ public struct ImageVariationParameters {
             throw OpenAIError.invalidData
         }
     }
-    
+
     public var body: [String: Any] {
         var result: [String: Any] = ["image": self.image,
                                      "n": self.numberOfImages,
@@ -60,7 +60,7 @@ public struct ImageVariationParameters {
         if let user = self.user {
             result["user"] = user
         }
-        
+
         return result
     }
 }

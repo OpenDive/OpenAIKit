@@ -34,7 +34,7 @@ extension URLSession {
         case post = "POST"
         case delete = "DELETE"
     }
-    
+
     /// Decode a data object using `JSONDecoder.decode()`.
     /// - Parameters:
     ///   - type: The type of `T` that the data will decode to.
@@ -51,17 +51,17 @@ extension URLSession {
         dateDecodingStrategy: JSONDecoder.DateDecodingStrategy = .deferredToDate
     ) async throws -> T {
         let decoder = JSONDecoder()
-        
+
         decoder.keyDecodingStrategy = keyDecodingStrategy
         decoder.dataDecodingStrategy = dataDecodingStrategy
         decoder.dateDecodingStrategy = dateDecodingStrategy
-        
+
         guard let decoded = try? decoder.decode(type, from: data) else {
             throw try decoder.decode(OpenAIErrorResponse.self, from: data)
         }
         return decoded
     }
-    
+
     /// Takes a `URL` input, along with header information, and converts it into a `URLRequest`;
     /// and fetches the data using an `Async` `Await` wrapper for the older `dataTask` handler.
     /// - Parameters:
@@ -78,20 +78,20 @@ extension URLSession {
         body: Data? = nil
     ) async throws -> Data {
         var request = URLRequest(url: url)
-        
+
         request.httpMethod = method.rawValue
         request.allHTTPHeaderFields = [
             "Content-Type": "application/json"
         ]
         request.httpBody = body
-        
+
         headers.forEach { key, value in
             request.allHTTPHeaderFields?[key] = value
         }
-        
+
         return try await asyncData(with: request)
     }
-    
+
     /// An Async Await wrapper for the older `dataTask` handler.
     /// - Parameter request: `URLRequest` to be fetched from.
     /// - Returns: A Data object fetched from the` URLRequest`.
@@ -106,23 +106,27 @@ extension URLSession {
                     con.resume(returning: Data())
                 }
             }
-            
+
             task.resume()
         }
     }
-    
+
     public func retrieveJsonLine<T: Decodable>(
         _ type: T.Type = T.self,
         with url: URL,
         apiKey: String? = nil
     ) async throws -> [T] {
         guard let apiKey = apiKey else { throw OpenAIError.noApiKey }
-        
+
         let jsonDecoder = JSONDecoder()
-        
-        let genData = try await URLSession.shared.asyncData(with: url, method: .get, headers: ["Authorization": "Bearer \(apiKey)"])
+
+        let genData = try await URLSession.shared.asyncData(
+            with: url,
+            method: .get,
+            headers: ["Authorization": "Bearer \(apiKey)"]
+        )
         let genString = String(decoding: genData, as: UTF8.self)
-        
+
         return try genString.components(separatedBy: .newlines)
             .filter { $0 != "" }
             .map { gen -> T? in
@@ -133,7 +137,7 @@ extension URLSession {
             }
             .compactMap { $0 }
     }
-    
+
     /// Decode a `URL` to the type `T` using either `asyncData()` for the Production Server;
     /// or using `decode()` for the Mock Server.
     /// - Parameters:
@@ -152,13 +156,13 @@ extension URLSession {
         formSubmission: Bool = false
     ) async throws -> T {
         guard let apiKey = apiKey else { throw OpenAIError.noApiKey }
-        
-        if (bodyRequired) {
+
+        if bodyRequired {
             guard let body = body else { throw OpenAIError.noBody }
-            
-            if (formSubmission) {
+
+            if formSubmission {
                 let formRequest = FormDataHelper(formUrl: url)
-                
+
                 body.forEach { (key, value) in
                     if let dataValue = value as? FormData {
                         formRequest.addDataField(named: key, formData: dataValue)
@@ -166,25 +170,33 @@ extension URLSession {
                         formRequest.addTextField(named: key, value: "\(value)")
                     }
                 }
-                
+
                 let request = formRequest.asURLRequest(apiKey: apiKey)
                 let data = try await asyncData(with: request)
-                
+
                 return try await self.decodeData(with: data)
             } else {
                 let jsonData = try? JSONSerialization.data(withJSONObject: body)
-                let data = try await self.asyncData(with: url, method: method, headers: ["Authorization": "Bearer \(apiKey)"], body: jsonData)
-                
+                let data = try await self.asyncData(
+                    with: url, method: method,
+                    headers: ["Authorization": "Bearer \(apiKey)"],
+                    body: jsonData
+                )
+
                 return try await self.decodeData(with: data)
             }
         }
-        
-        if (!bodyRequired && !formSubmission) {
-            let data = try await self.asyncData(with: url, method: method, headers: ["Authorization": "Bearer \(apiKey)"])
-            
+
+        if !bodyRequired && !formSubmission {
+            let data = try await self.asyncData(
+                with: url,
+                method: method,
+                headers: ["Authorization": "Bearer \(apiKey)"]
+            )
+
             return try await self.decodeData(with: data)
         }
-        
+
         throw OpenAIError.noBody
     }
 }

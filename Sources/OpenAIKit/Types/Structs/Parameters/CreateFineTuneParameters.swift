@@ -36,7 +36,7 @@ public struct CreateFineTuneParameters {
     public var classificationPositiveClass: String?
     public var classificationBetas: [Double]?
     public var suffix: String?
-    
+
     public init(
         trainingFile: String,
         validationFile: String? = nil,
@@ -64,7 +64,7 @@ public struct CreateFineTuneParameters {
         self.classificationBetas = classificationBetas
         self.suffix = suffix
     }
-    
+
     public var body: [String: Any] {
         var result: [String: Any] = [
             "training_file": self.trainingFile,
@@ -73,35 +73,35 @@ public struct CreateFineTuneParameters {
             "prompt_loss_weight": self.promptLossWeight,
             "compute_classification_metrics": self.computeClassificationMetrics
         ]
-        
+
         if let validationFile = self.validationFile {
             result["validation_file"] = validationFile
         }
-        
+
         if let batchSize = self.batchSize {
             result["batch_size"] = batchSize
         }
-        
+
         if let learningRateMultiplier = self.learningRateMultiplier {
             result["learning_rate_multiplier"] = learningRateMultiplier
         }
-        
+
         if let classificationNClasses = self.classificationNClasses {
             result["classification_n_classes"] = classificationNClasses
         }
-        
+
         if let classificationPositiveClass = self.classificationPositiveClass {
             result["classification_positive_class"] = classificationPositiveClass
         }
-        
+
         if let classificationBetas = self.classificationBetas {
             result["classification_betas"] = classificationBetas
         }
-        
+
         if let suffix = self.suffix {
             result["suffix"] = suffix
         }
-        
+
         return result
     }
 }

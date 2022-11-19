@@ -29,23 +29,25 @@ import OpenAIKit
 struct ContentView: View {
     @State private var embeddingsResponse: EmbeddingsResponse?
     let input: String = "The food was delicious and the waiter..."
-    
+
     var body: some View {
         VStack {
             Text("Input: \(input)")
             if let embeddingsResponse = self.embeddingsResponse {
-                Text("Object Type: \(embeddingsResponse.object.rawValue)").padding(.bottom)
-                
+                Text("Object Type: \(embeddingsResponse.object.rawValue)")
+                    .padding(.bottom)
+
                 Text("Embedding Details").bold().font(.title)
                 Text("Object Type: \(embeddingsResponse.data[0].object.rawValue)")
-                Text("First Three Embeddings (See Print For Full Embedding output):").multilineTextAlignment(.center)
-                Text("\(embeddingsResponse.data[0].embedding[0]) | \(embeddingsResponse.data[0].embedding[1]) | \(embeddingsResponse.data[0].embedding[2])")
+                Text("First Embeddings (See Print For Full Embedding output):")
+                    .multilineTextAlignment(.center)
+                Text("\(embeddingsResponse.data[0].embedding[0])")
                 Text("Index: \(embeddingsResponse.data[0].index)")
-                
+
                 Text("Embedding Usage").bold().font(.title).padding(.top)
                 Text("Prompt Tokens: \(embeddingsResponse.usage.promptTokens)")
                 Text("Total Tokens: \(embeddingsResponse.usage.totalTokens)")
-                
+
             } else {
                 Text("Loading Embedding...")
             }
@@ -54,15 +56,12 @@ struct ContentView: View {
         .task {
             do {
                 let config = Configuration(organization: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
-                
                 let openAI = OpenAI(config)
-                
                 let embeddingsParam = EmbeddingsParameters(model: "text-similarity-babbage-001", input: input)
-                
+
                 self.embeddingsResponse = try await openAI.createEmbeddings(parameters: embeddingsParam)
-                
+
                 print("Embedding Result: ")
-                
                 self.embeddingsResponse?.data[0].embedding.forEach { embed in
                     print("\(embed)")
                 }

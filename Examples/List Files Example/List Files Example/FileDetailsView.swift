@@ -28,7 +28,7 @@ import OpenAIKit
 
 struct FileDetailsView: View {
     var file: File
-    
+
     var body: some View {
         VStack {
             Text("ID: \(file.id)")

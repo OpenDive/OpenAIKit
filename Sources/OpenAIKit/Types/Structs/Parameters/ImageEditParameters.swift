@@ -33,7 +33,7 @@ public struct ImageEditParameters {
     public var resolution: ImageResolutions
     public var responseFormat: ResponseFormat
     public var user: String?
-    
+
     public init(
         image: UIImage,
         mask: UIImage,
@@ -46,7 +46,7 @@ public struct ImageEditParameters {
         do {
             guard let imageData = image.pngData() else { throw OpenAIError.invalidData }
             guard let maskData = mask.pngData() else { throw OpenAIError.invalidData }
-            
+
             self.image = FormData(data: imageData, mimeType: "image/png", fileName: "image.png")
             self.mask = FormData(data: maskData, mimeType: "image/png", fileName: "mask.png")
             self.prompt = prompt
@@ -58,7 +58,7 @@ public struct ImageEditParameters {
             throw OpenAIError.invalidData
         }
     }
-    
+
     public var body: [String: Any] {
         var result: [String: Any] = ["image": self.image,
                                      "mask": self.mask,
@@ -69,7 +69,7 @@ public struct ImageEditParameters {
         if let user = self.user {
             result["user"] = user
         }
-        
+
         return result
     }
 }

@@ -28,7 +28,7 @@ import OpenAIKit
 
 struct ContentView: View {
     @State private var fineTunes: [FineTuneTraining]?
-    
+
     var body: some View {
         VStack {
             if let fineTunes = fineTunes {
@@ -45,9 +45,9 @@ struct ContentView: View {
         .padding()
         .task {
             do {
-                let config = Configuration(organization: "INSERT-ORGANIZATION-NAME", apiKey: "INSERT-API-KEY")
+                let config = Configuration(organization: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
                 let openAI = OpenAI(config)
-                
+
                 self.fineTunes = try await openAI.retrieveFileContent(fileId: "INSERT-FILE-ID")
             } catch {
                 print("ERROR - \(error)")
