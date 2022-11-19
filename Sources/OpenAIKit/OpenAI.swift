@@ -148,6 +148,11 @@ extension OpenAI: OpenAIProtocol {
         return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, method: .get, bodyRequired: false)
     }
     
+    public func deleteFineTuneModel(model: String) async throws -> DeleteObject {
+        let serverUrl = try await getServerUrl(path: "/models/\(model)")
+        return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, method: .delete, bodyRequired: false)
+    }
+    
     public func checkContentPolicy(
         parameters param: OpenAIKit.ContentPolicyParameters
     ) async throws -> ContentPolicyResponse {

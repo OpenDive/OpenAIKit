@@ -1,6 +1,6 @@
 import Foundation
 
-// Extensions used to help better streamline the main Holodex class.
+// Extensions used to help better streamline the main OpenAIKit class.
 // Most are private to help with having better Access Control.
 extension URLSession {
     /// Uses URLRequest to set up a HTTPMethod, and implement default values for the method cases.
@@ -31,7 +31,9 @@ extension URLSession {
         decoder.dataDecodingStrategy = dataDecodingStrategy
         decoder.dateDecodingStrategy = dateDecodingStrategy
         
-        let decoded = try decoder.decode(type, from: data)
+        guard let decoded = try? decoder.decode(type, from: data) else {
+            throw try decoder.decode(OpenAIErrorResponse.self, from: data)
+        }
         return decoded
     }
     
@@ -148,14 +150,13 @@ extension URLSession {
                 let jsonData = try? JSONSerialization.data(withJSONObject: body)
                 let data = try await self.asyncData(with: url, method: method, headers: ["Authorization": "Bearer \(apiKey)"], body: jsonData)
                 
-                print(String(decoding: data, as: UTF8.self))
-                
                 return try await self.decodeData(with: data)
             }
         }
         
         if (!bodyRequired && !formSubmission) {
             let data = try await self.asyncData(with: url, method: method, headers: ["Authorization": "Bearer \(apiKey)"])
+            
             return try await self.decodeData(with: data)
         }
         

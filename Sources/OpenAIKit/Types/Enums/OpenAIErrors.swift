@@ -5,4 +5,5 @@ public enum OpenAIError: Error {
     case invalidUrl
     case invalidData
     case notImplemented
+    case unknownError
 }
