@@ -33,5 +33,7 @@ public protocol OpenAIProtocol {
     
     func cancelFineTune(fineTune id: String) async throws -> FineTune
     
+    func listFineTuneEvents(fineTune id: String) async throws -> FineTuneEventsResponse
+    
     func checkContentPolicy(parameters param: ContentPolicyParameters) async throws -> ContentPolicyResponse
 }

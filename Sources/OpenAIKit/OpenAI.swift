@@ -143,6 +143,11 @@ extension OpenAI: OpenAIProtocol {
         return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, method: .post, bodyRequired: false)
     }
     
+    public func listFineTuneEvents(fineTune id: String) async throws -> FineTuneEventsResponse {
+        let serverUrl = try await getServerUrl(path: "/fine-tunes/\(id)/events")
+        return try await URLSession.shared.decodeUrl(with: serverUrl, apiKey: config.apiKey, method: .get, bodyRequired: false)
+    }
+    
     public func checkContentPolicy(
         parameters param: OpenAIKit.ContentPolicyParameters
     ) async throws -> ContentPolicyResponse {
