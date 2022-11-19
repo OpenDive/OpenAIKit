@@ -1,6 +1,6 @@
 //
 //  FineTuneDetails.swift
-//  Create Fine-tune Example
+//  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
 //
@@ -45,11 +45,16 @@ struct FineTuneDetails: View {
                 if (fineTune.events.isEmpty) {
                     Text("No Events logged")
                 } else {
-                    ForEach(fineTune.events, id: \.self) { event in
-                        Text("Object: \(event.object.rawValue)")
-                        Text("Created At: \(event.createdAt)")
-                        Text("Level: \(event.level.rawValue)")
-                        Text("Message: \(event.message)")
+                    ScrollView {
+                        ForEach(fineTune.events, id: \.self) { event in
+                            VStack {
+                                Text("Object: \(event.object.rawValue)")
+                                Text("Created At: \(event.createdAt)")
+                                Text("Level: \(event.level.rawValue)")
+                                Text("Message: \(event.message)")
+                            }
+                            .padding(.vertical, 4)
+                        }
                     }
                 }
             }
