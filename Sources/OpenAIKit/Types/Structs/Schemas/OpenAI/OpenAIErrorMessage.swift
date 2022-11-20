@@ -1,5 +1,5 @@
 //
-//  NSMutableDataExtension.swift
+//  OpenAIErrorMessage.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
@@ -21,15 +21,19 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
-//  
+//
 
-import Foundation
+/// The struct sent if the request is malformed, or if OpenAI's server isn't functioning correctly.
+public struct OpenAIErrorMessage: Error, Codable {
+    /// The message associated with the error.
+    public let message: String
 
-// Used for the form data to append strings to the data variable of NSMutableData type.
-extension NSMutableData {
-  func append(_ string: String) {
-    if let data = string.data(using: .utf8) {
-      self.append(data)
-    }
-  }
+    /// The type of error the object is.
+    public let type: String
+
+    /// The parameters of the error.
+    public let param: String?
+
+    /// The code associated with the error.
+    public let code: String?
 }

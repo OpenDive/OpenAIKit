@@ -1,5 +1,5 @@
 //
-//  NSMutableDataExtension.swift
+//  ListFilesResponse.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
@@ -21,15 +21,13 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
-//  
+//
 
-import Foundation
+/// The response object sent by the File endpoint
+public struct ListFilesResponse: Codable {
+    /// The `OpenAIObject` type of the response.
+    public let object: OpenAIObject
 
-// Used for the form data to append strings to the data variable of NSMutableData type.
-extension NSMutableData {
-  func append(_ string: String) {
-    if let data = string.data(using: .utf8) {
-      self.append(data)
-    }
-  }
+    /// The array of files sent from the server.
+    public let data: [File]
 }

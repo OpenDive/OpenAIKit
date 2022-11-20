@@ -1,5 +1,5 @@
 //
-//  NSMutableDataExtension.swift
+//  Usage.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
@@ -21,15 +21,22 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
-//  
+//
 
-import Foundation
-
-// Used for the form data to append strings to the data variable of NSMutableData type.
-extension NSMutableData {
-  func append(_ string: String) {
-    if let data = string.data(using: .utf8) {
-      self.append(data)
+/// The amount of tokens used with any GPT3 function.
+public struct Usage: Codable {
+    enum CodingKeys: String, CodingKey {
+        case promptTokens = "prompt_tokens"
+        case completionTokens = "completion_tokens"
+        case totalTokens = "total_tokens"
     }
-  }
+
+    /// The amount of tokens used by a prompt.
+    public let promptTokens: Int
+
+    /// The amount of tokens used by the completion.
+    public let completionTokens: Int
+
+    /// The total amount of tokens used by the request.
+    public let totalTokens: Int
 }

@@ -1,5 +1,5 @@
 //
-//  NSMutableDataExtension.swift
+//  CompletionResponse.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
@@ -21,15 +21,25 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
-//  
+//
 
-import Foundation
+/// Completion Response from OpenAI
+public struct CompletionResponse: Codable, Identifiable {
+    /// The ID of the Completion
+    public let id: String
 
-// Used for the form data to append strings to the data variable of NSMutableData type.
-extension NSMutableData {
-  func append(_ string: String) {
-    if let data = string.data(using: .utf8) {
-      self.append(data)
-    }
-  }
+    /// The `OpenAIObject` type of the Completion
+    public let object: OpenAIObject
+
+    /// The creation date of the Completion
+    public let created: Int
+
+    /// The model used for the Completion.
+    public let model: String
+
+    /// The output of choices the `model` made.
+    public let choices: [Choice]
+
+    /// The token usage of the Completion.
+    public let usage: Usage
 }

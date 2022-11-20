@@ -1,5 +1,5 @@
 //
-//  NSMutableDataExtension.swift
+//  EmbeddingsResponse.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
@@ -21,15 +21,19 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
-//  
+//
 
-import Foundation
+/// The response sent by the Embeddings endpoint.
+public struct EmbeddingsResponse: Codable {
+    /// The `OpenAIObject` object type of this response.
+    public let object: OpenAIObject
 
-// Used for the form data to append strings to the data variable of NSMutableData type.
-extension NSMutableData {
-  func append(_ string: String) {
-    if let data = string.data(using: .utf8) {
-      self.append(data)
-    }
-  }
+    /// The parameter containing the embedding data.
+    public let data: [EmbeddingsData]
+
+    /// The model used to generate the embeddings.
+    public let model: String
+
+    /// The amount of tokens used by the embeddings.
+    public let usage: EmbeddingsUsage
 }

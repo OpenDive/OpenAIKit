@@ -1,5 +1,5 @@
 //
-//  NSMutableDataExtension.swift
+//  Configuration.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
@@ -23,13 +23,16 @@
 //  THE SOFTWARE.
 //  
 
-import Foundation
+/// The configuration object used for the OpenAIKit object to represent the organization of the user.
+public struct Configuration {
+    /// The organization name of the user.
+    public let organization: String
 
-// Used for the form data to append strings to the data variable of NSMutableData type.
-extension NSMutableData {
-  func append(_ string: String) {
-    if let data = string.data(using: .utf8) {
-      self.append(data)
+    /// The API key associated with the user.
+    let apiKey: String
+
+    public init(organization: String, apiKey: String) {
+        self.organization = organization
+        self.apiKey = apiKey
     }
-  }
 }

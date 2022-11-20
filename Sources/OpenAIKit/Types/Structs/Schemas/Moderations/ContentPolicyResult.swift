@@ -1,5 +1,5 @@
 //
-//  NSMutableDataExtension.swift
+//  ContentPolicyResult.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
@@ -21,15 +21,22 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
-//  
+//
 
-import Foundation
-
-// Used for the form data to append strings to the data variable of NSMutableData type.
-extension NSMutableData {
-  func append(_ string: String) {
-    if let data = string.data(using: .utf8) {
-      self.append(data)
+/// The result of the moderation check from the Moderations endpoint.
+public struct ContentPolicyResult: Codable {
+    enum CodingKeys: String, CodingKey {
+        case categories
+        case categoryScores = "category_scores"
+        case flagged
     }
-  }
+
+    /// The flagged categories.
+    public let categories: ContentPolicyCategories
+
+    /// The score associated with each category.
+    public let categoryScores: ContentPolicyCategoryScore
+
+    /// Is the prompt flagged by the Moderations endpoint?
+    public let flagged: Bool
 }

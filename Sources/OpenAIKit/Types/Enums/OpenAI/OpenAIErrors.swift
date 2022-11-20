@@ -1,5 +1,5 @@
 //
-//  NSMutableDataExtension.swift
+//  OpenAIError.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
@@ -21,15 +21,28 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
-//  
+//
 
-import Foundation
-
-// Used for the form data to append strings to the data variable of NSMutableData type.
-extension NSMutableData {
-  func append(_ string: String) {
-    if let data = string.data(using: .utf8) {
-      self.append(data)
-    }
-  }
+/// OpenAIKit errors that are thrown depending on the context.
+public enum OpenAIError: Error {
+    /// No API Key was provided to the OpenAIKit object.
+    case noApiKey
+    
+    /// No body was provided to a decode URL request.
+    case noBody
+    
+    /// The amount of prompts being requested have exceeded the amount OpenAI allocates per time frame.
+    case promptThreshold
+    
+    /// An invalid URL was unwrapped / used.
+    case invalidUrl
+    
+    /// Invalid data was decoded / encoded.
+    case invalidData
+    
+    /// The function has not been implemented yet.
+    case notImplemented
+    
+    /// An unknown error has occured. Please create an issue on [Github](https://github.com/MarcoDotIO/OpenAIKit) if this error is thrown.
+    case unknownError
 }

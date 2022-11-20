@@ -1,5 +1,5 @@
 //
-//  NSMutableDataExtension.swift
+//  ContentPolicyModels.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
@@ -23,13 +23,15 @@
 //  THE SOFTWARE.
 //  
 
-import Foundation
-
-// Used for the form data to append strings to the data variable of NSMutableData type.
-extension NSMutableData {
-  func append(_ string: String) {
-    if let data = string.data(using: .utf8) {
-      self.append(data)
-    }
-  }
+/// Two content moderations models are available: `text-moderation-stable` and `text-moderation-latest`.
+/// The default is `text-moderation-latest` which will be automatically upgraded over time.
+/// This ensures you are always using our most accurate model.
+/// If you use `text-moderation-stable`, we will provide advanced notice before updating the model.
+/// Accuracy of `text-moderation-stable` may be slightly lower than for `text-moderation-latest`.
+public enum ContentPolicyModels: String, Codable {
+    /// The latest model that gets automatically upgraded over time.
+    case latest = "text-moderation-latest"
+    
+    /// The stable model that gets prior notification before being upgraded.
+    case stable = "text-moderation-stable"
 }

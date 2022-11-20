@@ -1,5 +1,5 @@
 //
-//  NSMutableDataExtension.swift
+//  ContentPolicyParameters.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
@@ -21,15 +21,31 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
-//  
+//
 
-import Foundation
+/// The parameter struct used for the Moderations endpoint
+public struct ContentPolicyParameters {
+    /// The input text to classify.
+    public var input: String
 
-// Used for the form data to append strings to the data variable of NSMutableData type.
-extension NSMutableData {
-  func append(_ string: String) {
-    if let data = string.data(using: .utf8) {
-      self.append(data)
+    /// Two content moderations models are available: `text-moderation-stable` and `text-moderation-latest`.
+    ///
+    /// The default is `text-moderation-latest` which will be automatically upgraded over time.
+    /// This ensures you are always using our most accurate model. If you use `text-moderation-stable`,
+    /// we will provide advanced notice before updating the model. Accuracy of `text-moderation-stable`
+    /// may be slightly lower than for `text-moderation-latest`.
+    public var model: ContentPolicyModels
+
+    public init(
+        input: String,
+        model: ContentPolicyModels = .latest
+    ) {
+        self.input = input
+        self.model = model
     }
-  }
+
+    /// The body of the URL used for OpenAI API requests.
+    public var body: [String: Any] {
+        return ["input": self.input, "model": self.model.rawValue]
+    }
 }

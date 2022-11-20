@@ -25,24 +25,40 @@
 
 import Foundation
 
+/// The struct used to help with submitting data as a form query.
 struct FormDataHelper {
+    /// The UUID of the parameter.
     private let boundary: String = UUID().uuidString
+
+    /// The HTTP body containing data of `NSMutableData` type.
     private let formBody = NSMutableData()
 
+    /// The URL of the request.
     let formUrl: URL
 
     init(formUrl: URL) {
         self.formUrl = formUrl
     }
-
+    
+    /// Add text to the form query
+    /// - Parameters:
+    ///   - name: The name of the request.
+    ///   - value: The data contained in the request.
     func addTextField(named name: String, value: String) {
         self.formBody.append(textFormField(named: name, value: value))
     }
-
+    
+    /// Add data to the form query of `Data` type
+    /// - Parameters:
+    ///   - name: The name of the request.
+    ///   - formData: The data itself.
     func addDataField(named name: String, formData: FormData) {
         self.formBody.append(dataFormField(named: name, formData: formData))
     }
-
+    
+    /// Convert the form query request to a `URLRequest`.
+    /// - Parameter apiKey: The API key associated with the request.
+    /// - Returns: An `URLRequest` object.
     func asURLRequest(apiKey: String) -> URLRequest {
         var request = URLRequest(url: formUrl)
 

@@ -1,5 +1,5 @@
 //
-//  NSMutableDataExtension.swift
+//  ContentPolicyResponse.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
@@ -21,15 +21,16 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
-//  
+//
 
-import Foundation
+/// The struct sent from the Moderations endpoint.
+public struct ContentPolicyResponse: Codable, Identifiable {
+    /// The ID of the Moderation response.
+    public let id: String
 
-// Used for the form data to append strings to the data variable of NSMutableData type.
-extension NSMutableData {
-  func append(_ string: String) {
-    if let data = string.data(using: .utf8) {
-      self.append(data)
-    }
-  }
+    /// The model used for the moderation check.
+    public let model: String
+
+    /// The array of results associated with the prompt(s).
+    public let results: [ContentPolicyResult]
 }

@@ -1,5 +1,5 @@
 //
-//  NSMutableDataExtension.swift
+//  EditResponse.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
@@ -21,15 +21,19 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
-//  
+//
 
-import Foundation
+/// The Edit response sent from OpenAI
+public struct EditResponse: Codable {
+    /// The type of `OpenAIObject` the Edit is.
+    public let object: OpenAIObject
 
-// Used for the form data to append strings to the data variable of NSMutableData type.
-extension NSMutableData {
-  func append(_ string: String) {
-    if let data = string.data(using: .utf8) {
-      self.append(data)
-    }
-  }
+    /// When the Edit was created.
+    public let created: Int
+
+    /// The choice outputs for the Edit.
+    public let choices: [Choice]
+
+    /// The amount of tokens used by the Edit.
+    public let usage: Usage
 }

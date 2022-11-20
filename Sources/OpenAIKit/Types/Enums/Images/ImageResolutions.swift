@@ -1,5 +1,5 @@
 //
-//  NSMutableDataExtension.swift
+//  ImageResolutions.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
@@ -21,15 +21,16 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
-//  
+//
 
-import Foundation
-
-// Used for the form data to append strings to the data variable of NSMutableData type.
-extension NSMutableData {
-  func append(_ string: String) {
-    if let data = string.data(using: .utf8) {
-      self.append(data)
-    }
-  }
+/// The image resolution being requested.
+public enum ImageResolutions: String {
+    /// A 256x256 pixel image request.
+    case small = "256x256"
+    
+    /// A 512x512 pixel image request.
+    case medium = "512x512"
+    
+    /// A 1024x1024 pixel image request.
+    case large = "1024x1024"
 }

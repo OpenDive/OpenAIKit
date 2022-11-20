@@ -1,5 +1,5 @@
 //
-//  NSMutableDataExtension.swift
+//  ImageData.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
@@ -23,13 +23,36 @@
 //  THE SOFTWARE.
 //  
 
-import Foundation
-
-// Used for the form data to append strings to the data variable of NSMutableData type.
-extension NSMutableData {
-  func append(_ string: String) {
-    if let data = string.data(using: .utf8) {
-      self.append(data)
+/// The image type of the image response data.
+public enum ImageData: Codable {
+    enum CodingKeys: String, CodingKey {
+        case url
+        case b64Json = "b64_json"
     }
-  }
+
+    /// The image is stored as a URL string.
+    case url(String)
+    
+    /// The image is stored as a Base64 binary.
+    case b64Json(String)
+
+    /// The image itself.
+    public var image: String {
+        switch self {
+        case let .b64Json(b64Json): return b64Json
+        case let .url(url): return url
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        do {
+            let urlAssociate = try container.decode(String.self, forKey: .url)
+            self = .url(urlAssociate)
+        } catch {
+            let b64Associate = try container.decode(String.self, forKey: .b64Json)
+            self = .b64Json(b64Associate)
+        }
+    }
 }

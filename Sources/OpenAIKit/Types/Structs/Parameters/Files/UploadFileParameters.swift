@@ -1,5 +1,5 @@
 //
-//  NSMutableDataExtension.swift
+//  UploadFileParameters.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
@@ -21,15 +21,34 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
-//  
+//
 
 import Foundation
 
-// Used for the form data to append strings to the data variable of NSMutableData type.
-extension NSMutableData {
-  func append(_ string: String) {
-    if let data = string.data(using: .utf8) {
-      self.append(data)
+/// Parameter used for uploading files.
+public struct UploadFileParameters {
+    /// Name of the [JSON Lines](https://jsonlines.readthedocs.io/en/latest/) file to be uploaded.
+    ///
+    /// If the `purpose` is set to "fine-tune", each line is a JSON record with "prompt" and "completion" fields
+    /// representing your [training examples](https://beta.openai.com/docs/guides/fine-tuning/prepare-training-data).
+    public var file: FormData
+
+    /// The intended purpose of the uploaded documents.
+    ///
+    /// Use "fine-tune" for [Fine-tuning](https://beta.openai.com/docs/api-reference/fine-tunes).
+    /// This allows us to validate the format of the uploaded file.
+    public var purpose: String
+
+    public init(
+        file: Data,
+        fileName: String,
+        purpose: String
+    ) {
+        self.file = FormData(data: file, mimeType: "application/octet-stream", fileName: fileName)
+        self.purpose = purpose
     }
-  }
+
+    public var body: [String: Any] {
+        return ["file": self.file, "purpose": self.purpose]
+    }
 }

@@ -1,5 +1,5 @@
 //
-//  NSMutableDataExtension.swift
+//  File.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
@@ -23,13 +23,40 @@
 //  THE SOFTWARE.
 //  
 
-import Foundation
-
-// Used for the form data to append strings to the data variable of NSMutableData type.
-extension NSMutableData {
-  func append(_ string: String) {
-    if let data = string.data(using: .utf8) {
-      self.append(data)
+/// The file object used to read file information from the Files endpoint.
+public struct File: Codable, Identifiable {
+    enum CodingKeys: String, CodingKey {
+        case id
+        case object
+        case bytes
+        case createdAt = "created_at"
+        case filename
+        case purpose
+        case status
+        case statusDetails = "status_details"
     }
-  }
+
+    /// The ID of the file.
+    public let id: String
+
+    /// The `OpenAIObject` object type of the file.
+    public let object: OpenAIObject
+
+    /// The amount of storage the file takes up in bytes.
+    public let bytes: Int
+
+    /// The creation date of the file.
+    public let createdAt: Int
+
+    /// The file's name.
+    public let filename: String
+
+    /// The purpose the file has. Usually is "fine-tune".
+    public let purpose: String
+
+    /// The upload status of the file.
+    public let status: FileStatus?
+
+    /// The status detail when uploading the file.
+    public let statusDetails: String?
 }

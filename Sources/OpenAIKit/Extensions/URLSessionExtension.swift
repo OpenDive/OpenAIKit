@@ -42,7 +42,7 @@ extension URLSession {
     ///   - keyDecodingStrategy: Default is `.useDefaultKeys`.
     ///   - dataDecodingStrategy: Default is `.deferredToData`.
     ///   - dateDecodingStrategy: Default is `.deferredToDate`.
-    /// - Returns: Decoded data of `T` type.
+    /// - Returns: Decoded data of `T` type, or throws an `OpenAIErrorRaesponse` object.
     private func decodeData<T: Decodable>(
         _ type: T.Type = T.self,
         with data: Data,
@@ -110,7 +110,13 @@ extension URLSession {
             task.resume()
         }
     }
-
+    
+    /// Used for parsing `.jsonl` files when retrieving fine-tuning files from OpenAI's server.
+    /// - Parameters:
+    ///   - type: The type of `T` that the data will decode to.
+    ///   - with: The input url of type `URL` that will be fetched.
+    ///   - apiKey: The API Key for use with the server.
+    /// - Returns: The decoded object of array type `T`.
     public func retrieveJsonLine<T: Decodable>(
         _ type: T.Type = T.self,
         with url: URL,
@@ -125,6 +131,7 @@ extension URLSession {
             method: .get,
             headers: ["Authorization": "Bearer \(apiKey)"]
         )
+
         let genString = String(decoding: genData, as: UTF8.self)
 
         return try genString.components(separatedBy: .newlines)
@@ -142,9 +149,12 @@ extension URLSession {
     /// or using `decode()` for the Mock Server.
     /// - Parameters:
     ///   - type: The type of `T` that the data will decode to.
-    ///   - url: The input url of type `URL` that will be fetched.
+    ///   - with: The input url of type `URL` that will be fetched.
     ///   - apiKey: The API Key for use with the server.
-    ///   - body: The POST body used to add parameters, defaults to nil.
+    ///   - body: The POST body used to add parameters, defaults to `nil`.
+    ///   - method: The method used for the function, defaults to `.post`.
+    ///   - bodyRequired: Is the body required or not, used for `.get` and `.delete`, defaults to `false`.
+    ///   - formSubmission: Is the body actually a form submission? Used for image submissionss, defaults to `false`.
     /// - Returns: The decoded object of type `T`.
     public func decodeUrl<T: Decodable>(
         _ type: T.Type = T.self,

@@ -1,5 +1,5 @@
 //
-//  NSMutableDataExtension.swift
+//  FineTuneEvent.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
@@ -21,15 +21,26 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
-//  
+//
 
-import Foundation
-
-// Used for the form data to append strings to the data variable of NSMutableData type.
-extension NSMutableData {
-  func append(_ string: String) {
-    if let data = string.data(using: .utf8) {
-      self.append(data)
+/// The struct that lists information pertaining to a Fine-tune job event.
+public struct FineTuneEvent: Codable, Hashable {
+    enum CodingKeys: String, CodingKey {
+        case object
+        case createdAt = "created_at"
+        case level
+        case message
     }
-  }
+
+    /// The `OpenAIObject` object type of the Fine-tune event.
+    public let object: OpenAIObject
+
+    /// The creation date of the Fine-tune event.
+    public let createdAt: Int
+
+    /// The level status of the Fine-tune event.
+    public let level: FineTuneEventInfo
+
+    /// What the event is.
+    public let message: String
 }

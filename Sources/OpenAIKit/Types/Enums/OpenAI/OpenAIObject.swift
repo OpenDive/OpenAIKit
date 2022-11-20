@@ -1,5 +1,5 @@
 //
-//  NSMutableDataExtension.swift
+//  OpenAIObject.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
@@ -21,15 +21,34 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
-//  
+//
 
-import Foundation
-
-// Used for the form data to append strings to the data variable of NSMutableData type.
-extension NSMutableData {
-  func append(_ string: String) {
-    if let data = string.data(using: .utf8) {
-      self.append(data)
-    }
-  }
+/// A specific type of object that OpenAI has responded with.
+public enum OpenAIObject: String, Codable {
+    /// A list object.
+    case list
+    
+    /// A model object.
+    case model
+    
+    /// A model permission object.
+    case modelPermission = "model_permission"
+    
+    /// A text completion object.
+    case textCompletion = "text_completion"
+    
+    /// An edit object.
+    case edit
+    
+    /// An embedding object.
+    case embedding
+    
+    /// A file object.
+    case file
+    
+    /// A Fine-tune object.
+    case fineTune = "fine-tune"
+    
+    /// A Fine-tune event object.
+    case fineTuneEvent = "fine-tune-event"
 }

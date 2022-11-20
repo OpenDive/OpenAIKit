@@ -1,5 +1,5 @@
 //
-//  NSMutableDataExtension.swift
+//  FineTuneStatus.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
@@ -23,13 +23,17 @@
 //  THE SOFTWARE.
 //  
 
-import Foundation
-
-// Used for the form data to append strings to the data variable of NSMutableData type.
-extension NSMutableData {
-  func append(_ string: String) {
-    if let data = string.data(using: .utf8) {
-      self.append(data)
-    }
-  }
+/// Provides Fine-tune status information about the fine-tune model.
+public enum FineTuneStatus: String, Codable {
+    /// The model is pending being fine-tuned.
+    case pending
+    
+    /// The model succeeded in being fine-tuned.
+    case succeeded
+    
+    /// The model is currently being ran on a given prompt.
+    case running
+    
+    /// The job running the model's fine-tuning was cancelled.
+    case cancelled
 }

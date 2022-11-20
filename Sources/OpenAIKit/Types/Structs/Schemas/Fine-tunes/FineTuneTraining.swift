@@ -1,5 +1,5 @@
 //
-//  NSMutableDataExtension.swift
+//  FineTuneTraining.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
@@ -21,15 +21,13 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
-//  
+//
 
-import Foundation
+/// The struct representing each data point within a Fine-tune training file.
+public struct FineTuneTraining: Codable {
+    /// The input the user would give to the model
+    public let prompt: String
 
-// Used for the form data to append strings to the data variable of NSMutableData type.
-extension NSMutableData {
-  func append(_ string: String) {
-    if let data = string.data(using: .utf8) {
-      self.append(data)
-    }
-  }
+    /// The training parameter the model will learn to match from the prompt.
+    public let completion: String
 }

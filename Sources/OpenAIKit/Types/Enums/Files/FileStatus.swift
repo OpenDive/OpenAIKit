@@ -1,5 +1,5 @@
 //
-//  NSMutableDataExtension.swift
+//  FileStatus.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
@@ -23,13 +23,11 @@
 //  THE SOFTWARE.
 //  
 
-import Foundation
-
-// Used for the form data to append strings to the data variable of NSMutableData type.
-extension NSMutableData {
-  func append(_ string: String) {
-    if let data = string.data(using: .utf8) {
-      self.append(data)
-    }
-  }
+/// The uploaded status of the file.
+public enum FileStatus: String, Codable {
+    /// The file is uplodaded.
+    case uploaded
+    
+    /// The file is being processed.
+    case processed
 }

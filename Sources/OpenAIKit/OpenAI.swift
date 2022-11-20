@@ -25,14 +25,19 @@
 
 import SwiftUI
 
+/// OpenAI provides the needed core functions of OpenAIKit.
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, *)
 public final class OpenAI {
+    /// The configuration object used to store the API Key and Organization ID.
     private var config: Configuration
 
     public init(_ config: Configuration) {
         self.config = config
     }
-
+    
+    /// Input a `Base64` image binary `String` to receive an `UIImage` object.
+    /// - Parameter b64Data: The `Base64` data itself in `String` form.
+    /// - Returns: A `UIImage` object.
     public func decodeBase64Image(_ b64Data: String) throws -> UIImage {
         do {
             guard let data = Data(base64Encoded: b64Data) else {
@@ -49,6 +54,9 @@ public final class OpenAI {
         }
     }
 
+    /// Return a `URL` with the OpenAI API endpoint as the `URL`
+    /// - Parameter path: The `String` path.
+    /// - Returns: An `URL` object.
     private func getServerUrl(path: String) async throws -> URL {
         guard let result = URL(string: "https://api.openai.com/v1\(path)") else {
             throw OpenAIError.invalidUrl

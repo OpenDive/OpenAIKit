@@ -1,5 +1,5 @@
 //
-//  NSMutableDataExtension.swift
+//  FineTuneEventInfo.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
@@ -23,13 +23,8 @@
 //  THE SOFTWARE.
 //  
 
-import Foundation
-
-// Used for the form data to append strings to the data variable of NSMutableData type.
-extension NSMutableData {
-  func append(_ string: String) {
-    if let data = string.data(using: .utf8) {
-      self.append(data)
-    }
-  }
+/// The Fine-tune event information type.
+public enum FineTuneEventInfo: String, Codable {
+    /// The event provides information about the job.
+    case info
 }

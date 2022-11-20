@@ -1,5 +1,5 @@
 //
-//  NSMutableDataExtension.swift
+//  DeleteObject.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
@@ -21,15 +21,16 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
-//  
+//
 
-import Foundation
+/// The struct returned from deleting a file or Fine-tune from their associated endpoints.
+public struct DeleteObject: Codable {
+    /// The ID of the deletion object.
+    public let id: String
 
-// Used for the form data to append strings to the data variable of NSMutableData type.
-extension NSMutableData {
-  func append(_ string: String) {
-    if let data = string.data(using: .utf8) {
-      self.append(data)
-    }
-  }
+    /// The `OpenAIObject` object type of the deletion.
+    public let object: OpenAIObject
+
+    /// Is the item deleted?
+    public let deleted: Bool
 }

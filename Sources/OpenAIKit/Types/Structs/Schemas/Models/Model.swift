@@ -1,5 +1,5 @@
 //
-//  NSMutableDataExtension.swift
+//  Model.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2022 MarcoDotIO
@@ -21,15 +21,38 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
-//  
+//
 
-import Foundation
-
-// Used for the form data to append strings to the data variable of NSMutableData type.
-extension NSMutableData {
-  func append(_ string: String) {
-    if let data = string.data(using: .utf8) {
-      self.append(data)
+/// The GPT3 models used for text and code completions.
+public struct Model: Codable, Identifiable {
+    enum CodingKeys: String, CodingKey {
+        case id
+        case object
+        case created
+        case ownedBy = "owned_by"
+        case permission
+        case root
+        case parent
     }
-  }
+
+    /// The ID of the model.
+    public let id: String
+
+    /// The `OpenAIObject` object type of the model.
+    public let object: OpenAIObject
+
+    /// The creation date of the model.
+    public let created: Int
+
+    /// The owner of the model.
+    public let ownedBy: String
+
+    /// Permissions associated with the model.
+    public let permission: [ModelPermission]
+
+    /// The root model of the current model.
+    public let root: String
+
+    /// The parent model of the current model.
+    public let parent: String?
 }
