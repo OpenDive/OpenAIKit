@@ -17,6 +17,6 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build
-      run: swift build -v
+      run: swift build -v --apple_platform_type=ios
     - name: Run tests
-      run: swift test -v
+      run: swift test -v --apple_platform_type=ios
