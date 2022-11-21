@@ -5,7 +5,7 @@
 [![Swift Package Manager](https://img.shields.io/badge/Swift_Package_Manager-compatible-orange?style=flat-square)](https://img.shields.io/badge/Swift_Package_Manager-compatible-orange?style=flat-square)
 [![Swift](https://github.com/MarcoDotIO/OpenAIKit/actions/workflows/swift.yml/badge.svg?branch=main)](https://github.com/MarcoDotIO/OpenAIKit/actions/workflows/swift.yml)
 
-OpenAIKit is an API for the OpenAI REST endpoint used to get output data from Dall-E 2 and GPT-3 models.
+OpenAIKit is a community-maintained API for the OpenAI REST endpoint used to get output data from Dall-E 2 and GPT-3 models.
 
 - [Features](#features)
 - [ToDo](#todo)
