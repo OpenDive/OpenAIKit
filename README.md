@@ -73,6 +73,7 @@ OpenAIKit is designed to be very easy to integrate into your own projects. The m
 import OpenAIKit
 
 // An API key and Organization ID is required to use the API library.
+// Note: It's recommended to load the API Key through a .plist dictionary, rather than hard coding it in a String.
 let config = Configuration(organization: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
 
 // Create an `OpenAI` object using the Configuration object.
