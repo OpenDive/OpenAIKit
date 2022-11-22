@@ -71,7 +71,7 @@ public struct FineTune: Codable, Identifiable {
     /// The Fine-tune job status.
     public let status: FineTuneStatus
     
-    /// The files used for validation tests of the Fine-tuned model.
+    /// The files used for editing hyperparameters for the Fine-tune model.
     public let validationFiles: [File]
 
     /// The files used for training the Fine-tuned model.
