@@ -103,8 +103,10 @@ do {
       maxTokens: 4, 
       temperature: 0.98
     )
-    let completionResponse = try await openAI.generateCompletion(parameters: completionParameter)
-		let responseText = completionResponse.choices[0].text
+    let completionResponse = try await openAI.generateCompletion(
+      parameters: completionParameter
+    )
+    let responseText = completionResponse.choices[0].text
 } catch {
     // Insert your own error handling method here.
 }
@@ -112,7 +114,7 @@ do {
 
 ## Development And Testing
 
-I welcome anyone to contribute to the project through posting issues, if they encounter any bugs / glitches while using OpenAIKit; as well with creating pull issues that add any additional features to OpenAIKit.
+I welcome anyone to contribute to the project through posting issues, if they encounter any bugs / glitches while using OpenAIKit; and as well with creating pull issues that add any additional features to OpenAIKit.
 
 ## Next Steps
 
@@ -128,4 +130,4 @@ As well, I would like to personally thank [YufeiG](https://github.com/YufeiG) fo
 
 ## License
 
-OpenAIKit is released under the MIT license, and any use of the production server will be under the [Usage policies](https://beta.openai.com/docs/usage-policies) set by the OpenAI Team. [See LICENSE](https://github.com/MarcoDotIO/OpenAIKit/blob/main/LICENSE) for details.
+OpenAIKit is released under the MIT license, and any use of OpenAI's REST endpoint will be under the [Usage policies](https://beta.openai.com/docs/usage-policies) set by them. [See LICENSE](https://github.com/MarcoDotIO/OpenAIKit/blob/main/LICENSE) for details.
