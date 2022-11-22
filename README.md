@@ -67,7 +67,7 @@ dependencies: [
 
 ## Using OpenAIKit
 
-OpenAIKit is designed to be very easy to integrate into your own projects. The main method of utilizing HolodexKit is to set a `OpenAI` class object:
+OpenAIKit is designed to be very easy to integrate into your own projects. The main method of utilizing OpenAIKit is to set a `OpenAI` class object:
 
 ```swift
 import OpenAIKit
