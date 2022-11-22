@@ -84,8 +84,14 @@ From there, it's as easy as calling one of the provided function members. The co
 
 ```swift
 do {
-    let imageParam = ImageParameters(prompt: "a red apple", resolution: .small, responseFormat: .base64Json)
-    let result = try await openAi.createImage(parameters: imageParam)
+    let imageParam = ImageParameters(
+      prompt: "a red apple", 
+      resolution: .small, 
+      responseFormat: .base64Json
+    )
+    let result = try await openAi.createImage(
+      parameters: imageParam
+    )
     let b64Image = result.data[0].image
     let image = try openAi.decodeBase64Image(b64Image)
 } catch {
