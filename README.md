@@ -42,6 +42,7 @@ OpenAIKit is a community-maintained API for the OpenAI REST endpoint used to get
 | Platform | Minimum Swift Version | Installation | Status |
 | --- | --- | --- | --- |
 | iOS 13.0+ / macOS 10.15+ / tvOS 13.0+ / watchOS 6.0+ | 5.5 | [Swift Package Manager](#swift-package-manager) | Fully Tested |
+| macOS 10.15+ | N/A | N/A | Work in Progress |
 
 ## Installation
 
@@ -84,8 +85,14 @@ From there, it's as easy as calling one of the provided function members. The co
 
 ```swift
 do {
-    let imageParam = ImageParameters(prompt: "a red apple", resolution: .small, responseFormat: .base64Json)
-    let result = try await openAi.createImage(parameters: imageParam)
+    let imageParam = ImageParameters(
+      prompt: "a red apple", 
+      resolution: .small, 
+      responseFormat: .base64Json
+    )
+    let result = try await openAi.createImage(
+      parameters: imageParam
+    )
     let b64Image = result.data[0].image
     let image = try openAi.decodeBase64Image(b64Image)
 } catch {
@@ -103,8 +110,10 @@ do {
       maxTokens: 4, 
       temperature: 0.98
     )
-    let completionResponse = try await openAI.generateCompletion(parameters: completionParameter)
-		let responseText = completionResponse.choices[0].text
+    let completionResponse = try await openAI.generateCompletion(
+      parameters: completionParameter
+    )
+    let responseText = completionResponse.choices[0].text
 } catch {
     // Insert your own error handling method here.
 }
@@ -112,7 +121,7 @@ do {
 
 ## Development And Testing
 
-I welcome anyone to contribute to the project through posting issues, if they encounter any bugs / glitches while using OpenAIKit; as well with creating pull issues that add any additional features to OpenAIKit.
+I welcome anyone to contribute to the project through posting issues, if they encounter any bugs / glitches while using OpenAIKit; and as well with creating pull issues that add any additional features to OpenAIKit.
 
 ## Next Steps
 
@@ -128,4 +137,4 @@ As well, I would like to personally thank [YufeiG](https://github.com/YufeiG) fo
 
 ## License
 
-OpenAIKit is released under the MIT license, and any use of the production server will be under the [Usage policies](https://beta.openai.com/docs/usage-policies) set by the OpenAI Team. [See LICENSE](https://github.com/MarcoDotIO/OpenAIKit/blob/main/LICENSE) for details.
+OpenAIKit is released under the MIT license, and any use of OpenAI's REST endpoint will be under the [Usage policies](https://beta.openai.com/docs/usage-policies) set by them. [See LICENSE](https://github.com/MarcoDotIO/OpenAIKit/blob/main/LICENSE) for details.
