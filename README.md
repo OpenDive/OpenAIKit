@@ -42,7 +42,6 @@ OpenAIKit is a community-maintained API for the OpenAI REST endpoint used to get
 | Platform | Minimum Swift Version | Installation | Status |
 | --- | --- | --- | --- |
 | iOS 13.0+ / macOS 10.15+ / tvOS 13.0+ / watchOS 6.0+ | 5.5 | [Swift Package Manager](#swift-package-manager) | Fully Tested |
-| macOS 10.15+ | N/A | N/A | Work in Progress |
 
 ## Installation
 
