@@ -23,8 +23,6 @@
 //  THE SOFTWARE.
 //
 
-import UIKit
-
 public protocol OpenAIProtocol {
     // MARK: Models Functions
     /// List and describe the various models available in the API. You can refer to the [Models](https://beta.openai.com/docs/models)

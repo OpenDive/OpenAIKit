@@ -25,6 +25,10 @@
 
 import SwiftUI
 
+#if os(iOS) || os(tvOS)
+import UIKit
+#endif
+
 /// OpenAI provides the needed core functions of OpenAIKit.
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, *)
 public final class OpenAI {
@@ -35,6 +39,7 @@ public final class OpenAI {
         self.config = config
     }
     
+    #if os(iOS) || os(tvOS)
     /// Input a `Base64` image binary `String` to receive an `UIImage` object.
     /// - Parameter b64Data: The `Base64` data itself in `String` form.
     /// - Returns: A `UIImage` object.
@@ -53,6 +58,28 @@ public final class OpenAI {
             throw OpenAIError.invalidData
         }
     }
+    #endif
+    
+    #if os(macOS)
+    /// Input a `Base64` image binary `String` to receive an `NSImage` object.
+    /// - Parameter b64Data: The `Base64` data itself in `String` form.
+    /// - Returns: A `UIImage` object.
+    public func decodeBase64Image(_ b64Data: String) throws -> NSImage {
+        do {
+            guard let data = Data(base64Encoded: b64Data) else {
+                throw OpenAIError.invalidData
+            }
+
+            guard let image = NSImage(data: data) else {
+                throw OpenAIError.invalidData
+            }
+
+            return image
+        } catch {
+            throw OpenAIError.invalidData
+        }
+    }
+    #endif
 
     /// Return a `URL` with the OpenAI API endpoint as the `URL`
     /// - Parameter path: The `String` path.

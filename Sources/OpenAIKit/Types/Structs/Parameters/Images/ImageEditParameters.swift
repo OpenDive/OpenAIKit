@@ -61,7 +61,8 @@ public struct ImageEditParameters {
     /// A unique identifier representing your end-user, which can help OpenAI to monitor and detect abuse.
     /// [Learn more.](https://beta.openai.com/docs/guides/safety-best-practices/end-user-ids)
     public var user: String?
-
+    
+    #if os(iOS) || os(tvOS) || os(watchOS)
     public init(
         image: UIImage,
         mask: UIImage,
@@ -86,6 +87,34 @@ public struct ImageEditParameters {
             throw OpenAIError.invalidData
         }
     }
+    #endif
+
+    #if os(macOS)
+    public init(
+        image: NSImage,
+        mask: NSImage,
+        prompt: String,
+        @Clamped(range: 1...10) numberOfImages: Int = 1,
+        resolution: ImageResolutions = .large,
+        responseFormat: ResponseFormat = .url,
+        user: String? = nil
+    ) throws {
+        do {
+            guard let imageData = image.pngData(size: resolution) else { throw OpenAIError.invalidData }
+            guard let maskData = mask.pngData(size: resolution) else { throw OpenAIError.invalidData }
+
+            self.image = FormData(data: imageData, mimeType: "image/png", fileName: "image.png")
+            self.mask = FormData(data: maskData, mimeType: "image/png", fileName: "mask.png")
+            self.prompt = prompt
+            self.numberOfImages = numberOfImages
+            self.resolution = resolution
+            self.responseFormat = responseFormat
+            self.user = user
+        } catch {
+            throw OpenAIError.invalidData
+        }
+    }
+    #endif
 
     /// The body of the URL used for OpenAI API requests.
     public var body: [String: Any] {
