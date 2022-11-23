@@ -72,7 +72,7 @@ public struct ImageVariationParameters {
         }
     }
     #endif
-    
+
     #if os(macOS)
     public init(
         image: NSImage,
@@ -94,7 +94,7 @@ public struct ImageVariationParameters {
         }
     }
     #endif
-    
+
     /// The body of the URL used for OpenAI API requests.
     public var body: [String: Any] {
         var result: [String: Any] = ["image": self.image,

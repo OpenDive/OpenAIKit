@@ -32,7 +32,7 @@ extension NSImage {
             imageInterpolation: NSImageInterpolation = .high
         ) -> Data? {
             var cgSize = CGSize()
-            
+
             switch size {
             case .small:
                 cgSize.width = 256
@@ -47,7 +47,7 @@ extension NSImage {
                 cgSize.height = 1024
                 break
             }
-            
+
             guard let bitmap = NSBitmapImageRep(
                 bitmapDataPlanes: nil,
                 pixelsWide: Int(cgSize.width),

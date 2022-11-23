@@ -38,7 +38,7 @@ public final class OpenAI {
     public init(_ config: Configuration) {
         self.config = config
     }
-    
+
     #if os(iOS) || os(tvOS)
     /// Input a `Base64` image binary `String` to receive an `UIImage` object.
     /// - Parameter b64Data: The `Base64` data itself in `String` form.
@@ -59,7 +59,7 @@ public final class OpenAI {
         }
     }
     #endif
-    
+
     #if os(macOS)
     /// Input a `Base64` image binary `String` to receive an `NSImage` object.
     /// - Parameter b64Data: The `Base64` data itself in `String` form.

@@ -61,7 +61,7 @@ public struct ImageEditParameters {
     /// A unique identifier representing your end-user, which can help OpenAI to monitor and detect abuse.
     /// [Learn more.](https://beta.openai.com/docs/guides/safety-best-practices/end-user-ids)
     public var user: String?
-    
+
     #if os(iOS) || os(tvOS) || os(watchOS)
     public init(
         image: UIImage,
