@@ -63,7 +63,7 @@ public final class OpenAI {
     #if os(macOS)
     /// Input a `Base64` image binary `String` to receive an `NSImage` object.
     /// - Parameter b64Data: The `Base64` data itself in `String` form.
-    /// - Returns: A `UIImage` object.
+    /// - Returns: An `NSImage` object.
     public func decodeBase64Image(_ b64Data: String) throws -> NSImage {
         do {
             guard let data = Data(base64Encoded: b64Data) else {
