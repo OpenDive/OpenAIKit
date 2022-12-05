@@ -31,11 +31,11 @@ OpenAIKit is a community-maintained API for the OpenAI REST endpoint used to get
 - [x] View whether a prompt is flagged by the Moderations endpoint or not.
 - [x] Comprehensive Unit and Integration Test coverage.
 - [x] Swift Concurrency Support back to iOS 13, macOS 10.15, tvOS 13, and watchOS 6.
+- [x] Complete documentation of OpenAIKit.
 
 ## ToDo
 
 - [ ] Implement data streaming for Fine-Tune and GPT-3 event streams.
-- [ ] Complete documentation of OpenAIKit.
 
 ## Requirements
 
