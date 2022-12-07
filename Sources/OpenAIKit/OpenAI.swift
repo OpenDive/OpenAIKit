@@ -25,7 +25,7 @@
 
 import SwiftUI
 
-#if os(iOS) || os(tvOS)
+#if os(iOS) || os(tvOS) || os(watchOS)
 import UIKit
 #endif
 
@@ -39,7 +39,7 @@ public final class OpenAI {
         self.config = config
     }
 
-    #if os(iOS) || os(tvOS)
+    #if os(iOS) || os(tvOS) || os(watchOS)
     /// Input a `Base64` image binary `String` to receive an `UIImage` object.
     /// - Parameter b64Data: The `Base64` data itself in `String` form.
     /// - Returns: A `UIImage` object.
