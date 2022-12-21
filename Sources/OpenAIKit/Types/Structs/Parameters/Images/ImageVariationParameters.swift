@@ -64,7 +64,7 @@ public struct ImageVariationParameters {
         self.responseFormat = responseFormat
         self.user = user
     }
-    
+
     #if os(iOS) || os(tvOS) || os(watchOS)
     public init(
         image: UIImage,
