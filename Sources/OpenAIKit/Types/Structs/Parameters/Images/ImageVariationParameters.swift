@@ -51,6 +51,20 @@ public struct ImageVariationParameters {
     /// [Learn more.](https://beta.openai.com/docs/guides/safety-best-practices/end-user-ids)
     public var user: String?
 
+    public init(
+        imageData: Data,
+        @Clamped(range: 1...10) numberOfImages: Int = 1,
+        resolution: ImageResolutions = .large,
+        responseFormat: ResponseFormat = .url,
+        user: String? = nil
+    ) throws {
+        self.image = FormData(data: imageData, mimeType: "image/png", fileName: "image.png")
+        self.numberOfImages = numberOfImages
+        self.resolution = resolution
+        self.responseFormat = responseFormat
+        self.user = user
+    }
+    
     #if os(iOS) || os(tvOS) || os(watchOS)
     public init(
         image: UIImage,
