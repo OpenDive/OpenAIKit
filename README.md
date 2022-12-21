@@ -53,7 +53,7 @@ The [Swift Package Manager](https://swift.org/package-manager/) allows for devel
 
 * File > Swift Packages > Add Package Dependency
 * Add `https://github.com/marcodotio/OpenAIKit.git`
-* Select "Up to next Major" with "1.1.2"
+* Select "Up to next Major" with "1.1.3"
 
 #### SPM Through Xcode Package
 
@@ -61,7 +61,7 @@ Once you have your Swift package set up, add the Git link within the `dependenci
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/marcodotio/OpenAIKit.git", .upToNextMajor(from: "1.1.2"))
+    .package(url: "https://github.com/marcodotio/OpenAIKit.git", .upToNextMajor(from: "1.1.3"))
 ]
 ```
 
