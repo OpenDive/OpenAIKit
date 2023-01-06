@@ -32,6 +32,10 @@ import Foundation
 import AppKit
 #endif
 
+#if os(Linux) || SERVER
+import Foundation
+#endif
+
 /// Parameter struct used for generating image variation(s).
 public struct ImageVariationParameters {
     /// The image to use as the basis for the variation(s).

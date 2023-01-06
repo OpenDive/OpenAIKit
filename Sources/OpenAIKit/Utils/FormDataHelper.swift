@@ -25,6 +25,10 @@
 
 import Foundation
 
+#if os(Linux) || SERVER
+import FoundationNetworking
+#endif
+
 /// The struct used to help with submitting data as a form query.
 struct FormDataHelper {
     /// The UUID of the parameter.

@@ -32,6 +32,10 @@ import Foundation
 import AppKit
 #endif
 
+#if os(Linux) || SERVER
+import Foundation
+#endif
+
 /// Parameter used for creating image edits
 public struct ImageEditParameters {
     /// The image to edit.

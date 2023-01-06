@@ -25,9 +25,19 @@
 
 import Foundation
 
+#if os(Linux) || SERVER
+import FoundationNetworking
+#endif
+
 // Extensions used to help better streamline the main OpenAIKit class.
 // Most are private to help with having better Access Control.
-extension URLSession {
+class OpenAIKitSession {
+    /// Shared Singleton object for use within the OpenAIKit API Module
+    internal static let shared = OpenAIKitSession()
+
+    /// Conforming to the Singleton Design Pattern
+    private init() {  }
+
     /// Uses URLRequest to set up a HTTPMethod, and implement default values for the method cases.
     public enum HTTPMethod: String {
         case get = "GET"
@@ -126,7 +136,7 @@ extension URLSession {
 
         let jsonDecoder = JSONDecoder()
 
-        let genData = try await URLSession.shared.asyncData(
+        let genData = try await self.asyncData(
             with: url,
             method: .get,
             headers: ["Authorization": "Bearer \(apiKey)"]
