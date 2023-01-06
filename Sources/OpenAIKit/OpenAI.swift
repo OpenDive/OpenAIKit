@@ -23,10 +23,14 @@
 //  THE SOFTWARE.
 //
 
-import SwiftUI
-
 #if os(iOS) || os(tvOS) || os(watchOS)
 import UIKit
+import SwiftUI
+#endif
+
+#if os(macOS)
+import Foundation
+import AppKit
 #endif
 
 /// OpenAI provides the needed core functions of OpenAIKit.
