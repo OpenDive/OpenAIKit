@@ -23,7 +23,14 @@
 //  THE SOFTWARE.
 //
 
+#if os(iOS) || os(tvOS) || os(watchOS)
 import SwiftUI
+#endif
+
+#if os(macOS)
+import Foundation
+import AppKit
+#endif
 
 /// Parameter used for creating image edits
 public struct ImageEditParameters {
