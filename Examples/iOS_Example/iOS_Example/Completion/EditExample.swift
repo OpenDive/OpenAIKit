@@ -58,7 +58,7 @@ struct EditExample: View {
                             )
                             let openAI = OpenAI(config)
                             let editParameter = EditParameters(
-                                model: "text-davinci-edit-003",
+                                model: "text-davinci-edit-001",
                                 input: input,
                                 instruction: instruction
                             )
