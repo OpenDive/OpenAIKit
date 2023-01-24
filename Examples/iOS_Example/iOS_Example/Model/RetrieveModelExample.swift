@@ -69,7 +69,7 @@ struct RetrieveModelExample: View {
                     
                     Task {
                         do {
-                            let config = Configuration(organization: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
+                            let config = Configuration(organizationId: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
                             let openAI = OpenAI(config)
 
                             self.model = try await openAI.retrieveModel(modelId: "text-davinci-001")

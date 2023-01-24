@@ -50,7 +50,7 @@ struct DeleteFileExample: View {
                     
                     Task {
                         do {
-                            let config = Configuration(organization: "INSERT-ORGANIZATION-NAME", apiKey: "INSERT-API-KEY")
+                            let config = Configuration(organizationId: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
                             let openAI = OpenAI(config)
 
                             self.deleteFileResponse = try await openAI.deleteFile(fileId: "INSERT-FILE-ID")
