@@ -49,7 +49,7 @@ struct ContentPolicyExample: View {
                     
                     Task {
                         do {
-                            let openAI = OpenAI(Configuration(organization: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY"))
+                            let openAI = OpenAI(Configuration(organizationId: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY"))
                             let contentParameter = ContentPolicyParameters(input: input)
                             let contentResult = try await openAI.checkContentPolicy(parameters: contentParameter)
 

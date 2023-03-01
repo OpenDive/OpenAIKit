@@ -47,7 +47,7 @@ struct CreateFinetuneExample: View {
                     
                     Task {
                         do {
-                            let config = Configuration(organization: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
+                            let config = Configuration(organizationId: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
                             let openAI = OpenAI(config)
                             let createFineTuneParam = CreateFineTuneParameters(trainingFile: "INSERT-TRAINING-FILE-ID")
 

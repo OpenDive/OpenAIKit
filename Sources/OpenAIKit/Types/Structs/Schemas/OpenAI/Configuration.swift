@@ -25,14 +25,14 @@
 
 /// The configuration object used for the OpenAIKit object to represent the organization of the user.
 public struct Configuration {
-    /// The organization name of the user.
-    public let organization: String
+    /// The organization ID of the user.
+    public let organizationId: String
 
     /// The API key associated with the user.
     let apiKey: String
 
-    public init(organization: String, apiKey: String) {
-        self.organization = organization
+    public init(organizationId: String, apiKey: String) {
+        self.organizationId = organizationId
         self.apiKey = apiKey
     }
 }
