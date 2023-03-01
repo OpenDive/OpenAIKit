@@ -2,7 +2,7 @@
 //  OpenAIObject.swift
 //  OpenAIKit
 //
-//  Copyright (c) 2022 MarcoDotIO
+//  Copyright (c) 2023 MarcoDotIO
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,9 @@ public enum OpenAIObject: String, Codable {
     
     /// A text completion object.
     case textCompletion = "text_completion"
+    
+    /// A Chat Completion.
+    case chatCompletion = "chat.completion"
     
     /// An edit object.
     case edit

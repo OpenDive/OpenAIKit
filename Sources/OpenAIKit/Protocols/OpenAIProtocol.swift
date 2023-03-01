@@ -2,7 +2,7 @@
 //  OpenAIProtocol.swift
 //  OpenAIKit
 //
-//  Copyright (c) 2022 MarcoDotIO
+//  Copyright (c) 2023 MarcoDotIO
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -54,6 +54,15 @@ public protocol OpenAIProtocol {
     /// - Parameter param: A `EditParameters` object containing the parameters for the call.
     /// - Returns: An `EditResponse` object.
     func generateEdit(parameters param: EditParameters) async throws -> EditResponse
+
+
+    // MARK: Chat Function
+    /// Creates a completion for the chat message
+
+    /// Using ChatGPT, Generate completions based on message history.
+    /// - Parameter param: A `ChatParameters` object containing the parameters for the call.
+    /// - Returns: A `ChatResponse` object.
+    func generateChatCompletion(parameters param: ChatParameters) async throws -> ChatResponse
 
 
     // MARK: Image Functions

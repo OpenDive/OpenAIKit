@@ -42,6 +42,7 @@
 		76C0C26F293FCBEF003075D2 /* CreateFinetuneExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76C0C26E293FCBEF003075D2 /* CreateFinetuneExample.swift */; };
 		76C0C274293FDA7B003075D2 /* DeleteFileExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76C0C273293FDA7B003075D2 /* DeleteFileExample.swift */; };
 		76C0C276293FDAF3003075D2 /* DeleteFinetuneExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76C0C275293FDAF3003075D2 /* DeleteFinetuneExample.swift */; };
+		7DDE422E29AFE567000BBB01 /* CreateChatCompletion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DDE422D29AFE567000BBB01 /* CreateChatCompletion.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -81,6 +82,7 @@
 		76C0C26E293FCBEF003075D2 /* CreateFinetuneExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateFinetuneExample.swift; sourceTree = "<group>"; };
 		76C0C273293FDA7B003075D2 /* DeleteFileExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteFileExample.swift; sourceTree = "<group>"; };
 		76C0C275293FDAF3003075D2 /* DeleteFinetuneExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteFinetuneExample.swift; sourceTree = "<group>"; };
+		7DDE422D29AFE567000BBB01 /* CreateChatCompletion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateChatCompletion.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -165,6 +167,7 @@
 		76C0C252293FB7CC003075D2 /* iOS_Example */ = {
 			isa = PBXGroup;
 			children = (
+				7DDE422C29AFE54C000BBB01 /* Chat */,
 				761C252229403ECF005066C2 /* Model */,
 				761C250229403873005066C2 /* Image */,
 				761C24FE2940347A005066C2 /* Completion */,
@@ -239,6 +242,14 @@
 				765BB1D6294049B4000BF124 /* FileMainView.swift */,
 			);
 			path = File;
+			sourceTree = "<group>";
+		};
+		7DDE422C29AFE54C000BBB01 /* Chat */ = {
+			isa = PBXGroup;
+			children = (
+				7DDE422D29AFE567000BBB01 /* CreateChatCompletion.swift */,
+			);
+			path = Chat;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -339,6 +350,7 @@
 				761C251B29403CD2005066C2 /* FileDetailsView.swift in Sources */,
 				761C252C2940400B005066C2 /* RetrieveModelExample.swift in Sources */,
 				761C251729403CA0005066C2 /* ListFilesExample.swift in Sources */,
+				7DDE422E29AFE567000BBB01 /* CreateChatCompletion.swift in Sources */,
 				761C252829403F7D005066C2 /* RetrieveFileExample.swift in Sources */,
 				761C2533294040A8005066C2 /* UploadFileExample.swift in Sources */,
 				761C252429403EDC005066C2 /* ListModelsExample.swift in Sources */,

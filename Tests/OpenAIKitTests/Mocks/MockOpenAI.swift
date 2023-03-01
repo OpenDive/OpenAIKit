@@ -2,7 +2,7 @@
 //  MockOpenAI.swift
 //  OpenAIKit
 //
-//  Copyright (c) 2022 MarcoDotIO
+//  Copyright (c) 2023 MarcoDotIO
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -90,6 +90,10 @@ class MockOpenAI: OpenAIProtocol {
         }
 
         throw MockOpenAIError.invalidUser
+    }
+
+    func generateChatCompletion(parameters param: ChatParameters) async throws -> ChatResponse {
+        throw MockOpenAIError.notImplemented
     }
 
     func generateImageEdits(parameters param: ImageEditParameters) async throws -> ImageResponse {

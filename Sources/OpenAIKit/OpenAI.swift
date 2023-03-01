@@ -2,7 +2,7 @@
 //  OpenAI.swift
 //  OpenAIKit
 //
-//  Copyright (c) 2022 MarcoDotIO
+//  Copyright (c) 2023 MarcoDotIO
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -133,6 +133,15 @@ extension OpenAI: OpenAIProtocol {
 
     public func generateEdit(parameters param: EditParameters) async throws -> EditResponse {
         let serverUrl = try await getServerUrl(path: "/edits")
+        return try await OpenAIKitSession.shared.decodeUrl(
+            with: serverUrl,
+            apiKey: config.apiKey,
+            body: param.body
+        )
+    }
+
+    public func generateChatCompletion(parameters param: ChatParameters) async throws -> ChatResponse {
+        let serverUrl = try await getServerUrl(path: "/chat/completions")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
             apiKey: config.apiKey,
