@@ -26,6 +26,7 @@ OpenAIKit is a community-maintained API for the OpenAI REST endpoint used to get
 - [x] Generate edits and completions using GPT-3.
 - [x] List avaiable models for use with GPT-3.
 - [x] Retrieve embeddings for GPT-3 prompts.
+- [x] Generate Chat responses using ChatGPT.
 - [x] Upload and view training set files for Fine-tuning.
 - [x] Generate and use Fine-tuned models.
 - [x] View whether a prompt is flagged by the Moderations endpoint or not.
