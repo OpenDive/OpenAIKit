@@ -99,7 +99,7 @@ class OpenAIKitSession {
             request.allHTTPHeaderFields?[key] = value
         }
 
-        return try await asyncData(with: request)
+        return try await self.asyncData(with: request)
     }
 
     /// An Async Await wrapper for the older `dataTask` handler.
@@ -191,7 +191,7 @@ class OpenAIKitSession {
                 }
 
                 let request = formRequest.asURLRequest(apiKey: apiKey)
-                let data = try await asyncData(with: request)
+                let data = try await self.asyncData(with: request)
 
                 return try await self.decodeData(with: data)
             } else {
