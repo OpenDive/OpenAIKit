@@ -146,13 +146,12 @@ class OpenAIKitSession {
 
         return try genString.components(separatedBy: .newlines)
             .filter { $0 != "" }
-            .map { gen -> T? in
+            .compactMap { gen -> T? in
                 guard let data = gen.data(using: .utf8) else {
                     throw OpenAIError.invalidData
                 }
                 return try? jsonDecoder.decode(T.self, from: data)
             }
-            .compactMap { $0 }
     }
 
     /// Decode a `URL` to the type `T` using either `asyncData()` for the Production Server;
