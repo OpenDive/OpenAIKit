@@ -31,7 +31,7 @@ import FoundationNetworking
 
 // Extensions used to help better streamline the main OpenAIKit class.
 // Most are private to help with having better Access Control.
-class OpenAIKitSession {
+final class OpenAIKitSession {
     /// Shared Singleton object for use within the OpenAIKit API Module
     internal static let shared = OpenAIKitSession()
 
