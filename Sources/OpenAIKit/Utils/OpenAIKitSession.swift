@@ -31,7 +31,7 @@ import FoundationNetworking
 
 // Extensions used to help better streamline the main OpenAIKit class.
 // Most are private to help with having better Access Control.
-class OpenAIKitSession {
+final class OpenAIKitSession {
     /// Shared Singleton object for use within the OpenAIKit API Module
     internal static let shared = OpenAIKitSession()
 
@@ -99,7 +99,7 @@ class OpenAIKitSession {
             request.allHTTPHeaderFields?[key] = value
         }
 
-        return try await asyncData(with: request)
+        return try await self.asyncData(with: request)
     }
 
     /// An Async Await wrapper for the older `dataTask` handler.
@@ -146,13 +146,12 @@ class OpenAIKitSession {
 
         return try genString.components(separatedBy: .newlines)
             .filter { $0 != "" }
-            .map { gen -> T? in
+            .compactMap { gen -> T? in
                 guard let data = gen.data(using: .utf8) else {
                     throw OpenAIError.invalidData
                 }
                 return try? jsonDecoder.decode(T.self, from: data)
             }
-            .compactMap { $0 }
     }
 
     /// Decode a `URL` to the type `T` using either `asyncData()` for the Production Server;
@@ -192,7 +191,7 @@ class OpenAIKitSession {
                 }
 
                 let request = formRequest.asURLRequest(apiKey: apiKey)
-                let data = try await asyncData(with: request)
+                let data = try await self.asyncData(with: request)
 
                 return try await self.decodeData(with: data)
             } else {
