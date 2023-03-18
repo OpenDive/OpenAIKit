@@ -47,7 +47,7 @@ struct ListModelsExample: View {
                     Task {
                         do {
                             let config = Configuration(
-                                organization: "INSERT-ORGANIZATION-ID",
+                                organizationId: "INSERT-ORGANIZATION-ID",
                                 apiKey: "INSERT-API-KEY"
                             )
                             let openAi = OpenAI(config)
