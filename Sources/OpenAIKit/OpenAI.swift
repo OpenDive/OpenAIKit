@@ -39,6 +39,9 @@ import Foundation
 
 /// OpenAI provides the needed core functions of OpenAIKit.
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, *)
+
+// TODO: rename to OpenAIKit after fixing conflict with package name ( checkContentPolicy() )
+
 public final class OpenAI {
     /// The configuration object used to store the API Key and Organization ID.
     private var config: Configuration
