@@ -68,7 +68,7 @@ dependencies: [
 
 ## Using OpenAIKit
 
-OpenAIKit is designed to be very easy to integrate into your own projects. The main method of utilizing OpenAIKit is to set a `OpenAI` class object:
+OpenAIKit is designed to be very easy to integrate into your own projects. The main method of utilizing OpenAIKit is to set a `OpenAIKit` class object:
 
 ```swift
 import OpenAIKit
@@ -77,8 +77,8 @@ import OpenAIKit
 // Note: It's recommended to load the API Key through a .plist dictionary, rather than hard coding it in a String.
 let config = Configuration(organizationId: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
 
-// Create an `OpenAI` object using the Configuration object.
-let openAI = OpenAI(config)
+// Create an `OpenAIKit` object using the Configuration object.
+let openAI = OpenAIKit(config)
 ```
 
 From there, it's as easy as calling one of the provided function members. The code below demonstrates how you can generate an image using `createImage()`:

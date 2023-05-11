@@ -51,7 +51,7 @@ struct EditImageExample: View {
                                 organizationId: "INSERT-ORGANIZATION-ID",
                                 apiKey: "INSERT-API-KEY"
                             )
-                            let openAI = OpenAI(config)
+                            let openAI = OpenAIKit(config)
 
                             guard let image = UIImage(named: "image") else {
                                 throw OpenAIError.invalidData

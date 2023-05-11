@@ -50,7 +50,7 @@ struct ListModelsExample: View {
                                 organizationId: "INSERT-ORGANIZATION-ID",
                                 apiKey: "INSERT-API-KEY"
                             )
-                            let openAi = OpenAI(config)
+                            let openAi = OpenAIKit(config)
                             let modelsResponse = try await openAi.listModels()
 
                             self.models = modelsResponse.data

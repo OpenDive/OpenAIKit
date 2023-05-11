@@ -55,7 +55,7 @@ struct GenerateCompletionExample: View {
                                 organizationId: "INSERT-ORGANIZATION-ID",
                                 apiKey: "INSERT-API-KEY"
                             )
-                            let openAI = OpenAI(config)
+                            let openAI = OpenAIKit(config)
                             let completionParameter = CompletionParameters(
                                 model: "text-davinci-001",
                                 prompt: [prompt],

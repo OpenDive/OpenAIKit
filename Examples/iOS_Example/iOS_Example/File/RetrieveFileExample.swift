@@ -54,7 +54,7 @@ struct RetrieveFileExample: View {
                     Task {
                         do {
                             let config = Configuration(organizationId: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
-                            let openAI = OpenAI(config)
+                            let openAI = OpenAIKit(config)
 
                             self.file = try await openAI.retrieveFile(fileId: "INSERT-FILE-ID")
                         } catch {

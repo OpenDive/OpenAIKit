@@ -61,7 +61,7 @@ struct ListFinetuneEventsExample: View {
                     Task {
                         do {
                             let config = Configuration(organizationId: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
-                            let openAI = OpenAI(config)
+                            let openAI = OpenAIKit(config)
                             let listFineTuneEventResponse = try await openAI.listFineTuneEvents(fineTune: fineTuneId)
 
                             self.events = listFineTuneEventResponse.data

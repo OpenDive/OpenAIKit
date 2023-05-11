@@ -51,7 +51,7 @@ struct DeleteFinetuneExample: View {
                 Task {
                     do {
                         let config = Configuration(organizationId: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
-                        let openAI = OpenAI(config)
+                        let openAI = OpenAIKit(config)
 
                         self.deleted = try await openAI.deleteFineTuneModel(model: modelName)
                     } catch {

@@ -48,7 +48,7 @@ struct GenerateImageExample: View {
                                 apiKey: "INSERT-API-KEY"
                             )
 
-                            let openAi = OpenAI(config)
+                            let openAi = OpenAIKit(config)
                             let imageParam = ImageParameters(
                                 prompt: "an avocado chair",
                                 resolution: .small,

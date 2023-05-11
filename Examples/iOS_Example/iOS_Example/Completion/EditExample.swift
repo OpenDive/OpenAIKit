@@ -56,7 +56,7 @@ struct EditExample: View {
                                 organizationId: "INSERT-ORGANIZATION-ID",
                                 apiKey: "INSERT-API-KEY"
                             )
-                            let openAI = OpenAI(config)
+                            let openAI = OpenAIKit(config)
                             let editParameter = EditParameters(
                                 model: "text-davinci-edit-001",
                                 input: input,

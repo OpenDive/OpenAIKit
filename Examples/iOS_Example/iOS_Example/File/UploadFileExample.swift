@@ -54,7 +54,7 @@ struct UploadFileExample: View {
                     Task {
                         do {
                             let config = Configuration(organizationId: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
-                            let openAI = OpenAI(config)
+                            let openAI = OpenAIKit(config)
 
                             guard let urlFile = Bundle.main.url(
                                 forResource: "SampleData",

@@ -48,7 +48,7 @@ struct RetrieveFinetuneExample: View {
                     Task {
                         do {
                             let config = Configuration(organizationId: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
-                            let openAI = OpenAI(config)
+                            let openAI = OpenAIKit(config)
 
                             self.fineTune = try await openAI.retrieveFineTune(fineTune: "INSERT-FINE-TUNE-ID")
                         } catch {

@@ -53,7 +53,7 @@ struct RetrieveFileContentsExample: View {
                     Task {
                         do {
                             let config = Configuration(organizationId: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
-                            let openAI = OpenAI(config)
+                            let openAI = OpenAIKit(config)
 
                             self.fineTunes = try await openAI.retrieveFileContent(fileId: "INSERT-FILE-ID")
                         } catch {

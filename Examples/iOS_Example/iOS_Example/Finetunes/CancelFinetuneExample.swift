@@ -48,7 +48,7 @@ struct CancelFinetuneExample: View {
                     Task {
                         do {
                             let config = Configuration(organizationId: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
-                            let openAI = OpenAI(config)
+                            let openAI = OpenAIKit(config)
 
                             self.fineTune = try await openAI.cancelFineTune(fineTune: "INSERT-FINE-TUNE-ID")
                         } catch {
