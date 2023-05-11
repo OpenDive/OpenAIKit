@@ -40,9 +40,7 @@ import Foundation
 /// OpenAI provides the needed core functions of OpenAIKit.
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, *)
 
-// TODO: create PR for renamed class
-
-public final class OpenAIKit_ {
+public final class OpenAIKit {
     /// The configuration object used to store the API Key and Organization ID.
     private var config: Configuration
 
@@ -104,7 +102,7 @@ public final class OpenAIKit_ {
     }
 }
 
-extension OpenAIKit_: OpenAIProtocol {
+extension OpenAIKit: OpenAIProtocol {
     public func listModels() async throws -> ListModelResponse {
         let serverUrl = try await getServerUrl(path: "/models")
         return try await OpenAIKitSession.shared.decodeUrl(
@@ -298,7 +296,7 @@ extension OpenAIKit_: OpenAIProtocol {
     }
 
     public func checkContentPolicy(
-        parameters param: OpenAIKit.ContentPolicyParameters
+        parameters param: ContentPolicyParameters
     ) async throws -> ContentPolicyResponse {
         let serverUrl = try await getServerUrl(path: "/moderations")
         return try await OpenAIKitSession.shared.decodeUrl(
