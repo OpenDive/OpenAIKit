@@ -155,7 +155,7 @@ final class OpenAIKitTests: XCTestCase {
             // Given
             let mockOpenAI = MockOpenAI()
 
-            let completionParameter = CompletionParameters(model: "text-davinci-002")
+            let completionParameter = CompletionParameters(model: .davinci)
 
             // When
             let completionResponse = try await mockOpenAI.generateCompletion(

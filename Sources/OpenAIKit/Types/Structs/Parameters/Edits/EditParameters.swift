@@ -57,7 +57,7 @@ public struct EditParameters {
     public var topP: Double
 
     public init(
-        model: String,
+        model: String = "text-davinci-edit-001",
         input: String = "\"",
         instruction: String,
         numberOfEdits: Int = 1,

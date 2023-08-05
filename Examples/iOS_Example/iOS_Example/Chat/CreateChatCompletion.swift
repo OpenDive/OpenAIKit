@@ -68,7 +68,7 @@ struct CreateChatCompletionExample: View {
                                     apiKey: "INSERT-API-KEY"
                                 )
                                 let openAI = OpenAI(config)
-                                let chatParameters = ChatParameters(model: "gpt-3.5-turbo", messages: chat)
+                                let chatParameters = ChatParameters(model: .chatGPTTurbo, messages: chat)
                                 let chatCompletion = try await openAI.generateChatCompletion(
                                     parameters: chatParameters
                                 )

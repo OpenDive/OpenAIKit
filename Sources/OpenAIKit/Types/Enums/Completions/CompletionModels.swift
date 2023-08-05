@@ -1,6 +1,5 @@
-//  swift-tools-version: 5.9
 //
-//  Package.swift
+//  CompletionModels.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2023 MarcoDotIO
@@ -24,30 +23,30 @@
 //  THE SOFTWARE.
 //
 
-import PackageDescription
+import Foundation
 
-let package = Package(
-    name: "OpenAIKit",
-    platforms: [.iOS(.v13), .macOS(.v10_15), .watchOS(.v6), .tvOS(.v13)],
-    products: [
-        .library(
-            name: "OpenAIKit",
-            targets: ["OpenAIKit"])
-    ],
-    dependencies: [
-    ],
-    targets: [
-        .target(
-            name: "OpenAIKit",
-            dependencies: [],
-            path: "Sources"
-        ),
-        .testTarget(
-            name: "OpenAIKitTests",
-            dependencies: ["OpenAIKit"],
-            path: "Tests",
-            resources: [.process("Resources")]
-        )
-    ],
-    swiftLanguageVersions: [.v5]
-)
+public enum CompletionModels: String, CustomStringConvertible {
+    case textCurie001 = "text-curie-001"
+    case textBabbage001 = "text-babbage-001"
+    case textAda001 = "text-ada-001"
+    case davinci
+    case curie
+    case babbage
+    case ada
+
+    public var maxTokens: [String : Int] {
+        [
+            "text-curie-001": 2049,
+            "text-babbage-001": 2049,
+            "text-ada-001": 2049,
+            "davinci": 2049,
+            "curie": 2049,
+            "babbage": 2049,
+            "ada": 2049
+        ]
+    }
+
+    public var description: String {
+        self.rawValue
+    }
+}

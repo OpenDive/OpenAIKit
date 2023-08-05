@@ -57,7 +57,7 @@ struct GenerateCompletionExample: View {
                             )
                             let openAI = OpenAI(config)
                             let completionParameter = CompletionParameters(
-                                model: "text-davinci-001",
+                                model: .davinci,
                                 prompt: [prompt],
                                 maxTokens: 20,
                                 temperature: 0.98

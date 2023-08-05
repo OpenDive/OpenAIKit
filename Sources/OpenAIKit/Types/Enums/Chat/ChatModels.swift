@@ -1,6 +1,5 @@
-//  swift-tools-version: 5.9
 //
-//  Package.swift
+//  ChatModels.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2023 MarcoDotIO
@@ -24,30 +23,36 @@
 //  THE SOFTWARE.
 //
 
-import PackageDescription
+import Foundation
 
-let package = Package(
-    name: "OpenAIKit",
-    platforms: [.iOS(.v13), .macOS(.v10_15), .watchOS(.v6), .tvOS(.v13)],
-    products: [
-        .library(
-            name: "OpenAIKit",
-            targets: ["OpenAIKit"])
-    ],
-    dependencies: [
-    ],
-    targets: [
-        .target(
-            name: "OpenAIKit",
-            dependencies: [],
-            path: "Sources"
-        ),
-        .testTarget(
-            name: "OpenAIKitTests",
-            dependencies: ["OpenAIKit"],
-            path: "Tests",
-            resources: [.process("Resources")]
-        )
-    ],
-    swiftLanguageVersions: [.v5]
-)
+public enum ChatModels: String, CustomStringConvertible {
+    case chatGPTTurbo = "gpt-3.5-turbo"
+    case chatGPTTurbo16k = "gpt-3.5-turbo-16k"
+    case chatGPTTurbo0613 = "gpt-3.5-turbo-0613"
+    case chatGPTTurbo16k0613 = "gpt-3.5-turbo-16k-0613"
+    case textDavinci003 = "text-davinci-003"
+    case textDavinci002 = "text-davinci-002"
+    case gpt4 = "gpt-4"
+    case gpt4_0613 = "gpt-4-0613"
+    case gpt4_32k = "gpt-4-32k"
+    case gpt4_32k0613 = "gpt-4-32k-0613"
+
+    public var maxTokens: [String : Int] {
+        [
+            "gpt-3.5-turbo": 4096,
+            "gpt-3.5-turbo-16k": 16384,
+            "gpt-3.5-turbo-0613": 4096,
+            "gpt-3.5-turbo-16k-0613": 16384,
+            "text-davinci-003": 4097,
+            "text-davinci-002": 4097,
+            "gpt-4": 8192,
+            "gpt-4-0613": 8192,
+            "gpt-4-32k": 32768,
+            "gpt-4-32k-0613": 32768
+        ]
+    }
+
+    public var description: String {
+        self.rawValue
+    }
+}

@@ -27,7 +27,7 @@ import Foundation
 
 public struct ChatParameters {
     /// ID of the model to use. Currently, only `gpt-3.5-turbo` and `gpt-3.5-turbo-0301` are supported.
-    var model: String
+    var model: ChatModels
 
     /// The messages to generate chat completions for, in the
     /// [chat format](https://platform.openai.com/docs/guides/chat/introduction).
@@ -91,7 +91,7 @@ public struct ChatParameters {
     var user: String?
 
     public init(
-        model: String,
+        model: ChatModels,
         messages: [ChatMessage],
         temperature: Double = 1.0,
         topP: Double = 1.0,
@@ -119,7 +119,7 @@ public struct ChatParameters {
     // The body of the URL used for OpenAI API requests.
     public var body: [String: Any] {
         var result: [String: Any] = [
-            "model": self.model,
+            "model": self.model.description,
             "temperature": self.temperature,
             "top_p": self.topP,
             "n": self.numberOfCompletions,

@@ -45,7 +45,11 @@ public struct EmbeddingsParameters {
     /// [Learn more.](https://beta.openai.com/docs/guides/safety-best-practices/end-user-ids)
     public var user: String?
 
-    public init(model: String, input: String, user: String? = nil) {
+    public init(
+        model: String = "text-embedding-ada-002",
+        input: String,
+        user: String? = nil
+    ) {
         self.model = model
         self.input = input
         self.user = user

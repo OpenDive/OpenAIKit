@@ -30,7 +30,7 @@ public struct CompletionParameters {
     /// You can use the [List models](https://beta.openai.com/docs/api-reference/models/list)
     /// API to see all of your available models, or see our [Model overview](https://beta.openai.com/docs/models/overview)
     /// for descriptions of them.
-    var model: String
+    var model: CompletionModels
 
     /// The prompt(s) to generate completions for, encoded as a string, array of strings, array of tokens, or array of token arrays.
     ///
@@ -125,7 +125,7 @@ public struct CompletionParameters {
     var user: String?
 
     public init(
-        model: String,
+        model: CompletionModels,
         prompt: [String] = ["<|endoftext|>"],
         suffix: String? = nil,
         maxTokens: Int = 16,
@@ -175,7 +175,7 @@ public struct CompletionParameters {
     /// The body of the URL used for OpenAI API requests.
     public var body: [String: Any] {
         var result: [String: Any] = [
-            "model": self.model,
+            "model": self.model.description,
             "prompt": self.prompt,
             "max_tokens": self.maxTokens,
             "temperature": self.temperature,
