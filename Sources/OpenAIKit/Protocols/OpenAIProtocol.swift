@@ -53,6 +53,7 @@ public protocol OpenAIProtocol {
     /// Creates a completion for the provided prompt and parameters.
     /// - Parameter param: A `EditParameters` object containing the parameters for the call.
     /// - Returns: An `EditResponse` object.
+    @available(*, deprecated, message: "On July 06, 2023, OpenAI announced the upcoming retirements of older GPT-3 and GPT-3.5 models served via the completions endpoint. OpenAI also announced the upcoming retirement of our first-generation text embedding models. They will be shut down on January 04, 2024.")
     func generateEdit(parameters param: EditParameters) async throws -> EditResponse
 
 
