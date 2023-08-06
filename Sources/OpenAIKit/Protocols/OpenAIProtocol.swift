@@ -46,6 +46,13 @@ public protocol OpenAIProtocol {
     /// - Returns: A `CompletionResponse` object.
     func generateCompletion(parameters param: CompletionParameters) async throws -> CompletionResponse
 
+    /// Using GPT3, Generate completions based on the input. This function streams the output.
+    /// - Parameter param: A `CompletionParameters` object containing the parameters for the call.
+    /// - Returns: An `AsyncThrowingStream` with either a `CompletionResponse` object or an `Error` object.
+    func generateCompletionStreaming(
+        parameters param: CompletionParameters
+    ) throws -> AsyncThrowingStream<CompletionResponse, Error>
+
 
     // MARK: Edit Function
     /// Given a prompt and an instruction, the model will return an edited version of the prompt.
@@ -53,17 +60,24 @@ public protocol OpenAIProtocol {
     /// Creates a completion for the provided prompt and parameters.
     /// - Parameter param: A `EditParameters` object containing the parameters for the call.
     /// - Returns: An `EditResponse` object.
-    @available(*, deprecated, message: "On July 06, 2023, OpenAI announced the upcoming retirements of older GPT-3 and GPT-3.5 models served via the completions endpoint. OpenAI also announced the upcoming retirement of our first-generation text embedding models. They will be shut down on January 04, 2024.")
+    @available(*, deprecated, message: "On July 06, 2023, OpenAI announced the upcoming retirements of older GPT-3 and GPT-3.5 models served via the completions endpoint. OpenAI also announced the upcoming retirement of their first-generation text embedding models. They will be shut down on January 04, 2024.")
     func generateEdit(parameters param: EditParameters) async throws -> EditResponse
 
 
     // MARK: Chat Function
     /// Creates a completion for the chat message
 
-    /// Using ChatGPT, Generate completions based on message history.
+    /// Using ChatGPT, generate completions based on message history.
     /// - Parameter param: A `ChatParameters` object containing the parameters for the call.
     /// - Returns: A `ChatResponse` object.
     func generateChatCompletion(parameters param: ChatParameters) async throws -> ChatResponse
+
+    /// Using ChatGPT, generate completions based on message history. This function is for users to stream data as its generated.
+    /// - Parameter param: A `ChatParameters` object containing the parameters for the call.
+    /// - Returns: An `AsyncThrowingStream` with either a `ChatResponse` object or an `Error` object.
+    func generateChatCompletionStreaming(
+        parameters param: ChatParameters
+    ) throws -> AsyncThrowingStream<ChatResponse, Error>
 
 
     // MARK: Image Functions
@@ -155,8 +169,13 @@ public protocol OpenAIProtocol {
 
     /// Get fine-grained status updates for a fine-tune job.
     /// - Parameter id: The `String` of the ID of the Fine-tune job.
-    /// - Returns: A `FineTuneEventsResponse` object
+    /// - Returns: A `FineTuneEventsResponse` object.
     func listFineTuneEvents(fineTune id: String) async throws -> FineTuneEventsResponse
+
+    /// Get fine-grained status updates for a fine-tune job. This function streams the fine tuning events.
+    /// - Parameter id: The `String` of the ID of the Fine-tune job.
+    /// - Returns: An `AsyncThrowingStream` object containing either a `FineTuneEventsResponse` object or an `Error` object.
+    func listFineTuneEventsStreaming(fineTune id: String) throws -> AsyncThrowingStream<FineTuneEventsResponse, Error>
 
     /// Deletes the Fine-tune model from storage.
     /// - Parameter model: The string of the model's name being deleted.

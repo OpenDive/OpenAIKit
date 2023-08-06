@@ -1,5 +1,5 @@
 //
-//  OpenAIObject.swift
+//  ChatMainView.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2023 MarcoDotIO
@@ -23,37 +23,28 @@
 //  THE SOFTWARE.
 //
 
-/// A specific type of object that OpenAI has responded with.
-public enum OpenAIObject: String, Codable {
-    /// A list object.
-    case list
-    
-    /// A model object.
-    case model
-    
-    /// A model permission object.
-    case modelPermission = "model_permission"
-    
-    /// A text completion object.
-    case textCompletion = "text_completion"
-    
-    /// A Chat Completion.
-    case chatCompletion = "chat.completion"
-    
-    /// An edit object.
-    case edit
-    
-    /// An embedding object.
-    case embedding
-    
-    /// A file object.
-    case file
-    
-    /// A Fine-tune object.
-    case fineTune = "fine-tune"
-    
-    /// A Fine-tune event object.
-    case fineTuneEvent = "fine-tune-event"
+import SwiftUI
 
-    case chatCompletionChunk = "chat.completion.chunk"
+struct ChatMainView: View {
+    var body: some View {
+        List {
+            NavigationLink(destination: CreateChatCompletionExample()) {
+                Text("Generate Chat Completion Example")
+            }
+
+            NavigationLink(destination: CreateChatCompletionStreamingExample()) {
+                Text("Generate Chat Completion Streaming Example")
+            }
+        }
+        .listStyle(.plain)
+        .navigationTitle("Chat")
+    }
+}
+
+struct ChatMainView_Previews: PreviewProvider {
+    static var previews: some View {
+        NavigationStack {
+            ChatMainView()
+        }
+    }
 }

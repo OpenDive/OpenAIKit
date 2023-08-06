@@ -36,8 +36,8 @@ struct ContentView: View {
                 NavigationLink(destination: CompletionMainView()) {
                     Text("Completion")
                 }
-                
-                NavigationLink(destination: CreateChatCompletionExample()) {
+
+                NavigationLink(destination: ChatMainView()) {
                     Text("Chat")
                 }
 

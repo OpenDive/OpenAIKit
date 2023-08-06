@@ -27,13 +27,17 @@
 public struct ChatChoice: Codable {
     enum CodingKeys: String, CodingKey {
         case message
+        case delta
         case index
         case logprobs
         case finishReason = "finish_reason"
     }
 
     /// The choice output itself.
-    public let message: ChatMessage
+    public let message: ChatMessage?
+
+    /// The streamed output if chosen to stream.
+    public let delta: ChatDelta?
 
     /// The index of the choice within the data array.
     public let index: Int
@@ -43,4 +47,14 @@ public struct ChatChoice: Codable {
 
     /// The choice end reason.
     public let finishReason: String?
+}
+
+public struct ChatDelta: Codable {
+    enum CodingKeys: String, CodingKey {
+        case role
+        case content
+    }
+
+    public let role: ChatRole?
+    public let content: String?
 }

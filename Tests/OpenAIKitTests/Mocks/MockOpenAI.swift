@@ -61,6 +61,12 @@ class MockOpenAI: OpenAIProtocol {
         return try await getDecodedData(with: "CompletionResponse") as CompletionResponse
     }
 
+    func generateCompletionStreaming(
+        parameters param: OpenAIKit.CompletionParameters
+    ) throws -> AsyncThrowingStream<OpenAIKit.CompletionResponse, Error> {
+        throw MockOpenAIError.notImplemented
+    }
+
     func generateEdit(parameters param: EditParameters) async throws -> EditResponse {
         return try await getDecodedData(with: "EditResponse") as EditResponse
     }
@@ -93,6 +99,12 @@ class MockOpenAI: OpenAIProtocol {
     }
 
     func generateChatCompletion(parameters param: ChatParameters) async throws -> ChatResponse {
+        throw MockOpenAIError.notImplemented
+    }
+    
+    func generateChatCompletionStreaming(
+        parameters param: ChatParameters
+    ) throws -> AsyncThrowingStream<ChatResponse, Error> {
         throw MockOpenAIError.notImplemented
     }
 
@@ -145,6 +157,10 @@ class MockOpenAI: OpenAIProtocol {
     }
 
     func listFineTuneEvents(fineTune id: String) async throws -> FineTuneEventsResponse {
+        throw MockOpenAIError.notImplemented
+    }
+
+    func listFineTuneEventsStreaming(fineTune id: String) throws -> AsyncThrowingStream<OpenAIKit.FineTuneEventsResponse, Error> {
         throw MockOpenAIError.notImplemented
     }
 

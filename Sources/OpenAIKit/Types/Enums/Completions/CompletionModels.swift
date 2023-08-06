@@ -26,27 +26,33 @@
 import Foundation
 
 /// Models used for the Completion endpoint
-@available(*, deprecated, message: "On July 06, 2023, OpenAI announced the upcoming retirements of older GPT-3 and GPT-3.5 models served via the completions endpoint. OpenAI also announced the upcoming retirement of our first-generation text embedding models. They will be shut down on January 04, 2024.")
 public enum CompletionModels: String, CustomStringConvertible {
     /// Very capable, faster and lower cost than Davinci.
+    @available(*, deprecated, message: "On July 06, 2023, OpenAI announced the upcoming retirements of older GPT-3 and GPT-3.5 models served via the completions endpoint. OpenAI also announced the upcoming retirement of their first-generation text embedding models. They will be shut down on January 04, 2024.")
     case textCurie001 = "text-curie-001"
 
     /// Capable of straightforward tasks, very fast, and lower cost.
+    @available(*, deprecated, message: "On July 06, 2023, OpenAI announced the upcoming retirements of older GPT-3 and GPT-3.5 models served via the completions endpoint. OpenAI also announced the upcoming retirement of their first-generation text embedding models. They will be shut down on January 04, 2024.")
     case textBabbage001 = "text-babbage-001"
 
     /// Capable of very simple tasks, usually the fastest model in the GPT-3 series, and lowest cost.
+    @available(*, deprecated, message: "On July 06, 2023, OpenAI announced the upcoming retirements of older GPT-3 and GPT-3.5 models served via the completions endpoint. OpenAI also announced the upcoming retirement of their first-generation text embedding models. They will be shut down on January 04, 2024.")
     case textAda001 = "text-ada-001"
 
     /// Most capable GPT-3 model. Can do any task the other models can do, often with higher quality.
+    @available(*, deprecated, message: "On July 06, 2023, OpenAI announced the upcoming retirements of older GPT-3 and GPT-3.5 models served via the completions endpoint. OpenAI also announced the upcoming retirement of their first-generation text embedding models. They will be shut down on January 04, 2024.")
     case davinci
 
     /// Very capable, but faster and lower cost than Davinci.
+    @available(*, deprecated, message: "On July 06, 2023, OpenAI announced the upcoming retirements of older GPT-3 and GPT-3.5 models served via the completions endpoint. OpenAI also announced the upcoming retirement of their first-generation text embedding models. They will be shut down on January 04, 2024.")
     case curie
 
     /// Capable of straightforward tasks, very fast, and lower cost.
+    @available(*, deprecated, message: "On July 06, 2023, OpenAI announced the upcoming retirements of older GPT-3 and GPT-3.5 models served via the completions endpoint. OpenAI also announced the upcoming retirement of their first-generation text embedding models. They will be shut down on January 04, 2024.")
     case babbage
 
     /// Capable of very simple tasks, usually the fastest model in the GPT-3 series, and lowest cost.
+    @available(*, deprecated, message: "On July 06, 2023, OpenAI announced the upcoming retirements of older GPT-3 and GPT-3.5 models served via the completions endpoint. OpenAI also announced the upcoming retirement of their first-generation text embedding models. They will be shut down on January 04, 2024.")
     case ada
 
     /// The maximum tokens the models can read

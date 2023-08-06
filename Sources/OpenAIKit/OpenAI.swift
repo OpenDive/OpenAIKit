@@ -92,7 +92,7 @@ public final class OpenAI {
     /// Return a `URL` with the OpenAI API endpoint as the `URL`
     /// - Parameter path: The `String` path.
     /// - Returns: An `URL` object.
-    private func getServerUrl(path: String) async throws -> URL {
+    private func getServerUrl(path: String) throws -> URL {
         guard let result = URL(string: "https://api.openai.com/v1\(path)") else {
             throw OpenAIError.invalidUrl
         }
@@ -103,7 +103,7 @@ public final class OpenAI {
 
 extension OpenAI: OpenAIProtocol {
     public func listModels() async throws -> ListModelResponse {
-        let serverUrl = try await getServerUrl(path: "/models")
+        let serverUrl = try getServerUrl(path: "/models")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
             apiKey: config.apiKey,
@@ -113,7 +113,7 @@ extension OpenAI: OpenAIProtocol {
     }
 
     public func retrieveModel(modelId id: String) async throws -> Model {
-        let serverUrl = try await getServerUrl(path: "/models/\(id)")
+        let serverUrl = try getServerUrl(path: "/models/\(id)")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
             apiKey: config.apiKey,
@@ -123,7 +123,7 @@ extension OpenAI: OpenAIProtocol {
     }
 
     public func generateCompletion(parameters param: CompletionParameters) async throws -> CompletionResponse {
-        let serverUrl = try await getServerUrl(path: "/completions")
+        let serverUrl = try getServerUrl(path: "/completions")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
             apiKey: config.apiKey,
@@ -131,8 +131,22 @@ extension OpenAI: OpenAIProtocol {
         )
     }
 
+    public func generateCompletionStreaming(
+        parameters param: CompletionParameters
+    ) throws -> AsyncThrowingStream<CompletionResponse, Error> {
+        let serverUrl = try getServerUrl(path: "/completions")
+        var parameter = param.body
+        parameter["stream"] = true
+
+        return try OpenAIKitSession.shared.streamData(
+            with: serverUrl,
+            apiKey: config.apiKey,
+            body: parameter
+        )
+    }
+
     public func generateEdit(parameters param: EditParameters) async throws -> EditResponse {
-        let serverUrl = try await getServerUrl(path: "/edits")
+        let serverUrl = try getServerUrl(path: "/edits")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
             apiKey: config.apiKey,
@@ -141,7 +155,7 @@ extension OpenAI: OpenAIProtocol {
     }
 
     public func generateChatCompletion(parameters param: ChatParameters) async throws -> ChatResponse {
-        let serverUrl = try await getServerUrl(path: "/chat/completions")
+        let serverUrl = try getServerUrl(path: "/chat/completions")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
             apiKey: config.apiKey,
@@ -149,8 +163,22 @@ extension OpenAI: OpenAIProtocol {
         )
     }
 
+    public func generateChatCompletionStreaming(
+        parameters param: ChatParameters
+    ) throws -> AsyncThrowingStream<ChatResponse, Error> {
+        let serverUrl = try getServerUrl(path: "/chat/completions")
+        var parameter = param.body
+        parameter["stream"] = true
+
+        return try OpenAIKitSession.shared.streamData(
+            with: serverUrl,
+            apiKey: config.apiKey,
+            body: parameter
+        )
+    }
+
     public func createImage(parameters param: ImageParameters) async throws -> ImageResponse {
-        let serverUrl = try await getServerUrl(path: "/images/generations")
+        let serverUrl = try getServerUrl(path: "/images/generations")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
             apiKey: config.apiKey,
@@ -159,7 +187,7 @@ extension OpenAI: OpenAIProtocol {
     }
 
     public func generateImageEdits(parameters param: ImageEditParameters) async throws -> ImageResponse {
-        let serverUrl = try await getServerUrl(path: "/images/edits")
+        let serverUrl = try getServerUrl(path: "/images/edits")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
             apiKey: config.apiKey,
@@ -169,7 +197,7 @@ extension OpenAI: OpenAIProtocol {
     }
 
     public func generateImageVariations(parameters param: ImageVariationParameters) async throws -> ImageResponse {
-        let serverUrl = try await getServerUrl(path: "/images/variations")
+        let serverUrl = try getServerUrl(path: "/images/variations")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
             apiKey: config.apiKey,
@@ -179,7 +207,7 @@ extension OpenAI: OpenAIProtocol {
     }
 
     public func createEmbeddings(parameters param: EmbeddingsParameters) async throws -> EmbeddingsResponse {
-        let serverUrl = try await getServerUrl(path: "/embeddings")
+        let serverUrl = try getServerUrl(path: "/embeddings")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
             apiKey: config.apiKey,
@@ -188,7 +216,7 @@ extension OpenAI: OpenAIProtocol {
     }
 
     public func listFiles() async throws -> ListFilesResponse {
-        let serverUrl = try await getServerUrl(path: "/files")
+        let serverUrl = try getServerUrl(path: "/files")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
             apiKey: config.apiKey,
@@ -198,7 +226,7 @@ extension OpenAI: OpenAIProtocol {
     }
 
     public func uploadFile(parameters param: UploadFileParameters) async throws -> File {
-        let serverUrl = try await getServerUrl(path: "/files")
+        let serverUrl = try getServerUrl(path: "/files")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
             apiKey: config.apiKey,
@@ -208,7 +236,7 @@ extension OpenAI: OpenAIProtocol {
     }
 
     public func deleteFile(fileId id: String) async throws -> DeleteObject {
-        let serverUrl = try await getServerUrl(path: "/files/\(id)")
+        let serverUrl = try getServerUrl(path: "/files/\(id)")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
             apiKey: config.apiKey,
@@ -218,7 +246,7 @@ extension OpenAI: OpenAIProtocol {
     }
 
     public func retrieveFile(fileId id: String) async throws -> File {
-        let serverUrl = try await getServerUrl(path: "/files/\(id)")
+        let serverUrl = try getServerUrl(path: "/files/\(id)")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
             apiKey: config.apiKey,
@@ -228,7 +256,7 @@ extension OpenAI: OpenAIProtocol {
     }
 
     public func retrieveFileContent(fileId id: String) async throws -> [FineTuneTraining] {
-        let serverUrl = try await getServerUrl(path: "/files/\(id)/content")
+        let serverUrl = try getServerUrl(path: "/files/\(id)/content")
         return try await OpenAIKitSession.shared.retrieveJsonLine(
             with: serverUrl,
             apiKey: config.apiKey
@@ -236,7 +264,7 @@ extension OpenAI: OpenAIProtocol {
     }
 
     public func createFineTune(parameters param: CreateFineTuneParameters) async throws -> FineTune {
-        let serverUrl = try await getServerUrl(path: "/fine-tunes")
+        let serverUrl = try getServerUrl(path: "/fine-tunes")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
             apiKey: config.apiKey,
@@ -245,7 +273,7 @@ extension OpenAI: OpenAIProtocol {
     }
 
     public func listFineTunes() async throws -> ListFineTuneResponse {
-        let serverUrl = try await getServerUrl(path: "/fine-tunes")
+        let serverUrl = try getServerUrl(path: "/fine-tunes")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
             apiKey: config.apiKey,
@@ -255,7 +283,7 @@ extension OpenAI: OpenAIProtocol {
     }
 
     public func retrieveFineTune(fineTune id: String) async throws -> FineTune {
-        let serverUrl = try await getServerUrl(path: "/fine-tunes/\(id)")
+        let serverUrl = try getServerUrl(path: "/fine-tunes/\(id)")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
             apiKey: config.apiKey,
@@ -265,7 +293,7 @@ extension OpenAI: OpenAIProtocol {
     }
 
     public func cancelFineTune(fineTune id: String) async throws -> FineTune {
-        let serverUrl = try await getServerUrl(path: "/fine-tunes/\(id)/cancel")
+        let serverUrl = try getServerUrl(path: "/fine-tunes/\(id)/cancel")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
             apiKey: config.apiKey,
@@ -275,7 +303,7 @@ extension OpenAI: OpenAIProtocol {
     }
 
     public func listFineTuneEvents(fineTune id: String) async throws -> FineTuneEventsResponse {
-        let serverUrl = try await getServerUrl(path: "/fine-tunes/\(id)/events")
+        let serverUrl = try getServerUrl(path: "/fine-tunes/\(id)/events")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
             apiKey: config.apiKey,
@@ -284,8 +312,18 @@ extension OpenAI: OpenAIProtocol {
         )
     }
 
+    public func listFineTuneEventsStreaming(fineTune id: String) throws -> AsyncThrowingStream<FineTuneEventsResponse, Error> {
+        let serverUrl = try getServerUrl(path: "/fine-tunes/\(id)/events")
+        return try OpenAIKitSession.shared.streamData(
+            with: serverUrl,
+            apiKey: config.apiKey,
+            body: ["stream": true],
+            method: .get
+        )
+    }
+
     public func deleteFineTuneModel(model: String) async throws -> DeleteObject {
-        let serverUrl = try await getServerUrl(path: "/models/\(model)")
+        let serverUrl = try getServerUrl(path: "/models/\(model)")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
             apiKey: config.apiKey,
@@ -297,7 +335,7 @@ extension OpenAI: OpenAIProtocol {
     public func checkContentPolicy(
         parameters param: OpenAIKit.ContentPolicyParameters
     ) async throws -> ContentPolicyResponse {
-        let serverUrl = try await getServerUrl(path: "/moderations")
+        let serverUrl = try getServerUrl(path: "/moderations")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
             apiKey: config.apiKey,

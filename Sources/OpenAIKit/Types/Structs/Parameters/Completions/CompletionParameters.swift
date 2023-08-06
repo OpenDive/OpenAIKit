@@ -68,11 +68,6 @@ public struct CompletionParameters {
     /// Use carefully and ensure that you have reasonable settings for `max_tokens` and `stop`.
     var numberOfCompletions: Int
 
-    /// Whether to stream back partial progress. If set, tokens will be sent as data-only
-    /// [server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events#Event_stream_format)
-    /// as they become available, with the stream terminated by a data: [DONE] message.
-    var stream: Bool
-
     /// Include the log probabilities on the `logprobs` most likely tokens, as well the chosen tokens.
     ///
     /// For example, if `logprobs` is 5, the API will return a list of the 5 most likely tokens.
@@ -132,7 +127,6 @@ public struct CompletionParameters {
         temperature: Double = 1.0,
         topP: Double = 1.0,
         @Clamped(range: 1...10) numberOfCompletions: Int = 1,
-        stream: Bool = false,
         logprobs: Int? = nil,
         maxLogprobs: Int = 5,
         echo: Bool = false,
@@ -150,7 +144,6 @@ public struct CompletionParameters {
         self.temperature = temperature
         self.topP = topP
         self.numberOfCompletions = numberOfCompletions
-        self.stream = stream
         self.echo = echo
         self.stop = stop
         self.presencePenalty = presencePenalty
@@ -181,7 +174,6 @@ public struct CompletionParameters {
             "temperature": self.temperature,
             "top_p": self.topP,
             "n": self.numberOfCompletions,
-            "stream": self.stream,
             "echo": self.echo,
             "presence_penalty": self.presencePenalty,
             "frequency_penalty": self.frequencyPenalty,

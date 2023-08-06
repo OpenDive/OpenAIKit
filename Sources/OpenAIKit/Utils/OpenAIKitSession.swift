@@ -53,13 +53,13 @@ final class OpenAIKitSession {
     ///   - dataDecodingStrategy: Default is `.deferredToData`.
     ///   - dateDecodingStrategy: Default is `.deferredToDate`.
     /// - Returns: Decoded data of `T` type, or throws an `OpenAIErrorRaesponse` object.
-    private func decodeData<T: Decodable>(
+    internal static func decodeData<T: Decodable>(
         _ type: T.Type = T.self,
         with data: Data,
         keyDecodingStrategy: JSONDecoder.KeyDecodingStrategy = .useDefaultKeys,
         dataDecodingStrategy: JSONDecoder.DataDecodingStrategy = .deferredToData,
         dateDecodingStrategy: JSONDecoder.DateDecodingStrategy = .deferredToDate
-    ) async throws -> T {
+    ) throws -> T {
         let decoder = JSONDecoder()
 
         decoder.keyDecodingStrategy = keyDecodingStrategy
@@ -154,6 +154,34 @@ final class OpenAIKitSession {
             }
     }
 
+    /// Stream Data from a server using Server Side Events.
+    /// - Parameters:
+    ///   - type: The type of `T` that the data will decode to.
+    ///   - with: The input url of type `URL` that will be fetched.
+    ///   - apiKey: The API Key for use with the server.
+    ///   - body: The POST body used to add parameters, defaults to `nil`.
+    ///   - method: The method used for the function, defaults to `.post`.
+    /// - Returns: An `AsyncThrowingStream` object with either type `T` object or type `Error` object.
+    public func streamData<T: Decodable>(
+        _ type: T.Type = T.self,
+        with url: URL,
+        apiKey: String,
+        body: [String: Any],
+        method: HTTPMethod = .post
+    ) throws -> AsyncThrowingStream<T, Error> {
+        let jsonData = try? JSONSerialization.data(withJSONObject: body)
+        var request = URLRequest(url: url)
+
+        request.httpMethod = method.rawValue
+        request.allHTTPHeaderFields = [
+            "Content-Type": "application/json"
+        ]
+        request.httpBody = jsonData
+        request.allHTTPHeaderFields?["Authorization"] = "Bearer \(apiKey)"
+
+        return OpenAISource(url: request).streamData()
+    }
+
     /// Decode a `URL` to the type `T` using either `asyncData()` for the Production Server;
     /// or using `decode()` for the Mock Server.
     /// - Parameters:
@@ -193,7 +221,7 @@ final class OpenAIKitSession {
                 let request = formRequest.asURLRequest(apiKey: apiKey)
                 let data = try await self.asyncData(with: request)
 
-                return try await self.decodeData(with: data)
+                return try OpenAIKitSession.decodeData(with: data)
             } else {
                 let jsonData = try? JSONSerialization.data(withJSONObject: body)
                 let data = try await self.asyncData(
@@ -202,7 +230,7 @@ final class OpenAIKitSession {
                     body: jsonData
                 )
 
-                return try await self.decodeData(with: data)
+                return try OpenAIKitSession.decodeData(with: data)
             }
         }
 
@@ -213,7 +241,7 @@ final class OpenAIKitSession {
                 headers: ["Authorization": "Bearer \(apiKey)"]
             )
 
-            return try await self.decodeData(with: data)
+            return try OpenAIKitSession.decodeData(with: data)
         }
 
         throw OpenAIError.noBody

@@ -1,5 +1,5 @@
 //
-//  CreateChatCompletion.swift
+//  CreateChatCompletionStreaming.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2023 MarcoDotIO
@@ -21,13 +21,13 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
-// 
+//
 
 import SwiftUI
 import OpenAIKit
 
-struct CreateChatCompletionExample: View {
-    @State private var responseText: String?
+struct CreateChatCompletionStreamingExample: View {
+    @State private var responseText: String = ""
     @State private var isCompleting: Bool = false
 
     let chat: [ChatMessage] = [
@@ -49,17 +49,13 @@ struct CreateChatCompletionExample: View {
 
             if isCompleting {
                 VStack {
-                    if let responseText = self.responseText {
-                        Text("Assistant: \(responseText)")
-                    } else {
-                        Text("Assistant: ...")
-                    }
+                    Text(responseText)
                 }
                 .padding()
             } else {
                 VStack {
                     Button {
-                        isCompleting = true
+                        self.isCompleting = true
 
                         Task {
                             do {
@@ -69,19 +65,25 @@ struct CreateChatCompletionExample: View {
                                 )
                                 let openAI = OpenAI(config)
                                 let chatParameters = ChatParameters(model: .chatGPTTurbo, messages: chat)
-                                let chatCompletion = try await openAI.generateChatCompletion(
+                                let stream = try openAI.generateChatCompletionStreaming(
                                     parameters: chatParameters
                                 )
-                                
-                                if let message = chatCompletion.choices[0].message {
-                                    self.responseText = message.content
+
+                                for try await result in stream {
+                                    if let delta = result.choices[0].delta {
+                                        if let role = delta.role {
+                                            self.responseText += "\(role.rawValue.capitalized): "
+                                        } else if let content = delta.content {
+                                            self.responseText += content
+                                        }
+                                    }
                                 }
                             } catch {
                                 print("ERROR DETAILS - \(error)")
                             }
                         }
                     } label: {
-                        Text("Generate Completion")
+                        Text("Stream Completion")
                             .font(.headline)
                             .foregroundColor(.white)
                             .frame(width: 270, height: 50)
@@ -97,10 +99,10 @@ struct CreateChatCompletionExample: View {
     }
 }
 
-struct CreateChatCompletionExample_Previews: PreviewProvider {
+struct CreateChatCompletionStreamingExample_Previews: PreviewProvider {
     static var previews: some View {
         NavigationStack {
-            CreateChatCompletionExample()
+            CreateChatCompletionStreamingExample()
         }
     }
 }

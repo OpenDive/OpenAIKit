@@ -42,11 +42,11 @@ public enum ChatModels: String, CustomStringConvertible {
     case chatGPTTurbo16k0613 = "gpt-3.5-turbo-16k-0613"
 
     /// Can do any language task with better quality, longer output, and consistent instruction-following than the curie, babbage, or ada models. Also supports some additional features such as [inserting text](https://platform.openai.com/docs/guides/gpt/inserting-text).
-    @available(*, deprecated, message: "On July 06, 2023, OpenAI announced the upcoming retirements of older GPT-3 and GPT-3.5 models served via the completions endpoint. OpenAI also announced the upcoming retirement of our first-generation text embedding models. They will be shut down on January 04, 2024.")
+    @available(*, deprecated, message: "On July 06, 2023, OpenAI announced the upcoming retirements of older GPT-3 and GPT-3.5 models served via the completions endpoint. OpenAI also announced the upcoming retirement of their first-generation text embedding models. They will be shut down on January 04, 2024.")
     case textDavinci003 = "text-davinci-003"
 
     /// Similar capabilities to text-davinci-003 but trained with supervised fine-tuning instead of reinforcement learning
-    @available(*, deprecated, message: "On July 06, 2023, OpenAI announced the upcoming retirements of older GPT-3 and GPT-3.5 models served via the completions endpoint. OpenAI also announced the upcoming retirement of our first-generation text embedding models. They will be shut down on January 04, 2024.")
+    @available(*, deprecated, message: "On July 06, 2023, OpenAI announced the upcoming retirements of older GPT-3 and GPT-3.5 models served via the completions endpoint. OpenAI also announced the upcoming retirement of their first-generation text embedding models. They will be shut down on January 04, 2024.")
     case textDavinci002 = "text-davinci-002"
 
     // MARK: GPT-4 Models

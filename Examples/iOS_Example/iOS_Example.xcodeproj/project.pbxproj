@@ -42,6 +42,8 @@
 		76C0C26F293FCBEF003075D2 /* CreateFinetuneExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76C0C26E293FCBEF003075D2 /* CreateFinetuneExample.swift */; };
 		76C0C274293FDA7B003075D2 /* DeleteFileExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76C0C273293FDA7B003075D2 /* DeleteFileExample.swift */; };
 		76C0C276293FDAF3003075D2 /* DeleteFinetuneExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76C0C275293FDAF3003075D2 /* DeleteFinetuneExample.swift */; };
+		7D3E2ED72A7F228E0014174B /* CreateChatCompletionStreaming.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D3E2ED62A7F228E0014174B /* CreateChatCompletionStreaming.swift */; };
+		7D3E2ED92A7F262A0014174B /* ChatMainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D3E2ED82A7F262A0014174B /* ChatMainView.swift */; };
 		7DDE422E29AFE567000BBB01 /* CreateChatCompletion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DDE422D29AFE567000BBB01 /* CreateChatCompletion.swift */; };
 /* End PBXBuildFile section */
 
@@ -82,6 +84,8 @@
 		76C0C26E293FCBEF003075D2 /* CreateFinetuneExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateFinetuneExample.swift; sourceTree = "<group>"; };
 		76C0C273293FDA7B003075D2 /* DeleteFileExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteFileExample.swift; sourceTree = "<group>"; };
 		76C0C275293FDAF3003075D2 /* DeleteFinetuneExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteFinetuneExample.swift; sourceTree = "<group>"; };
+		7D3E2ED62A7F228E0014174B /* CreateChatCompletionStreaming.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateChatCompletionStreaming.swift; sourceTree = "<group>"; };
+		7D3E2ED82A7F262A0014174B /* ChatMainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMainView.swift; sourceTree = "<group>"; };
 		7DDE422D29AFE567000BBB01 /* CreateChatCompletion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateChatCompletion.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -248,6 +252,8 @@
 			isa = PBXGroup;
 			children = (
 				7DDE422D29AFE567000BBB01 /* CreateChatCompletion.swift */,
+				7D3E2ED62A7F228E0014174B /* CreateChatCompletionStreaming.swift */,
+				7D3E2ED82A7F262A0014174B /* ChatMainView.swift */,
 			);
 			path = Chat;
 			sourceTree = "<group>";
@@ -329,6 +335,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7D3E2ED92A7F262A0014174B /* ChatMainView.swift in Sources */,
 				76C0C26D293FC9B5003075D2 /* CreateEmbeddingsExample.swift in Sources */,
 				76C0C274293FDA7B003075D2 /* DeleteFileExample.swift in Sources */,
 				765BB1DB29404F7C000BF124 /* ImageMainView.swift in Sources */,
@@ -351,6 +358,7 @@
 				761C252C2940400B005066C2 /* RetrieveModelExample.swift in Sources */,
 				761C251729403CA0005066C2 /* ListFilesExample.swift in Sources */,
 				7DDE422E29AFE567000BBB01 /* CreateChatCompletion.swift in Sources */,
+				7D3E2ED72A7F228E0014174B /* CreateChatCompletionStreaming.swift in Sources */,
 				761C252829403F7D005066C2 /* RetrieveFileExample.swift in Sources */,
 				761C2533294040A8005066C2 /* UploadFileExample.swift in Sources */,
 				761C252429403EDC005066C2 /* ListModelsExample.swift in Sources */,

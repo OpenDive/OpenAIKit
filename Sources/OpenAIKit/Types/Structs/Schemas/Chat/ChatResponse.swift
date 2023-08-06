@@ -37,5 +37,5 @@ public struct ChatResponse: Codable, Identifiable {
     public let choices: [ChatChoice]
 
     /// The token usage of the Completion.
-    public let usage: Usage
+    public let usage: Usage?
 }
