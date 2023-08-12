@@ -73,7 +73,7 @@ public struct EditParameters {
     }
 
     /// The body of the URL used for OpenAI API requests.
-    public var body: [String: Any] {
+    internal var body: [String: Any] {
         return [
             "model": self.model,
             "input": self.input,

@@ -81,7 +81,7 @@ final class OpenAIKitSession {
     ///   and the default is set to an empty dictionary.
     ///   - body: Body data that defaults to `nil`.
     /// - Returns: The data that was fetched typed as a `Data` object.
-    private func asyncData(
+    internal func asyncData(
         with url: URL,
         method: HTTPMethod = .post,
         headers: [String: String] = [:],
@@ -180,6 +180,32 @@ final class OpenAIKitSession {
         request.allHTTPHeaderFields?["Authorization"] = "Bearer \(apiKey)"
 
         return OpenAISource(url: request).streamData()
+    }
+
+    /// Decode a `URL` to the type `Data` using `asyncData()`
+    /// - Parameters:
+    ///   - with: The input url of type `URL` that will be fetched.
+    ///   - apiKey: The API Key for use with the server.
+    ///   - body: The POST body used to add parameters, defaults to `nil`.
+    ///   - method: The method used for the function, defaults to `.post`.
+    /// - Returns: The decoded object of type `Data`.
+    public func decodeUrlTranscriptions(
+        with url: URL,
+        apiKey: String,
+        body: [String: Any]
+    ) async throws -> Data {
+        let formRequest = FormDataHelper(formUrl: url)
+
+        body.forEach { (key, value) in
+            if let dataValue = value as? FormData {
+                formRequest.addDataField(named: key, formData: dataValue)
+            } else {
+                formRequest.addTextField(named: key, value: "\(value)")
+            }
+        }
+
+        let request = formRequest.asURLRequest(apiKey: apiKey)
+        return try await self.asyncData(with: request)
     }
 
     /// Decode a `URL` to the type `T` using either `asyncData()` for the Production Server;

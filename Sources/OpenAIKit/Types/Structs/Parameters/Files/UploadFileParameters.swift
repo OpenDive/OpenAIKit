@@ -48,7 +48,7 @@ public struct UploadFileParameters {
         self.purpose = purpose
     }
 
-    public var body: [String: Any] {
+    internal var body: [String: Any] {
         return ["file": self.file, "purpose": self.purpose]
     }
 }

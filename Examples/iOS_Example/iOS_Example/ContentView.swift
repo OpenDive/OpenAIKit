@@ -49,6 +49,10 @@ struct ContentView: View {
                     Text("Embeddings")
                 }
 
+                NavigationLink(destination: CreateTranscriptionExample()) {
+                    Text("Audio")
+                }
+
                 NavigationLink(destination: FileMainView()) {
                     Text("File")
                 }

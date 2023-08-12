@@ -215,6 +215,18 @@ extension OpenAI: OpenAIProtocol {
         )
     }
 
+    public func createTranscription(parameters param: TranscriptionParameters) async throws -> TranscriptionResponse {
+        let serverUrl = try getServerUrl(path: "/audio/transcriptions")
+        return try await param.retrieveResponse(using: serverUrl, self.config)
+    }
+
+    public func createTranslation(parameters param: TranscriptionParameters) async throws -> TranscriptionResponse {
+        let serverUrl = try getServerUrl(path: "/audio/translations")
+        var newParam = param
+        newParam.language = nil
+        return try await newParam.retrieveResponse(using: serverUrl, self.config)
+    }
+
     public func listFiles() async throws -> ListFilesResponse {
         let serverUrl = try getServerUrl(path: "/files")
         return try await OpenAIKitSession.shared.decodeUrl(

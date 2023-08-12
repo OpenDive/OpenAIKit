@@ -142,7 +142,7 @@ public struct CreateFineTuneParameters {
     }
 
     /// The body of the URL used for OpenAI API requests.
-    public var body: [String: Any] {
+    internal var body: [String: Any] {
         var result: [String: Any] = [
             "training_file": self.trainingFile,
             "model": self.model,

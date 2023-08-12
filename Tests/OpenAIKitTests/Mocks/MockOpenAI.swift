@@ -120,6 +120,14 @@ class MockOpenAI: OpenAIProtocol {
         return try await getDecodedData(with: "EmbeddingsResponse") as EmbeddingsResponse
     }
 
+    func createTranscription(parameters param: TranscriptionParameters) async throws -> TranscriptionResponse {
+        throw MockOpenAIError.notImplemented
+    }
+
+    func createTranslation(parameters param: TranscriptionParameters) async throws -> TranscriptionResponse {
+        throw MockOpenAIError.notImplemented
+    }
+
     func listFiles() async throws -> ListFilesResponse {
         return try await getDecodedData(with: "ListFilesResponse") as ListFilesResponse
     }

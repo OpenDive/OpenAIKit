@@ -64,11 +64,13 @@ public struct ImageParameters {
     }
 
     /// The body of the URL used for OpenAI API requests.
-    public var body: [String: Any] {
-        var result: [String: Any] = ["prompt": self.prompt,
-                                     "n": self.numberOfImages,
-                                     "size": self.resolution.rawValue,
-                                     "response_format": self.responseFormat.rawValue]
+    internal var body: [String: Any] {
+        var result: [String: Any] = [
+            "prompt": self.prompt,
+            "n": self.numberOfImages,
+            "size": self.resolution.rawValue,
+            "response_format": self.responseFormat.rawValue
+        ]
         if let user = self.user {
             result["user"] = user
         }

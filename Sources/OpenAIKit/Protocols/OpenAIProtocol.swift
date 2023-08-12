@@ -110,6 +110,21 @@ public protocol OpenAIProtocol {
     func createEmbeddings(parameters param: EmbeddingsParameters) async throws -> EmbeddingsResponse
 
 
+    // MARK: Audio Functions
+    /// Get text from an audio source
+    /// Related guide: [Speech to text](https://platform.openai.com/docs/guides/speech-to-text)
+
+    /// Transcribes audio into the input language.
+    /// - Parameter param: A `TranscriptionParameters` object containing the parameters for the call.
+    /// - Returns: A `TranscriptionResponse` object.
+    func createTranscription(parameters param: TranscriptionParameters) async throws -> TranscriptionResponse
+
+    /// Translates audio into English.
+    /// - Parameter param: A `TranscriptionParameters` object containing the parameters for the call.
+    /// - Returns: A `TranscriptionResponse` object.
+    func createTranslation(parameters param: TranscriptionParameters) async throws -> TranscriptionResponse
+
+
     // MARK: Files Functions
     /// Files are used to upload documents that can be used with features
     /// like [Fine-tuning](https://beta.openai.com/docs/api-reference/fine-tunes).

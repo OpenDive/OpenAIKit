@@ -1,5 +1,5 @@
 //
-//  ContentPolicyParameters.swift
+//  AudioPlayerViewModel.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2023 MarcoDotIO
@@ -23,29 +23,23 @@
 //  THE SOFTWARE.
 //
 
-/// The parameter struct used for the Moderations endpoint
-public struct ContentPolicyParameters {
-    /// The input text to classify.
-    public var input: String
+import SwiftUI
+import AVFoundation
 
-    /// Two content moderations models are available: `text-moderation-stable` and `text-moderation-latest`.
-    ///
-    /// The default is `text-moderation-latest` which will be automatically upgraded over time.
-    /// This ensures you are always using our most accurate model. If you use `text-moderation-stable`,
-    /// we will provide advanced notice before updating the model. Accuracy of `text-moderation-stable`
-    /// may be slightly lower than for `text-moderation-latest`.
-    public var model: ContentPolicyModels
+class AudioPlayerViewModel: ObservableObject {
+    private var audioPlayer: AVAudioPlayer?
 
-    public init(
-        input: String,
-        model: ContentPolicyModels = .latest
-    ) {
-        self.input = input
-        self.model = model
-    }
-
-    /// The body of the URL used for OpenAI API requests.
-    internal var body: [String: Any] {
-        return ["input": self.input, "model": self.model.rawValue]
+    func play(audioData: Data?) {
+        guard let data = audioData else {
+            print("No audio data set")
+            return
+        }
+        
+        do {
+            audioPlayer = try AVAudioPlayer(data: data)
+            audioPlayer?.play()
+        } catch {
+            print("Error initializing audio player: \(error.localizedDescription)")
+        }
     }
 }

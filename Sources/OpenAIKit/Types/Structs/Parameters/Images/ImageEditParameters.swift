@@ -146,13 +146,15 @@ public struct ImageEditParameters {
     #endif
 
     /// The body of the URL used for OpenAI API requests.
-    public var body: [String: Any] {
-        var result: [String: Any] = ["image": self.image,
-                                     "mask": self.mask,
-                                     "prompt": self.prompt,
-                                     "n": self.numberOfImages,
-                                     "size": self.resolution.rawValue,
-                                     "response_format": self.responseFormat.rawValue]
+    internal var body: [String: Any] {
+        var result: [String: Any] = [
+            "image": self.image,
+            "mask": self.mask,
+            "prompt": self.prompt,
+            "n": self.numberOfImages,
+            "size": self.resolution.rawValue,
+            "response_format": self.responseFormat.rawValue
+        ]
         if let user = self.user {
             result["user"] = user
         }

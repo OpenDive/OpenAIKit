@@ -27,11 +27,11 @@ import Foundation
 
 public struct ChatParameters {
     /// ID of the model to use. Currently, only `gpt-3.5-turbo` and `gpt-3.5-turbo-0301` are supported.
-    var model: ChatModels
+    public var model: ChatModels
 
     /// The messages to generate chat completions for, in the
     /// [chat format](https://platform.openai.com/docs/guides/chat/introduction).
-    var messages: [ChatMessage]
+    public var messages: [ChatMessage]
 
     /// What [sampling temperature](https://towardsdatascience.com/how-to-sample-from-language-models-682bceb97277)
     /// to use.
@@ -40,40 +40,40 @@ public struct ChatParameters {
     /// Try 0.9 for more creative applications, and 0 (argmax sampling) for ones with a well-defined answer.
     ///
     /// We generally recommend altering this or `top_p` but not both.
-    var temperature: Double
+    public var temperature: Double
 
     /// An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with `top_p` probability mass.
     ///
     /// So 0.1 means only the tokens comprising the top 10% probability mass are considered.
     /// We generally recommend altering this or `temperature` but not both.
-    var topP: Double
+    public var topP: Double
 
     /// How many completions to generate for each prompt.
     ///
     /// **Note:** Because this parameter generates many completions, it can quickly consume your token quota.
     /// Use carefully and ensure that you have reasonable settings for `max_tokens` and `stop`.
-    var numberOfCompletions: Int
+    public var numberOfCompletions: Int
 
     /// Whether to stream back partial progress. If set, tokens will be sent as data-only
     /// [server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events#Event_stream_format)
     /// as they become available, with the stream terminated by a data: [DONE] message.
-    var stream: Bool
+    public var stream: Bool
 
     /// Up to 4 sequences where the API will stop generating further tokens.
     /// The returned text will not contain the stop sequence.
-    var stop: [String]?
+    public var stop: [String]?
 
     /// Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far,
     /// increasing the model's likelihood to talk about new topics.
     ///
     /// [See more information about frequency and presence penalties.](https://beta.openai.com/docs/api-reference/parameter-details)
-    var presencePenalty: Double
+    public var presencePenalty: Double
 
     /// Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far,
     /// decreasing the model's likelihood to repeat the same line verbatim.
     ///
     /// [See more information about frequency and presence penalties.](https://beta.openai.com/docs/api-reference/parameter-details)
-    var frequencyPenalty: Double
+    public var frequencyPenalty: Double
 
     /// Modify the likelihood of specified tokens appearing in the completion.
     ///
@@ -84,11 +84,11 @@ public struct ChatParameters {
     /// values like -100 or 100 should result in a ban or exclusive selection of the relevant token.
     ///
     /// As an example, you can pass `{"50256": -100}` to prevent the `<|endoftext|>` token from being generated.
-    var logitBias: [String: Int]?
+    public var logitBias: [String: Int]?
 
     /// A unique identifier representing your end-user, which can help OpenAI to monitor and detect abuse.
     /// [Learn more.](https://beta.openai.com/docs/guides/safety-best-practices/end-user-ids)
-    var user: String?
+    public var user: String?
 
     public init(
         model: ChatModels,
@@ -116,8 +116,8 @@ public struct ChatParameters {
         self.user = user
     }
 
-    // The body of the URL used for OpenAI API requests.
-    public var body: [String: Any] {
+    /// The body of the URL used for OpenAI API requests.
+    internal var body: [String: Any] {
         var result: [String: Any] = [
             "model": self.model.description,
             "temperature": self.temperature,
