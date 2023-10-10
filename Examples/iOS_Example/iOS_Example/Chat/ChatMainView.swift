@@ -35,6 +35,10 @@ struct ChatMainView: View {
             NavigationLink(destination: CreateChatCompletionStreamingExample()) {
                 Text("Generate Chat Completion Streaming Example")
             }
+
+            NavigationLink(destination: CreateChatFunctionCallExample()) {
+                Text("Generate Chat Completion Function Call Example")
+            }
         }
         .listStyle(.plain)
         .navigationTitle("Chat")

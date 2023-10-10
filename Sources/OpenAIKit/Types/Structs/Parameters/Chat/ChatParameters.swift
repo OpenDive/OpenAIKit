@@ -90,6 +90,15 @@ public struct ChatParameters {
     /// [Learn more.](https://beta.openai.com/docs/guides/safety-best-practices/end-user-ids)
     public var user: String?
 
+    /// Controls how the model calls functions. "none" means the model will not call a function and instead generates a message.
+    /// "auto" means the model can pick between generating a message or calling a function. Specifying a particular function via
+    /// {"name": "my_function"} forces the model to call that function. "none" is the default when no functions are present. "auto" is
+    /// the default if functions are present.
+    public var functionCall: String?
+
+    /// A list of functions the model may generate JSON inputs for.
+    public var functions: [Function]?
+
     public init(
         model: ChatModels,
         messages: [ChatMessage],
@@ -101,7 +110,9 @@ public struct ChatParameters {
         presencePenalty: Double = 0.0,
         frequencyPenalty: Double = 0.0,
         logitBias: [String : Int]? = nil,
-        user: String? = nil
+        user: String? = nil,
+        functionCall: String? = nil,
+        functions: [Function]? = nil
     ) {
         self.model = model
         self.messages = messages
@@ -114,10 +125,12 @@ public struct ChatParameters {
         self.frequencyPenalty = frequencyPenalty
         self.logitBias = logitBias
         self.user = user
+        self.functionCall = functionCall
+        self.functions = functions
     }
 
     /// The body of the URL used for OpenAI API requests.
-    internal var body: [String: Any] {
+    public var body: [String: Any] {
         var result: [String: Any] = [
             "model": self.model.description,
             "temperature": self.temperature,
@@ -139,6 +152,14 @@ public struct ChatParameters {
 
         if let user = self.user {
             result["user"] = user
+        }
+
+        if let functionCall = self.functionCall {
+            result["function_call"] = functionCall
+        }
+
+        if let functions = self.functions {
+            result["functions"] = functions.map { $0.body }
         }
 
         return result

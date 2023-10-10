@@ -1,6 +1,6 @@
 //  swift-tools-version: 5.7
 //
-//  Package.swift
+//  Package@swift-5.7.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2023 MarcoDotIO

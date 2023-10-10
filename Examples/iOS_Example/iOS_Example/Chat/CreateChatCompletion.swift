@@ -41,7 +41,7 @@ struct CreateChatCompletionExample: View {
         VStack {
             VStack(alignment: .leading) {
                 ForEach(chat) { message in
-                    Text("\(message.role.rawValue.capitalized): \(message.content)")
+                    Text("\(message.role.rawValue.capitalized): \(message.content ?? "NO CONTENT")")
                         .padding(.vertical, 10)
                 }
             }
