@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4.1.0
       - name: Generate Documentation
         uses: SwiftDocOrg/swift-doc@1.0.0-rc.1
         with:
@@ -22,7 +22,7 @@ jobs:
           module-name: MyLibrary
           output: "Documentation"
       - name: Upload Documentation to Wiki
-        uses: SwiftDocOrg/github-wiki-publish-action@v1
+        uses: SwiftDocOrg/github-wiki-publish-action@1.0.0
         with:
           path: "Documentation"
         env:
