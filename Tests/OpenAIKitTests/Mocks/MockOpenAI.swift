@@ -67,10 +67,6 @@ class MockOpenAI: OpenAIProtocol {
         throw MockOpenAIError.notImplemented
     }
 
-    func generateEdit(parameters param: EditParameters) async throws -> EditResponse {
-        return try await getDecodedData(with: "EditResponse") as EditResponse
-    }
-
     func createImage(parameters param: ImageParameters) async throws -> ImageResponse {
         if let user = param.user {
             switch user {
@@ -144,35 +140,11 @@ class MockOpenAI: OpenAIProtocol {
         throw MockOpenAIError.notImplemented
     }
 
-    func retrieveFileContent(fileId id: String) async throws -> [OpenAIKit.FineTuneTraining] {
+    func retrieveFileContent(fileId id: String) async throws -> [OpenAIKit.FileContent] {
         throw MockOpenAIError.notImplemented
     }
 
-    func createFineTune(parameters param: CreateFineTuneParameters) async throws -> FineTune {
-        return try await getDecodedData(with: "CreateFineTuneResponse") as FineTune
-    }
-
-    func listFineTunes() async throws -> ListFineTuneResponse {
-        throw MockOpenAIError.notImplemented
-    }
-
-    func retrieveFineTune(fineTune id: String) async throws -> FineTune {
-        throw MockOpenAIError.notImplemented
-    }
-
-    func cancelFineTune(fineTune id: String) async throws -> FineTune {
-        throw MockOpenAIError.notImplemented
-    }
-
-    func listFineTuneEvents(fineTune id: String) async throws -> FineTuneEventsResponse {
-        throw MockOpenAIError.notImplemented
-    }
-
-    func listFineTuneEventsStreaming(fineTune id: String) throws -> AsyncThrowingStream<OpenAIKit.FineTuneEventsResponse, Error> {
-        throw MockOpenAIError.notImplemented
-    }
-
-    func deleteFineTuneModel(model: String) async throws -> DeleteObject {
+    func deleteModel(model: String) async throws -> DeleteObject {
         throw MockOpenAIError.notImplemented
     }
 

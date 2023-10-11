@@ -27,33 +27,28 @@
 public enum OpenAIObject: String, Codable {
     /// A list object.
     case list
-    
+
     /// A model object.
     case model
-    
+
     /// A model permission object.
     case modelPermission = "model_permission"
-    
+
     /// A text completion object.
     case textCompletion = "text_completion"
-    
+
     /// A Chat Completion.
     case chatCompletion = "chat.completion"
-    
+
     /// An edit object.
     case edit
-    
+
     /// An embedding object.
     case embedding
-    
+
     /// A file object.
     case file
-    
-    /// A Fine-tune object.
-    case fineTune = "fine-tune"
-    
-    /// A Fine-tune event object.
-    case fineTuneEvent = "fine-tune-event"
 
+    /// A Chat Completion chunk.
     case chatCompletionChunk = "chat.completion.chunk"
 }

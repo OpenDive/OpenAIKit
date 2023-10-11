@@ -54,15 +54,6 @@ public protocol OpenAIProtocol {
     ) throws -> AsyncThrowingStream<CompletionResponse, Error>
 
 
-    // MARK: Edit Function
-    /// Given a prompt and an instruction, the model will return an edited version of the prompt.
-
-    /// Creates a completion for the provided prompt and parameters.
-    /// - Parameter param: A `EditParameters` object containing the parameters for the call.
-    /// - Returns: An `EditResponse` object.
-    func generateEdit(parameters param: EditParameters) async throws -> EditResponse
-
-
     // MARK: Chat Function
     /// Creates a completion for the chat message
 
@@ -125,8 +116,7 @@ public protocol OpenAIProtocol {
 
 
     // MARK: Files Functions
-    /// Files are used to upload documents that can be used with features
-    /// like [Fine-tuning](https://beta.openai.com/docs/api-reference/fine-tunes).
+    /// Files are used to upload documents for training and fine-tuning models.
 
     /// Returns a list of files that belong to the user's organization.
     /// - Returns: A `ListFilesResponse` object.
@@ -152,49 +142,17 @@ public protocol OpenAIProtocol {
     /// Returns the contents of the specified file.
     /// - Parameter id: A `String` value representing the ID of the file.
     /// - Returns: An array of `FineTuneTraining` objects.
-    func retrieveFileContent(fileId id: String) async throws -> [FineTuneTraining]
+    func retrieveFileContent(fileId id: String) async throws -> [FileContent]
 
 
     // MARK: Fine-tune Functions.
     /// Manage fine-tuning jobs to tailor a model to your specific training data.
     /// Related guide: [Fine-tune models](https://beta.openai.com/docs/guides/fine-tuning)
 
-    /// Creates a job that fine-tunes a specified model from a given dataset.
-    /// Response includes details of the enqueued job including job status and the name of the fine-tuned models once complete.
-    /// [Learn more about Fine-tuning](https://beta.openai.com/docs/guides/fine-tuning)
-    /// - Parameter param: A `CreateFineTuneParameters` object containing the parameters for the call.
-    /// - Returns: A `FineTune` object.
-    func createFineTune(parameters param: CreateFineTuneParameters) async throws -> FineTune
-
-    /// List your organization's fine-tuning jobs
-    /// - Returns: A `ListFineTuneResponse` object.
-    func listFineTunes() async throws -> ListFineTuneResponse
-
-    /// Gets info about the fine-tune job.
-    /// [Learn more about Fine-tuning](https://beta.openai.com/docs/guides/fine-tuning)
-    /// - Parameter id: The `String` of the ID of the Fine-tune job.
-    /// - Returns: A `FineTune` object.
-    func retrieveFineTune(fineTune id: String) async throws -> FineTune
-
-    /// Immediately cancel a fine-tune job.
-    /// - Parameter id: The `String` of the ID of the Fine-tune job.
-    /// - Returns: A `FineTune` object.
-    func cancelFineTune(fineTune id: String) async throws -> FineTune
-
-    /// Get fine-grained status updates for a fine-tune job.
-    /// - Parameter id: The `String` of the ID of the Fine-tune job.
-    /// - Returns: A `FineTuneEventsResponse` object.
-    func listFineTuneEvents(fineTune id: String) async throws -> FineTuneEventsResponse
-
-    /// Get fine-grained status updates for a fine-tune job. This function streams the fine tuning events.
-    /// - Parameter id: The `String` of the ID of the Fine-tune job.
-    /// - Returns: An `AsyncThrowingStream` object containing either a `FineTuneEventsResponse` object or an `Error` object.
-    func listFineTuneEventsStreaming(fineTune id: String) throws -> AsyncThrowingStream<FineTuneEventsResponse, Error>
-
     /// Deletes the Fine-tune model from storage.
     /// - Parameter model: The string of the model's name being deleted.
     /// - Returns: A `DeleteObject` object.
-    func deleteFineTuneModel(model: String) async throws -> DeleteObject
+    func deleteModel(model: String) async throws -> DeleteObject
 
 
     // MARK: Moderation Function

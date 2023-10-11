@@ -267,7 +267,7 @@ extension OpenAI: OpenAIProtocol {
         )
     }
 
-    public func retrieveFileContent(fileId id: String) async throws -> [FineTuneTraining] {
+    public func retrieveFileContent(fileId id: String) async throws -> [FileContent] {
         let serverUrl = try getServerUrl(path: "/files/\(id)/content")
         return try await OpenAIKitSession.shared.retrieveJsonLine(
             with: serverUrl,
@@ -275,66 +275,7 @@ extension OpenAI: OpenAIProtocol {
         )
     }
 
-    public func createFineTune(parameters param: CreateFineTuneParameters) async throws -> FineTune {
-        let serverUrl = try getServerUrl(path: "/fine-tunes")
-        return try await OpenAIKitSession.shared.decodeUrl(
-            with: serverUrl,
-            apiKey: config.apiKey,
-            body: param.body
-        )
-    }
-
-    public func listFineTunes() async throws -> ListFineTuneResponse {
-        let serverUrl = try getServerUrl(path: "/fine-tunes")
-        return try await OpenAIKitSession.shared.decodeUrl(
-            with: serverUrl,
-            apiKey: config.apiKey,
-            method: .get,
-            bodyRequired: false
-        )
-    }
-
-    public func retrieveFineTune(fineTune id: String) async throws -> FineTune {
-        let serverUrl = try getServerUrl(path: "/fine-tunes/\(id)")
-        return try await OpenAIKitSession.shared.decodeUrl(
-            with: serverUrl,
-            apiKey: config.apiKey,
-            method: .get,
-            bodyRequired: false
-        )
-    }
-
-    public func cancelFineTune(fineTune id: String) async throws -> FineTune {
-        let serverUrl = try getServerUrl(path: "/fine-tunes/\(id)/cancel")
-        return try await OpenAIKitSession.shared.decodeUrl(
-            with: serverUrl,
-            apiKey: config.apiKey,
-            method: .post,
-            bodyRequired: false
-        )
-    }
-
-    public func listFineTuneEvents(fineTune id: String) async throws -> FineTuneEventsResponse {
-        let serverUrl = try getServerUrl(path: "/fine-tunes/\(id)/events")
-        return try await OpenAIKitSession.shared.decodeUrl(
-            with: serverUrl,
-            apiKey: config.apiKey,
-            method: .get,
-            bodyRequired: false
-        )
-    }
-
-    public func listFineTuneEventsStreaming(fineTune id: String) throws -> AsyncThrowingStream<FineTuneEventsResponse, Error> {
-        let serverUrl = try getServerUrl(path: "/fine-tunes/\(id)/events")
-        return try OpenAIKitSession.shared.streamData(
-            with: serverUrl,
-            apiKey: config.apiKey,
-            body: ["stream": true],
-            method: .get
-        )
-    }
-
-    public func deleteFineTuneModel(model: String) async throws -> DeleteObject {
+    public func deleteModel(model: String) async throws -> DeleteObject {
         let serverUrl = try getServerUrl(path: "/models/\(model)")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,

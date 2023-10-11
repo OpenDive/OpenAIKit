@@ -57,10 +57,6 @@ struct ContentView: View {
                     Text("File")
                 }
 
-                NavigationLink(destination: FinetuneMainView()) {
-                    Text("Fine-tune")
-                }
-
                 NavigationLink(destination: ContentPolicyExample()) {
                     Text("Content Policy")
                 }

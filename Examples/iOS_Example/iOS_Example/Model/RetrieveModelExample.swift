@@ -38,25 +38,6 @@ struct RetrieveModelExample: View {
                     Text("Name: \(model.id)")
                     Text("Object: \(model.object.rawValue)")
                     Text("Owned By: \(model.ownedBy)")
-                    Text("Root: \(model.root)")
-                    Text("Parent: \(model.parent ?? "No Parent")").padding(.bottom)
-
-                    VStack {
-                        Text("Model Permissions").bold().font(.title)
-                        Text("ID: \(model.permission[0].id)")
-                        Text("Object: \(model.permission[0].object.rawValue)")
-                        Text("Created: \(String(model.permission[0].created))")
-                        Text("Allow Create Engine: \(String(model.permission[0].allowCreateEngine))")
-                        Text("Allow Sampling: \(String(model.permission[0].allowSampling))")
-                        Text("Allow Search Indices: \(String(model.permission[0].allowSearchIndices))")
-                        Text("Allow View: \(String(model.permission[0].allowView))")
-                        Text("Allow Fine-tuning: \(String(model.permission[0].allowFineTuning))")
-                        VStack {
-                            Text("Organization: \(model.permission[0].organization)")
-                            Text("Group: \(model.permission[0].group ?? "No Group")")
-                            Text("Is Blocking: \(String(model.permission[0].isBlocking))")
-                        }
-                    }
                 } else {
                     Text("Loading Model...")
                 }

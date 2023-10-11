@@ -51,7 +51,7 @@ public struct File: Codable, Identifiable {
     /// The file's name.
     public let filename: String
 
-    /// The purpose the file has. Usually is "fine-tune".
+    /// The purpose the file has.
     public let purpose: String
 
     /// The upload status of the file.

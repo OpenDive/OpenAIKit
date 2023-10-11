@@ -27,19 +27,19 @@ import SwiftUI
 import OpenAIKit
 
 struct RetrieveFileContentsExample: View {
-    @State private var fineTunes: [FineTuneTraining]?
+    @State private var files: [FileContent]?
     @State private var isRetrieving: Bool = false
 
     var body: some View {
         if isRetrieving {
             VStack {
-                if let fineTunes = fineTunes {
+                if let files = self.files {
                     Text("Retrieved file!")
-                    Text("Fine-tunes size: \(fineTunes.count)")
+                    Text("Files size: \(files.count)")
                     Text("First three indexes (see log for full object): ")
-                    Text("\(fineTunes[0].prompt) - \(fineTunes[0].completion)")
-                    Text("\(fineTunes[1].prompt) - \(fineTunes[1].completion)")
-                    Text("\(fineTunes[2].prompt) - \(fineTunes[2].completion)")
+                    Text("\(files[0].prompt) - \(files[0].completion)")
+                    Text("\(files[1].prompt) - \(files[1].completion)")
+                    Text("\(files[2].prompt) - \(files[2].completion)")
                 } else {
                     Text("Retrieving file...")
                 }
@@ -55,7 +55,7 @@ struct RetrieveFileContentsExample: View {
                             let config = Configuration(organizationId: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
                             let openAI = OpenAI(config)
 
-                            self.fineTunes = try await openAI.retrieveFileContent(fileId: "INSERT-FILE-ID")
+                            self.files = try await openAI.retrieveFileContent(fileId: "INSERT-FILE-ID")
                         } catch {
                             print("ERROR - \(error)")
                         }

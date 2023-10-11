@@ -26,13 +26,8 @@
 /// The GPT3 models used for text and code completions.
 public struct Model: Codable, Identifiable {
     enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case created
+        case id, object, created
         case ownedBy = "owned_by"
-        case permission
-        case root
-        case parent
     }
 
     /// The ID of the model.
@@ -46,13 +41,4 @@ public struct Model: Codable, Identifiable {
 
     /// The owner of the model.
     public let ownedBy: String
-
-    /// Permissions associated with the model.
-    public let permission: [ModelPermission]
-
-    /// The root model of the current model.
-    public let root: String
-
-    /// The parent model of the current model.
-    public let parent: String?
 }

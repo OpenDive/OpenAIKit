@@ -2,77 +2,23 @@
   "object": "list",
   "data": [
     {
-      "id": "curie-similarity",
+      "id": "model-id-0",
       "object": "model",
-      "created": 1651172510,
-      "owned_by": "openai-dev",
-      "permission": [
-        {
-          "id": "modelperm-IsQ2EglMd7hAnqD0cFuyDSg3",
-          "object": "model_permission",
-          "created": 1664351203,
-          "allow_create_engine": false,
-          "allow_sampling": true,
-          "allow_logprobs": true,
-          "allow_search_indices": true,
-          "allow_view": true,
-          "allow_fine_tuning": false,
-          "organization": "*",
-          "group": null,
-          "is_blocking": false
-        }
-      ],
-      "root": "curie-similarity",
-      "parent": null
+      "created": 1686935002,
+      "owned_by": "organization-owner"
     },
     {
-      "id": "text-davinci-insert-001",
+      "id": "model-id-1",
       "object": "model",
-      "created": 1649880484,
-      "owned_by": "openai",
-      "permission": [
-        {
-          "id": "modelperm-5jxkXRWPzuq6YY2ZeczqE215",
-          "object": "model_permission",
-          "created": 1667582459,
-          "allow_create_engine": false,
-          "allow_sampling": true,
-          "allow_logprobs": true,
-          "allow_search_indices": false,
-          "allow_view": true,
-          "allow_fine_tuning": false,
-          "organization": "*",
-          "group": null,
-          "is_blocking": false
-        }
-      ],
-      "root": "text-davinci-insert-001",
-      "parent": null
+      "created": 1686935002,
+      "owned_by": "organization-owner",
     },
     {
-      "id": "code-search-babbage-text-001",
+      "id": "model-id-2",
       "object": "model",
-      "created": 1651172507,
-      "owned_by": "openai-dev",
-      "permission": [
-        {
-          "id": "modelperm-wKl8kAhHFOk2oTpMU3Btp0us",
-          "object": "model_permission",
-          "created": 1664347342,
-          "allow_create_engine": false,
-          "allow_sampling": true,
-          "allow_logprobs": true,
-          "allow_search_indices": true,
-          "allow_view": true,
-          "allow_fine_tuning": false,
-          "organization": "*",
-          "group": null,
-          "is_blocking": false
-        }
-      ],
-      "root": "code-search-babbage-text-001",
-      "parent": null
-    }
-  ]
+      "created": 1686935002,
+      "owned_by": "openai"
+    },
+  ],
+  "object": "list"
 }
-

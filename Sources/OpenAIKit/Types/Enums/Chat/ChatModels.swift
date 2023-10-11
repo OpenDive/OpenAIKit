@@ -47,6 +47,7 @@ public enum ChatModels: String, CustomStringConvertible {
     /// Similar capabilities to text-davinci-003 but trained with supervised fine-tuning instead of reinforcement learning
     case textDavinci002 = "text-davinci-002"
 
+
     // MARK: GPT-4 Models
 
     /// More capable than any GPT-3.5 model, able to do more complex tasks, and optimized for chat. Will be updated with our latest model iteration 2 weeks after it is released.

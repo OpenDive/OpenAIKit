@@ -47,8 +47,8 @@ final class OpenAIKitTests: XCTestCase {
             )
             XCTAssertEqual(
                 modelsResponse.data[0].id,
-                "curie-similarity",
-                "Model Response doesn't contain Curie Similarity model."
+                "model-id-0",
+                "Model Response doesn't contain the named model."
             )
             XCTAssertEqual(
                 modelsResponse.data[0].object,
@@ -57,35 +57,13 @@ final class OpenAIKitTests: XCTestCase {
             )
             XCTAssertEqual(
                 modelsResponse.data[0].created,
-                1651172510,
+                1686935002,
                 "Model doesn't contain correct creation date."
             )
             XCTAssertEqual(
                 modelsResponse.data[0].ownedBy,
-                "openai-dev",
+                "organization-owner",
                 "Model doesn't have correct owner."
-            )
-            XCTAssertEqual(
-                modelsResponse.data[0].permission[0].id,
-                "modelperm-IsQ2EglMd7hAnqD0cFuyDSg3",
-                "Model permission ID isn't correct."
-            )
-            XCTAssertEqual(
-                modelsResponse.data[0].permission[0].object,
-                .modelPermission,
-                "Model permission isn't correct object type."
-            )
-            XCTAssertFalse(
-                modelsResponse.data[0].permission[0].allowCreateEngine,
-                "Model shouldn't allow engine creation."
-            )
-            XCTAssertTrue(
-                modelsResponse.data[0].permission[0].allowView,
-                "Model should allow viewing."
-            )
-            XCTAssertNil(
-                modelsResponse.data[0].permission[0].group,
-                "Model group should be nil."
             )
         } catch {
             XCTFail("LIST MODELS TEST FAILED WITH ERROR: \(error)")
@@ -99,14 +77,14 @@ final class OpenAIKitTests: XCTestCase {
 
             // When
             let model = try await mockOpenAI.retrieveModel(
-                modelId: "text-davinci-001"
+                modelId: "davinci"
             )
 
             // Then
             XCTAssertEqual(
                 model.id,
-                "text-davinci-001",
-                "Model Response doesn't contain Text Davinci model."
+                "davinci",
+                "Model Response doesn't contain the Davinvi model."
             )
             XCTAssertEqual(
                 model.object,
@@ -115,35 +93,13 @@ final class OpenAIKitTests: XCTestCase {
             )
             XCTAssertEqual(
                 model.created,
-                1649364042,
+                1686935002,
                 "Model doesn't contain correct creation date."
             )
             XCTAssertEqual(
                 model.ownedBy,
                 "openai",
                 "Model doesn't have correct owner."
-            )
-            XCTAssertEqual(
-                model.permission[0].id,
-                "modelperm-MvTj8KLFdp5D24iGFdz8NIMj",
-                "Model permission ID isn't correct."
-            )
-            XCTAssertEqual(
-                model.permission[0].object,
-                    .modelPermission,
-                "Model permission isn't correct object type."
-            )
-            XCTAssertFalse(
-                model.permission[0].allowCreateEngine,
-                "Model shouldn't allow engine creation."
-            )
-            XCTAssertTrue(
-                model.permission[0].allowView,
-                "Model should allow viewing."
-            )
-            XCTAssertNil(
-                model.permission[0].group,
-                "Model group should be nil."
             )
         } catch {
             XCTFail("RETRIEVE MODEL TEST FAILED WITH ERROR: \(error)")
@@ -218,63 +174,6 @@ final class OpenAIKitTests: XCTestCase {
             )
         } catch {
             XCTFail("COMPLETION PROMPT TEST FAILED WITH ERROR: \(error)")
-        }
-    }
-
-    func testThatVerifiesOpenAIIsAbleToGenerateEditBasedOnInstruction() async {
-        do {
-            // Given
-            let mockOpenAI = MockOpenAI()
-
-            let editParameter = EditParameters(
-                model: "text-davinci-edit-001",
-                input: "What day of the wek is it?",
-                instruction: "Fix the spelling mistakes"
-            )
-
-            // When
-            let editResponse = try await mockOpenAI.generateEdit(
-                parameters: editParameter
-            )
-
-            // Then
-            XCTAssertEqual(
-                editResponse.object,
-                .edit,
-                "Edit Response has incorrect object type."
-            )
-            XCTAssertEqual(
-                editResponse.created,
-                1667836642,
-                "Edit Response has incorrect creation date."
-            )
-            XCTAssertEqual(
-                editResponse.choices[0].text,
-                "What day of the week is it?",
-                "Completion Response has incorrect completion."
-            )
-            XCTAssertEqual(
-                editResponse.choices[0].index,
-                0,
-                "Edit Response has incorrect index."
-            )
-            XCTAssertEqual(
-                editResponse.usage.promptTokens,
-                25,
-                "Edit Response has incorrect prompt token usage."
-            )
-            XCTAssertEqual(
-                editResponse.usage.completionTokens,
-                28,
-                "Edit Response has incorrect completion token usage."
-            )
-            XCTAssertEqual(
-                editResponse.usage.totalTokens,
-                53,
-                "Edit Response has incorrect total token usage."
-            )
-        } catch {
-            XCTFail("EDIT INSTRUCTION TEST FAILED WITH ERROR: \(error)")
         }
     }
 
@@ -869,97 +768,6 @@ final class OpenAIKitTests: XCTestCase {
             )
         } catch {
             XCTFail("DELETE FILE FAILED WITH ERROR - \(error)")
-        }
-    }
-
-    func testThatVerifiesOpenAIIsAbleToCreateFineTune() async {
-        do {
-            // Given
-            let mockOpenAI = MockOpenAI()
-            let createFineTuneParam = CreateFineTuneParameters(
-                trainingFile: "file-PU0v1w7OsHXsauUpGOmFdAdl"
-            )
-
-            // When
-            let fineTuneResponse = try await mockOpenAI.createFineTune(
-                parameters: createFineTuneParam
-            )
-
-            // Then
-            XCTAssertEqual(
-                fineTuneResponse.object,
-                .fineTune,
-                "Object is not a fine tune model"
-            )
-            XCTAssertEqual(
-                fineTuneResponse.id,
-                "ft-xZ8Sx0qndMWb8suLmNzm4SbK",
-                "Fine Tune ID is not correct."
-            )
-            XCTAssertEqual(
-                fineTuneResponse.organizationId,
-                "org-3JlqS7fDgniMfkzHfwwEdBm3",
-                "Organization ID is not correct."
-            )
-            XCTAssertEqual(
-                fineTuneResponse.model,
-                "curie",
-                "Fine Tune Model type is not correct."
-            )
-            XCTAssertEqual(
-                fineTuneResponse.createdAt,
-                1668880695,
-                "Created At date is not correct."
-            )
-            XCTAssertEqual(
-                fineTuneResponse.updatedAt,
-                1668880695,
-                "Updated At date is not correct."
-            )
-
-            XCTAssertEqual(
-                fineTuneResponse.hyperparams.nEpochs,
-                4,
-                "n Epochs is not correct amount."
-            )
-            XCTAssertEqual(
-                fineTuneResponse.hyperparams.batchSize,
-                16,
-                "Batch size is not correct amount."
-            )
-            XCTAssertEqual(
-                fineTuneResponse.hyperparams.promptLossWeight,
-                0.01,
-                "Prompt Loss Weight is not correct amount."
-            )
-            XCTAssertEqual(
-                fineTuneResponse.hyperparams.learningRateMultiplier,
-                0.2,
-                "Learning Rate Multiplier is not correct amount."
-            )
-
-            XCTAssertEqual(
-                fineTuneResponse.events[0].object,
-                .fineTuneEvent,
-                "Object is not Fine Tune Event."
-            )
-            XCTAssertEqual(
-                fineTuneResponse.events[0].level,
-                .info,
-                "Level status is not correct."
-            )
-            XCTAssertEqual(
-                fineTuneResponse.events[0].message,
-                "Created fine-tune: ft-xZ8Sx0qndMWb8suLmNzm4SbK",
-                "Message is not correct."
-            )
-            XCTAssertEqual(
-                fineTuneResponse.events[0].createdAt,
-                1668880695,
-                "Created At date is not correct."
-            )
-        } catch {
-            XCTFail("CREATE FINE TUNE FAILED WITH ERROR - \(error)")
         }
     }
 
