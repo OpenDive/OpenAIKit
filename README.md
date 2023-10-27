@@ -21,7 +21,7 @@
 
 ## Table of Contents
 
-- [About the Project][#about-the-project]
+- [About the Project](#about-the-project)
   - [Motivation](#motivation)
   - [Our Vision](#our-vision)
 - [Features](#features)
