@@ -31,10 +31,6 @@ struct CompletionMainView: View {
             NavigationLink(destination: GenerateCompletionExample()) {
                 Text("Generate Completion Example")
             }
-            
-            NavigationLink(destination: EditExample()) {
-                Text("Edit Example")
-            }
         }
         .listStyle(.plain)
         .navigationTitle("Completion")

@@ -49,6 +49,7 @@ struct ContentPolicyExample: View {
                     
                     Task {
                         do {
+                            // ⚠️🔑 NEVER store OpenAI API keys directly in code. Use environment variables or secrets management. Avoid git commits of keys! 🔑⚠️
                             let openAI = OpenAI(Configuration(organizationId: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY"))
                             let contentParameter = ContentPolicyParameters(input: input)
                             let contentResult = try await openAI.checkContentPolicy(parameters: contentParameter)

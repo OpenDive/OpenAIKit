@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		761C24FD2940346B005066C2 /* EditExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761C24FC2940346B005066C2 /* EditExample.swift */; };
 		761C250429403883005066C2 /* EditImageExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761C250329403883005066C2 /* EditImageExample.swift */; };
 		761C250B2940392F005066C2 /* GenerateCompletionExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761C250A2940392F005066C2 /* GenerateCompletionExample.swift */; };
 		761C250D294039A8005066C2 /* GenerateImageVariationsExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761C250C294039A8005066C2 /* GenerateImageVariationsExample.swift */; };
@@ -41,12 +40,11 @@
 		7D4A910A2A87E110000A138A /* audio_translation.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7D4A91092A87E110000A138A /* audio_translation.mp3 */; };
 		7D76E4F82AD46B7500E2F4C3 /* CreateChatFunctionCallExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D76E4F72AD46B7500E2F4C3 /* CreateChatFunctionCallExample.swift */; };
 		7DC0E9082A87CF97005C8763 /* CreateTranscription.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DC0E9072A87CF97005C8763 /* CreateTranscription.swift */; };
-		7DC0E90A2A87D046005C8763 /* audio.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7DC0E9092A87D046005C8763 /* audio.mp3 */; };
 		7DDE422E29AFE567000BBB01 /* CreateChatCompletion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DDE422D29AFE567000BBB01 /* CreateChatCompletion.swift */; };
+		7DDF5CF62AD77AAC00A72E6B /* audio.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7DDF5CF52AD77AAC00A72E6B /* audio.mp3 */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		761C24FC2940346B005066C2 /* EditExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditExample.swift; sourceTree = "<group>"; };
 		761C250329403883005066C2 /* EditImageExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditImageExample.swift; sourceTree = "<group>"; };
 		761C250A2940392F005066C2 /* GenerateCompletionExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateCompletionExample.swift; sourceTree = "<group>"; };
 		761C250C294039A8005066C2 /* GenerateImageVariationsExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateImageVariationsExample.swift; sourceTree = "<group>"; };
@@ -81,8 +79,8 @@
 		7D4A91092A87E110000A138A /* audio_translation.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = audio_translation.mp3; sourceTree = "<group>"; };
 		7D76E4F72AD46B7500E2F4C3 /* CreateChatFunctionCallExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateChatFunctionCallExample.swift; sourceTree = "<group>"; };
 		7DC0E9072A87CF97005C8763 /* CreateTranscription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateTranscription.swift; sourceTree = "<group>"; };
-		7DC0E9092A87D046005C8763 /* audio.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = audio.mp3; path = ../audio.mp3; sourceTree = "<group>"; };
 		7DDE422D29AFE567000BBB01 /* CreateChatCompletion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateChatCompletion.swift; sourceTree = "<group>"; };
+		7DDF5CF52AD77AAC00A72E6B /* audio.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = audio.mp3; path = ../../../../../../../Downloads/audio.mp3; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -101,7 +99,6 @@
 			isa = PBXGroup;
 			children = (
 				761C250A2940392F005066C2 /* GenerateCompletionExample.swift */,
-				761C24FC2940346B005066C2 /* EditExample.swift */,
 				765BB1D829404D52000BF124 /* CompletionMainView.swift */,
 			);
 			path = Completion;
@@ -243,8 +240,8 @@
 		7DC0E90B2A87D04D005C8763 /* Sound */ = {
 			isa = PBXGroup;
 			children = (
+				7DDF5CF52AD77AAC00A72E6B /* audio.mp3 */,
 				7D4A91092A87E110000A138A /* audio_translation.mp3 */,
-				7DC0E9092A87D046005C8763 /* audio.mp3 */,
 			);
 			path = Sound;
 			sourceTree = "<group>";
@@ -291,7 +288,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1410;
-				LastUpgradeCheck = 1410;
+				LastUpgradeCheck = 1500;
 				TargetAttributes = {
 					76C0C24F293FB7CC003075D2 = {
 						CreatedOnToolsVersion = 14.1;
@@ -322,11 +319,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				76C0C25B293FB7CE003075D2 /* Preview Assets.xcassets in Resources */,
+				7DDF5CF62AD77AAC00A72E6B /* audio.mp3 in Resources */,
 				765BB20229405723000BF124 /* mask.png in Resources */,
 				765BB20129405723000BF124 /* variation.png in Resources */,
 				7D4A910A2A87E110000A138A /* audio_translation.mp3 in Resources */,
 				76C0C258293FB7CE003075D2 /* Assets.xcassets in Resources */,
-				7DC0E90A2A87D046005C8763 /* audio.mp3 in Resources */,
 				761C253129404086005066C2 /* SampleData.jsonl in Resources */,
 				765BB20329405723000BF124 /* image.png in Resources */,
 			);
@@ -351,7 +348,6 @@
 				765BB1D929404D52000BF124 /* CompletionMainView.swift in Sources */,
 				76C0C256293FB7CC003075D2 /* ContentView.swift in Sources */,
 				761C251329403AC7005066C2 /* GenerateImageExample.swift in Sources */,
-				761C24FD2940346B005066C2 /* EditExample.swift in Sources */,
 				761C251B29403CD2005066C2 /* FileDetailsView.swift in Sources */,
 				761C252C2940400B005066C2 /* RetrieveModelExample.swift in Sources */,
 				761C251729403CA0005066C2 /* ListFilesExample.swift in Sources */,
@@ -408,6 +404,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -468,6 +465,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;

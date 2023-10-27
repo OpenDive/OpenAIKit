@@ -46,6 +46,7 @@ struct ListModelsExample: View {
                     
                     Task {
                         do {
+                            // ⚠️🔑 NEVER store OpenAI API keys directly in code. Use environment variables or secrets management. Avoid git commits of keys! 🔑⚠️
                             let config = Configuration(
                                 organizationId: "INSERT-ORGANIZATION-ID",
                                 apiKey: "INSERT-API-KEY"
