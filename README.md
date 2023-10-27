@@ -154,6 +154,7 @@ do {
 <img src="Resources/AvocadoChair.png" alt="Avocado Chair" width="1024" height="1024">
 ​	
 ​    - `createImageEdit` allows the developer to create edits based on the original image inputted, along with a transparent-enabled image, with the transparent portions being the areas to edit in; and a prompt of the original image with the edit the developer wants. Here's an example on how to use the endpoint, along with the correlating output:
+
 ```swift
 do {
     let imageEditParam = try ImageEditParameters(
@@ -484,15 +485,20 @@ do {
     // Insert your own error handling method here.
 }
 ```
+
 <audio controls>
     <source src="Resources/InputTranscriptionAudio.mp3" type="audio/mpeg">
 Your browser does not support the audio element.
 </audio>
+
 ```
-Arousing from the most profound of slumbers, we break the gossamer web of some dream. Yet in a second afterward, so frail may that web have been, we remember not that we have dreamed. In the return to life from the swoon there are two stages, first, that of the sense of mental or spiritual, secondly, that of the sense of physical existence. It seems probable that if, upon reaching the second stage, we could recall the impressions of the first, we should find these impressions eloquent in memories of the gulf beyond. And that gulf is what? How at least shall we distinguish its shadows from those of the tomb?
+Arousing from the most profound of slumbers, we break the gossamer web of some dream. Yet in a second afterward, so frail may that web have been, we remember not that we have dreamed. In the return to life 
+from the swoon there are two stages, first, that of the sense of mental or spiritual, secondly, that of the sense of physical existence. It seems probable that if, upon reaching the second stage, we could 
+recall the impressions of the first, we should find these impressions eloquent in memories of the gulf beyond. And that gulf is what? How at least shall we distinguish its shadows from those of the tomb?
 ```
 
 ​	- `createTranslation` is the second endpoint that allows developers to translate any non-English audio into transcribed English text. Here's an example on how to use the endpoint, and the corresponding returned item:
+
 ```swift
 do {
     let audioParameters = TranscriptionParameters(file: audio)
@@ -502,12 +508,15 @@ do {
     // Insert your own error handling method here.
 }
 ```
+
 <audio controls>
     <source src="Resources/InputTranslationAudio.mp3" type="audio/mpeg">
 Your browser does not support the audio element.
 </audio>
+
 ```
-In the night, when I was out of my mind, and I, pained, numb and tired, thought about the beauty and goodness of a long-forgotten lesson, and my head began to shake, I suddenly heard something tick that scared me out of my sleep. Who could it be in that weather? A visitor is knocking, I thought, at my room in that weather. That's all it is, and nothing more.
+In the night, when I was out of my mind, and I, pained, numb and tired, thought about the beauty and goodness of a long-forgotten lesson, and my head began to shake, I suddenly heard something tick that scared 
+me out of my sleep. Who could it be in that weather? A visitor is knocking, I thought, at my room in that weather. That's all it is, and nothing more.
 ```
 
 ### Utilities
@@ -517,6 +526,7 @@ In the night, when I was out of my mind, and I, pained, numb and tired, thought 
 Embeddings utilize OpenAI's GPT models to generate dense vector representations for text. These embeddings capture semantic information, enabling developers to perform tasks like similarity search, clustering, or fine-tuning on specific tasks. By integrating GPT Embeddings into applications, developers can enhance text analysis and retrieval capabilities, leading to more effective data processing and insights.
 
 Here's an example on how to use it, and the expected output for the endpoint:
+
 ```swift
 do {
     let embeddingsParam = EmbeddingsParameters(model: "text-similarity-ada-002", input: input)
@@ -558,6 +568,7 @@ The models endpoint allows developers to fetch the currently available models fr
 
 There are two endpoints available for use with this feature:
 - `listModels` fetches the entire list of models avaialbe to the developer. Here's an example usage, along with the corresponding output:
+
 ```swift
 do {
     let modelsResponse = try await openAi.listModels()
@@ -605,6 +616,7 @@ ListModelResponse(
 ```
 
 - `retrieveModels` fetches a single model, given the input model's ID. Here's an example usage, along with the corresponding output:
+
 ```swift
 do {
     let model = try await openAI.retrieveModel(modelId: "text-davinci-001")
@@ -630,6 +642,7 @@ As of July 6, 2023, OpenAI has announced the deprecation of the older models in 
 ### Migration From 1.x to 2.0
 
 As of 2.0, Chat Completion Models use enums to label each available model for the main usage of default models. Here is an example on how to migrate from using the older initializer for `ChatParameter` to the initializer for 2.0:
+
 ```swift
 // ❌ 1.x implementation
 let chatParameters = ChatParameters(model: "gpt4", messages: chat)
@@ -639,6 +652,7 @@ let chatParameters = ChatParameters(model: .gpt4, messages: chat)
 ```
 
 If you need a custom string for fine-tuned models, use the `customModel` parameter:
+
 ```swift
 // ✅ 2.0 implementation for custom model IDs
 let chatParameters = ChatParameters(customModel: "INSERT-MODEL-ID", message: chat)
