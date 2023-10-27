@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-#if os(iOS) || os(tvOS) || os(watchOS)
+#if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
 import SwiftUI
 #endif
 
@@ -76,7 +76,7 @@ public struct ImageVariationParameters {
         self.user = user
     }
 
-    #if os(iOS) || os(tvOS) || os(watchOS)
+    #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
     public init(
         image: UIImage,
         @Clamped(range: 1...10) numberOfImages: Int = 1,

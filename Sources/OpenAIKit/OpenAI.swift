@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-#if os(iOS) || os(tvOS) || os(watchOS)
+#if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
 import UIKit
 import SwiftUI
 #endif
@@ -47,7 +47,7 @@ public final class OpenAI {
         self.config = config
     }
 
-    #if os(iOS) || os(tvOS) || os(watchOS)
+    #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
     /// Input a `Base64` image binary `String` to receive an `UIImage` object.
     /// - Parameter b64Data: The `Base64` data itself in `String` form.
     /// - Returns: A `UIImage` object.
@@ -142,15 +142,6 @@ extension OpenAI: OpenAIProtocol {
             with: serverUrl,
             apiKey: config.apiKey,
             body: parameter
-        )
-    }
-
-    public func generateEdit(parameters param: EditParameters) async throws -> EditResponse {
-        let serverUrl = try getServerUrl(path: "/edits")
-        return try await OpenAIKitSession.shared.decodeUrl(
-            with: serverUrl,
-            apiKey: config.apiKey,
-            body: param.body
         )
     }
 
