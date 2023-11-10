@@ -2,7 +2,7 @@
 //  OpenAIError.swift
 //  OpenAIKit
 //
-//  Copyright (c) 2023 MarcoDotIO
+//  Copyright (c) 2023 OpenDive
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -43,6 +43,6 @@ public enum OpenAIError: Error {
     /// The function has not been implemented yet.
     case notImplemented
     
-    /// An unknown error has occured. Please create an issue on [Github](https://github.com/MarcoDotIO/OpenAIKit) if this error is thrown.
+    /// An unknown error has occured. Please create an issue on [Github](https://github.com/OpenDive/OpenAIKit) if this error is thrown.
     case unknownError
 }

@@ -1,10 +1,11 @@
-[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FMarcoDotIO%2FOpenAIKit%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/MarcoDotIO/OpenAIKit)
-[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FMarcoDotIO%2FOpenAIKit%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/MarcoDotIO/OpenAIKit)
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FOpenDive%2FOpenAIKit%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/OpenDive/OpenAIKit)
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FOpenDive%2FOpenAIKit%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/OpenDive/OpenAIKit)
 [![Swift Package Manager](https://img.shields.io/badge/Swift_Package_Manager-compatible-orange?style=flat-square)](https://img.shields.io/badge/Swift_Package_Manager-compatible-orange?style=flat-square)
-[![Swift](https://github.com/MarcoDotIO/OpenAIKit/actions/workflows/swift.yml/badge.svg?branch=main)](https://github.com/MarcoDotIO/OpenAIKit/actions/workflows/swift.yml)
+[![Swift](https://github.com/OpenDive/OpenAIKit/actions/workflows/swift.yml/badge.svg?branch=main)](https://github.com/OpenDive/OpenAIKit/actions/workflows/swift.yml)
+[![Twitter](https://img.shields.io/static/v1?label=Twitter&message=@OpenDiveHQ&color=ca333b)](https://twitter.com/OpenDiveHQ)
 
 <div align="center">
-  <a href="https://github.com/MarcoDotIO/OpenAIKit">
+  <a href="https://github.com/OpenDive/OpenAIKit">
      <img src="Resources/Logo.png" alt="OpenAIKit Logo" width="80" height="80">
   </a>
   <h3 align="center">OpenAIKit</h3>
@@ -12,9 +13,9 @@
   A community-maintained Swift SDK for the OpenAI API.
   <br />
   <br />
-     <a href="https://github.com/MarcoDotIO/OpenAIKit/issues">Report Bug</a>
+     <a href="https://github.com/OpenDive/OpenAIKit/issues">Report Bug</a>
   ·
-     <a href="https://github.com/MarcoDotIO/OpenAIKit/issues">Request Feature</a>
+     <a href="https://github.com/OpenDive/OpenAIKit/issues">Request Feature</a>
  </p>
 </div>
 
@@ -57,7 +58,7 @@ With the increasing demand for AI-powered features in modern applications, it's 
 
 ### Our Vision
 
-As the lead developer for OpenAIKit, I envisioned a tool that not only provides raw access to OpenAI functionalities but also enhances the developer experience with a clear and intuitive API. Our ultimate goal is to foster innovation by providing the Swift community with the right tools to integrate AI capabilities into their applications effortlessly.
+We envisioned a tool that not only provides raw access to OpenAI functionalities but also enhances the developer experience with a clear and intuitive API. Our ultimate goal is to foster innovation by providing the Swift community with the right tools to integrate AI capabilities into their applications effortlessly.
 
 ## Features
 
@@ -88,7 +89,7 @@ The [Swift Package Manager](https://swift.org/package-manager/) allows for devel
 #### SPM Through XCode Project
 
 * File > Swift Packages > Add Package Dependency
-* Add `https://github.com/marcodotio/OpenAIKit.git`
+* Add `https://github.com/OpenDive/OpenAIKit.git`
 * Select "Up to next Major" with "2.0"
 
 #### SPM Through Xcode Package
@@ -97,7 +98,7 @@ Once you have your Swift package set up, add the Git link within the `dependenci
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/marcodotio/OpenAIKit.git", .upToNextMajor(from: "2.0"))
+    .package(url: "https://github.com/OpenDive/OpenAIKit.git", .upToNextMajor(from: "2.0"))
 ]
 ```
 

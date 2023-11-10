@@ -13,4 +13,4 @@
 
 ## Reporting a Vulnerability
 
-Please contact me on Twitter at [MarcoDotIO](https://twitter.com/marcodotio/) to report any security vulnerabilities found within the project.
+Please contact me on Twitter at [OpenDive](https://twitter.com/OpenDive/) to report any security vulnerabilities found within the project.
