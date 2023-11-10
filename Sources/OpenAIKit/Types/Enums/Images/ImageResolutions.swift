@@ -33,4 +33,10 @@ public enum ImageResolutions: String {
     
     /// A 1024x1024 pixel image request.
     case large = "1024x1024"
+    
+    /// A 1792x1024 pixel image request.
+    case extraLargeLandscape = "1792x1024"
+    
+    /// A 1024x1792 pixel image request.
+    case extraLargePortrait = "1024x1792"
 }

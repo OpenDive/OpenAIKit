@@ -169,6 +169,7 @@ extension OpenAI: OpenAIProtocol {
     }
 
     public func createImage(parameters param: ImageParameters) async throws -> ImageResponse {
+        try param.checkForCompatibility()
         let serverUrl = try getServerUrl(path: "/images/generations")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,

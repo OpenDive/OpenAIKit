@@ -48,8 +48,6 @@
 
 ## About the Project
 
-(Insert Screenshot from visionOS template project)
-
 **OpenAIKit** is a community-driven Swift SDK designed to provide Swift developers with a seamless, efficient, and Swifty way to interact with the OpenAI REST endpoint. Our aim is to lower the barrier for Swift developers, enabling them to integrate the power of OpenAI into their apps without delving deep into the intricacies of RESTful services.
 
 ### Motivation

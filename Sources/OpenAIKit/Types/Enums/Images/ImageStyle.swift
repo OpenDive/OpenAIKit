@@ -1,5 +1,5 @@
 //
-//  OpenAIError.swift
+//  ImageStyle.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2023 OpenDive
@@ -23,29 +23,11 @@
 //  THE SOFTWARE.
 //
 
-/// OpenAIKit errors that are thrown depending on the context.
-public enum OpenAIError: Error {
-    /// No API Key was provided to the OpenAIKit object.
-    case noApiKey
-    
-    /// No body was provided to a decode URL request.
-    case noBody
-    
-    /// The amount of prompts being requested have exceeded the amount OpenAI allocates per time frame.
-    case promptThreshold
-    
-    /// An invalid URL was unwrapped / used.
-    case invalidUrl
-    
-    /// Invalid data was decoded / encoded.
-    case invalidData
-    
-    /// The function has not been implemented yet.
-    case notImplemented
+/// The style of the generated images.
+public enum ImageStyle: String {
+    /// Generates hyper-real and dramatic images.
+    case vivid
 
-    /// An incorrect input was found in the ImageParameter. Please edit the input and try submitting again.
-    case incompatibleImageParameter(incorrctInput: Any?)
-
-    /// An unknown error has occured. Please create an issue on [Github](https://github.com/OpenDive/OpenAIKit) if this error is thrown.
-    case unknownError
+    /// Generates more natural, less hyper-real looking images.
+    case natural
 }
