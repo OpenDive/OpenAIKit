@@ -46,6 +46,14 @@ extension NSImage {
                 cgSize.width = 1024
                 cgSize.height = 1024
                 break
+            case .extraLargeLandscape:
+                cgSize.width = 1792
+                cgSize.height = 1024
+                break
+            case .extraLargePortrait:
+                cgSize.width = 1024
+                cgSize.height = 1792
+                break
             }
 
             guard let bitmap = NSBitmapImageRep(
