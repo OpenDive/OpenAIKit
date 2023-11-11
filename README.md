@@ -662,7 +662,7 @@ let chatParameters = ChatParameters(customModel: "INSERT-MODEL-ID", message: cha
 
 ## Development And Testing
 
-I welcome anyone to contribute to the project through posting issues, if they encounter any bugs / glitches while using OpenAIKit; and as well with creating pull issues that add any additional features to OpenAIKit.
+We welcome anyone to contribute to the project through posting issues, if they encounter any bugs / glitches while using OpenAIKit; and as well with creating pull issues that add any additional features to OpenAIKit.
 
 ## License
 
