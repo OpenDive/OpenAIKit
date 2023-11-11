@@ -665,12 +665,6 @@ let chatParameters = ChatParameters(customModel: "INSERT-MODEL-ID", message: cha
 
 I welcome anyone to contribute to the project through posting issues, if they encounter any bugs / glitches while using OpenAIKit; and as well with creating pull issues that add any additional features to OpenAIKit.
 
-## Credits
-
-I would like to personally thank the [OpenAI Team](https://openai.com) for implementing the API endpoint and implementing the models themselves, as without them, this project wouldn't have been possible. 
-
-As well, I would like to personally thank [YufeiG](https://github.com/YufeiG) for providing troubleshooting help on sending Image data for the Image Edit and Variations endpoints.
-
 ## License
 
 OpenAIKit is released under the MIT license, and any use of OpenAI's REST endpoint will be under the [Usage policies](https://beta.openai.com/docs/usage-policies) set by them.
