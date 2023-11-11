@@ -4,7 +4,8 @@
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 1.2   | :white_check_mark: |
+| 2.0 | :white_check_mark: |
+| 1.2   | :x: |
 | 1.1.3   | :x: |
 | 1.1.2   | :x: |
 | 1.1.1   | :x: |
@@ -13,4 +14,4 @@
 
 ## Reporting a Vulnerability
 
-Please contact me on Twitter at [OpenDive](https://twitter.com/OpenDive/) to report any security vulnerabilities found within the project.
+Please create a GitHub issue or a GitHub Pull Request with a write up for the security vulnerability.
