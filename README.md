@@ -43,7 +43,6 @@
   - [Migration From 1.x to 2.0](#migration-from-1.x-to-2.0)
 - [Example Projects](#example-projects)
 - [Development and Testing](#development-and-testing)
-- [Credits](#credits)
 - [License](#license)
 
 ## About the Project
