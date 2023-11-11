@@ -1,5 +1,5 @@
 //
-//  OpenAIObject.swift
+//  AssistantFile.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2023 OpenDive
@@ -23,38 +23,23 @@
 //  THE SOFTWARE.
 //
 
-/// A specific type of object that OpenAI has responded with.
-public enum OpenAIObject: String, Codable {
-    /// A list object.
-    case list
+public struct AssistantFile: Codable {
+    enum CodingKeys: String, CodingKey {
+        case id
+        case object
+        case createdAt = "created_at"
+        case assistantId = "assistant_id"
+    }
 
-    /// A model object.
-    case model
+    /// The identifier, which can be referenced in API endpoints.
+    public let id: String
 
-    /// A model permission object.
-    case modelPermission = "model_permission"
+    /// The object type, which is always assistant.file.
+    public let object: OpenAIObject
 
-    /// A text completion object.
-    case textCompletion = "text_completion"
+    /// The Unix timestamp (in seconds) for when the assistant file was created.
+    public let createdAt: Int
 
-    /// A Chat Completion.
-    case chatCompletion = "chat.completion"
-
-    /// An edit object.
-    case edit
-
-    /// An embedding object.
-    case embedding
-
-    /// A file object.
-    case file
-
-    /// A Chat Completion chunk.
-    case chatCompletionChunk = "chat.completion.chunk"
-
-    /// An Assistant object.
-    case assistant
-
-    /// An Assistant file object.
-    case assistantFile = "assistant.file"
+    /// The assistant ID that the file is attached to.
+    public let assistantId: String
 }

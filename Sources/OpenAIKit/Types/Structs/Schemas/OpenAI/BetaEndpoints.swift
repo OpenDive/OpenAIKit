@@ -94,4 +94,44 @@ extension BetaEndpoints: BetaEndpointsProtocol {
             method: .get
         )
     }
+
+    public func createAssistantFile(assistantId: String, fileId: String) async throws -> AssistantFile {
+        let serverUrl = try getServerUrl(path: "/assistants/\(assistantId)/files")
+        return try await OpenAIKitSession.shared.decodeUrl(
+            with: serverUrl,
+            apiKey: config.apiKey,
+            body: ["file_id": fileId],
+            method: .post
+        )
+    }
+
+    public func retrieveAssistantFile(assistantId: String, fileId: String) async throws -> AssistantFile {
+        let serverUrl = try getServerUrl(path: "/assistants/\(assistantId)/files/\(fileId)")
+        return try await OpenAIKitSession.shared.decodeUrl(
+            with: serverUrl,
+            apiKey: config.apiKey,
+            method: .get,
+            bodyRequired: false
+        )
+    }
+
+    public func deleteAssistantFile(assistantId: String, fileId: String) async throws -> DeleteObject {
+        let serverUrl = try getServerUrl(path: "/assistants/\(assistantId)/files/\(fileId)")
+        return try await OpenAIKitSession.shared.decodeUrl(
+            with: serverUrl,
+            apiKey: config.apiKey,
+            method: .delete,
+            bodyRequired: false
+        )
+    }
+
+    public func listAssistantFiles(assistantId: String, parameters param: AssistantListParameter) async throws -> AssistantFileList {
+        let serverUrl = try getServerUrl(path: "/assistants/\(assistantId)/files")
+        return try await OpenAIKitSession.shared.decodeUrl(
+            with: serverUrl,
+            apiKey: config.apiKey,
+            body: param.body,
+            method: .get
+        )
+    }
 }

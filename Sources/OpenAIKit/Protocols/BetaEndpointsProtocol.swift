@@ -44,5 +44,16 @@ public protocol BetaEndpointsProtocol {
 
 
     // MARK: Assistant Files Functions
-    // TODO: Implement function signatures
+    /// Create an assistant file by attaching a [File](https://platform.openai.com/docs/api-reference/files)
+    /// to an [assistant](https://platform.openai.com/docs/api-reference/assistants).
+    func createAssistantFile(assistantId: String, fileId: String) async throws -> AssistantFile
+
+    /// Retrieves an AssistantFile.
+    func retrieveAssistantFile(assistantId: String, fileId: String) async throws -> AssistantFile
+
+    /// Delete an AssistantFile.
+    func deleteAssistantFile(assistantId: String, fileId: String) async throws -> DeleteObject
+
+    /// Returns a list of assistant files.
+    func listAssistantFiles(assistantId: String, parameters param: AssistantListParameter) async throws -> AssistantFileList
 }
