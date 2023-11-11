@@ -84,4 +84,14 @@ extension BetaEndpoints: BetaEndpointsProtocol {
             bodyRequired: false
         )
     }
+
+    public func listAssistants(parameters param: AssistantListParameter) async throws -> AssistantList {
+        let serverUrl = try getServerUrl(path: "/assistants")
+        return try await OpenAIKitSession.shared.decodeUrl(
+            with: serverUrl,
+            apiKey: config.apiKey,
+            body: param.body,
+            method: .get
+        )
+    }
 }

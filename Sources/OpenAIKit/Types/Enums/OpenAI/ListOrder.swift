@@ -1,5 +1,5 @@
 //
-//  BetaEndpointsProtocol.swift
+//  ListOrder.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2023 OpenDive
@@ -23,26 +23,7 @@
 //  THE SOFTWARE.
 //
 
-import Foundation
-
-public protocol BetaEndpointsProtocol {
-    // MARK: Assistant Functions
-    /// Create an assistant with a model and instructions.
-    func createAssistants(parameters param: AssistantParameter) async throws -> Assistant
-
-    /// Retrieves an assistant.
-    func retrieveAssistant(assistantId id: String) async throws -> Assistant
-
-    /// Modifies an assistant.
-    func modifyAssistant(assistantId id: String, parameters param: AssistantParameter) async throws -> Assistant
-
-    /// Delete an assistant.
-    func deleteAssistant(assistantId id: String) async throws -> DeleteObject
-
-    /// Returns a list of assistants.
-    func listAssistants(parameters param: AssistantListParameter) async throws -> AssistantList
-
-
-    // MARK: Assistant Files Functions
-    // TODO: Implement function signatures
+public enum ListOrder: String {
+    case ascending = "asc"
+    case descending = "desc"
 }
