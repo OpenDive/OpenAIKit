@@ -46,6 +46,6 @@ public enum OpenAIError: Error {
     /// An incorrect input was found in the ImageParameter. Please edit the input and try submitting again.
     case incompatibleImageParameter(incorrctInput: Any?)
 
-    /// An unknown error has occured. Please create an issue on [Github](https://github.com/OpenDive/OpenAIKit) if this error is thrown.
+    /// An unknown error has occured. Please create an issue on [Github](https://github.com/OpenDive/OpenAIKit/issues) if this error is thrown.
     case unknownError
 }

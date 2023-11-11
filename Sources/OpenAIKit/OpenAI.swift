@@ -40,11 +40,18 @@ import Foundation
 /// OpenAI provides the needed core functions of OpenAIKit.
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, *)
 public final class OpenAI {
+    /// Any currently in beta features. 
+    ///
+    /// These endpoints are actively in development, so please make an issue on the
+    /// [OpenAIKit GitHub repo](https://github.com/OpenDive/OpenAIKit/issues) if you have any issues with any of these endpoints.
+    public let beta: BetaEndpoints
+
     /// The configuration object used to store the API Key and Organization ID.
     private var config: Configuration
 
     public init(_ config: Configuration) {
         self.config = config
+        self.beta = BetaEndpoints(config)
     }
 
     #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)

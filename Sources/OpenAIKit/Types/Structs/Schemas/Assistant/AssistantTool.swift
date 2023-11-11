@@ -1,5 +1,5 @@
 //
-//  OpenAIObject.swift
+//  AssistantTool.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2023 OpenDive
@@ -23,35 +23,22 @@
 //  THE SOFTWARE.
 //
 
-/// A specific type of object that OpenAI has responded with.
-public enum OpenAIObject: String, Codable {
-    /// A list object.
-    case list
+public struct AssistantTool: Codable {
+    /// The type of tool being defined.
+    public var type: ToolType
 
-    /// A model object.
-    case model
+    /// The function object itself if the tool type is a function.
+    public var function: Function?
 
-    /// A model permission object.
-    case modelPermission = "model_permission"
+    internal var body: [String: Any] {
+        var result: [String: Any] = [
+            "type": self.type.rawValue
+        ]
 
-    /// A text completion object.
-    case textCompletion = "text_completion"
+        if let function = self.function, self.type == .function {
+            result["function"] = function.body
+        }
 
-    /// A Chat Completion.
-    case chatCompletion = "chat.completion"
-
-    /// An edit object.
-    case edit
-
-    /// An embedding object.
-    case embedding
-
-    /// A file object.
-    case file
-
-    /// A Chat Completion chunk.
-    case chatCompletionChunk = "chat.completion.chunk"
-
-    /// An Assistant object.
-    case assistant
+        return result
+    }
 }

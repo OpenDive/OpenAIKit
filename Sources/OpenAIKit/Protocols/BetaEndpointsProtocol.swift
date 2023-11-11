@@ -1,5 +1,5 @@
 //
-//  OpenAIObject.swift
+//  BetaEndpointsProtocol.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2023 OpenDive
@@ -23,35 +23,23 @@
 //  THE SOFTWARE.
 //
 
-/// A specific type of object that OpenAI has responded with.
-public enum OpenAIObject: String, Codable {
-    /// A list object.
-    case list
+import Foundation
 
-    /// A model object.
-    case model
+public protocol BetaEndpointsProtocol {
+    // MARK: Assistant Functions
+    /// Create an assistant with a model and instructions.
+    func createAssistants(parameters param: AssistantParameter) async throws -> Assistant
 
-    /// A model permission object.
-    case modelPermission = "model_permission"
+    /// Retrieves an assistant.
+    func retrieveAssistant(assistantId id: String) async throws -> Assistant
 
-    /// A text completion object.
-    case textCompletion = "text_completion"
+    /// Modifies an assistant.
+    func modifyAssistant(assistantId id: String, parameters param: AssistantParameter) async throws -> Assistant
 
-    /// A Chat Completion.
-    case chatCompletion = "chat.completion"
+    /// Delete an assistant.
+    func deleteAssistant(assistantId id: String) async throws -> DeleteObject
 
-    /// An edit object.
-    case edit
 
-    /// An embedding object.
-    case embedding
-
-    /// A file object.
-    case file
-
-    /// A Chat Completion chunk.
-    case chatCompletionChunk = "chat.completion.chunk"
-
-    /// An Assistant object.
-    case assistant
+    // MARK: Assistant Files Functions
+    // TODO: Implement function signatures
 }
