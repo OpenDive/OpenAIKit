@@ -226,9 +226,13 @@ final class OpenAIKitSession {
         body: [String: Any]? = nil,
         method: HTTPMethod = .post,
         bodyRequired: Bool = true,
-        formSubmission: Bool = false
+        formSubmission: Bool = false,
+        additionalHeader: [String: String] = [:]
     ) async throws -> T {
         guard let apiKey = apiKey else { throw OpenAIError.noApiKey }
+
+        var headers = additionalHeader
+        headers["Authorization"] = "Bearer \(apiKey)"
 
         if bodyRequired {
             guard let body = body else { throw OpenAIError.noBody }
@@ -252,7 +256,7 @@ final class OpenAIKitSession {
                 let jsonData = try? JSONSerialization.data(withJSONObject: body)
                 let data = try await self.asyncData(
                     with: url, method: method,
-                    headers: ["Authorization": "Bearer \(apiKey)"],
+                    headers: headers,
                     body: jsonData
                 )
 
@@ -264,7 +268,7 @@ final class OpenAIKitSession {
             let data = try await self.asyncData(
                 with: url,
                 method: method,
-                headers: ["Authorization": "Bearer \(apiKey)"]
+                headers: headers
             )
 
             return try OpenAIKitSession.decodeData(with: data)

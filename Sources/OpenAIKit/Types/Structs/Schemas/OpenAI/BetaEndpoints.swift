@@ -47,12 +47,13 @@ public final class BetaEndpoints {
 }
 
 extension BetaEndpoints: BetaEndpointsProtocol {
-    public func createAssistants(parameters param: AssistantParameter) async throws -> Assistant {
+    public func createAssistants(parameters param: AssistantParameters) async throws -> Assistant {
         let serverUrl = try getServerUrl(path: "/assistants")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
             apiKey: config.apiKey,
-            body: param.body
+            body: param.body,
+            additionalHeader: ["OpenAI-Beta": "assistants=v1"]
         )
     }
 
@@ -62,16 +63,18 @@ extension BetaEndpoints: BetaEndpointsProtocol {
             with: serverUrl,
             apiKey: config.apiKey,
             method: .get,
-            bodyRequired: false
+            bodyRequired: false,
+            additionalHeader: ["OpenAI-Beta": "assistants=v1"]
         )
     }
 
-    public func modifyAssistant(assistantId id: String, parameters param: AssistantParameter) async throws -> Assistant {
+    public func modifyAssistant(assistantId id: String, parameters param: AssistantParameters) async throws -> Assistant {
         let serverUrl = try getServerUrl(path: "/assistants/\(id)")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
             apiKey: config.apiKey,
-            body: param.body
+            body: param.body,
+            additionalHeader: ["OpenAI-Beta": "assistants=v1"]
         )
     }
 
@@ -81,17 +84,19 @@ extension BetaEndpoints: BetaEndpointsProtocol {
             with: serverUrl,
             apiKey: config.apiKey,
             method: .delete,
-            bodyRequired: false
+            bodyRequired: false,
+            additionalHeader: ["OpenAI-Beta": "assistants=v1"]
         )
     }
 
-    public func listAssistants(parameters param: AssistantListParameter) async throws -> AssistantList {
+    public func listAssistants(parameters param: AssistantListParameters) async throws -> AssistantList {
         let serverUrl = try getServerUrl(path: "/assistants")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
             apiKey: config.apiKey,
             body: param.body,
-            method: .get
+            method: .get,
+            additionalHeader: ["OpenAI-Beta": "assistants=v1"]
         )
     }
 
@@ -101,7 +106,8 @@ extension BetaEndpoints: BetaEndpointsProtocol {
             with: serverUrl,
             apiKey: config.apiKey,
             body: ["file_id": fileId],
-            method: .post
+            method: .post,
+            additionalHeader: ["OpenAI-Beta": "assistants=v1"]
         )
     }
 
@@ -111,7 +117,8 @@ extension BetaEndpoints: BetaEndpointsProtocol {
             with: serverUrl,
             apiKey: config.apiKey,
             method: .get,
-            bodyRequired: false
+            bodyRequired: false,
+            additionalHeader: ["OpenAI-Beta": "assistants=v1"]
         )
     }
 
@@ -121,17 +128,61 @@ extension BetaEndpoints: BetaEndpointsProtocol {
             with: serverUrl,
             apiKey: config.apiKey,
             method: .delete,
-            bodyRequired: false
+            bodyRequired: false,
+            additionalHeader: ["OpenAI-Beta": "assistants=v1"]
         )
     }
 
-    public func listAssistantFiles(assistantId: String, parameters param: AssistantListParameter) async throws -> AssistantFileList {
+    public func listAssistantFiles(assistantId: String, parameters param: AssistantListParameters) async throws -> AssistantFileList {
         let serverUrl = try getServerUrl(path: "/assistants/\(assistantId)/files")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
             apiKey: config.apiKey,
             body: param.body,
-            method: .get
+            method: .get,
+            additionalHeader: ["OpenAI-Beta": "assistants=v1"]
+        )
+    }
+
+    public func createThread(parameters param: ThreadParameters) async throws -> Thread {
+        let serverUrl = try getServerUrl(path: "/threads")
+        return try await OpenAIKitSession.shared.decodeUrl(
+            with: serverUrl,
+            apiKey: config.apiKey,
+            body: param.body,
+            additionalHeader: ["OpenAI-Beta": "assistants=v1"]
+        )
+    }
+
+    public func retrieveThread(threadId id: String) async throws -> Thread {
+        let serverUrl = try getServerUrl(path: "/threads/\(id)")
+        return try await OpenAIKitSession.shared.decodeUrl(
+            with: serverUrl,
+            apiKey: config.apiKey,
+            method: .get,
+            bodyRequired: false,
+            additionalHeader: ["OpenAI-Beta": "assistants=v1"]
+        )
+    }
+
+    public func modifyThread(threadId id: String, metadata: [String : String]) async throws -> Thread {
+        let serverUrl = try getServerUrl(path: "/assistants/\(id)")
+        return try await OpenAIKitSession.shared.decodeUrl(
+            with: serverUrl,
+            apiKey: config.apiKey,
+            body: ["metadata": metadata],
+            additionalHeader: ["OpenAI-Beta": "assistants=v1"]
+        )
+    }
+
+    public func deleteThread(threadId id: String) async throws -> DeleteObject {
+        let serverUrl = try getServerUrl(path: "/assistants/\(id)")
+        return try await OpenAIKitSession.shared.decodeUrl(
+            with: serverUrl,
+            apiKey: config.apiKey,
+            method: .delete,
+            bodyRequired: false,
+            additionalHeader: ["OpenAI-Beta": "assistants=v1"]
         )
     }
 }

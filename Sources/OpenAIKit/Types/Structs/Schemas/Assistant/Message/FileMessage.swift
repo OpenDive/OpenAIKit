@@ -1,5 +1,5 @@
 //
-//  OpenAIObject.swift
+//  FileMessage.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2023 OpenDive
@@ -23,44 +23,11 @@
 //  THE SOFTWARE.
 //
 
-/// A specific type of object that OpenAI has responded with.
-public enum OpenAIObject: String, Codable {
-    /// A list object.
-    case list
+public struct FileMessage: Codable {
+    enum CodingKeys: String, CodingKey {
+        case fileId = "file_id"
+    }
 
-    /// A model object.
-    case model
-
-    /// A model permission object.
-    case modelPermission = "model_permission"
-
-    /// A text completion object.
-    case textCompletion = "text_completion"
-
-    /// A Chat Completion.
-    case chatCompletion = "chat.completion"
-
-    /// An edit object.
-    case edit
-
-    /// An embedding object.
-    case embedding
-
-    /// A file object.
-    case file
-
-    /// A Chat Completion chunk.
-    case chatCompletionChunk = "chat.completion.chunk"
-
-    /// An Assistant object.
-    case assistant
-
-    /// An Assistant file object.
-    case assistantFile = "assistant.file"
-
-    /// A thread object.
-    case thread
-
-    /// A thread message object.
-    case threadMessage = "thread.message"
+    /// The [File](https://platform.openai.com/docs/api-reference/files) ID of the image in the message content.
+    public let fileId: String
 }

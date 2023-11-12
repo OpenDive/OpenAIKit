@@ -1,5 +1,5 @@
 //
-//  OpenAIObject.swift
+//  TextMessageAnnotationFileCitation.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2023 OpenDive
@@ -23,44 +23,17 @@
 //  THE SOFTWARE.
 //
 
-/// A specific type of object that OpenAI has responded with.
-public enum OpenAIObject: String, Codable {
-    /// A list object.
-    case list
+/// A citation within the message that points to a specific quote from a specific File associated with the assistant or the message.
+/// Generated when the assistant uses the "retrieval" tool to search files.
+public struct TextMessageAnnotationFileCitation: Codable {
+    enum CodingKeys: String, CodingKey {
+        case fileId = "file_id"
+        case quote
+    }
 
-    /// A model object.
-    case model
+    /// The ID of the file that was generated.
+    public let fileId: String
 
-    /// A model permission object.
-    case modelPermission = "model_permission"
-
-    /// A text completion object.
-    case textCompletion = "text_completion"
-
-    /// A Chat Completion.
-    case chatCompletion = "chat.completion"
-
-    /// An edit object.
-    case edit
-
-    /// An embedding object.
-    case embedding
-
-    /// A file object.
-    case file
-
-    /// A Chat Completion chunk.
-    case chatCompletionChunk = "chat.completion.chunk"
-
-    /// An Assistant object.
-    case assistant
-
-    /// An Assistant file object.
-    case assistantFile = "assistant.file"
-
-    /// A thread object.
-    case thread
-
-    /// A thread message object.
-    case threadMessage = "thread.message"
+    /// The specific quote in the file.
+    public let quote: String
 }

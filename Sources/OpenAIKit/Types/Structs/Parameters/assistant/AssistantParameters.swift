@@ -1,5 +1,5 @@
 //
-//  AssistantParameter.swift
+//  AssistantParameters.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2023 OpenDive
@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-public struct AssistantParameter {
+public struct AssistantParameters {
     /// ID of the model to use.
     ///
     /// You can use the [List models](https://platform.openai.com/docs/api-reference/models/list) API to see all of your available models,

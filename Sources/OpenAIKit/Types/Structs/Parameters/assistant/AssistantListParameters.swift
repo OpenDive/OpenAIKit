@@ -1,5 +1,5 @@
 //
-//  AssistantListParameter.swift
+//  AssistantListParameters.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2023 OpenDive
@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-public struct AssistantListParameter {
+public struct AssistantListParameters {
     /// A limit on the number of objects to be returned.
     ///
     /// Limit can range between 1 and 100, and the default is 20.

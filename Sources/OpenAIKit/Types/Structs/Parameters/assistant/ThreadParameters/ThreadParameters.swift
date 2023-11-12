@@ -1,5 +1,5 @@
 //
-//  OpenAIObject.swift
+//  ThreadParameters.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2023 OpenDive
@@ -23,44 +23,32 @@
 //  THE SOFTWARE.
 //
 
-/// A specific type of object that OpenAI has responded with.
-public enum OpenAIObject: String, Codable {
-    /// A list object.
-    case list
+public struct ThreadParameters {
+    /// A list of [messages](https://platform.openai.com/docs/api-reference/messages) to start the thread with.
+    public var messages: [ThreadMessageParameters]?
 
-    /// A model object.
-    case model
+    /// Set of 16 key-value pairs that can be attached to an object.
+    /// This can be useful for storing additional information about the object in a structured format.
+    /// Keys can be a maximum of 64 characters long and values can be a maxium of 512 characters long.
+    public var metadata: [String: String]?
 
-    /// A model permission object.
-    case modelPermission = "model_permission"
+    public init(messages: [ThreadMessageParameters]? = nil, metadata: [String: String]? = nil) {
+        self.messages = messages
+        self.metadata = metadata
+    }
 
-    /// A text completion object.
-    case textCompletion = "text_completion"
+    /// The body of the URL used for OpenAI API requests.
+    internal var body: [String: Any] {
+        var result: [String: Any] = [:]
 
-    /// A Chat Completion.
-    case chatCompletion = "chat.completion"
+        if let messages = self.messages {
+            result["messages"] = messages
+        }
 
-    /// An edit object.
-    case edit
+        if let metadata = self.metadata {
+            result["metadata"] = metadata
+        }
 
-    /// An embedding object.
-    case embedding
-
-    /// A file object.
-    case file
-
-    /// A Chat Completion chunk.
-    case chatCompletionChunk = "chat.completion.chunk"
-
-    /// An Assistant object.
-    case assistant
-
-    /// An Assistant file object.
-    case assistantFile = "assistant.file"
-
-    /// A thread object.
-    case thread
-
-    /// A thread message object.
-    case threadMessage = "thread.message"
+        return result
+    }
 }

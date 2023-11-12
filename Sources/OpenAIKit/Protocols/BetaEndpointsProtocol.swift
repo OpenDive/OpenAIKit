@@ -28,19 +28,19 @@ import Foundation
 public protocol BetaEndpointsProtocol {
     // MARK: Assistant Functions
     /// Create an assistant with a model and instructions.
-    func createAssistants(parameters param: AssistantParameter) async throws -> Assistant
+    func createAssistants(parameters param: AssistantParameters) async throws -> Assistant
 
     /// Retrieves an assistant.
     func retrieveAssistant(assistantId id: String) async throws -> Assistant
 
     /// Modifies an assistant.
-    func modifyAssistant(assistantId id: String, parameters param: AssistantParameter) async throws -> Assistant
+    func modifyAssistant(assistantId id: String, parameters param: AssistantParameters) async throws -> Assistant
 
     /// Delete an assistant.
     func deleteAssistant(assistantId id: String) async throws -> DeleteObject
 
     /// Returns a list of assistants.
-    func listAssistants(parameters param: AssistantListParameter) async throws -> AssistantList
+    func listAssistants(parameters param: AssistantListParameters) async throws -> AssistantList
 
 
     // MARK: Assistant Files Functions
@@ -55,5 +55,19 @@ public protocol BetaEndpointsProtocol {
     func deleteAssistantFile(assistantId: String, fileId: String) async throws -> DeleteObject
 
     /// Returns a list of assistant files.
-    func listAssistantFiles(assistantId: String, parameters param: AssistantListParameter) async throws -> AssistantFileList
+    func listAssistantFiles(assistantId: String, parameters param: AssistantListParameters) async throws -> AssistantFileList
+
+
+    // MARK: Thread Functions
+    /// Create a thread.
+    func createThread(parameters param: ThreadParameters) async throws -> Thread
+
+    /// Retrieves a thread.
+    func retrieveThread(threadId id: String) async throws -> Thread
+
+    /// Modifies a thread.
+    func modifyThread(threadId id: String, metadata: [String: String]) async throws -> Thread
+
+    /// Delete a thread.
+    func deleteThread(threadId id: String) async throws -> DeleteObject
 }

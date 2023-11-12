@@ -1,5 +1,5 @@
 //
-//  OpenAIObject.swift
+//  TextMessageAnnotation.swift
 //  OpenAIKit
 //
 //  Copyright (c) 2023 OpenDive
@@ -23,44 +23,24 @@
 //  THE SOFTWARE.
 //
 
-/// A specific type of object that OpenAI has responded with.
-public enum OpenAIObject: String, Codable {
-    /// A list object.
-    case list
+public struct TextMessageAnnotation: Codable {
+    enum CodingKeys: String, CodingKey {
+        case type
+        case text
+        case startIndex = "start_index"
+        case endIndex = "end_index"
+        case filePath = "file_path"
+        case fileCitation = "file_citation"
+    }
 
-    /// A model object.
-    case model
+    /// The type of annotation.
+    public let type: TextMessageAnnotationType
 
-    /// A model permission object.
-    case modelPermission = "model_permission"
-
-    /// A text completion object.
-    case textCompletion = "text_completion"
-
-    /// A Chat Completion.
-    case chatCompletion = "chat.completion"
-
-    /// An edit object.
-    case edit
-
-    /// An embedding object.
-    case embedding
-
-    /// A file object.
-    case file
-
-    /// A Chat Completion chunk.
-    case chatCompletionChunk = "chat.completion.chunk"
-
-    /// An Assistant object.
-    case assistant
-
-    /// An Assistant file object.
-    case assistantFile = "assistant.file"
-
-    /// A thread object.
-    case thread
-
-    /// A thread message object.
-    case threadMessage = "thread.message"
+    /// The text in the message content that needs to be replaced.
+    public let text: String
+    public let startIndex: Int
+    public let endIndex: Int
+    public let filePath: TextMessageAnnotationFilePath?
+    public let fileCitation: TextMessageAnnotationFileCitation?
+    
 }
