@@ -231,12 +231,8 @@ public extension OpenAISource {
             let connection = OpenAISource(url: self.url)
 
             connection.onMessageCallback = { message in
-                if message.data != nil, message.data! == "[DONE]" {
-                    continuation.finish()
-                }
-                guard let data = message.data?.data(using: .utf8) else {
-                    throw OpenAIError.invalidData
-                }
+                guard let messageData = message.data, messageData != "[DONE]" { continuation.finish() }
+                let data = Data(messageData.utf8)
                 do {
                     let result = try OpenAIKitSession.decodeData(T.self, with: data)
                     continuation.yield(result)
