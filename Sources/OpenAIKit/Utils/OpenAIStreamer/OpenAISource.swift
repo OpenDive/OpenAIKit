@@ -233,10 +233,7 @@ public extension OpenAISource {
             connection.onMessageCallback = { message in
                 guard let messageData = message.data, messageData != "[DONE]" else { return continuation.finish() }
                 do { continuation.yield(try OpenAIKitSession.decodeData(T.self, with: Data(messageData.utf8))) }
-                catch {
-                    let apiError = try? JSONDecoder().decode(OpenAIErrorResponse.self, from: Data(messageData.utf8))
-                    continuation.finish(throwing: apiError ?? error)
-                }
+                catch { continuation.finish(throwing: error) }
             }
 
             continuation.onTermination = { @Sendable _ in
