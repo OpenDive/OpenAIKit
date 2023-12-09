@@ -231,14 +231,11 @@ public extension OpenAISource {
             let connection = OpenAISource(url: self.url)
 
             connection.onMessageCallback = { message in
-                guard let messageData = message.data, messageData != "[DONE]" { continuation.finish() }
-                let data = Data(messageData.utf8)
-                do {
-                    let result = try OpenAIKitSession.decodeData(T.self, with: data)
-                    continuation.yield(result)
-                } catch {
-                    let errorOpenAI = try? JSONDecoder().decode(OpenAIErrorResponse.self, from: data)
-                    continuation.finish(throwing: errorOpenAI ?? error)
+                guard let messageData = message.data, messageData != "[DONE]" else { return continuation.finish() }
+                do { continuation.yield(try OpenAIKitSession.decodeData(T.self, with: Data(messageData.utf8))) }
+                catch {
+                    let apiError = try? JSONDecoder().decode(OpenAIErrorResponse.self, from: Data(messageData.utf8))
+                    continuation.finish(throwing: apiError ?? error)
                 }
             }
 
