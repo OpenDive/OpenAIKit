@@ -52,19 +52,10 @@ public final class OpenAI {
     /// - Parameter b64Data: The `Base64` data itself in `String` form.
     /// - Returns: A `UIImage` object.
     public func decodeBase64Image(_ b64Data: String) throws -> UIImage {
-        do {
-            guard let data = Data(base64Encoded: b64Data) else {
-                throw OpenAIError.invalidData
-            }
-
-            guard let image = UIImage(data: data) else {
-                throw OpenAIError.invalidData
-            }
-
-            return image
-        } catch {
+        guard let data = Data(base64Encoded: b64Data), let image = UIImage(data: data) else {
             throw OpenAIError.invalidData
         }
+        return image
     }
     #endif
 
@@ -73,19 +64,10 @@ public final class OpenAI {
     /// - Parameter b64Data: The `Base64` data itself in `String` form.
     /// - Returns: An `NSImage` object.
     public func decodeBase64Image(_ b64Data: String) throws -> NSImage {
-        do {
-            guard let data = Data(base64Encoded: b64Data) else {
-                throw OpenAIError.invalidData
-            }
-
-            guard let image = NSImage(data: data) else {
-                throw OpenAIError.invalidData
-            }
-
-            return image
-        } catch {
+        guard let data = Data(base64Encoded: b64Data), let image = NSImage(data: data) else {
             throw OpenAIError.invalidData
         }
+        return image
     }
     #endif
 
@@ -96,7 +78,6 @@ public final class OpenAI {
         guard let result = URL(string: "https://api.openai.com/v1\(path)") else {
             throw OpenAIError.invalidUrl
         }
-
         return result
     }
 }
