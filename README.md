@@ -40,7 +40,7 @@
     - [Embeddings](#embeddings)
     - [Models](#models)
   - [Completion](#completion)
-  - [Migration From 1.x to 2.0](#migration-from-1.x-to-2.0)
+  - [Migration From 1.x to 2.x](#migration-from-1.x-to-2.x)
 - [Example Projects](#example-projects)
 - [Development and Testing](#development-and-testing)
 - [License](#license)
@@ -87,7 +87,7 @@ The [Swift Package Manager](https://swift.org/package-manager/) allows for devel
 
 * File > Swift Packages > Add Package Dependency
 * Add `https://github.com/OpenDive/OpenAIKit.git`
-* Select "Up to next Major" with "2.0"
+* Select "Up to next Major" with "2.0.1"
 
 #### SPM Through Xcode Package
 
@@ -95,7 +95,7 @@ Once you have your Swift package set up, add the Git link within the `dependenci
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/OpenDive/OpenAIKit.git", .upToNextMajor(from: "2.0"))
+    .package(url: "https://github.com/OpenDive/OpenAIKit.git", .upToNextMajor(from: "2.0.1"))
 ]
 ```
 
@@ -637,22 +637,22 @@ OpenAIKit.Model(
 
 As of July 6, 2023, OpenAI has announced the deprecation of the older models in the Completions API, which are set to retire at the beginning of 2024. It's highly recommended to transition to the Chat Completions API which provides a more structured prompt interface and multi-turn conversation capabilities. The Chat Completions API has proven to handle a vast majority of previous use cases and new conversational needs with higher flexibility and specificity, significantly enhancing the developer experience. For more details, refer to the [official announcement](https://openai.com/blog/gpt-4-api-general-availability).
 
-### Migration From 1.x to 2.0
+### Migration From 1.x to 2.x
 
-As of 2.0, Chat Completion Models use enums to label each available model for the main usage of default models. Here is an example on how to migrate from using the older initializer for `ChatParameter` to the initializer for 2.0:
+As of 2.x, Chat Completion Models use enums to label each available model for the main usage of default models. Here is an example on how to migrate from using the older initializer for `ChatParameter` to the initializer for 2.x:
 
 ```swift
 // ❌ 1.x implementation
 let chatParameters = ChatParameters(model: "gpt4", messages: chat)
 
-// ✅ 2.0 implementation
+// ✅ 2.x implementation
 let chatParameters = ChatParameters(model: .gpt4, messages: chat)
 ```
 
 If you need a custom string for fine-tuned models, use the `customModel` parameter:
 
 ```swift
-// ✅ 2.0 implementation for custom model IDs
+// ✅ 2.x implementation for custom model IDs
 let chatParameters = ChatParameters(customModel: "INSERT-MODEL-ID", message: chat)
 ```
 
