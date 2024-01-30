@@ -38,10 +38,10 @@
 		7D3E2ED92A7F262A0014174B /* ChatMainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D3E2ED82A7F262A0014174B /* ChatMainView.swift */; };
 		7D4A91082A87DE7E000A138A /* AudioPlayerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D4A91072A87DE7E000A138A /* AudioPlayerViewModel.swift */; };
 		7D4A910A2A87E110000A138A /* audio_translation.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7D4A91092A87E110000A138A /* audio_translation.mp3 */; };
+		7D6C8EB92B689D750049AC43 /* audio.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7D6C8EB82B689D750049AC43 /* audio.mp3 */; };
 		7D76E4F82AD46B7500E2F4C3 /* CreateChatFunctionCallExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D76E4F72AD46B7500E2F4C3 /* CreateChatFunctionCallExample.swift */; };
 		7DC0E9082A87CF97005C8763 /* CreateTranscription.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DC0E9072A87CF97005C8763 /* CreateTranscription.swift */; };
 		7DDE422E29AFE567000BBB01 /* CreateChatCompletion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DDE422D29AFE567000BBB01 /* CreateChatCompletion.swift */; };
-		7DDF5CF62AD77AAC00A72E6B /* audio.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7DDF5CF52AD77AAC00A72E6B /* audio.mp3 */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -77,10 +77,10 @@
 		7D3E2ED82A7F262A0014174B /* ChatMainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMainView.swift; sourceTree = "<group>"; };
 		7D4A91072A87DE7E000A138A /* AudioPlayerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayerViewModel.swift; sourceTree = "<group>"; };
 		7D4A91092A87E110000A138A /* audio_translation.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = audio_translation.mp3; sourceTree = "<group>"; };
+		7D6C8EB82B689D750049AC43 /* audio.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = audio.mp3; path = "../../../../../../../Library/Mobile Documents/com~apple~CloudDocs/Desktop/Desktop - Marcus’s Mac mini/OpenAIKit/Examples/iOS_Example/iOS_Example/Audio/audio.mp3"; sourceTree = "<group>"; };
 		7D76E4F72AD46B7500E2F4C3 /* CreateChatFunctionCallExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateChatFunctionCallExample.swift; sourceTree = "<group>"; };
 		7DC0E9072A87CF97005C8763 /* CreateTranscription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateTranscription.swift; sourceTree = "<group>"; };
 		7DDE422D29AFE567000BBB01 /* CreateChatCompletion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateChatCompletion.swift; sourceTree = "<group>"; };
-		7DDF5CF52AD77AAC00A72E6B /* audio.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = audio.mp3; path = ../../../../../../../Downloads/audio.mp3; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -240,7 +240,7 @@
 		7DC0E90B2A87D04D005C8763 /* Sound */ = {
 			isa = PBXGroup;
 			children = (
-				7DDF5CF52AD77AAC00A72E6B /* audio.mp3 */,
+				7D6C8EB82B689D750049AC43 /* audio.mp3 */,
 				7D4A91092A87E110000A138A /* audio_translation.mp3 */,
 			);
 			path = Sound;
@@ -288,7 +288,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1410;
-				LastUpgradeCheck = 1500;
+				LastUpgradeCheck = 1520;
 				TargetAttributes = {
 					76C0C24F293FB7CC003075D2 = {
 						CreatedOnToolsVersion = 14.1;
@@ -319,9 +319,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				76C0C25B293FB7CE003075D2 /* Preview Assets.xcassets in Resources */,
-				7DDF5CF62AD77AAC00A72E6B /* audio.mp3 in Resources */,
 				765BB20229405723000BF124 /* mask.png in Resources */,
 				765BB20129405723000BF124 /* variation.png in Resources */,
+				7D6C8EB92B689D750049AC43 /* audio.mp3 in Resources */,
 				7D4A910A2A87E110000A138A /* audio_translation.mp3 in Resources */,
 				76C0C258293FB7CE003075D2 /* Assets.xcassets in Resources */,
 				761C253129404086005066C2 /* SampleData.jsonl in Resources */,
@@ -372,6 +372,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -433,6 +434,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";

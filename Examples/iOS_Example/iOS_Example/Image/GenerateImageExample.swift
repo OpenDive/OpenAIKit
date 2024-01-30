@@ -52,7 +52,9 @@ struct GenerateImageExample: View {
                             let openAi = OpenAI(config)
                             let imageParam = ImageParameters(
                                 prompt: "an avocado chair",
-                                resolution: .small,
+                                resolution: .extraLargePortrait,
+                                quality: .hd,
+                                model: .dalle3,
                                 responseFormat: .base64Json
                             )
 

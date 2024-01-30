@@ -121,11 +121,11 @@ public struct ImageParameters {
         ]
 
         if let quality = self.quality {
-            result["quality"] = quality
+            result["quality"] = quality.rawValue
         }
 
         if let style = self.style {
-            result["style"] = style
+            result["style"] = style.rawValue
         }
 
         if let user = self.user {
