@@ -231,27 +231,10 @@ public extension OpenAISource {
             let connection = OpenAISource(url: self.url)
 
             connection.onMessageCallback = { message in
-                do {
-                    if message.data != nil, message.data! == "[DONE]" {
-                        continuation.finish()
-                    }
-                    
-                    guard let data = message.data?.data(using: .utf8) else {
-                        throw OpenAIError.invalidData
-                    }
-                    let result = try OpenAIKitSession.decodeData(T.self, with: data)
-                    continuation.yield(result)
-                } catch {
-                    do {
-                        guard let data = message.data?.data(using: .utf8) else {
-                            throw OpenAIError.invalidData
-                        }
-                        let errorOpenAI = try JSONDecoder().decode(OpenAIErrorResponse.self, from: data)
-                        continuation.finish(throwing: errorOpenAI)
-                    } catch {
-                        continuation.finish(throwing: error)
-                    }
-                }
+                guard let messageData = message.data, messageData != "[DONE]"
+                else { return message.data == nil ? continuation.finish(throwing: OpenAIError.invalidData) : continuation.finish() }
+                do { continuation.yield(try OpenAIKitSession.decodeData(T.self, with: Data(messageData.utf8))) }
+                catch { continuation.finish(throwing: error) }
             }
 
             continuation.onTermination = { @Sendable _ in

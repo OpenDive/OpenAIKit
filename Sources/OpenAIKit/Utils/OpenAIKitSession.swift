@@ -229,47 +229,43 @@ final class OpenAIKitSession {
         formSubmission: Bool = false
     ) async throws -> T {
         guard let apiKey = apiKey else { throw OpenAIError.noApiKey }
-
-        if bodyRequired {
-            guard let body = body else { throw OpenAIError.noBody }
-
-            if formSubmission {
-                let formRequest = FormDataHelper(formUrl: url)
-
-                body.forEach { (key, value) in
-                    if let dataValue = value as? FormData {
-                        formRequest.addDataField(named: key, formData: dataValue)
-                    } else {
-                        formRequest.addTextField(named: key, value: "\(value)")
-                    }
-                }
-
-                let request = formRequest.asURLRequest(apiKey: apiKey)
-                let data = try await self.asyncData(with: request)
-
-                return try OpenAIKitSession.decodeData(with: data)
-            } else {
-                let jsonData = try? JSONSerialization.data(withJSONObject: body)
+        guard let body = body else {
+            if !bodyRequired && !formSubmission { // no body req - no form
                 let data = try await self.asyncData(
-                    with: url, method: method,
-                    headers: ["Authorization": "Bearer \(apiKey)"],
-                    body: jsonData
+                    with: url,
+                    method: method,
+                    headers: ["Authorization": "Bearer \(apiKey)"]
                 )
-
+    
                 return try OpenAIKitSession.decodeData(with: data)
             }
+            throw OpenAIError.noBody // no body
         }
 
-        if !bodyRequired && !formSubmission {
+        if formSubmission { // body required + form sub
+            let formRequest = FormDataHelper(formUrl: url)
+
+            body.forEach { (key, value) in
+                if let dataValue = value as? FormData {
+                    formRequest.addDataField(named: key, formData: dataValue)
+                } else {
+                    formRequest.addTextField(named: key, value: "\(value)")
+                }
+            }
+
+            let request = formRequest.asURLRequest(apiKey: apiKey)
+            let data = try await self.asyncData(with: request)
+
+            return try OpenAIKitSession.decodeData(with: data)
+        } else { // body required only
+            let jsonData = try? JSONSerialization.data(withJSONObject: body)
             let data = try await self.asyncData(
-                with: url,
-                method: method,
-                headers: ["Authorization": "Bearer \(apiKey)"]
+                with: url, method: method,
+                headers: ["Authorization": "Bearer \(apiKey)"],
+                body: jsonData
             )
 
             return try OpenAIKitSession.decodeData(with: data)
         }
-
-        throw OpenAIError.noBody
     }
 }
