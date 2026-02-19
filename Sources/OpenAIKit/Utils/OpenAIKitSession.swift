@@ -359,6 +359,38 @@ final class OpenAIKitSession {
         return data
     }
 
+    /// Decode a URL to raw data using an encodable JSON body.
+    public func decodeRawUrl<Body: Encodable>(
+        with url: URL,
+        apiKey: String? = nil,
+        configuration: Configuration? = nil,
+        body: Body,
+        method: HTTPMethod = .post,
+        acceptHeader: String? = nil
+    ) async throws -> Data {
+        let requestConfiguration = try self.resolveRequestConfiguration(
+            apiKey: apiKey,
+            configuration: configuration
+        )
+        let jsonData = try JSONEncoder().encode(body)
+
+        var headers = requestConfiguration.headers
+        if let acceptHeader = acceptHeader {
+            headers["Accept"] = acceptHeader
+        }
+
+        let (data, response) = try await self.asyncData(
+            with: url,
+            method: method,
+            headers: headers,
+            body: jsonData,
+            timeoutInterval: requestConfiguration.options.timeoutInterval,
+            maxRetries: requestConfiguration.options.maxRetries
+        )
+        try OpenAIKitSession.validateStatus(response, data: data)
+        return data
+    }
+
     /// Decode a `URL` to the type `T` using either `asyncData()` for the Production Server;
     /// or using `decode()` for the Mock Server.
     /// - Parameters:

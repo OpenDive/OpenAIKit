@@ -124,6 +124,10 @@ class MockOpenAI: OpenAIProtocol {
         throw MockOpenAIError.notImplemented
     }
 
+    func createSpeech(parameters param: SpeechParameters) async throws -> Data {
+        Data("audio".utf8)
+    }
+
     func listFiles() async throws -> ListFilesResponse {
         return try await getDecodedData(with: "ListFilesResponse") as ListFilesResponse
     }

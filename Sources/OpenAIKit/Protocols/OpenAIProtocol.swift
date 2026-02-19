@@ -23,6 +23,8 @@
 //  THE SOFTWARE.
 //
 
+import Foundation
+
 public protocol OpenAIProtocol {
     // MARK: Models Functions
     /// List and describe the various models available in the API. You can refer to the [Models](https://beta.openai.com/docs/models)
@@ -113,6 +115,11 @@ public protocol OpenAIProtocol {
     /// - Parameter param: A `TranscriptionParameters` object containing the parameters for the call.
     /// - Returns: A `TranscriptionResponse` object.
     func createTranslation(parameters param: TranscriptionParameters) async throws -> TranscriptionResponse
+
+    /// Generates speech audio from text input.
+    /// - Parameter param: A `SpeechParameters` object containing the parameters for the call.
+    /// - Returns: Raw audio data from the API.
+    func createSpeech(parameters param: SpeechParameters) async throws -> Data
 
 
     // MARK: Files Functions

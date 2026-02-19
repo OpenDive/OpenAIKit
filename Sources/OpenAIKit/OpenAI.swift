@@ -71,6 +71,10 @@ public final class OpenAI {
         self.config = config
     }
 
+    internal var configuration: Configuration {
+        self.config
+    }
+
     #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
     /// Input a `Base64` image binary `String` to receive an `UIImage` object.
     /// - Parameter b64Data: The `Base64` data itself in `String` form.
@@ -116,7 +120,7 @@ public final class OpenAI {
     /// Return a `URL` with the OpenAI API endpoint as the `URL`
     /// - Parameter path: The `String` path.
     /// - Returns: An `URL` object.
-    private func getServerUrl(path: String) throws -> URL {
+    internal func getServerUrl(path: String) throws -> URL {
         let fullPath = path.hasPrefix("/") ? path : "/\(path)"
         guard let result = URL(string: fullPath, relativeTo: config.baseURL)?.absoluteURL else {
             throw OpenAIError.invalidUrl
@@ -242,6 +246,16 @@ extension OpenAI: OpenAIProtocol {
         var newParam = param
         newParam.language = nil
         return try await newParam.retrieveResponse(using: serverUrl, self.config)
+    }
+
+    public func createSpeech(parameters param: SpeechParameters) async throws -> Data {
+        let serverUrl = try getServerUrl(path: "/audio/speech")
+        return try await OpenAIKitSession.shared.decodeRawUrl(
+            with: serverUrl,
+            configuration: config,
+            body: param,
+            acceptHeader: "application/octet-stream"
+        )
     }
 
     public func listFiles() async throws -> ListFilesResponse {
