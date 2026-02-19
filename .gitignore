@@ -1,6 +1,9 @@
 # Mac OS X
 .DS_Store
 
+# Cursor IDE
+.cursor/
+
 # Xcode
 
 ## Build generated
