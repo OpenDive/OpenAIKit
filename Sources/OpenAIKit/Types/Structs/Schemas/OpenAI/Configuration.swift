@@ -24,15 +24,52 @@
 //  
 
 /// The configuration object used for the OpenAIKit object to represent the organization of the user.
-public struct Configuration {
-    /// The organization ID of the user.
-    public let organizationId: String
+import Foundation
 
+public struct Configuration: Sendable {
     /// The API key associated with the user.
-    let apiKey: String
+    public let apiKey: String
 
+    /// Optional organization header value.
+    public let organizationId: String?
+
+    /// Optional project header value.
+    public let projectId: String?
+
+    /// Optional webhook secret used by webhook verification helpers.
+    public let webhookSecret: String?
+
+    /// Base URL for all API requests.
+    public let baseURL: URL
+
+    /// Request behavior defaults used by the transport layer.
+    public let requestOptions: OpenAIRequestOptions
+
+    /// Backward-compatible initializer used by existing call sites.
     public init(organizationId: String, apiKey: String) {
-        self.organizationId = organizationId
+        self.init(
+            apiKey: apiKey,
+            organizationId: organizationId,
+            projectId: nil,
+            webhookSecret: nil,
+            baseURL: URL(string: "https://api.openai.com/v1")!,
+            requestOptions: OpenAIRequestOptions()
+        )
+    }
+
+    public init(
+        apiKey: String,
+        organizationId: String? = nil,
+        projectId: String? = nil,
+        webhookSecret: String? = nil,
+        baseURL: URL = URL(string: "https://api.openai.com/v1")!,
+        requestOptions: OpenAIRequestOptions = OpenAIRequestOptions()
+    ) {
         self.apiKey = apiKey
+        self.organizationId = organizationId
+        self.projectId = projectId
+        self.webhookSecret = webhookSecret
+        self.baseURL = baseURL
+        self.requestOptions = requestOptions
     }
 }

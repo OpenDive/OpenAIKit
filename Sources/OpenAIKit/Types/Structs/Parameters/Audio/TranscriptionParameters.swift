@@ -93,28 +93,28 @@ public struct TranscriptionParameters {
         case .json, .verboseJson:
             return try await OpenAIKitSession.shared.decodeUrl(
                 with: url,
-                apiKey: config.apiKey,
+                configuration: config,
                 body: self.body,
                 formSubmission: true
             )
         case .text:
             let data = try await OpenAIKitSession.shared.decodeUrlTranscriptions(
                 with: url,
-                apiKey: config.apiKey,
+                configuration: config,
                 body: self.body
             )
             return TranscriptionResponse(text: String(decoding: data, as: UTF8.self))
         case .srt:
             let data = try await OpenAIKitSession.shared.decodeUrlTranscriptions(
                 with: url,
-                apiKey: config.apiKey,
+                configuration: config,
                 body: self.body
             )
             return TranscriptionResponse(srt: SRT.parseSRT(from: String(decoding: data, as: UTF8.self)))
         case .vtt:
             let data = try await OpenAIKitSession.shared.decodeUrlTranscriptions(
                 with: url,
-                apiKey: config.apiKey,
+                configuration: config,
                 body: self.body
             )
             return TranscriptionResponse(vtt: WebVTTCue.parseWebVTT(from: String(decoding: data, as: UTF8.self)))

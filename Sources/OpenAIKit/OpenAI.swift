@@ -117,7 +117,8 @@ public final class OpenAI {
     /// - Parameter path: The `String` path.
     /// - Returns: An `URL` object.
     private func getServerUrl(path: String) throws -> URL {
-        guard let result = URL(string: "https://api.openai.com/v1\(path)") else {
+        let fullPath = path.hasPrefix("/") ? path : "/\(path)"
+        guard let result = URL(string: fullPath, relativeTo: config.baseURL)?.absoluteURL else {
             throw OpenAIError.invalidUrl
         }
 
@@ -130,7 +131,7 @@ extension OpenAI: OpenAIProtocol {
         let serverUrl = try getServerUrl(path: "/models")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
-            apiKey: config.apiKey,
+            configuration: config,
             method: .get,
             bodyRequired: false
         )
@@ -140,7 +141,7 @@ extension OpenAI: OpenAIProtocol {
         let serverUrl = try getServerUrl(path: "/models/\(id)")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
-            apiKey: config.apiKey,
+            configuration: config,
             method: .get,
             bodyRequired: false
         )
@@ -150,7 +151,7 @@ extension OpenAI: OpenAIProtocol {
         let serverUrl = try getServerUrl(path: "/completions")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
-            apiKey: config.apiKey,
+            configuration: config,
             body: param.body
         )
     }
@@ -164,7 +165,7 @@ extension OpenAI: OpenAIProtocol {
 
         return try OpenAIKitSession.shared.streamData(
             with: serverUrl,
-            apiKey: config.apiKey,
+            configuration: config,
             body: parameter
         )
     }
@@ -173,7 +174,7 @@ extension OpenAI: OpenAIProtocol {
         let serverUrl = try getServerUrl(path: "/chat/completions")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
-            apiKey: config.apiKey,
+            configuration: config,
             body: param.body
         )
     }
@@ -187,7 +188,7 @@ extension OpenAI: OpenAIProtocol {
 
         return try OpenAIKitSession.shared.streamData(
             with: serverUrl,
-            apiKey: config.apiKey,
+            configuration: config,
             body: parameter
         )
     }
@@ -197,7 +198,7 @@ extension OpenAI: OpenAIProtocol {
         let serverUrl = try getServerUrl(path: "/images/generations")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
-            apiKey: config.apiKey,
+            configuration: config,
             body: param.body
         )
     }
@@ -206,7 +207,7 @@ extension OpenAI: OpenAIProtocol {
         let serverUrl = try getServerUrl(path: "/images/edits")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
-            apiKey: config.apiKey,
+            configuration: config,
             body: param.body,
             formSubmission: true
         )
@@ -216,7 +217,7 @@ extension OpenAI: OpenAIProtocol {
         let serverUrl = try getServerUrl(path: "/images/variations")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
-            apiKey: config.apiKey,
+            configuration: config,
             body: param.body,
             formSubmission: true
         )
@@ -226,7 +227,7 @@ extension OpenAI: OpenAIProtocol {
         let serverUrl = try getServerUrl(path: "/embeddings")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
-            apiKey: config.apiKey,
+            configuration: config,
             body: param.body
         )
     }
@@ -247,7 +248,7 @@ extension OpenAI: OpenAIProtocol {
         let serverUrl = try getServerUrl(path: "/files")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
-            apiKey: config.apiKey,
+            configuration: config,
             method: .get,
             bodyRequired: false
         )
@@ -257,7 +258,7 @@ extension OpenAI: OpenAIProtocol {
         let serverUrl = try getServerUrl(path: "/files")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
-            apiKey: config.apiKey,
+            configuration: config,
             body: param.body,
             formSubmission: true
         )
@@ -267,7 +268,7 @@ extension OpenAI: OpenAIProtocol {
         let serverUrl = try getServerUrl(path: "/files/\(id)")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
-            apiKey: config.apiKey,
+            configuration: config,
             method: .delete,
             bodyRequired: false
         )
@@ -277,7 +278,7 @@ extension OpenAI: OpenAIProtocol {
         let serverUrl = try getServerUrl(path: "/files/\(id)")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
-            apiKey: config.apiKey,
+            configuration: config,
             method: .get,
             bodyRequired: false
         )
@@ -287,7 +288,7 @@ extension OpenAI: OpenAIProtocol {
         let serverUrl = try getServerUrl(path: "/files/\(id)/content")
         return try await OpenAIKitSession.shared.retrieveJsonLine(
             with: serverUrl,
-            apiKey: config.apiKey
+            configuration: config
         )
     }
 
@@ -295,7 +296,7 @@ extension OpenAI: OpenAIProtocol {
         let serverUrl = try getServerUrl(path: "/models/\(model)")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
-            apiKey: config.apiKey,
+            configuration: config,
             method: .delete,
             bodyRequired: false
         )
@@ -307,7 +308,7 @@ extension OpenAI: OpenAIProtocol {
         let serverUrl = try getServerUrl(path: "/moderations")
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
-            apiKey: config.apiKey,
+            configuration: config,
             body: param.body
         )
     }

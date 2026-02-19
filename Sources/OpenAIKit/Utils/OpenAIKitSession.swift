@@ -45,6 +45,79 @@ final class OpenAIKitSession {
         case delete = "DELETE"
     }
 
+    internal func headers(for configuration: Configuration) -> [String: String] {
+        var result: [String: String] = [
+            "Authorization": "Bearer \(configuration.apiKey)"
+        ]
+
+        if let organizationId = configuration.organizationId, !organizationId.isEmpty {
+            result["OpenAI-Organization"] = organizationId
+        }
+
+        if let projectId = configuration.projectId, !projectId.isEmpty {
+            result["OpenAI-Project"] = projectId
+        }
+
+        configuration.requestOptions.additionalHeaders.forEach { key, value in
+            result[key] = value
+        }
+
+        return result
+    }
+
+    internal static func statusError(for statusCode: Int, data: Data) -> OpenAIAPIError {
+        let payload = try? OpenAIKitSession.decodeData(OpenAIErrorResponse.self, with: data)
+
+        switch statusCode {
+        case 400:
+            return .badRequest(payload)
+        case 401:
+            return .authentication(payload)
+        case 403:
+            return .permissionDenied(payload)
+        case 404:
+            return .notFound(payload)
+        case 409:
+            return .conflict(payload)
+        case 422:
+            return .unprocessableEntity(payload)
+        case 429:
+            return .rateLimit(payload)
+        case 500...599:
+            return .internalServer(statusCode: statusCode, payload: payload)
+        default:
+            return .unexpectedStatusCode(statusCode: statusCode, payload: payload)
+        }
+    }
+
+    internal static func validateStatus(_ response: URLResponse?, data: Data) throws {
+        guard let httpResponse = response as? HTTPURLResponse else {
+            return
+        }
+
+        guard (200...299).contains(httpResponse.statusCode) else {
+            throw OpenAIKitSession.statusError(for: httpResponse.statusCode, data: data)
+        }
+    }
+
+    private func resolveRequestConfiguration(
+        apiKey: String?,
+        configuration: Configuration?
+    ) throws -> (headers: [String: String], options: OpenAIRequestOptions) {
+        if let configuration = configuration {
+            return (self.headers(for: configuration), configuration.requestOptions)
+        }
+
+        guard let apiKey = apiKey else {
+            throw OpenAIError.noApiKey
+        }
+
+        return (
+            ["Authorization": "Bearer \(apiKey)"],
+            OpenAIRequestOptions()
+        )
+    }
+
     /// Decode a data object using `JSONDecoder.decode()`.
     /// - Parameters:
     ///   - type: The type of `T` that the data will decode to.
@@ -85,8 +158,10 @@ final class OpenAIKitSession {
         with url: URL,
         method: HTTPMethod = .post,
         headers: [String: String] = [:],
-        body: Data? = nil
-    ) async throws -> Data {
+        body: Data? = nil,
+        timeoutInterval: TimeInterval? = nil,
+        maxRetries: Int = 0
+    ) async throws -> (Data, URLResponse?) {
         var request = URLRequest(url: url)
 
         request.httpMethod = method.rawValue
@@ -94,26 +169,46 @@ final class OpenAIKitSession {
             "Content-Type": "application/json"
         ]
         request.httpBody = body
+        if let timeoutInterval = timeoutInterval {
+            request.timeoutInterval = timeoutInterval
+        }
 
         headers.forEach { key, value in
             request.allHTTPHeaderFields?[key] = value
         }
 
-        return try await self.asyncData(with: request)
+        return try await self.asyncData(with: request, maxRetries: maxRetries)
     }
 
     /// An Async Await wrapper for the older `dataTask` handler.
     /// - Parameter request: `URLRequest` to be fetched from.
     /// - Returns: A Data object fetched from the` URLRequest`.
-    private func asyncData(with request: URLRequest) async throws -> Data {
-        try await withCheckedThrowingContinuation { (con: CheckedContinuation<Data, Error>) in
-            let task = URLSession.shared.dataTask(with: request) { data, _, error in
+    private func asyncData(
+        with request: URLRequest,
+        maxRetries: Int = 0
+    ) async throws -> (Data, URLResponse?) {
+        var attempt = 0
+        while true {
+            do {
+                return try await self.performDataTask(with: request)
+            } catch {
+                if attempt >= maxRetries {
+                    throw error
+                }
+                attempt += 1
+            }
+        }
+    }
+
+    private func performDataTask(with request: URLRequest) async throws -> (Data, URLResponse?) {
+        try await withCheckedThrowingContinuation { (con: CheckedContinuation<(Data, URLResponse?), Error>) in
+            let task = URLSession.shared.dataTask(with: request) { data, response, error in
                 if let error = error {
                     con.resume(throwing: error)
                 } else if let data = data {
-                    con.resume(returning: data)
+                    con.resume(returning: (data, response))
                 } else {
-                    con.resume(returning: Data())
+                    con.resume(returning: (Data(), response))
                 }
             }
 
@@ -130,17 +225,24 @@ final class OpenAIKitSession {
     public func retrieveJsonLine<T: Decodable>(
         _ type: T.Type = T.self,
         with url: URL,
-        apiKey: String? = nil
+        apiKey: String? = nil,
+        configuration: Configuration? = nil
     ) async throws -> [T] {
-        guard let apiKey = apiKey else { throw OpenAIError.noApiKey }
+        let requestConfiguration = try self.resolveRequestConfiguration(
+            apiKey: apiKey,
+            configuration: configuration
+        )
 
         let jsonDecoder = JSONDecoder()
 
-        let genData = try await self.asyncData(
+        let (genData, response) = try await self.asyncData(
             with: url,
             method: .get,
-            headers: ["Authorization": "Bearer \(apiKey)"]
+            headers: requestConfiguration.headers,
+            timeoutInterval: requestConfiguration.options.timeoutInterval,
+            maxRetries: requestConfiguration.options.maxRetries
         )
+        try OpenAIKitSession.validateStatus(response, data: genData)
 
         let genString = String(decoding: genData, as: UTF8.self)
 
@@ -165,10 +267,15 @@ final class OpenAIKitSession {
     public func streamData<T: Decodable>(
         _ type: T.Type = T.self,
         with url: URL,
-        apiKey: String,
+        apiKey: String? = nil,
+        configuration: Configuration? = nil,
         body: [String: Any],
         method: HTTPMethod = .post
     ) throws -> AsyncThrowingStream<T, Error> {
+        let requestConfiguration = try self.resolveRequestConfiguration(
+            apiKey: apiKey,
+            configuration: configuration
+        )
         let jsonData = try? JSONSerialization.data(withJSONObject: body)
         var request = URLRequest(url: url)
 
@@ -177,7 +284,10 @@ final class OpenAIKitSession {
             "Content-Type": "application/json"
         ]
         request.httpBody = jsonData
-        request.allHTTPHeaderFields?["Authorization"] = "Bearer \(apiKey)"
+        request.timeoutInterval = requestConfiguration.options.timeoutInterval
+        requestConfiguration.headers.forEach { key, value in
+            request.allHTTPHeaderFields?[key] = value
+        }
 
         return OpenAISource(url: request).streamData()
     }
@@ -191,9 +301,14 @@ final class OpenAIKitSession {
     /// - Returns: The decoded object of type `Data`.
     public func decodeUrlTranscriptions(
         with url: URL,
-        apiKey: String,
+        apiKey: String? = nil,
+        configuration: Configuration? = nil,
         body: [String: Any]
     ) async throws -> Data {
+        let requestConfiguration = try self.resolveRequestConfiguration(
+            apiKey: apiKey,
+            configuration: configuration
+        )
         let formRequest = FormDataHelper(formUrl: url)
 
         body.forEach { (key, value) in
@@ -204,8 +319,15 @@ final class OpenAIKitSession {
             }
         }
 
-        let request = formRequest.asURLRequest(apiKey: apiKey)
-        return try await self.asyncData(with: request)
+        var request = formRequest.asURLRequest(headers: requestConfiguration.headers)
+        request.timeoutInterval = requestConfiguration.options.timeoutInterval
+
+        let (data, response) = try await self.asyncData(
+            with: request,
+            maxRetries: requestConfiguration.options.maxRetries
+        )
+        try OpenAIKitSession.validateStatus(response, data: data)
+        return data
     }
 
     /// Decode a `URL` to the type `T` using either `asyncData()` for the Production Server;
@@ -223,12 +345,16 @@ final class OpenAIKitSession {
         _ type: T.Type = T.self,
         with url: URL,
         apiKey: String? = nil,
+        configuration: Configuration? = nil,
         body: [String: Any]? = nil,
         method: HTTPMethod = .post,
         bodyRequired: Bool = true,
         formSubmission: Bool = false
     ) async throws -> T {
-        guard let apiKey = apiKey else { throw OpenAIError.noApiKey }
+        let requestConfiguration = try self.resolveRequestConfiguration(
+            apiKey: apiKey,
+            configuration: configuration
+        )
 
         if bodyRequired {
             guard let body = body else { throw OpenAIError.noBody }
@@ -244,28 +370,39 @@ final class OpenAIKitSession {
                     }
                 }
 
-                let request = formRequest.asURLRequest(apiKey: apiKey)
-                let data = try await self.asyncData(with: request)
+                var request = formRequest.asURLRequest(headers: requestConfiguration.headers)
+                request.timeoutInterval = requestConfiguration.options.timeoutInterval
+                let (data, response) = try await self.asyncData(
+                    with: request,
+                    maxRetries: requestConfiguration.options.maxRetries
+                )
+                try OpenAIKitSession.validateStatus(response, data: data)
 
                 return try OpenAIKitSession.decodeData(with: data)
             } else {
                 let jsonData = try? JSONSerialization.data(withJSONObject: body)
-                let data = try await self.asyncData(
+                let (data, response) = try await self.asyncData(
                     with: url, method: method,
-                    headers: ["Authorization": "Bearer \(apiKey)"],
-                    body: jsonData
+                    headers: requestConfiguration.headers,
+                    body: jsonData,
+                    timeoutInterval: requestConfiguration.options.timeoutInterval,
+                    maxRetries: requestConfiguration.options.maxRetries
                 )
+                try OpenAIKitSession.validateStatus(response, data: data)
 
                 return try OpenAIKitSession.decodeData(with: data)
             }
         }
 
         if !bodyRequired && !formSubmission {
-            let data = try await self.asyncData(
+            let (data, response) = try await self.asyncData(
                 with: url,
                 method: method,
-                headers: ["Authorization": "Bearer \(apiKey)"]
+                headers: requestConfiguration.headers,
+                timeoutInterval: requestConfiguration.options.timeoutInterval,
+                maxRetries: requestConfiguration.options.maxRetries
             )
+            try OpenAIKitSession.validateStatus(response, data: data)
 
             return try OpenAIKitSession.decodeData(with: data)
         }

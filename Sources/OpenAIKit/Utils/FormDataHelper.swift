@@ -64,6 +64,13 @@ struct FormDataHelper {
     /// - Parameter apiKey: The API key associated with the request.
     /// - Returns: An `URLRequest` object.
     func asURLRequest(apiKey: String) -> URLRequest {
+        self.asURLRequest(headers: ["Authorization": "Bearer \(apiKey)"])
+    }
+
+    /// Convert the form query request to a `URLRequest`.
+    /// - Parameter headers: Headers associated with the request.
+    /// - Returns: An `URLRequest` object.
+    func asURLRequest(headers: [String: String]) -> URLRequest {
         var request = URLRequest(url: formUrl)
 
         request.httpMethod = "POST"
@@ -71,7 +78,7 @@ struct FormDataHelper {
 
         self.formBody.append("--\(boundary)--")
         request.httpBody = self.formBody as Data
-        request.allHTTPHeaderFields = ["Authorization": "Bearer \(apiKey)"]
+        request.allHTTPHeaderFields = headers
 
         return request
     }
