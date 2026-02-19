@@ -40,6 +40,15 @@ public struct ChatParameters: Encodable {
         case user
         case functionCall = "function_call"
         case functions
+        case tools
+        case toolChoice = "tool_choice"
+        case responseFormat = "response_format"
+        case seed
+        case maxCompletionTokens = "max_completion_tokens"
+        case maxTokens = "max_tokens"
+        case parallelToolCalls = "parallel_tool_calls"
+        case logprobs
+        case topLogprobs = "top_logprobs"
     }
     /// ID of the model to use.
     public var model: ChatModels
@@ -117,6 +126,33 @@ public struct ChatParameters: Encodable {
     /// A list of functions the model may generate JSON inputs for.
     public var functions: [Function]?
 
+    /// A list of modern tools the model may call.
+    public var tools: [ChatTool]?
+
+    /// Controls which tool should be used by the model (`none`, `auto`, `required`).
+    public var toolChoice: String?
+
+    /// Structured output response format configuration.
+    public var responseFormat: ChatResponseFormat?
+
+    /// Optional deterministic seed.
+    public var seed: Int?
+
+    /// Upper bound for completion tokens.
+    public var maxCompletionTokens: Int?
+
+    /// Legacy max tokens field.
+    public var maxTokens: Int?
+
+    /// Controls whether the model can call tools in parallel.
+    public var parallelToolCalls: Bool?
+
+    /// Whether to include token log probabilities.
+    public var logprobs: Bool?
+
+    /// Number of top log probabilities to return.
+    public var topLogprobs: Int?
+
     public init(
         model: ChatModels,
         customModel: String? = nil,
@@ -131,7 +167,16 @@ public struct ChatParameters: Encodable {
         logitBias: [String : Int]? = nil,
         user: String? = nil,
         functionCall: String? = nil,
-        functions: [Function]? = nil
+        functions: [Function]? = nil,
+        tools: [ChatTool]? = nil,
+        toolChoice: String? = nil,
+        responseFormat: ChatResponseFormat? = nil,
+        seed: Int? = nil,
+        maxCompletionTokens: Int? = nil,
+        maxTokens: Int? = nil,
+        parallelToolCalls: Bool? = nil,
+        logprobs: Bool? = nil,
+        topLogprobs: Int? = nil
     ) {
         self.model = model
         self.customModel = customModel
@@ -147,6 +192,15 @@ public struct ChatParameters: Encodable {
         self.user = user
         self.functionCall = functionCall
         self.functions = functions
+        self.tools = tools
+        self.toolChoice = toolChoice
+        self.responseFormat = responseFormat
+        self.seed = seed
+        self.maxCompletionTokens = maxCompletionTokens
+        self.maxTokens = maxTokens
+        self.parallelToolCalls = parallelToolCalls
+        self.logprobs = logprobs
+        self.topLogprobs = topLogprobs
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -167,5 +221,14 @@ public struct ChatParameters: Encodable {
         try container.encodeIfPresent(self.user, forKey: .user)
         try container.encodeIfPresent(self.functionCall, forKey: .functionCall)
         try container.encodeIfPresent(self.functions, forKey: .functions)
+        try container.encodeIfPresent(self.tools, forKey: .tools)
+        try container.encodeIfPresent(self.toolChoice, forKey: .toolChoice)
+        try container.encodeIfPresent(self.responseFormat, forKey: .responseFormat)
+        try container.encodeIfPresent(self.seed, forKey: .seed)
+        try container.encodeIfPresent(self.maxCompletionTokens, forKey: .maxCompletionTokens)
+        try container.encodeIfPresent(self.maxTokens, forKey: .maxTokens)
+        try container.encodeIfPresent(self.parallelToolCalls, forKey: .parallelToolCalls)
+        try container.encodeIfPresent(self.logprobs, forKey: .logprobs)
+        try container.encodeIfPresent(self.topLogprobs, forKey: .topLogprobs)
     }
 }

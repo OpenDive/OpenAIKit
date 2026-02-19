@@ -44,18 +44,35 @@ final class OpenAIEncodingMigrationTests: XCTestCase {
             description: "Find weather for city",
             parameters: parameters
         )
+        let tool = ChatTool(function: function)
         let params = ChatParameters(
             model: .gpt4,
             customModel: "gpt-5.2",
             messages: [ChatMessage(role: .user, content: "hello")],
             functionCall: "auto",
-            functions: [function]
+            functions: [function],
+            tools: [tool],
+            toolChoice: "required",
+            responseFormat: ChatResponseFormat(type: .jsonObject),
+            seed: 7,
+            maxCompletionTokens: 128,
+            parallelToolCalls: true,
+            logprobs: true,
+            topLogprobs: 2
         )
 
         let encoded = try jsonObject(params)
         XCTAssertEqual(encoded["model"] as? String, "gpt-5.2")
         XCTAssertEqual(encoded["function_call"] as? String, "auto")
         XCTAssertNotNil(encoded["functions"])
+        XCTAssertEqual(encoded["tool_choice"] as? String, "required")
+        XCTAssertEqual(encoded["seed"] as? Int, 7)
+        XCTAssertEqual(encoded["max_completion_tokens"] as? Int, 128)
+        XCTAssertEqual(encoded["parallel_tool_calls"] as? Bool, true)
+        XCTAssertEqual(encoded["logprobs"] as? Bool, true)
+        XCTAssertEqual(encoded["top_logprobs"] as? Int, 2)
+        XCTAssertNotNil(encoded["tools"])
+        XCTAssertNotNil(encoded["response_format"])
     }
 
     func testImageParametersEncodeExpectedKeyNames() throws {
