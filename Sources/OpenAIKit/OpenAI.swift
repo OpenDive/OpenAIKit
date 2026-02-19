@@ -43,6 +43,30 @@ public final class OpenAI {
     /// The configuration object used to store the API Key and Organization ID.
     private var config: Configuration
 
+    // MARK: Resource namespaces
+
+    public lazy var completions = CompletionsResource(self)
+    public lazy var chat = ChatResource(self)
+    public lazy var embeddings = EmbeddingsResource(self)
+    public lazy var files = FilesResource(self)
+    public lazy var images = ImagesResource(self)
+    public lazy var audio = AudioResource(self)
+    public lazy var moderations = ModerationsResource(self)
+    public lazy var models = ModelsResource(self)
+    public lazy var fineTuning = FineTuningResource(self)
+    public lazy var vectorStores = VectorStoresResource(self)
+    public lazy var webhooks = WebhooksResource(self)
+    public lazy var beta = BetaResource(self)
+    public lazy var batches = BatchesResource(self)
+    public lazy var uploads = UploadsResource(self)
+    public lazy var responses = ResponsesResource(self)
+    public lazy var realtime = RealtimeResource(self)
+    public lazy var conversations = ConversationsResource(self)
+    public lazy var evals = EvalsResource(self)
+    public lazy var containers = ContainersResource(self)
+    public lazy var skills = SkillsResource(self)
+    public lazy var videos = VideosResource(self)
+
     public init(_ config: Configuration) {
         self.config = config
     }
