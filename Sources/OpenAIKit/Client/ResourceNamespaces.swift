@@ -42,7 +42,9 @@ public final class ModerationsResource: OpenAIResource {}
 public final class ModelsResource: OpenAIResource {}
 
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, *)
-public final class FineTuningResource: OpenAIResource {}
+public final class FineTuningResource: OpenAIResource {
+    public lazy var jobs = FineTuningJobsResource(client)
+}
 
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, *)
 public final class VectorStoresResource: OpenAIResource {
@@ -213,3 +215,6 @@ public final class BetaRealtimeSessionsResource: OpenAIResource {}
 
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, *)
 public final class BetaRealtimeTranscriptionSessionsResource: OpenAIResource {}
+
+@available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, *)
+public final class FineTuningJobsResource: OpenAIResource {}
