@@ -24,7 +24,7 @@
 //
 
 /// The quality of the image that will be generated.
-public enum ImageQuality: String {
+public enum ImageQuality: String, Codable {
     /// Creates images with finer details and greater consistency across the image.
     case hd
 

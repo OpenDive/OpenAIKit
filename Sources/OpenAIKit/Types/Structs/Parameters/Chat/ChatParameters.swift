@@ -25,7 +25,22 @@
 
 import Foundation
 
-public struct ChatParameters {
+public struct ChatParameters: Encodable {
+    enum CodingKeys: String, CodingKey {
+        case model
+        case messages
+        case temperature
+        case topP = "top_p"
+        case numberOfCompletions = "n"
+        case stream
+        case stop
+        case presencePenalty = "presence_penalty"
+        case frequencyPenalty = "frequency_penalty"
+        case logitBias = "logit_bias"
+        case user
+        case functionCall = "function_call"
+        case functions
+    }
     /// ID of the model to use.
     public var model: ChatModels
 
@@ -134,39 +149,23 @@ public struct ChatParameters {
         self.functions = functions
     }
 
-    /// The body of the URL used for OpenAI API requests.
-    public var body: [String: Any] {
-        var result: [String: Any] = [
-            "model": self.customModel != nil ? self.customModel! : self.model.description,
-            "temperature": self.temperature,
-            "top_p": self.topP,
-            "n": self.numberOfCompletions,
-            "stream": self.stream,
-            "presence_penalty": self.presencePenalty,
-            "frequency_penalty": self.frequencyPenalty,
-            "messages": self.messages.map { $0.body }
-        ]
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        let selectedModel = self.customModel ?? self.model.rawValue
 
-        if let stop = self.stop {
-            result["stop"] = stop
-        }
+        try container.encode(selectedModel, forKey: .model)
+        try container.encode(self.messages, forKey: .messages)
+        try container.encode(self.temperature, forKey: .temperature)
+        try container.encode(self.topP, forKey: .topP)
+        try container.encode(self.numberOfCompletions, forKey: .numberOfCompletions)
+        try container.encode(self.stream, forKey: .stream)
+        try container.encode(self.presencePenalty, forKey: .presencePenalty)
+        try container.encode(self.frequencyPenalty, forKey: .frequencyPenalty)
 
-        if let logitBias = self.logitBias {
-            result["logit_bias"] = logitBias
-        }
-
-        if let user = self.user {
-            result["user"] = user
-        }
-
-        if let functionCall = self.functionCall {
-            result["function_call"] = functionCall
-        }
-
-        if let functions = self.functions {
-            result["functions"] = functions.map { $0.body }
-        }
-
-        return result
+        try container.encodeIfPresent(self.stop, forKey: .stop)
+        try container.encodeIfPresent(self.logitBias, forKey: .logitBias)
+        try container.encodeIfPresent(self.user, forKey: .user)
+        try container.encodeIfPresent(self.functionCall, forKey: .functionCall)
+        try container.encodeIfPresent(self.functions, forKey: .functions)
     }
 }

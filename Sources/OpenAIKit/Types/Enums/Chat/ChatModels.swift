@@ -26,7 +26,7 @@
 import Foundation
 
 /// Models used for the Chat Endpoint.
-public enum ChatModels: String, CustomStringConvertible {
+public enum ChatModels: String, Codable, CustomStringConvertible {
     // MARK: ChatGPT Models
 
     /// Most capable GPT-3.5 model and optimized for chat at 1/10th the cost of text-davinci-003. Will be updated with our latest model iteration 2 weeks after it is released.

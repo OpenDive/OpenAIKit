@@ -152,7 +152,7 @@ extension OpenAI: OpenAIProtocol {
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
             configuration: config,
-            body: param.body
+            body: param
         )
     }
 
@@ -160,8 +160,8 @@ extension OpenAI: OpenAIProtocol {
         parameters param: CompletionParameters
     ) throws -> AsyncThrowingStream<CompletionResponse, Error> {
         let serverUrl = try getServerUrl(path: "/completions")
-        var parameter = param.body
-        parameter["stream"] = true
+        var parameter = param
+        parameter.stream = true
 
         return try OpenAIKitSession.shared.streamData(
             with: serverUrl,
@@ -175,7 +175,7 @@ extension OpenAI: OpenAIProtocol {
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
             configuration: config,
-            body: param.body
+            body: param
         )
     }
 
@@ -183,8 +183,8 @@ extension OpenAI: OpenAIProtocol {
         parameters param: ChatParameters
     ) throws -> AsyncThrowingStream<ChatResponse, Error> {
         let serverUrl = try getServerUrl(path: "/chat/completions")
-        var parameter = param.body
-        parameter["stream"] = true
+        var parameter = param
+        parameter.stream = true
 
         return try OpenAIKitSession.shared.streamData(
             with: serverUrl,
@@ -199,7 +199,7 @@ extension OpenAI: OpenAIProtocol {
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
             configuration: config,
-            body: param.body
+            body: param
         )
     }
 
@@ -228,7 +228,7 @@ extension OpenAI: OpenAIProtocol {
         return try await OpenAIKitSession.shared.decodeUrl(
             with: serverUrl,
             configuration: config,
-            body: param.body
+            body: param
         )
     }
 

@@ -24,7 +24,7 @@
 //
 
 /// The type of image of the response data that will be returned
-public enum ResponseFormat: String {
+public enum ResponseFormat: String, Codable {
     /// The image is stored as a URL string.
     case url = "url"
     

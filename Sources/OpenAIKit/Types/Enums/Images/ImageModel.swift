@@ -24,7 +24,7 @@
 //
 
 /// The model to use for image generation.
-public enum ImageModel: String {
+public enum ImageModel: String, Codable {
     /// The DALL-E 2 model.
     case dalle2 = "dall-e-2"
 

@@ -24,7 +24,7 @@
 //
 
 /// The style of the generated images.
-public enum ImageStyle: String {
+public enum ImageStyle: String, Codable {
     /// Generates hyper-real and dramatic images.
     case vivid
 

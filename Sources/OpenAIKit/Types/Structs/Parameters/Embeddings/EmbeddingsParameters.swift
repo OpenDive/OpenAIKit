@@ -24,7 +24,7 @@
 //
 
 /// Parameter used for the Embeddings endpoint.
-public struct EmbeddingsParameters {
+public struct EmbeddingsParameters: Encodable {
     /// ID of the model to use.
     ///
     /// You can use the [List models](https://beta.openai.com/docs/api-reference/models/list)
@@ -55,14 +55,4 @@ public struct EmbeddingsParameters {
         self.user = user
     }
 
-    /// The body of the URL used for OpenAI API requests.
-    internal var body: [String: Any] {
-        var result: [String: Any] = ["model": self.model, "input": self.input]
-
-        if let user = user {
-            result["user"] = user
-        }
-
-        return result
-    }
 }

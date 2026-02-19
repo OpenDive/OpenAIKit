@@ -24,7 +24,26 @@
 //
 
 /// Parameter struct used for creating GPT3 completions.
-public struct CompletionParameters {
+public struct CompletionParameters: Encodable {
+    enum CodingKeys: String, CodingKey {
+        case model
+        case prompt
+        case suffix
+        case maxTokens = "max_tokens"
+        case temperature
+        case topP = "top_p"
+        case numberOfCompletions = "n"
+        case logprobs
+        case echo
+        case stop
+        case presencePenalty = "presence_penalty"
+        case frequencyPenalty = "frequency_penalty"
+        case bestOf = "best_of"
+        case logitBias = "logit_bias"
+        case user
+        case stream
+    }
+
     /// ID of the model to use.
     ///
     /// You can use the [List models](https://beta.openai.com/docs/api-reference/models/list)
@@ -119,6 +138,9 @@ public struct CompletionParameters {
     /// [Learn more.](https://beta.openai.com/docs/guides/safety-best-practices/end-user-ids)
     public var user: String?
 
+    /// Whether to stream partial completion deltas.
+    public var stream: Bool?
+
     public init(
         model: CompletionModels,
         prompt: [String] = ["<|endoftext|>"],
@@ -135,7 +157,8 @@ public struct CompletionParameters {
         @Clamped(range: -2.0...2.0) frequencyPenalty: Double = 0.0,
         bestOf: Int = 1,
         logitBias: [String: Int]? = nil,
-        user: String? = nil
+        user: String? = nil,
+        stream: Bool? = nil
     ) {
         self.model = model
         self.prompt = prompt
@@ -151,6 +174,7 @@ public struct CompletionParameters {
         self.bestOf = bestOf
         self.logitBias = logitBias
         self.user = user
+        self.stream = stream
 
         if let logprobs = logprobs {
             if logprobs > maxLogprobs {
@@ -163,43 +187,5 @@ public struct CompletionParameters {
         } else {
             self.logprobs = nil
         }
-    }
-
-    /// The body of the URL used for OpenAI API requests.
-    internal var body: [String: Any] {
-        var result: [String: Any] = [
-            "model": self.model.description,
-            "prompt": self.prompt,
-            "max_tokens": self.maxTokens,
-            "temperature": self.temperature,
-            "top_p": self.topP,
-            "n": self.numberOfCompletions,
-            "echo": self.echo,
-            "presence_penalty": self.presencePenalty,
-            "frequency_penalty": self.frequencyPenalty,
-            "best_of": self.bestOf
-        ]
-
-        if let suffix = self.suffix {
-            result["suffix"] = suffix
-        }
-
-        if let logprobs = self.logprobs {
-            result["logprobs"] = logprobs
-        }
-
-        if let stop = self.stop {
-            result["stop"] = stop
-        }
-
-        if let logitBias = self.logitBias {
-            result["logit_bias"] = logitBias
-        }
-
-        if let user = self.user {
-            result["user"] = user
-        }
-
-        return result
     }
 }

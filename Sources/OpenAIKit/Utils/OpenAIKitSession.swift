@@ -264,6 +264,35 @@ final class OpenAIKitSession {
     ///   - body: The POST body used to add parameters, defaults to `nil`.
     ///   - method: The method used for the function, defaults to `.post`.
     /// - Returns: An `AsyncThrowingStream` object with either type `T` object or type `Error` object.
+    public func streamData<T: Decodable, Body: Encodable>(
+        _ type: T.Type = T.self,
+        with url: URL,
+        apiKey: String? = nil,
+        configuration: Configuration? = nil,
+        body: Body,
+        method: HTTPMethod = .post
+    ) throws -> AsyncThrowingStream<T, Error> {
+        let requestConfiguration = try self.resolveRequestConfiguration(
+            apiKey: apiKey,
+            configuration: configuration
+        )
+        let jsonData = try JSONEncoder().encode(body)
+        var request = URLRequest(url: url)
+
+        request.httpMethod = method.rawValue
+        request.allHTTPHeaderFields = [
+            "Content-Type": "application/json"
+        ]
+        request.httpBody = jsonData
+        request.timeoutInterval = requestConfiguration.options.timeoutInterval
+        requestConfiguration.headers.forEach { key, value in
+            request.allHTTPHeaderFields?[key] = value
+        }
+
+        return OpenAISource(url: request).streamData()
+    }
+
+    /// Stream data using an untyped dictionary payload.
     public func streamData<T: Decodable>(
         _ type: T.Type = T.self,
         with url: URL,
@@ -341,6 +370,33 @@ final class OpenAIKitSession {
     ///   - bodyRequired: Is the body required or not, used for `.get` and `.delete`, defaults to `false`.
     ///   - formSubmission: Is the body actually a form submission? Used for image submissionss, defaults to `false`.
     /// - Returns: The decoded object of type `T`.
+    public func decodeUrl<T: Decodable, Body: Encodable>(
+        _ type: T.Type = T.self,
+        with url: URL,
+        apiKey: String? = nil,
+        configuration: Configuration? = nil,
+        body: Body,
+        method: HTTPMethod = .post
+    ) async throws -> T {
+        let requestConfiguration = try self.resolveRequestConfiguration(
+            apiKey: apiKey,
+            configuration: configuration
+        )
+        let jsonData = try JSONEncoder().encode(body)
+        let (data, response) = try await self.asyncData(
+            with: url,
+            method: method,
+            headers: requestConfiguration.headers,
+            body: jsonData,
+            timeoutInterval: requestConfiguration.options.timeoutInterval,
+            maxRetries: requestConfiguration.options.maxRetries
+        )
+        try OpenAIKitSession.validateStatus(response, data: data)
+
+        return try OpenAIKitSession.decodeData(with: data)
+    }
+
+    /// Decode a `URL` using an untyped dictionary payload.
     public func decodeUrl<T: Decodable>(
         _ type: T.Type = T.self,
         with url: URL,

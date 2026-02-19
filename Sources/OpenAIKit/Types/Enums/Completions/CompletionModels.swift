@@ -26,7 +26,7 @@
 import Foundation
 
 /// Models used for the Completion endpoint
-public enum CompletionModels: String, CustomStringConvertible {
+public enum CompletionModels: String, Codable, CustomStringConvertible {
     /// Very capable, faster and lower cost than Davinci.
     case textCurie001 = "text-curie-001"
 

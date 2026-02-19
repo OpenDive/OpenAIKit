@@ -24,7 +24,17 @@
 //
 
 /// Parameter used for generating images given a prompt.
-public struct ImageParameters {
+public struct ImageParameters: Encodable {
+    enum CodingKeys: String, CodingKey {
+        case prompt
+        case numberOfImages = "n"
+        case resolution = "size"
+        case quality
+        case model
+        case style
+        case responseFormat = "response_format"
+        case user
+    }
     /// A text description of the desired image(s).
     ///
     /// The maximum length is 1000 characters.
@@ -110,28 +120,4 @@ public struct ImageParameters {
         }
     }
 
-    /// The body of the URL used for OpenAI API requests.
-    internal var body: [String: Any] {
-        var result: [String: Any] = [
-            "prompt": self.prompt,
-            "n": self.numberOfImages,
-            "size": self.resolution.rawValue,
-            "response_format": self.responseFormat.rawValue,
-            "model": self.model.rawValue
-        ]
-
-        if let quality = self.quality {
-            result["quality"] = quality.rawValue
-        }
-
-        if let style = self.style {
-            result["style"] = style.rawValue
-        }
-
-        if let user = self.user {
-            result["user"] = user
-        }
-
-        return result
-    }
 }
