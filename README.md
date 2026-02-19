@@ -641,6 +641,7 @@ As of July 6, 2023, OpenAI has announced the deprecation of the older models in 
 ### Migration From 2.x to 3.x
 
 OpenAIKit 3.x aligns with the modern OpenAI SDK shape and adopts Swift 6.2 concurrency checks.
+Core usage is now centered around namespaced resources (for example `openAI.responses.create(...)`), while some legacy flat methods are still available for compatibility during migration.
 
 #### 1) Move from flat client methods to namespaced resources
 
@@ -652,19 +653,39 @@ let audio = try await openAI.createSpeech(parameters: speechParameters)
 let audio = try await openAI.audio.speech.create(parameters: speechParameters)
 ```
 
-#### 2) Prefer typed `Encodable` payloads over dictionary bodies
+#### 2) Prefer typed, resource-based APIs
 
 ```swift
-// ✅ 3.x style
+// ✅ 3.x responses API
 let response = try await openAI.responses.create(
     parameters: ResponseCreateParameters(
         model: "gpt-5.2",
         input: "Summarize this document"
     )
 )
+
+// ✅ 3.x uploads API
+let upload = try await openAI.uploads.create(
+    parameters: UploadCreateParameters(
+        bytes: fileSize,
+        filename: "training.jsonl",
+        purpose: "fine-tune"
+    )
+)
+
+// ✅ 3.x webhook verification
+let event = try openAI.webhooks.unwrap(
+    payload: rawBody,
+    headers: requestHeaders,
+    as: MyWebhookEvent.self
+)
 ```
 
-#### 3) Use richer client configuration when needed
+#### 3) Prefer typed `Encodable` payloads over dictionary bodies
+
+3.x request models use `Encodable` throughout, which improves compile-time safety and keeps payload mapping consistent.
+
+#### 4) Use richer client configuration when needed
 
 ```swift
 let openAI = OpenAI(
@@ -678,7 +699,7 @@ let openAI = OpenAI(
 )
 ```
 
-#### 4) Swift 6.2 concurrency
+#### 5) Swift 6.2 concurrency
 
 OpenAIKit 3.x is built and tested in Swift 6.2 language mode. If your package graph still targets an older Swift language version, update your `Package.swift` toolchain/language settings before migrating.
 
