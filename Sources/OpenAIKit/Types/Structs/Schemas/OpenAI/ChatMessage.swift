@@ -26,7 +26,7 @@
 import Foundation
 
 /// The chat message object used for each chat conversation message.
-public struct ChatMessage: Codable, Identifiable {
+public struct ChatMessage: Codable, Identifiable, Sendable {
     private enum CodingKeys: String, CodingKey {
         case role, content
         case functionCall = "function_call"

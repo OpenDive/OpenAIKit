@@ -24,7 +24,7 @@
 //
 
 /// A specific type of object that OpenAI has responded with.
-public enum OpenAIObject: String, Codable {
+public enum OpenAIObject: String, Codable, Sendable {
     /// A list object.
     case list
 

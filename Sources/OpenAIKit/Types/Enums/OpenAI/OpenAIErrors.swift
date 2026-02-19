@@ -44,7 +44,7 @@ public enum OpenAIError: Error {
     case notImplemented
 
     /// An incorrect input was found in the ImageParameter. Please edit the input and try submitting again.
-    case incompatibleImageParameter(incorrctInput: Any?)
+    case incompatibleImageParameter(incorrctInput: (any Sendable)?)
 
     /// An unknown error has occured. Please create an issue on [Github](https://github.com/OpenDive/OpenAIKit) if this error is thrown.
     case unknownError

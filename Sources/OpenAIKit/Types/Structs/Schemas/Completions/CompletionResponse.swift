@@ -24,7 +24,7 @@
 //
 
 /// Completion Response from OpenAI
-public struct CompletionResponse: Codable, Identifiable {
+public struct CompletionResponse: Codable, Identifiable, Sendable {
     /// The ID of the Completion
     public let id: String
 

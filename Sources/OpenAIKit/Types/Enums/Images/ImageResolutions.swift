@@ -24,7 +24,7 @@
 //
 
 /// The image resolution being requested.
-public enum ImageResolutions: String, Codable {
+public enum ImageResolutions: String, Codable, Sendable {
     /// A 256x256 pixel image request.
     case small = "256x256"
     

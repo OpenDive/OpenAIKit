@@ -29,20 +29,20 @@ import Foundation
 import FoundationNetworking
 #endif
 
-public enum OpenAISourceState {
+public enum OpenAISourceState: Sendable {
     case connecting
     case open
     case closed
 }
 
-public struct Message {
+public struct Message: Sendable {
     public let id: String?
     public let event: String?
     public let data: String?
 }
 
-open class OpenAISource: NSObject, URLSessionDataDelegate {
-    var headers: [String: String]
+open class OpenAISource: NSObject, URLSessionDataDelegate, @unchecked Sendable {
+    let headers: [String: String]
     static let DefaultRetryTime = 3000
 
     public let url: URLRequest
@@ -50,10 +50,10 @@ open class OpenAISource: NSObject, URLSessionDataDelegate {
     private(set) public var retryTime = OpenAISource.DefaultRetryTime
     private(set) public var readyState: OpenAISourceState
 
-    private var onOpenCallback: (() -> Void)?
-    private var onComplete: ((Int?, Bool?, NSError?) -> Void)?
-    private var onMessageCallback: ((Message) -> Void)?
-    private var eventListeners: [String: (Message) -> Void] = [:]
+    private var onOpenCallback: (@Sendable () -> Void)?
+    private var onComplete: (@Sendable (Int?, Bool?, NSError?) -> Void)?
+    private var onMessageCallback: (@Sendable (Message) -> Void)?
+    private var eventListeners: [String: @Sendable (Message) -> Void] = [:]
 
     private var openAiStreamParser: OpenAIStreamParser?
     private var operationQueue: OperationQueue
@@ -91,20 +91,20 @@ open class OpenAISource: NSObject, URLSessionDataDelegate {
         self.urlSession?.invalidateAndCancel()
     }
 
-    public func onOpen(_ onOpenCallback: @escaping (() -> Void)) {
+    public func onOpen(_ onOpenCallback: @escaping @Sendable () -> Void) {
         self.onOpenCallback = onOpenCallback
     }
 
-    public func onComplete(_ onComplete: @escaping ((Int?, Bool?, NSError?) -> Void)) {
+    public func onComplete(_ onComplete: @escaping @Sendable (Int?, Bool?, NSError?) -> Void) {
         self.onComplete = onComplete
     }
 
-    public func onMessage(_ onMessageCallback: @escaping ((Message) -> Void)) {
+    public func onMessage(_ onMessageCallback: @escaping @Sendable (Message) -> Void) {
         self.onMessageCallback = onMessageCallback
     }
 
     public func addEventListener(_ event: String,
-                                 handler: @escaping ((Message) -> Void)) {
+                                 handler: @escaping @Sendable (Message) -> Void) {
         self.eventListeners[event] = handler
     }
 
@@ -226,7 +226,8 @@ private extension OpenAISource {
 }
 
 public extension OpenAISource {
-    func streamData<T: Decodable>() -> AsyncThrowingStream<T, Error> {
+    @preconcurrency
+    func streamData<T: Decodable & Sendable>() -> AsyncThrowingStream<T, Error> {
         return AsyncThrowingStream { continuation in
             let connection = OpenAISource(url: self.url)
 

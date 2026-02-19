@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 //
 
-public struct ChatResponse: Codable, Identifiable {
+public struct ChatResponse: Codable, Identifiable, Sendable {
     /// The ID of the Completion
     public let id: String
 

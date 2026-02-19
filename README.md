@@ -40,6 +40,7 @@
     - [Embeddings](#embeddings)
     - [Models](#models)
   - [Completion](#completion)
+  - [Migration From 2.x to 3.x](#migration-from-2.x-to-3.x)
   - [Migration From 1.x to 2.x](#migration-from-1.x-to-2.x)
 - [Example Projects](#example-projects)
 - [Development and Testing](#development-and-testing)
@@ -75,7 +76,7 @@ We envisioned a tool that not only provides raw access to OpenAI functionalities
 
 | Platform                                                     | Minimum Swift Version | Installation                                    | Status       |
 | ------------------------------------------------------------ | --------------------- | ----------------------------------------------- | ------------ |
-| iOS 13.0+ / macOS 10.15+ / tvOS 13.0+ / watchOS 6.0+ / visionOS 1.0+ | 5.7                   | [Swift Package Manager](#swift-package-manager) | Fully Tested |
+| iOS 13.0+ / macOS 10.15+ / tvOS 13.0+ / watchOS 6.0+ / visionOS 1.0+ | 6.2                   | [Swift Package Manager](#swift-package-manager) | Fully Tested |
 
 ## Installation
 
@@ -87,7 +88,7 @@ The [Swift Package Manager](https://swift.org/package-manager/) allows for devel
 
 * File > Swift Packages > Add Package Dependency
 * Add `https://github.com/OpenDive/OpenAIKit.git`
-* Select "Up to next Major" with "2.0.1"
+* Select "Up to next Major" with "3.0.0"
 
 #### SPM Through Xcode Package
 
@@ -95,7 +96,7 @@ Once you have your Swift package set up, add the Git link within the `dependenci
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/OpenDive/OpenAIKit.git", .upToNextMajor(from: "2.0.1"))
+    .package(url: "https://github.com/OpenDive/OpenAIKit.git", .upToNextMajor(from: "3.0.0"))
 ]
 ```
 
@@ -636,6 +637,50 @@ OpenAIKit.Model(
 #### ⚠️ Deprecation Notice for Completion API ⚠️
 
 As of July 6, 2023, OpenAI has announced the deprecation of the older models in the Completions API, which are set to retire at the beginning of 2024. It's highly recommended to transition to the Chat Completions API which provides a more structured prompt interface and multi-turn conversation capabilities. The Chat Completions API has proven to handle a vast majority of previous use cases and new conversational needs with higher flexibility and specificity, significantly enhancing the developer experience. For more details, refer to the [official announcement](https://openai.com/blog/gpt-4-api-general-availability).
+
+### Migration From 2.x to 3.x
+
+OpenAIKit 3.x aligns with the modern OpenAI SDK shape and adopts Swift 6.2 concurrency checks.
+
+#### 1) Move from flat client methods to namespaced resources
+
+```swift
+// ❌ 2.x style
+let audio = try await openAI.createSpeech(parameters: speechParameters)
+
+// ✅ 3.x style
+let audio = try await openAI.audio.speech.create(parameters: speechParameters)
+```
+
+#### 2) Prefer typed `Encodable` payloads over dictionary bodies
+
+```swift
+// ✅ 3.x style
+let response = try await openAI.responses.create(
+    parameters: ResponseCreateParameters(
+        model: "gpt-5.2",
+        input: "Summarize this document"
+    )
+)
+```
+
+#### 3) Use richer client configuration when needed
+
+```swift
+let openAI = OpenAI(
+    .init(
+        apiKey: apiKey,
+        organizationId: organizationID,
+        projectId: projectID,
+        webhookSecret: webhookSecret,
+        requestOptions: .init(timeoutInterval: 600, maxRetries: 2)
+    )
+)
+```
+
+#### 4) Swift 6.2 concurrency
+
+OpenAIKit 3.x is built and tested in Swift 6.2 language mode. If your package graph still targets an older Swift language version, update your `Package.swift` toolchain/language settings before migrating.
 
 ### Migration From 1.x to 2.x
 

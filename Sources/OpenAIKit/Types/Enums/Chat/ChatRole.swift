@@ -24,7 +24,7 @@
 //
 
 /// Used for selecting who sent the message
-public enum ChatRole: String, Codable {
+public enum ChatRole: String, Codable, Sendable {
     /// The context of the chat
     case system
 

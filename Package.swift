@@ -1,4 +1,4 @@
-//  swift-tools-version: 5.9
+//  swift-tools-version: 6.2
 //
 //  Package.swift
 //  OpenAIKit
@@ -40,14 +40,20 @@ let package = Package(
         .target(
             name: "OpenAIKit",
             dependencies: [],
-            path: "Sources"
+            path: "Sources",
+            swiftSettings: [
+                .swiftLanguageMode(.v6)
+            ]
         ),
         .testTarget(
             name: "OpenAIKitTests",
             dependencies: ["OpenAIKit"],
             path: "Tests",
-            resources: [.process("Resources")]
+            resources: [.process("Resources")],
+            swiftSettings: [
+                .swiftLanguageMode(.v6)
+            ]
         )
     ],
-    swiftLanguageVersions: [.v5]
+    swiftLanguageVersions: [.v6]
 )

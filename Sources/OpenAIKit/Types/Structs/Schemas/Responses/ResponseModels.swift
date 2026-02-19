@@ -1,6 +1,6 @@
 import Foundation
 
-public struct ResponseObject: Codable {
+public struct ResponseObject: Codable, Sendable {
     enum CodingKeys: String, CodingKey {
         case id
         case object
@@ -18,19 +18,19 @@ public struct ResponseObject: Codable {
     public let createdAt: Int?
 }
 
-public struct ResponseInputItem: Codable {
+public struct ResponseInputItem: Codable, Sendable {
     public let id: String?
     public let type: String?
     public let role: String?
     public let content: String?
 }
 
-public struct ResponseInputItemListResponse: Codable {
+public struct ResponseInputItemListResponse: Codable, Sendable {
     public let object: String
     public let data: [ResponseInputItem]
 }
 
-public struct ResponseInputTokenCount: Codable {
+public struct ResponseInputTokenCount: Codable, Sendable {
     enum CodingKeys: String, CodingKey {
         case totalTokens = "total_tokens"
     }

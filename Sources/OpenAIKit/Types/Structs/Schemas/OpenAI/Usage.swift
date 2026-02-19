@@ -24,7 +24,7 @@
 //
 
 /// The amount of tokens used with any GPT3 function.
-public struct Usage: Codable {
+public struct Usage: Codable, Sendable {
     enum CodingKeys: String, CodingKey {
         case promptTokens = "prompt_tokens"
         case completionTokens = "completion_tokens"

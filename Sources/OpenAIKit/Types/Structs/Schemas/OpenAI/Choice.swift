@@ -24,7 +24,7 @@
 //
 
 /// The output completion / edit of the Completions and Edits endpoints.
-public struct Choice: Codable {
+public struct Choice: Codable, Sendable {
     enum CodingKeys: String, CodingKey {
         case text
         case index

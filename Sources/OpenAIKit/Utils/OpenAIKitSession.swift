@@ -31,7 +31,7 @@ import FoundationNetworking
 
 // Extensions used to help better streamline the main OpenAIKit class.
 // Most are private to help with having better Access Control.
-final class OpenAIKitSession {
+final class OpenAIKitSession: @unchecked Sendable {
     /// Shared Singleton object for use within the OpenAIKit API Module
     internal static let shared = OpenAIKitSession()
 
@@ -264,7 +264,7 @@ final class OpenAIKitSession {
     ///   - body: The POST body used to add parameters, defaults to `nil`.
     ///   - method: The method used for the function, defaults to `.post`.
     /// - Returns: An `AsyncThrowingStream` object with either type `T` object or type `Error` object.
-    public func streamData<T: Decodable, Body: Encodable>(
+    public func streamData<T: Decodable & Sendable, Body: Encodable>(
         _ type: T.Type = T.self,
         with url: URL,
         apiKey: String? = nil,
@@ -293,7 +293,7 @@ final class OpenAIKitSession {
     }
 
     /// Stream data using an untyped dictionary payload.
-    public func streamData<T: Decodable>(
+    public func streamData<T: Decodable & Sendable>(
         _ type: T.Type = T.self,
         with url: URL,
         apiKey: String? = nil,

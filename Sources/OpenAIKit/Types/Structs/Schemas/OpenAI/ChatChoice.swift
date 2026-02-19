@@ -24,7 +24,7 @@
 //
 
 /// The output choice for the Chat Ednpoint.
-public struct ChatChoice: Codable {
+public struct ChatChoice: Codable, Sendable {
     enum CodingKeys: String, CodingKey {
         case message
         case delta
@@ -49,7 +49,7 @@ public struct ChatChoice: Codable {
     public let finishReason: String?
 }
 
-public struct ChatDelta: Codable {
+public struct ChatDelta: Codable, Sendable {
     enum CodingKeys: String, CodingKey {
         case role
         case content
