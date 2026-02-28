@@ -30,7 +30,12 @@ public enum ChatModels: String, Codable, CustomStringConvertible {
     // MARK: ChatGPT Models
 
     /// Most capable GPT-3.5 model and optimized for chat at 1/10th the cost of text-davinci-003. Will be updated with our latest model iteration 2 weeks after it is released.
+    /// case
     case chatGPTTurbo = "gpt-3.5-turbo"
+    
+    case chatGPT4oMini = "gpt-4o-mini"
+    
+    case chatGPT4o06082024 = "gpt-4o-2024-08-06"
 
     /// Same capabilities as the standard gpt-3.5-turbo model but with 4 times the context.
     case chatGPTTurbo16k = "gpt-3.5-turbo-16k"
@@ -75,6 +80,8 @@ public enum ChatModels: String, Codable, CustomStringConvertible {
             "gpt-4-0613": 8192,
             "gpt-4-32k": 32768,
             "gpt-4-32k-0613": 32768
+            "gpt-4o-mini":16384
+            "gpt-4o-2024-08-06":16384
         ]
     }
 
