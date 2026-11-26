@@ -27,7 +27,7 @@ import SwiftUI
 import OpenAIKit
 
 struct ListFilesExample: View {
-    @State private var files: [File]?
+    @State private var files: [OpenAIFile]?
     @State private var isListing: Bool = false
 
     var body: some View {
@@ -36,7 +36,7 @@ struct ListFilesExample: View {
                 if files.isEmpty {
                     Text("No files found.")
                 } else {
-                    List(files) { file in
+                    List(files, id: \.id) { file in
                         NavigationLink(file.id) {
                             FileDetailsView(file: file)
                         }
@@ -53,10 +53,8 @@ struct ListFilesExample: View {
                     
                     Task {
                         do {
-                            // ⚠️🔑 NEVER store OpenAI API keys directly in code. Use environment variables or secrets management. Avoid git commits of keys! 🔑⚠️
-                            let config = Configuration(organizationId: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
-                            let openAI = OpenAI(config)
-                            let filesResponse = try await openAI.listFiles()
+                            let openAI = ExampleSecrets.client
+                            let filesResponse = try await openAI.files.list()
 
                             self.files = filesResponse.data
                         } catch {

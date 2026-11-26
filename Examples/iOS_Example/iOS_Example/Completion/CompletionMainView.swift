@@ -29,7 +29,7 @@ struct CompletionMainView: View {
     var body: some View {
         List {
             NavigationLink(destination: GenerateCompletionExample()) {
-                Text("Generate Completion Example")
+                Text("Generate Completion Example (Legacy)")
             }
         }
         .listStyle(.plain)

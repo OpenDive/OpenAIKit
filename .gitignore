@@ -43,3 +43,6 @@ Carthage/Build
 .UlyssesRoot
 .Ulysses-Settings.plist
 .Ulysses-Group.plist
+# OpenAIKit generator cache (the downloaded OpenAPI spec)
+Generator/.cache/
+__pycache__/

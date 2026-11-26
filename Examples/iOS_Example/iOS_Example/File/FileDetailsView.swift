@@ -27,16 +27,17 @@ import SwiftUI
 import OpenAIKit
 
 struct FileDetailsView: View {
-    var file: File
+    var file: OpenAIFile
 
     var body: some View {
         VStack {
             Text("ID: \(file.id)")
-            Text("Object: \(file.object.rawValue)")
-            Text("Bytes: \(file.bytes)")
-            Text("Created At: \(String(file.createdAt))")
+            Text("Object: \(file.object)")
+            Text("Bytes: \(file.bytes.map(String.init) ?? "-")")
+            Text("Created At: \(Date(timeIntervalSince1970: TimeInterval(file.createdAt)).formatted())")
             Text("Filename: \(file.filename)")
-            Text("Purpose: \(file.purpose)")
+            Text("Purpose: \(file.purpose.rawValue)")
+            Text("Status: \(file.status.rawValue)")
         }
     }
 }

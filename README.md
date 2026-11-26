@@ -1,755 +1,478 @@
-[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FOpenDive%2FOpenAIKit%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/OpenDive/OpenAIKit)
-[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FOpenDive%2FOpenAIKit%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/OpenDive/OpenAIKit)
-[![Swift Package Manager](https://img.shields.io/badge/Swift_Package_Manager-compatible-orange?style=flat-square)](https://img.shields.io/badge/Swift_Package_Manager-compatible-orange?style=flat-square)
-[![Swift](https://github.com/OpenDive/OpenAIKit/actions/workflows/swift.yml/badge.svg?branch=main)](https://github.com/OpenDive/OpenAIKit/actions/workflows/swift.yml)
-[![Twitter](https://img.shields.io/static/v1?label=Twitter&message=@OpenDiveHQ&color=ca333b)](https://twitter.com/OpenDiveHQ)
+<p align="center">
+  <a href="#quick-start"><img src="Resources/readme/banner.jpg" alt="OpenAIKit: the entire OpenAI API, in Swift. Get started." width="100%"></a>
+</p>
 
-<div align="center">
-  <a href="https://github.com/OpenDive/OpenAIKit">
-     <img src="Resources/Logo.png" alt="OpenAIKit Logo" width="80" height="80">
-  </a>
-  <h3 align="center">OpenAIKit</h3>
-  <p align="center">
-  A community-maintained Swift SDK for the OpenAI API.
-  <br />
-  <br />
-     <a href="https://github.com/OpenDive/OpenAIKit/issues">Report Bug</a>
-  ·
-     <a href="https://github.com/OpenDive/OpenAIKit/issues">Request Feature</a>
- </p>
-</div>
+<p align="center">
+  <a href="#quick-start"><img src="https://img.shields.io/badge/Get_started_→-ff4f8b?style=for-the-badge" alt="Get started"></a>
+  <a href="#see-it-run"><img src="https://img.shields.io/badge/▶_See_the_demo-6a5cff?style=for-the-badge" alt="See the demo"></a>
+  <a href="MIGRATION.md"><img src="https://img.shields.io/badge/Upgrading_from_3.x-1fb58f?style=for-the-badge" alt="Upgrading from 3.x"></a>
+  <a href="https://github.com/OpenDive/OpenAIKit"><img src="https://img.shields.io/github/stars/OpenDive/OpenAIKit?style=for-the-badge&logo=github&label=Star&color=24292f" alt="Star on GitHub"></a>
+</p>
 
+<p align="center">
+  <a href="https://github.com/OpenDive/OpenAIKit/actions/workflows/ci.yml"><img src="https://github.com/OpenDive/OpenAIKit/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
+  <a href="https://swiftpackageindex.com/OpenDive/OpenAIKit"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FOpenDive%2FOpenAIKit%2Fbadge%3Ftype%3Dswift-versions" alt="Swift versions"></a>
+  <a href="https://swiftpackageindex.com/OpenDive/OpenAIKit"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FOpenDive%2FOpenAIKit%2Fbadge%3Ftype%3Dplatforms" alt="Platforms"></a>
+  <img src="https://img.shields.io/badge/OpenAI_spec-2.3.0-412991" alt="OpenAI spec 2.3.0">
+  <img src="https://img.shields.io/badge/dependencies-0-brightgreen" alt="Zero dependencies">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License"></a>
+</p>
 
-## Table of Contents
+---
 
-- [About the Project](#about-the-project)
-  - [Motivation](#motivation)
-  - [Our Vision](#our-vision)
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-  - [Swift Package Manager](#swift-package-manager)
-    - [SPM Through Xcode Project](#spm-through-xcode-project)
-    - [SPM Through Xcode Package](#spm-through-xcode-package)
-- [Using OpenAIKit](#using-openaikit)
-  - [Obtaining API Keys](#obtaining-api-keys)
-  - [Image](#image)
-  - [Chat](#chat)
-  - [Audio](#audio)
-  - [Utilities](#utilities)
-    - [Embeddings](#embeddings)
-    - [Models](#models)
-  - [Completion](#completion)
-  - [Migration From 2.x to 3.x](#migration-from-2.x-to-3.x)
-  - [Migration From 1.x to 2.x](#migration-from-1.x-to-2.x)
-- [Example Projects](#example-projects)
-- [Development and Testing](#development-and-testing)
-- [License](#license)
+## TL;DR
 
-## About the Project
+```swift
+.package(url: "https://github.com/OpenDive/OpenAIKit.git", from: "4.0.0")
+```
 
-**OpenAIKit** is a community-driven Swift SDK designed to provide Swift developers with a seamless, efficient, and Swifty way to interact with the OpenAI REST endpoint. Our aim is to lower the barrier for Swift developers, enabling them to integrate the power of OpenAI into their apps without delving deep into the intricacies of RESTful services.
+```swift
+let client = OpenAI(apiKey: "sk-...")
+let reply = try await client.responses.create(CreateResponse(model: "gpt-6.2-astra", input: "Hello!"))
+print(reply.outputText)
+```
 
-### Motivation
+- **All 388 OpenAI endpoints**, typed. Responses, Realtime, Images, Audio, Video, Agents, Admin: if it's in OpenAI's API reference, it's here.
+- **Never stale.** Generated from OpenAI's [official OpenAPI spec](https://github.com/openai/openai-openapi). New models and fields arrive with one command.
+- **Streams and talks in real time.** Typed `AsyncThrowingStream` events and Realtime WebSockets.
+- **Ready for production.** Retries with backoff, cancellation, webhook verification and typed errors.
+- **Swift 6, zero dependencies.** iOS, macOS, tvOS, watchOS, visionOS and Linux.
 
-With the increasing demand for AI-powered features in modern applications, it's crucial for developers to have access to tools that simplify the integration process. While OpenAI offers an incredible suite of capabilities, there was a clear need for a dedicated Swift SDK that aligns with the idiomatic practices of the language and the expectations of the Swift developer community.
+## See it run
 
-### Our Vision
+Real recordings of the [example app](#demo-app) talking to the live API.
 
-We envisioned a tool that not only provides raw access to OpenAI functionalities but also enhances the developer experience with a clear and intuitive API. Our ultimate goal is to foster innovation by providing the Swift community with the right tools to integrate AI capabilities into their applications effortlessly.
+<table>
+  <tr>
+    <th width="33%">💬 Streaming chat</th>
+    <th width="33%">🎨 Image generation</th>
+    <th width="33%">⚡️ Realtime over WebSocket</th>
+  </tr>
+  <tr>
+    <td><img src="Resources/readme/demo-chat.gif" alt="Streaming chat with the Responses API" width="100%"></td>
+    <td><img src="Resources/readme/demo-image.gif" alt="Generating an image with gpt-image-2" width="100%"></td>
+    <td><img src="Resources/readme/demo-realtime.gif" alt="A Realtime API session with live server events" width="100%"></td>
+  </tr>
+  <tr>
+    <td><code>client.responses.createStream</code></td>
+    <td><code>client.images.generateStream</code></td>
+    <td><code>client.realtime.connect</code></td>
+  </tr>
+</table>
 
-## Features
+## Why OpenAIKit
 
-- [x] Generate new, edited, and variations of images using Dall-E 2 (with Dall-E 3 coming soon).
-- [x] Generate edits and completions using GPT-3 and GPT-4.
-- [x] List avaiable models for use with GPT-3 and GPT-4.
-- [x] Retrieve embeddings for GPT-3 and GPT-4 prompts.
-- [x] Stream data for GPT-3 and GPT-4 completions.
-- [x] Generate Chat responses using ChatGPT.
-- [x] View and Upload training files.
-- [x] View whether a prompt is flagged by the Moderations endpoint or not.
-- [x] Comprehensive Unit and Integration Test coverage.
-- [x] Swift Concurrency compatibility back to iOS 13, macOS 10.15, tvOS 13, watchOS 6, and visionOS 1.0.
-- [x] Complete documentation of OpenAIKit.
+| | |
+| --- | --- |
+| 🧭 **Complete** | All 388 operations and 2,294 types in OpenAI's API, grouped like the official SDKs: `client.responses`, `client.audio.transcriptions`, `client.admin.organization.projects`… |
+| 🔄 **Always current** | The Swift code is generated from OpenAI's spec. `python3 Generator/generate.py bump` picks up new endpoints, and CI fails if the code falls out of date. |
+| 🛡️ **Forward-compatible** | Enums are open, so `model: "gpt-7"` compiles today. Unknown events and output items decode as `.unknown(JSON)` instead of crashing your stream. |
+| 🌊 **Streaming everywhere** | `…Stream` methods return typed events for Responses, Chat, Audio, Images, Assistants and Agents. |
+| ⚡️ **Realtime** | `client.realtime.connect(model:)` opens a typed WebSocket: send `RealtimeClientEvent`s, iterate `RealtimeServerEvent`s. |
+| 🏭 **Production details** | Retries with exponential backoff that honor `retry-after`, `Task` cancellation, timeouts, auto-pagination, multipart uploads, Standard Webhooks verification and typed `OpenAIAPIError`s with request IDs. |
+| 🧪 **Tested** | 769 examples from OpenAI's spec decode and round-trip in CI, on macOS, iOS, tvOS, watchOS, visionOS and Linux with Swift 6.2 to 6.4. |
+| 🪶 **Lightweight** | No dependencies. Swift 6 strict concurrency, every type `Sendable`. |
 
-## Requirements
+## Install
 
-| Platform                                                     | Minimum Swift Version | Installation                                    | Status       |
-| ------------------------------------------------------------ | --------------------- | ----------------------------------------------- | ------------ |
-| iOS 13.0+ / macOS 10.15+ / tvOS 13.0+ / watchOS 6.0+ / visionOS 1.0+ | 6.2                   | [Swift Package Manager](#swift-package-manager) | Fully Tested |
+**Xcode:** File › Add Package Dependencies… › `https://github.com/OpenDive/OpenAIKit.git` › Up to Next Major from `4.0.0`.
 
-## Installation
-
-### Swift Package Manager
-
-The [Swift Package Manager](https://swift.org/package-manager/) allows for developers to easily integrate packages into their Xcode projects and packages; and is also fully integrated into the `swift` compiler.
-
-#### SPM Through XCode Project
-
-* File > Swift Packages > Add Package Dependency
-* Add `https://github.com/OpenDive/OpenAIKit.git`
-* Select "Up to next Major" with "3.0.0"
-
-#### SPM Through Xcode Package
-
-Once you have your Swift package set up, add the Git link within the `dependencies` value of your `Package.swift` file.
+**Package.swift:**
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/OpenDive/OpenAIKit.git", .upToNextMajor(from: "3.0.0"))
+    .package(url: "https://github.com/OpenDive/OpenAIKit.git", from: "4.0.0")
+],
+targets: [
+    .target(name: "YourTarget", dependencies: ["OpenAIKit"])
 ]
 ```
 
-## Using OpenAIKit
+Requires Swift 6.2 (Xcode 26) or later, and iOS 16, macOS 13, tvOS 16, watchOS 9, visionOS 1 or Linux.
 
-### Obtaining API Keys
-
-To obtain an API Key, go to your `API Keys` page on your account page [here](https://platform.openai.com/account/api-keys).
-
-<img src="Resources/APIKeysPage.png" alt="API Keys Page">
-
-> ## ⚠️ 🔑 **Important: Do Not Store OpenAI API Keys Directly in Code!** 🔑⚠️
->
-> When working with OpenAI's API, it's essential for security reasons not to embed your API keys directly within the codebase of your application. Embedding keys directly in your source code can expose them to unauthorized users and malicious actors, leading to potential misuse.
->
-> **Best Practices:**
->
-> 1. **Environment Variables:** Store your API keys in environment variables and access them in your code. This way, they aren't hard-coded into your application and can be managed securely.
-> 2. **Secrets Management:** Use a secure secrets management tool or service to store and retrieve your API keys. Tools like AWS Secrets Manager, HashiCorp Vault, Firebase, CloudKit, or Azure Key Vault are designed to store, manage, and retrieve sensitive data. This way, the user does not have on-device access to the keys.
-> 3. **.gitignore:** If you store your API keys in a configuration file, always ensure that this file is added to `.gitignore` or a similar mechanism to prevent it from being accidentally committed to a source control system.
-> 4. **Regularly Rotate Keys:** Rotate your API keys periodically to mitigate the potential impact of a leak.
->
-> Remember, security is of utmost importance. Always prioritize the safe handling of sensitive information like API keys!
->
-> For more information, check out [this article](https://nshipster.com/secrets/) all about API key management for Swift developers.
-
-
-### Image
-
-Dive into the next evolution of AI-powered image generation with DALL-E 2 (and coming soon, DALL-E 3), brought to you by OpenAI. Building upon the legacy of its predecessor, DALL-E 2 offers enhanced capabilities to materialize intricate visuals from textual prompts, creating a seamless bridge between language and imagery. Developers can harness this groundbreaking technology to enrich user experiences, craft dynamic content, and inspire new avenues of creativity. Revolutionize your applications and projects by integrating the cutting-edge power of DALL-E 2.
-
-There are three endpoints provided by OpenAI to interact with DALL-E 2:
-    - `createImage` is the main endpoint that allows direct image generation from a text prompt. Here's an example on how to use the endpoint, along with the correlating output:
+## Quick start
 
 ```swift
-do {
-    let imageParam = ImageParameters(
-        // A text description of the desired image(s).
-        prompt: "An armchair in the shape of an avocado",
-        // The size of the generated images.
-        resolution: .large,
-        // The format in which the generated images are returned.
-        responseFormat: .base64Json
-    )
-    let result = try await openAi.createImage(
-        parameters: imageParam
-    )
-    let b64Image = result.data[0].image
-    let image = try openAi.decodeBase64Image(b64Image)
-} catch {
-    // Insert your own error handling method here.
-}
-```
-<img src="Resources/AvocadoChair.png" alt="Avocado Chair" width="1024" height="1024">
-​	
-​    - `createImageEdit` allows the developer to create edits based on the original image inputted, along with a transparent-enabled image, with the transparent portions being the areas to edit in; and a prompt of the original image with the edit the developer wants. Here's an example on how to use the endpoint, along with the correlating output:
+import OpenAIKit
 
-```swift
-do {
-    let imageEditParam = try ImageEditParameters(
-        // The image to edit.
-        image: image,
-        // An additional image whose fully transparent areas indicate where image should be edited.
-        mask: mask,
-        // A text description of the desired image(s).
-        prompt: "The Mona Lisa wearing a beret, in the style of Leonardo DaVinci",
-        // The size of the generated images.
-        resolution: .large,
-        // The format in which the generated images are returned.
-        responseFormat: .base64Json
-    )
+let client = OpenAI(Configuration(apiKey: ProcessInfo.processInfo.environment["OPENAI_API_KEY"]))
 
-    let imageResponse = try await openAI.generateImageEdits(
-        parameters: imageEditParam
-    )
-
-    let image = try openAI.decodeBase64Image(imageResponse.data[0].image)
-} catch {
-    // Insert your own error handling method here.
-}
-```
-| ![Original](Resources/OriginalMonaLisa.png) | ![Mask](Resources/MonaLisaMask.png) | ![Edit](Resources/MonaLisaBeret.png) |
-|-----------------------|---------------------------|---------------------------------|
-| **Original** | **Mask** | **Edit** |   
-
-​	- `createImageVariation` allows the developer to create variations of a given input image. Here's an example on how to use the endpoint, along with the correlating output:
-```swift
-do {
-    let imageVariationParam = try ImageVariationParameters(
-        // The image to use as the basis for the variation(s).
-        image: image,
-        // The size of the generated images.
-        resolution: .large,
-        // The format in which the generated images are returned.
-        responseFormat: .base64Json
-    )
-
-    let variationResponse = try await openAI.generateImageVariations(
-        parameters: imageVariationParam
-    )
-
-    self.image = try openAI.decodeBase64Image(
-        variationResponse.data[0].image
-    )
-} catch {
-    // Insert your own error handling method here.
-}
-```
-| ![Original](Resources/OriginalWave.png) | ![Variation](Resources/WaveVariation.png) |
-|-----------------------|---------------------------------|
-| **Original** | **Variation** |   
-
-### Chat
-
-ChatGPT, built on OpenAI's GPT-4 architecture, is a cutting-edge conversational AI model. It provides developers with a robust tool for integrating advanced natural language processing capabilities into applications. Using ChatGPT can enhance user interactions, improve efficiency, and offer AI-driven solutions in various use cases. Incorporate GPT-4's strength into your projects for tangible results.
-
-There is a single endpoint for this feature, however, this SDK splits the endpoint into two functions with three separate features in total:
-    - `generateChatCompletion` allows the developer to generate chat completions using the provided models from OpenAI; or the developer's owned fine tuned models. Here's an example on how to use the endpoint, along with the correlating output:
-```swift
-do {
-    let chat: [ChatMessage] = [
-        ChatMessage(role: .system, content: "You are a helpful assistant."),
-        ChatMessage(role: .user, content: "Who won the world series in 2020?"),
-        ChatMessage(role: .assistant, content: "The Los Angeles Dodgers won the World Series in 2020."),
-        ChatMessage(role: .user, content: "Where was it played?")
-    ]
-
-    let chatParameters = ChatParameters(
-        model: .gpt4,  // ID of the model to use.
-        messages: chat  // A list of messages comprising the conversation so far.
-    )
-
-    let chatCompletion = try await openAI.generateChatCompletion(
-        parameters: chatParameters
-    )
-
-    if let message = chatCompletion.choices[0].message {
-        let content = message.content
-    }
-} catch {
-    // Insert your own error handling method here.
-}
-```
-```
-ChatResponse(
-    id: "chatcmpl-88eG5VruffcNHPNVGBKGVAV5HGk4j", 
-    object: OpenAIKit.OpenAIObject.chatCompletion, 
-    created: 1697072069, 
-    choices: [
-        OpenAIKit.ChatChoice(
-            message: Optional(
-                OpenAIKit.ChatMessage(
-                    id: "250FDA2D-2F38-4E6F-B97E-DAD74FED1FB6", 
-                    role: OpenAIKit.ChatRole.assistant, 
-                    content: Optional(
-                        "The 2020 World Series was played at Globe Life Field in Arlington, Texas."
-                    ), 
-                    functionCall: nil
-                )
-            ), 
-            delta: nil, 
-            index: 0, 
-            logprobs: nil, 
-            finishReason: Optional("stop")
-        )
-    ], 
-    usage: Optional(
-        OpenAIKit.Usage(
-            promptTokens: 53, 
-            completionTokens: 17, 
-            totalTokens: 70
-        )
-    )
+let response = try await client.responses.create(
+    CreateResponse(model: "gpt-6.2-astra", input: "Write a haiku about Swift.")
 )
+print(response.outputText)
 ```
-The developer is also able to use function calls to execute various functions (i.e., fetching weather info, uploading files, etc). Here's an example on how to use the parameter, the corresponding response, and example usage with a local function.
+
+> [!WARNING]
+> **Don't ship your API key inside an app.** Anyone can pull it out of the binary. In apps, call OpenAI through your own server, or mint short-lived [Realtime client secrets](https://developers.openai.com/api/docs/guides/realtime). Get a key on the [API keys page](https://platform.openai.com/api-keys).
+
+<details>
+<summary><b>Configuration options</b></summary>
+
 ```swift
-do {
-    let functions: [Function] = [
-        Function(
-            name: "getCurrentWeather",
-            description: "Get the current weather in a given location",
-            parameters: Parameters(
-                type: "object",
-                properties: [
-                    "location": ParameterDetail(
-                        type: "string", 
-                        description: "The city and state, e.g. San Francisco, CA"
-                    ),
-                    "unit": ParameterDetail(
-                        type: "string", enumValues: ["fahrenheit", "celsius"]
-                    )
-                ],
-                required: ["location"]
-            )
-        )
-    ]
-    let messages: [ChatMessage] = [
-        ChatMessage(role: .user, content: "What's the weather like in Boston?")
-    ]
-
-    let chatParameters = ChatParameters(
-        model: .gpt4,  // ID of the model to use.
-        messages: messages,  // A list of messages comprising the conversation so far.
-        functionCall: "auto",  // Controls how the model calls functions.
-        functions: functions  // A list of functions the model may generate JSON inputs for.
-    )
-
-    let chatCompletion = try await openAI.generateChatCompletion(
-        parameters: chatParameters
-    )
-} catch {
-    // Insert your own error handling method here.
-}
+let client = OpenAI(Configuration(
+    apiKey: "sk-...",
+    organizationId: "org_...",
+    projectId: "proj_...",
+    requestOptions: OpenAIRequestOptions(timeoutInterval: 120, maxRetries: 3)
+))
+// On a server or in a command-line tool, read the standard environment variables.
+let fromEnvironment = OpenAI(.fromEnvironment())
 ```
-```
-ChatResponse(
-    id: "chatcmpl-88eVjsHEPtDDiSEuCexsqO8iuhnfG", 
-    object: OpenAIKit.OpenAIObject.chatCompletion, 
-    created: 1697073039, 
-    choices: [
-        OpenAIKit.ChatChoice(
-            message: Optional(
-                OpenAIKit.ChatMessage(
-                    id: "DCE5EECB-9521-481D-9E75-C7FF9390E4CF", 
-                    role: OpenAIKit.ChatRole.assistant, 
-                    content: nil, 
-                    functionCall: Optional(
-                        OpenAIKit.FunctionCall(
-                            arguments: "{\n\"location\": \"Boston, MA\"\n}", 
-                            name: "getCurrentWeather"
-                        )
-                    )
-                )
-            ), 
-            delta: nil, 
-            index: 0, 
-            logprobs: nil, 
-            finishReason: Optional("function_call")
-        )
-    ], 
-    usage: Optional(OpenAIKit.Usage(promptTokens: 81, completionTokens: 16, totalTokens: 97))
+
+`Configuration.fromEnvironment()` reads `OPENAI_API_KEY`, `OPENAI_ADMIN_KEY`, `OPENAI_ORG_ID`, `OPENAI_PROJECT_ID`, `OPENAI_WEBHOOK_SECRET` and `OPENAI_BASE_URL`, the same variables the official SDKs use. Every method also takes `options:` to override the timeout, retries, headers or query for one call.
+
+</details>
+
+## Cookbook
+
+### 💬 Responses
+
+[Responses](https://developers.openai.com/api/docs/guides/text) is OpenAI's main API for text, tools and multi-turn conversations.
+
+```swift
+let response = try await client.responses.create(
+    CreateResponse(model: "gpt-6.2-astra", input: "Write a haiku about Swift.")
 )
+print(response.outputText)
 ```
-```swift
-func getCurrentWeather(location: String, unit: TemperatureUnit = .fahrenheit) -> WeatherInfo {
-    return WeatherInfo(location: location, temperature: "72", unit: unit, forecast: ["sunny", "windy"])
-}
 
-if let message = chatCompletion.choices[0].message, let functionCall = message.functionCall {
-    let jsonString = functionCall.arguments
-    if let data = jsonString.data(using: .utf8) {
-        do {
-            if 
-                let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
-                let location = json["location"] as? String
-            {
-                self.weatherInfo = self.getCurrentWeather(location: location)
-            }
-        } catch {
-            // Insert your own error handling method here.
-        }
+### 🌊 Streaming
+
+```swift
+let request = CreateResponse(model: "gpt-6.2-astra", input: "Tell me a short story.")
+for try await event in client.responses.createStream(request) {
+    if let delta = event.outputTextDelta {
+        print(delta, terminator: "")
     }
 }
 ```
 
-​	- `generateChatCompletionStreaming` allows the developr to stream chat completion data from the endpoint. Here's an example on how to use the endpoint, along with the correlating output:
-```swift
-do {
-    let chat: [ChatMessage] = [
-        ChatMessage(role: .system, content: "You are a helpful assistant."),
-        ChatMessage(role: .user, content: "Who won the world series in 2020?"),
-        ChatMessage(role: .assistant, content: "The Los Angeles Dodgers won the World Series in 2020."),
-        ChatMessage(role: .user, content: "Where was it played?")
-    ]
-    
-    let chatParameters = ChatParameters(model: .chatGPTTurbo, messages: chat)
+### 🧵 Conversations
 
-    let stream = try openAI.generateChatCompletionStreaming(
-        parameters: chatParameters
-    )
-} catch {
-    // Insert your own error handling method here.
-}
+```swift
+let first = try await client.responses.create(CreateResponse(
+    model: "gpt-6.2-astra",
+    input: .inputItemList([
+        .developer("Answer in one sentence."),
+        .user("What is the capital of France?"),
+    ])
+))
+let followUp = try await client.responses.create(CreateResponse(
+    model: "gpt-6.2-astra",
+    input: "And its population?",
+    previousResponseID: first.id
+))
+print(followUp.outputText)
 ```
-```
-ChatResponse(
-    id: "chatcmpl-88enklY0vmc4fNkM1mJQCkzW6hcST", 
-    object: OpenAIKit.OpenAIObject.chatCompletionChunk, 
-    created: 1697074156, 
-    choices: [
-        OpenAIKit.ChatChoice(
-            message: nil, 
-            delta: Optional(
-                OpenAIKit.ChatDelta(
-                    role: Optional(OpenAIKit.ChatRole.assistant), 
-                    content: Optional("")
-                )
-            ), 
-            index: 0, 
-            logprobs: nil, 
-            finishReason: nil
-        )
-    ], 
-    usage: nil
-)
-ChatResponse(
-    id: "chatcmpl-88enklY0vmc4fNkM1mJQCkzW6hcST", 
-    object: OpenAIKit.OpenAIObject.chatCompletionChunk, 
-    created: 1697074156, 
-    choices: [
-        OpenAIKit.ChatChoice(
-            message: nil, 
-            delta: Optional(
-                OpenAIKit.ChatDelta(
-                    role: nil, 
-                    content: Optional("The")
-                )
-            ), 
-            index: 0, 
-            logprobs: nil, 
-            finishReason: nil
-        )
+
+### 🛠️ Function calling
+
+```swift
+let weather = FunctionTool(
+    name: "get_weather",
+    description: "Current weather for a city.",
+    parameters: [
+        "type": "object",
+        "properties": ["city": ["type": "string"]],
+        "required": ["city"],
+        "additionalProperties": false,
     ],
-    usage: nil
+    strict: true
 )
-
-// ...
-
-ChatResponse(
-    id: "chatcmpl-88enklY0vmc4fNkM1mJQCkzW6hcST", 
-    object: OpenAIKit.OpenAIObject.chatCompletionChunk, 
-    created: 1697074156, 
-    choices: [
-        OpenAIKit.ChatChoice(
-            message: nil, 
-            delta: Optional(
-                OpenAIKit.ChatDelta(
-                    role: nil, 
-                    content: Optional(".")
-                )
-            ), 
-            index: 0, 
-            logprobs: nil, 
-            finishReason: nil
-        )
-    ], 
-    usage: nil
-)
-ChatResponse(
-    id: "chatcmpl-88enklY0vmc4fNkM1mJQCkzW6hcST", 
-    object: OpenAIKit.OpenAIObject.chatCompletionChunk, 
-    created: 1697074156, 
-    choices: [
-        OpenAIKit.ChatChoice(
-            message: nil, 
-            delta: Optional(
-                OpenAIKit.ChatDelta(
-                    role: nil, 
-                    content: nil
-                )
-            ), 
-            index: 0, 
-            logprobs: nil, 
-            finishReason: Optional("stop")
-        )
-    ], 
-    usage: nil
-)
-```
-
-### Audio
-
-Whisper is OpenAI's speech-to-text AI model, designed for accurate transcription of spoken content. By converting audio into text, it offers developers a straightforward tool for tasks like transcription services, voice commands, vocal language translations, or audio indexing. Implementing Whisper can help streamline processes, make applications more accessible, and leverage voice data efficiently.
-
-There are the two main endpoints that use the Whisper model:
-    - `createTranscription` is the main endpoint that allows developers to transcribe spoken audio into text. Here's an example on how to use the endpoint, and the corresponding returned item:
-
-```swift
-do {
-    let audioParameters = TranscriptionParameters(file: audio)
-    
-    let transcriptionCompletion = try await openAI.createTranscription(parameters: audioParameters)
-} catch {
-    // Insert your own error handling method here.
+let response = try await client.responses.create(CreateResponse(
+    model: "gpt-6.2-astra",
+    input: "What's the weather in Paris?",
+    tools: [.function(weather)]
+))
+struct WeatherArguments: Decodable { let city: String }
+for call in response.functionCalls {
+    let arguments = try call.decodeArguments(as: WeatherArguments.self)
+    let output = FunctionCallOutputItemParam(output: "18°C and sunny in \(arguments.city)", callID: call.callID)
+    let final = try await client.responses.create(CreateResponse(
+        model: "gpt-6.2-astra",
+        input: .inputItemList([.item(.functionCallOutput(output))]),
+        previousResponseID: response.id
+    ))
+    print(final.outputText)
 }
 ```
 
-<audio controls>
-    <source src="Resources/InputTranscriptionAudio.mp3" type="audio/mpeg">
-Your browser does not support the audio element.
-</audio>
+Built-in tools such as web search, file search, code interpreter, image generation, computer use, shell and MCP are cases of the same `Tool` enum.
 
-```
-Arousing from the most profound of slumbers, we break the gossamer web of some dream. Yet in a second afterward, so frail may that web have been, we remember not that we have dreamed. In the return to life 
-from the swoon there are two stages, first, that of the sense of mental or spiritual, secondly, that of the sense of physical existence. It seems probable that if, upon reaching the second stage, we could 
-recall the impressions of the first, we should find these impressions eloquent in memories of the gulf beyond. And that gulf is what? How at least shall we distinguish its shadows from those of the tomb?
-```
-
-​	- `createTranslation` is the second endpoint that allows developers to translate any non-English audio into transcribed English text. Here's an example on how to use the endpoint, and the corresponding returned item:
+### 🧱 Structured outputs
 
 ```swift
-do {
-    let audioParameters = TranscriptionParameters(file: audio)
-    
-    let transcriptionCompletion = try await openAI.createTranslation(parameters: audioParameters)
-} catch {
-    // Insert your own error handling method here.
+struct Recipe: Decodable {
+    let name: String
+    let minutes: Int
 }
-```
-
-<audio controls>
-    <source src="Resources/InputTranslationAudio.mp3" type="audio/mpeg">
-Your browser does not support the audio element.
-</audio>
-
-```
-In the night, when I was out of my mind, and I, pained, numb and tired, thought about the beauty and goodness of a long-forgotten lesson, and my head began to shake, I suddenly heard something tick that scared 
-me out of my sleep. Who could it be in that weather? A visitor is knocking, I thought, at my room in that weather. That's all it is, and nothing more.
-```
-
-### Utilities
-
-#### Embeddings
-
-Embeddings utilize OpenAI's GPT models to generate dense vector representations for text. These embeddings capture semantic information, enabling developers to perform tasks like similarity search, clustering, or fine-tuning on specific tasks. By integrating GPT Embeddings into applications, developers can enhance text analysis and retrieval capabilities, leading to more effective data processing and insights.
-
-Here's an example on how to use it, and the expected output for the endpoint:
-
-```swift
-do {
-    let embeddingsParam = EmbeddingsParameters(model: "text-similarity-ada-002", input: input)
-
-    self.embeddingsResponse = try await openAI.createEmbeddings(parameters: embeddingsParam)
-} catch {
-    // Insert your own error handling method here.
-}
-```
-```
-OpenAIKit.EmbeddingsResponse(
-    object: OpenAIKit.OpenAIObject.list, 
-    data: [
-        OpenAIKit.EmbeddingsData(
-            object: OpenAIKit.OpenAIObject.embedding, 
-            embedding: [
-                0.0028667077, 
-                0.018867997, 
-                -0.030135695,
-                // ...
-                -0.004177677, 
-                -0.015615467, 
-                -0.008131327
-            ], 
-            index: 0
-        )
-    ], 
-    model: "text-similarity-ada:002", 
-    usage: OpenAIKit.EmbeddingsUsage(
-        promptTokens: 8, 
-        totalTokens: 8
-    )
+let format = TextResponseFormatJsonSchema(
+    name: "recipe",
+    schema: [
+        "type": "object",
+        "properties": ["name": ["type": "string"], "minutes": ["type": "integer"]],
+        "required": ["name", "minutes"],
+        "additionalProperties": false,
+    ],
+    strict: true
 )
+let response = try await client.responses.create(CreateResponse(
+    model: "gpt-6.2-astra",
+    input: "A quick pasta recipe.",
+    text: ResponseTextParam(format: .jsonSchema(format))
+))
+let recipe = try response.decodeOutput(as: Recipe.self)
+print(recipe.name, recipe.minutes)
 ```
 
-#### Models
-
-The models endpoint allows developers to fetch the currently available models from OpenAI, along with their own fine-tuned models.
-
-There are two endpoints available for use with this feature:
-- `listModels` fetches the entire list of models avaialbe to the developer. Here's an example usage, along with the corresponding output:
+### 🎨 Images
 
 ```swift
-do {
-    let modelsResponse = try await openAi.listModels()
-} catch {
-    // Insert your own error handling method here.
+let result = try await client.images.generate(CreateImageRequest(
+    model: "gpt-image-2",
+    prompt: "A watercolor otter reading a book"
+))
+if let png = result.data?.first?.imageData {
+    try png.write(to: URL(fileURLWithPath: "otter.png"))
 }
 ```
+
+<table>
+  <tr>
+    <td width="33%"><img src="Resources/readme/gallery-otter.jpg" alt="A watercolor otter reading a book"></td>
+    <td width="33%"><img src="Resources/readme/gallery-robot.jpg" alt="A glossy orange robot mascot writing code"></td>
+    <td width="33%"><img src="Resources/readme/gallery-island.jpg" alt="An isometric floating island city made of circuit boards"></td>
+  </tr>
+  <tr>
+    <td><sub><i>"A watercolor otter reading a book"</i></sub></td>
+    <td><sub><i>"A friendly glossy orange robot mascot with a glowing curly-brace symbol on its chest, sitting at a laptop writing code, 3D render…"</i></sub></td>
+    <td><sub><i>"An isometric floating island city built from glowing circuit boards and tiny server towers, waterfalls of light…"</i></sub></td>
+  </tr>
+</table>
+
+<sub>Generated with `gpt-image-2` through OpenAIKit. `client.images.generateStream(...)` streams the result, `client.images.edit(...)` edits an image, and `client.videos` generates video.</sub>
+
+### ⚡️ Realtime
+
+```swift
+let connection = try client.realtime.connect(model: "gpt-realtime-2")
+defer { connection.close() }
+try await connection.send(json: ["type": "response.create"])
+for try await event in connection.events {
+    print(event)
+}
 ```
-ListModelResponse(
-    object: OpenAIKit.OpenAIObject.list, 
-    data: [
-        OpenAIKit.Model(
-            id: "text-search-babbage-doc-001", 
-            object: OpenAIKit.OpenAIObject.model, 
-            created: 1651172509, 
-            ownedBy: "openai-dev"
-        ), 
-        OpenAIKit.Model(
-            id: "curie-search-query", 
-            object: OpenAIKit.OpenAIObject.model, 
-            created: 1651172509, 
-            ownedBy: "openai-dev"
-        ), 
-        OpenAIKit.Model(
-            id: "text-search-babbage-query-001", 
-            object: OpenAIKit.OpenAIObject.model, 
-            created: 1651172509, 
-            ownedBy: "openai-dev"
-        ), 
-        OpenAIKit.Model(
-            id: "babbage", 
-            object: OpenAIKit.OpenAIObject.model, 
-            created: 1649358449, 
-            ownedBy: "openai"
-        ), 
-        OpenAIKit.Model(
-            id: "gpt-3.5-turbo-instruct-0914", 
-            object: OpenAIKit.OpenAIObject.model, 
-            created: 1694122472, 
-            ownedBy: "system"
-        )
-        // ...
+
+`client.responses.connect()` opens the Responses API's WebSocket mode the same way. For apps, mint a short-lived key on your server with `client.realtime.clientSecrets.create(...)`.
+
+<details>
+<summary><b>🎙️ Audio: transcription and speech</b></summary>
+
+```swift
+let audioURL = URL(fileURLWithPath: "meeting.m4a")
+let transcript = try await client.audio.transcriptions.create(CreateTranscriptionRequest(
+    model: "gpt-4o-transcribe",
+    file: try FileUpload(contentsOf: audioURL)
+))
+if case .json(let json) = transcript {
+    print(json.text)
+}
+
+let speech: Data = try await client.audio.speech.create(CreateSpeechRequest(
+    model: "gpt-4o-mini-tts",
+    input: "Hello from OpenAIKit!",
+    voice: "marin"
+))
+try speech.write(to: URL(fileURLWithPath: "hello.mp3"))
+```
+
+Use `client.audio.transcriptions.createText(...)` for `srt`, `vtt` or `text` output, and `SubtitleCue.parse(_:)` to read SRT and WebVTT.
+
+</details>
+
+<details>
+<summary><b>🧠 Chat Completions</b></summary>
+
+```swift
+let completion = try await client.chat.completions.create(CreateChatCompletionRequest(
+    model: "gpt-6.2-astra",
+    messages: [
+        .developer(text: "You are a helpful assistant."),
+        .user(text: "Hello!"),
     ]
-)
+))
+print(completion.firstContent ?? "")
+
+let stream = client.chat.completions.createStream(CreateChatCompletionRequest(
+    model: "gpt-6.2-astra",
+    messages: [.user(text: "Count to five.")]
+))
+for try await chunk in stream {
+    print(chunk.contentDelta ?? "", terminator: "")
+}
 ```
 
-- `retrieveModels` fetches a single model, given the input model's ID. Here's an example usage, along with the corresponding output:
+</details>
+
+<details>
+<summary><b>🔢 Embeddings</b></summary>
+
+```swift
+let result = try await client.embeddings.create(CreateEmbeddingRequest(
+    model: "text-embedding-3-small",
+    input: "The quick brown fox"
+))
+print(result.data.first?.vector?.count ?? 0)
+```
+
+</details>
+
+<details>
+<summary><b>📁 Files and auto-pagination</b></summary>
+
+Every cursor-paginated list has an `…All` variant that loads pages as you iterate.
+
+```swift
+let upload = FileUpload(data: Data("{\"prompt\":\"hi\"}\n".utf8), filename: "batch.jsonl")
+let file = try await client.files.create(CreateFileRequest(file: upload, purpose: .batch))
+print(file.id)
+
+for try await file in client.files.listAll(limit: 100) {
+    print(file.filename)
+}
+```
+
+</details>
+
+<details>
+<summary><b>🪝 Webhooks</b></summary>
+
+`unwrap` verifies the signature with your endpoint secret (`Configuration.webhookSecret`, or pass `secret:`) and decodes a typed `WebhookEvent`. Pass the raw request body exactly as received.
+
+```swift
+let event = try client.webhooks.unwrap(payload: body, headers: headers)
+switch event {
+case .responseCompleted(let completed):
+    print("Response \(completed.data.id) finished")
+default:
+    break
+}
+```
+
+</details>
+
+<details>
+<summary><b>🏢 Administration API</b></summary>
+
+Projects, users, API keys, usage, costs and audit logs, with an [admin key](https://platform.openai.com/settings/organization/admin-keys):
+
+```swift
+let admin = OpenAI(Configuration(adminAPIKey: ProcessInfo.processInfo.environment["OPENAI_ADMIN_KEY"]))
+for try await project in admin.admin.organization.projects.listAll() {
+    print(project.name ?? project.id)
+}
+```
+
+</details>
+
+<details>
+<summary><b>🚨 Errors, retries and cancellation</b></summary>
+
+HTTP errors throw `OpenAIAPIError` with the status, OpenAI's message, type, code and the `x-request-id`. Everything else throws `OpenAIError`.
 
 ```swift
 do {
-    let model = try await openAI.retrieveModel(modelId: "text-davinci-001")
+    _ = try await client.models.retrieve(model: "does-not-exist")
+} catch let error as OpenAIAPIError {
+    print(error.statusCode, error.kind, error.message, error.requestID ?? "")
 } catch {
-    // Insert your own error handling method here.
+    print(error.localizedDescription)
 }
 ```
-```
-OpenAIKit.Model(
-    id: "text-davinci-001", 
-    object: OpenAIKit.OpenAIObject.model, 
-    created: 1649364042, 
-    ownedBy: "openai"
-)
-```
 
-### Completion
-
-#### ⚠️ Deprecation Notice for Completion API ⚠️
-
-As of July 6, 2023, OpenAI has announced the deprecation of the older models in the Completions API, which are set to retire at the beginning of 2024. It's highly recommended to transition to the Chat Completions API which provides a more structured prompt interface and multi-turn conversation capabilities. The Chat Completions API has proven to handle a vast majority of previous use cases and new conversational needs with higher flexibility and specificity, significantly enhancing the developer experience. For more details, refer to the [official announcement](https://openai.com/blog/gpt-4-api-general-availability).
-
-### Migration From 2.x to 3.x
-
-OpenAIKit 3.x aligns with the modern OpenAI SDK shape and adopts Swift 6.2 concurrency checks.
-Core usage is now centered around namespaced resources (for example `openAI.responses.create(...)`), while some legacy flat methods are still available for compatibility during migration.
-
-#### 1) Move from flat client methods to namespaced resources
+Connection errors, 408, 409, 429 and 5xx responses are retried twice by default, with exponential backoff and jitter, honoring `retry-after` and `x-should-retry`. Change it with `OpenAIRequestOptions(maxRetries:)`.
 
 ```swift
-// ❌ 2.x style
-let audio = try await openAI.createSpeech(parameters: speechParameters)
-
-// ✅ 3.x style
-let audio = try await openAI.audio.speech.create(parameters: speechParameters)
+let task = Task {
+    try await client.responses.create(CreateResponse(model: "gpt-6.2-astra", input: "Write a long essay."))
+}
+task.cancel() // The HTTP request is cancelled too; the call throws CancellationError.
 ```
 
-#### 2) Prefer typed, resource-based APIs
+</details>
+
+<details>
+<summary><b>🧪 Brand-new models</b></summary>
+
+Model IDs are open enums: autocomplete lists the ones in the spec, and any string works.
 
 ```swift
-// ✅ 3.x responses API
-let response = try await openAI.responses.create(
-    parameters: ResponseCreateParameters(
-        model: "gpt-5.2",
-        input: "Summarize this document"
-    )
-)
-
-// ✅ 3.x uploads API
-let upload = try await openAI.uploads.create(
-    parameters: UploadCreateParameters(
-        bytes: fileSize,
-        filename: "training.jsonl",
-        purpose: "fine-tune"
-    )
-)
-
-// ✅ 3.x webhook verification
-let event = try openAI.webhooks.unwrap(
-    payload: rawBody,
-    headers: requestHeaders,
-    as: MyWebhookEvent.self
-)
+_ = try await client.responses.create(CreateResponse(model: "gpt-7-preview", input: "Hi"))
 ```
 
-#### 3) Prefer typed `Encodable` payloads over dictionary bodies
+</details>
 
-3.x request models use `Encodable` throughout, which improves compile-time safety and keeps payload mapping consistent.
+## Every endpoint
 
-#### 4) Use richer client configuration when needed
+| Area | Namespace |
+| --- | --- |
+| Responses, input items, input tokens, compaction | `client.responses` |
+| Conversations | `client.conversations` |
+| Chat Completions, stored completions | `client.chat.completions` |
+| Realtime calls, client secrets, translations | `client.realtime` |
+| Live sessions | `client.live` |
+| Audio: speech, transcriptions, translations, voices | `client.audio` |
+| Images, videos | `client.images`, `client.videos` |
+| Embeddings, moderations | `client.embeddings`, `client.moderations` |
+| Files, uploads, batches | `client.files`, `client.uploads`, `client.batches` |
+| Vector stores | `client.vectorStores` |
+| Containers, skills | `client.containers`, `client.skills` |
+| Evals, fine-tuning, graders | `client.evals`, `client.fineTuning` |
+| Webhook endpoints | `client.webhooks` |
+| Safety, decisions, content provenance | `client.safety`, `client.decisions`, `client.contentProvenanceChecks` |
+| Agents, vaults, ChatKit, Assistants (beta) | `client.beta` |
+| Organization, projects, usage, costs, audit logs | `client.admin.organization` |
+| Legacy completions | `client.completions` |
 
-```swift
-let openAI = OpenAI(
-    .init(
-        apiKey: apiKey,
-        organizationId: organizationID,
-        projectId: projectID,
-        webhookSecret: webhookSecret,
-        requestOptions: .init(timeoutInterval: 600, maxRetries: 2)
-    )
-)
+Each method's documentation shows OpenAI's description, its parameters and the HTTP route. Browse them in Xcode's Quick Help or on the [Swift Package Index](https://swiftpackageindex.com/OpenDive/OpenAIKit/documentation).
+
+## Demo app
+
+[`Examples/iOS_Example`](Examples/iOS_Example) is the app in the recordings above. Its **Showcase** section has the chat, image and Realtime screens, and **API examples** covers models, files, audio, embeddings, moderation and more. There are smaller macOS, tvOS and watchOS samples next to it.
+
+1. Open `Examples/iOS_Example/iOS_Example.xcodeproj`.
+2. Set `OPENAI_API_KEY` under Product › Scheme › Edit Scheme… › Run › Arguments › Environment Variables.
+3. Run.
+
+Or from the terminal, with the app installed on a booted simulator:
+
+```bash
+SIMCTL_CHILD_OPENAI_API_KEY="$OPENAI_API_KEY" xcrun simctl launch booted com.MarcoDotIO.iOS-Example
 ```
 
-#### 5) Swift 6.2 concurrency
+## How it stays current
 
-OpenAIKit 3.x is built and tested in Swift 6.2 language mode. If your package graph still targets an older Swift language version, update your `Package.swift` toolchain/language settings before migrating.
+[`Generator/generate.py`](Generator/README.md) turns a pinned commit of [openai/openai-openapi](https://github.com/openai/openai-openapi) into the Swift sources in `Sources/OpenAIKit/Generated`. Method names follow [openai-python](https://github.com/openai/openai-python), so the official docs translate directly: `client.beta.threads.runs.submit_tool_outputs` there is `client.beta.threads.runs.submitToolOutputs` here.
 
-### Migration From 1.x to 2.x
-
-As of 2.x, Chat Completion Models use enums to label each available model for the main usage of default models. Here is an example on how to migrate from using the older initializer for `ChatParameter` to the initializer for 2.x:
-
-```swift
-// ❌ 1.x implementation
-let chatParameters = ChatParameters(model: "gpt4", messages: chat)
-
-// ✅ 2.x implementation
-let chatParameters = ChatParameters(model: .gpt4, messages: chat)
+```bash
+python3 Generator/generate.py bump && swift test
 ```
 
-If you need a custom string for fine-tuned models, use the `customModel` parameter:
+## Migrating from 3.x
 
-```swift
-// ✅ 2.x implementation for custom model IDs
-let chatParameters = ChatParameters(customModel: "INSERT-MODEL-ID", message: chat)
+4.0 replaces the hand-written API with the generated one. [MIGRATION.md](MIGRATION.md) maps every 3.x call to its 4.0 equivalent. In short: flat methods became namespaces (`client.chat.completions.create`), request types are named after the spec (`CreateChatCompletionRequest`), streaming methods end in `Stream`, model enums accept any string, and the minimum platforms are now iOS 16 and macOS 13.
+
+## Contributing
+
+Issues and pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) first. Generated code is never edited by hand: change the generator or the hand-written `Core/` and `Helpers/`, then run:
+
+```bash
+swift test && python3 Generator/generate.py check
 ```
 
-## Example Projects
-
-(TBD)
-
-## Development And Testing
-
-We welcome anyone to contribute to the project through posting issues, if they encounter any bugs / glitches while using OpenAIKit; and as well with creating pull issues that add any additional features to OpenAIKit.
+Coding agents: [AGENTS.md](AGENTS.md) describes how to use and work on this repository.
 
 ## License
 
-OpenAIKit is released under the MIT license, and any use of OpenAI's REST endpoint will be under the [Usage policies](https://beta.openai.com/docs/usage-policies) set by them.
-
-```
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-```
+MIT. See [LICENSE](LICENSE). Use of the OpenAI API is subject to OpenAI's [usage policies](https://openai.com/policies/usage-policies). OpenAIKit is a community project and isn't affiliated with OpenAI.

@@ -29,40 +29,32 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             List {
-                NavigationLink(destination: ModelMainView()) {
-                    Text("Model")
+                Section {
+                    NavigationLink(destination: ShowcaseChatView()) {
+                        ShowcaseCard(title: "Chat", subtitle: "Streaming with the Responses API", symbol: "bubble.left.and.text.bubble.right.fill", gradient: ShowcaseStyle.chat)
+                    }
+                    NavigationLink(destination: ShowcaseImageView()) {
+                        ShowcaseCard(title: "Image Studio", subtitle: "Generate images with gpt-image-2", symbol: "wand.and.stars", gradient: ShowcaseStyle.image)
+                    }
+                    NavigationLink(destination: ShowcaseRealtimeView()) {
+                        ShowcaseCard(title: "Realtime", subtitle: "Live events over a WebSocket", symbol: "waveform", gradient: ShowcaseStyle.realtime)
+                    }
+                } header: {
+                    Text("Showcase")
                 }
 
-                NavigationLink(destination: CompletionMainView()) {
-                    Text("Completion")
-                }
-
-                NavigationLink(destination: ChatMainView()) {
-                    Text("Chat")
-                }
-
-                NavigationLink(destination: ImageMainView()) {
-                    Text("Image")
-                }
-
-                NavigationLink(destination: CreateEmbeddingsExample()) {
-                    Text("Embeddings")
-                }
-
-                NavigationLink(destination: CreateTranscriptionExample()) {
-                    Text("Audio")
-                }
-
-                NavigationLink(destination: FileMainView()) {
-                    Text("File")
-                }
-
-                NavigationLink(destination: ContentPolicyExample()) {
-                    Text("Content Policy")
+                Section("API examples") {
+                    NavigationLink("Chat & Responses", destination: ChatMainView())
+                    NavigationLink("Images", destination: ImageMainView())
+                    NavigationLink("Audio", destination: CreateTranscriptionExample())
+                    NavigationLink("Embeddings", destination: CreateEmbeddingsExample())
+                    NavigationLink("Files", destination: FileMainView())
+                    NavigationLink("Models", destination: ModelMainView())
+                    NavigationLink("Moderation", destination: ContentPolicyExample())
+                    NavigationLink("Completions (legacy)", destination: CompletionMainView())
                 }
             }
-            .navigationTitle("OpenAIKit Examples")
-            .listStyle(.plain)
+            .navigationTitle("OpenAIKit")
         }
     }
 }

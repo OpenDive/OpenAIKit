@@ -26,26 +26,16 @@
 import SwiftUI
 import OpenAIKit
 
+/// The Chat Completions API. The Responses API examples show the newer way to do the same.
 struct CreateChatCompletionExample: View {
     @State private var responseText: String?
     @State private var isCompleting: Bool = false
 
-    let chat: [ChatMessage] = [
-        ChatMessage(role: .system, content: "You are a helpful assistant."),
-        ChatMessage(role: .user, content: "Who won the world series in 2020?"),
-        ChatMessage(role: .assistant, content: "The Los Angeles Dodgers won the World Series in 2020."),
-        ChatMessage(role: .user, content: "Where was it played?")
-    ]
+    let chat = ExampleMessage.worldSeriesConversation
 
     var body: some View {
         VStack {
-            VStack(alignment: .leading) {
-                ForEach(chat) { message in
-                    Text("\(message.role.rawValue.capitalized): \(message.content ?? "NO CONTENT")")
-                        .padding(.vertical, 10)
-                }
-            }
-            .padding(20)
+            ExampleConversationView(messages: chat)
 
             if isCompleting {
                 VStack {
@@ -63,20 +53,15 @@ struct CreateChatCompletionExample: View {
 
                         Task {
                             do {
-                                // ⚠️🔑 NEVER store OpenAI API keys directly in code. Use environment variables or secrets management. Avoid git commits of keys! 🔑⚠️
-                                let config = Configuration(
-                                    organizationId: "INSERT-ORGANIZATION-ID",
-                                    apiKey: "INSERT-API-KEY"
+                                let openAI = ExampleSecrets.client
+                                let chatCompletion = try await openAI.chat.completions.create(
+                                    CreateChatCompletionRequest(
+                                        model: "gpt-6.2-astra",
+                                        messages: chat.map(\.chatCompletionMessage)
+                                    )
                                 )
-                                let openAI = OpenAI(config)
-                                let chatParameters = ChatParameters(model: .chatGPTTurbo, messages: chat)
-                                let chatCompletion = try await openAI.generateChatCompletion(
-                                    parameters: chatParameters
-                                )
-                                
-                                if let message = chatCompletion.choices[0].message {
-                                    self.responseText = message.content
-                                }
+
+                                self.responseText = chatCompletion.firstContent
                             } catch {
                                 print("ERROR DETAILS - \(error)")
                             }

@@ -27,7 +27,7 @@ import SwiftUI
 import OpenAIKit
 
 struct DeleteFileExample: View {
-    @State private var deleteFileResponse: DeleteObject?
+    @State private var deleteFileResponse: DeleteFileResponse?
     @State private var isDeleting: Bool = false
 
     var body: some View {
@@ -36,7 +36,7 @@ struct DeleteFileExample: View {
                 if let deleteFileResponse = deleteFileResponse {
                     Text("File deletion complete!")
                     Text("ID: \(deleteFileResponse.id)")
-                    Text("Object: \(deleteFileResponse.object.rawValue)")
+                    Text("Object: \(deleteFileResponse.object)")
                     Text("Deleted: \(String(deleteFileResponse.deleted))")
                 } else {
                     Text("Deleting file...")
@@ -50,11 +50,9 @@ struct DeleteFileExample: View {
                     
                     Task {
                         do {
-                            // ⚠️🔑 NEVER store OpenAI API keys directly in code. Use environment variables or secrets management. Avoid git commits of keys! 🔑⚠️
-                            let config = Configuration(organizationId: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
-                            let openAI = OpenAI(config)
+                            let openAI = ExampleSecrets.client
 
-                            self.deleteFileResponse = try await openAI.deleteFile(fileId: "INSERT-FILE-ID")
+                            self.deleteFileResponse = try await openAI.files.delete(fileID: "INSERT-FILE-ID")
                         } catch {
                             print("ERROR - \(error)")
                         }

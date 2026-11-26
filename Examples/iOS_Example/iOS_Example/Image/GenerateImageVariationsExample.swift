@@ -26,17 +26,21 @@
 import SwiftUI
 import OpenAIKit
 
+/// Image variations are only available with `dall-e-2`. OpenAI marks this endpoint as deprecated
+/// (it still works); the edit example shows the GPT Image alternative.
 struct GenerateImageVariationExample: View {
-    @State private var image: UIImage = UIImage()
+    @State private var image: UIImage?
     @State private var isGeneratingVariation: Bool = false
 
     var body: some View {
         if isGeneratingVariation {
             VStack {
-                if image == UIImage() {
-                    Text("Variation is loading...")
-                } else {
+                if let image {
                     Image(uiImage: image)
+                        .resizable()
+                        .scaledToFit()
+                } else {
+                    Text("Variation is loading...")
                 }
             }
             .padding()
@@ -47,29 +51,25 @@ struct GenerateImageVariationExample: View {
                     
                     Task {
                         do {
-                            // ⚠️🔑 NEVER store OpenAI API keys directly in code. Use environment variables or secrets management. Avoid git commits of keys! 🔑⚠️
-                            let config = Configuration(
-                                organizationId: "INSERT-ORGANIZATION-ID",
-                                apiKey: "INSERT-API-KEY"
-                            )
-                            let openAI = OpenAI(config)
+                            let openAI = ExampleSecrets.client
 
-                            guard let image = UIImage(named: "variation") else {
-                                throw OpenAIError.invalidData
+                            guard let imageData = UIImage(named: "variation")?.pngData() else {
+                                print("ERROR - variation.png is missing from the app bundle")
+                                return
                             }
 
-                            let imageVariationParam = try ImageVariationParameters(
-                                image: image,
-                                resolution: .small,
-                                responseFormat: .base64Json
-                            )
-                            let variationResponse = try await openAI.generateImageVariations(
-                                parameters: imageVariationParam
+                            let variationResponse = try await openAI.images.createVariation(
+                                CreateImageVariationRequest(
+                                    image: FileUpload(data: imageData, filename: "variation.png"),
+                                    model: .dallE2,
+                                    responseFormat: .b64Json,
+                                    size: ._256x256
+                                )
                             )
 
-                            self.image = try openAI.decodeBase64Image(
-                                variationResponse.data[0].image
-                            )
+                            if let data = variationResponse.data?.first?.imageData {
+                                self.image = UIImage(data: data)
+                            }
                         } catch {
                             print("ERROR - \(error)")
                         }

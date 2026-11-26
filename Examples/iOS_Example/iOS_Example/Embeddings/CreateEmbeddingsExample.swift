@@ -27,25 +27,35 @@ import SwiftUI
 import OpenAIKit
 
 struct CreateEmbeddingsExample: View {
-    @State private var embeddingsResponse: EmbeddingsResponse?
+    @State private var embeddingsResponse: CreateEmbeddingResponse?
     @State private var isCreatingEmbeds: Bool = false
     
     let input: String = "The food was delicious and the waiter..."
+
+    /// The first embedding vector, when the response used the default `float` encoding.
+    private var firstVector: [Double] {
+        guard case .array(let vector) = embeddingsResponse?.data.first?.embedding else { return [] }
+        return vector
+    }
 
     var body: some View {
         if isCreatingEmbeds {
             VStack {
                 Text("Input: \(input)")
                 if let embeddingsResponse = self.embeddingsResponse {
-                    Text("Object Type: \(embeddingsResponse.object.rawValue)")
+                    Text("Object Type: \(embeddingsResponse.object)")
+                    Text("Model: \(embeddingsResponse.model)")
                         .padding(.bottom)
 
-                    Text("Embeddings Details").bold().font(.title)
-                    Text("Object Type: \(embeddingsResponse.data[0].object.rawValue)")
-                    Text("First Embedding (See Print For Full Embedding output):")
-                        .multilineTextAlignment(.center)
-                    Text("\(embeddingsResponse.data[0].embedding[0])")
-                    Text("Index: \(embeddingsResponse.data[0].index)")
+                    if let embedding = embeddingsResponse.data.first {
+                        Text("Embeddings Details").bold().font(.title)
+                        Text("Object Type: \(embedding.object)")
+                        Text("Dimensions: \(firstVector.count)")
+                        Text("First Embedding (See Print For Full Embedding output):")
+                            .multilineTextAlignment(.center)
+                        Text(firstVector.first.map { "\($0)" } ?? "-")
+                        Text("Index: \(embedding.index)")
+                    }
 
                     Text("Embeddings Usage").bold().font(.title).padding(.top)
                     Text("Prompt Tokens: \(embeddingsResponse.usage.promptTokens)")
@@ -63,15 +73,14 @@ struct CreateEmbeddingsExample: View {
                     
                     Task {
                         do {
-                            // ⚠️🔑 NEVER store OpenAI API keys directly in code. Use environment variables or secrets management. Avoid git commits of keys! 🔑⚠️
-                            let config = Configuration(organizationId: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
-                            let openAI = OpenAI(config)
-                            let embeddingsParam = EmbeddingsParameters(model: "text-similarity-ada-002", input: input)
+                            let openAI = ExampleSecrets.client
 
-                            self.embeddingsResponse = try await openAI.createEmbeddings(parameters: embeddingsParam)
+                            self.embeddingsResponse = try await openAI.embeddings.create(
+                                CreateEmbeddingRequest(model: .textEmbedding3Small, input: .string(input))
+                            )
 
                             print("Embeddings Result: ")
-                            self.embeddingsResponse?.data[0].embedding.forEach { embed in
+                            self.firstVector.forEach { embed in
                                 print("\(embed)")
                             }
                         } catch {

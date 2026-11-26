@@ -27,13 +27,19 @@ import SwiftUI
 import OpenAIKit
 
 struct GenerateImageExample: View {
-    @State private var image: UIImage = UIImage()
+    @State private var image: UIImage?
     @State private var isGenerating: Bool = false
 
     var body: some View {
         if isGenerating {
             VStack {
-                Image(uiImage: image)
+                if let image {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFit()
+                } else {
+                    Text("Generating image...")
+                }
             }
             .padding()
         } else {
@@ -43,25 +49,21 @@ struct GenerateImageExample: View {
 
                     Task {
                         do {
-                            // ⚠️🔑 NEVER store OpenAI API keys directly in code. Use environment variables or secrets management. Avoid git commits of keys! 🔑⚠️
-                            let config = Configuration(
-                                organizationId: "INSERT-ORGANIZATION-ID",
-                                apiKey: "INSERT-API-KEY"
+                            let openAI = ExampleSecrets.client
+
+                            // GPT Image models always return base64-encoded image data.
+                            let result = try await openAI.images.generate(
+                                CreateImageRequest(
+                                    model: "gpt-image-2",
+                                    prompt: "an avocado chair",
+                                    quality: .high,
+                                    size: ._1024x1536
+                                )
                             )
 
-                            let openAi = OpenAI(config)
-                            let imageParam = ImageParameters(
-                                prompt: "an avocado chair",
-                                resolution: .extraLargePortrait,
-                                quality: .hd,
-                                model: .dalle3,
-                                responseFormat: .base64Json
-                            )
-
-                            let result = try await openAi.createImage(parameters: imageParam)
-                            let b64Image = result.data[0].image
-
-                            self.image = try openAi.decodeBase64Image(b64Image)
+                            if let data = result.data?.first?.imageData {
+                                self.image = UIImage(data: data)
+                            }
                         } catch {
                             print("ERROR DETAILS - \(error)")
                         }

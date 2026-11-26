@@ -8,9 +8,12 @@
 import SwiftUI
 import OpenAIKit
 
+/// Function calling with the Responses API: the model asks for a function call, the app runs it,
+/// and the result goes back to the model so it can answer in plain language.
 struct CreateChatFunctionCallExample: View {
     @State private var isCompleting: Bool = false
     @State private var weatherInfo: WeatherInfo? = nil
+    @State private var responseText: String? = nil
 
     enum TemperatureUnit: String, Codable {
         case fahrenheit
@@ -24,41 +27,58 @@ struct CreateChatFunctionCallExample: View {
         let forecast: [String]
     }
 
+    /// The arguments the model sends for `get_current_weather`.
+    struct WeatherArguments: Decodable {
+        let location: String
+        let unit: TemperatureUnit
+    }
+
     func getCurrentWeather(location: String, unit: TemperatureUnit = .fahrenheit) -> WeatherInfo {
         return WeatherInfo(location: location, temperature: "72", unit: unit, forecast: ["sunny", "windy"])
     }
 
-    let messages: [ChatMessage] = [ChatMessage(role: .user, content: "What's the weather like in Boston?")]
+    let messages = [ExampleMessage(role: .user, content: "What's the weather like in Boston?")]
 
-    let functions: [Function] = [
-        Function(
-            name: "getCurrentWeather",
-            description: "Get the current weather in a given location",
-            parameters: Parameters(
-                type: "object",
-                properties: [
-                    "location": ParameterDetail(type: "string", description: "The city and state, e.g. San Francisco, CA"),
-                    "unit": ParameterDetail(type: "string", enumValues: ["fahrenheit", "celsius"])
+    /// The function the model may call. With `strict: true` every property must be listed in
+    /// `required` and `additionalProperties` must be `false`.
+    let tools: [Tool] = [
+        .function(
+            FunctionTool(
+                name: "get_current_weather",
+                description: "Get the current weather in a given location",
+                parameters: [
+                    "type": "object",
+                    "properties": [
+                        "location": [
+                            "type": "string",
+                            "description": "The city and state, e.g. San Francisco, CA"
+                        ],
+                        "unit": [
+                            "type": "string",
+                            "enum": ["fahrenheit", "celsius"]
+                        ]
+                    ],
+                    "required": ["location", "unit"],
+                    "additionalProperties": false
                 ],
-                required: ["location"]
+                strict: true
             )
         )
     ]
 
     var body: some View {
         VStack {
-            VStack(alignment: .leading) {
-                ForEach(messages) { message in
-                    Text("\(message.role.rawValue.capitalized): \(message.content ?? "NO CONTENT")")
-                        .padding(.vertical, 10)
-                }
-            }
-            .padding(20)
+            ExampleConversationView(messages: messages)
 
             if isCompleting {
-                VStack {
+                VStack(alignment: .leading, spacing: 12) {
                     if let weatherInfo {
-                        Text("Assistant: The current weather in \(weatherInfo.location) is \(weatherInfo.temperature) degrees \(weatherInfo.unit.rawValue).")
+                        Text("Function result: \(weatherInfo.temperature) degrees \(weatherInfo.unit.rawValue) in \(weatherInfo.location), \(weatherInfo.forecast.joined(separator: " and ")).")
+                            .foregroundStyle(.secondary)
+                    }
+
+                    if let responseText {
+                        Text("Assistant: \(responseText)")
                     } else {
                         Text("Assistant: ...")
                     }
@@ -71,44 +91,53 @@ struct CreateChatFunctionCallExample: View {
 
                         Task {
                             do {
-                                // ⚠️🔑 NEVER store OpenAI API keys directly in code. Use environment variables or secrets management. Avoid git commits of keys! 🔑⚠️
-                                let config = Configuration(
-                                    organizationId: "INSERT-ORGANIZATION-ID",
-                                    apiKey: "INSERT-API-KEY"
-                                )
-                                let openAI = OpenAI(config)
-                                let chatParameters = ChatParameters(
-                                    model: .chatGPTTurbo,
-                                    messages: messages,
-                                    functionCall: "auto",
-                                    functions: functions
+                                let openAI = ExampleSecrets.client
+
+                                // 1. Send the question together with the tool definition.
+                                let first = try await openAI.responses.create(
+                                    CreateResponse(
+                                        model: "gpt-6.2-astra",
+                                        input: .inputItemList(messages.map(\.inputItem)),
+                                        tools: tools
+                                    )
                                 )
 
-                                let chatCompletion = try await openAI.generateChatCompletion(
-                                    parameters: chatParameters
-                                )
+                                // 2. Run every function call the model asked for.
+                                var outputs: [InputItem] = []
+                                for call in first.functionCalls where call.name == "get_current_weather" {
+                                    let arguments = try call.decodeArguments(as: WeatherArguments.self)
+                                    let weather = getCurrentWeather(location: arguments.location, unit: arguments.unit)
+                                    self.weatherInfo = weather
 
-                                if let message = chatCompletion.choices[0].message, let functionCall = message.functionCall {
-                                    let jsonString = functionCall.arguments
-                                    if let data = jsonString.data(using: .utf8) {
-                                        do {
-                                            if 
-                                                let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
-                                                let location = json["location"] as? String
-                                            {
-                                                self.weatherInfo = self.getCurrentWeather(location: location)
-                                            }
-                                        } catch {
-                                            print("Error parsing JSON: \(error)")
-                                        }
-                                    }
+                                    let result = String(decoding: try JSONEncoder().encode(weather), as: UTF8.self)
+                                    outputs.append(
+                                        .item(.functionCallOutput(FunctionCallOutputItemParam(output: .string(result), callID: call.callID)))
+                                    )
                                 }
+
+                                guard !outputs.isEmpty else {
+                                    // The model answered without calling the function.
+                                    self.responseText = first.outputText
+                                    return
+                                }
+
+                                // 3. Send the results back, continuing the stored response.
+                                let final = try await openAI.responses.create(
+                                    CreateResponse(
+                                        model: "gpt-6.2-astra",
+                                        input: .inputItemList(outputs),
+                                        previousResponseID: first.id,
+                                        tools: tools
+                                    )
+                                )
+
+                                self.responseText = final.outputText
                             } catch {
                                 print("ERROR DETAILS - \(error)")
                             }
                         }
                     } label: {
-                        Text("Generate Completion")
+                        Text("Generate Response")
                             .font(.headline)
                             .foregroundColor(.white)
                             .frame(width: 270, height: 50)
