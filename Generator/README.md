@@ -1,6 +1,6 @@
 # OpenAIKit generator
 
-`generate.py` turns OpenAI's OpenAPI document into the Swift sources in `Sources/OpenAIKit/Generated`, plus the spec-example tests in `Tests/OpenAIKitTests/Generated` and `Tests/OpenAIKitTests/Fixtures/spec-examples.json`. It needs Python 3.9 or later and nothing else.
+`generate.py` turns OpenAI's OpenAPI document into the Swift sources in `Sources/<Module>/Generated` for each product, plus the spec-example tests in `Tests/OpenAIKitTests/Generated` and `Tests/OpenAIKitTests/Fixtures/spec-examples.json`. It needs Python 3.9 or later and nothing else.
 
 ## Commands
 
@@ -23,12 +23,12 @@ Set `GITHUB_TOKEN` if `bump` hits GitHub's rate limit.
 
 | Spec | Swift |
 | --- | --- |
-| Object with `properties` (and `allOf` of objects) | `struct` with `Codable, Hashable, Sendable`, a memberwise `init`, and `CodingKeys` for snake_case names |
+| Object with `properties` (and `allOf` of objects) | `struct` conforming to `OpenAIModel` (`Codable`, `Hashable`, `Sendable`), with a memberwise `init` and explicit `init(from:)`/`encode(to:)` using snake_case keys |
 | Required, non-nullable property | Non-optional property |
 | Optional or nullable property | Optional property, `nil` by default, omitted when encoding |
 | Property with a single constant value (`type: "message"`) | `String` property preset to that value and left out of `init` |
 | String `enum`, or `anyOf` of strings and enums | Open enum: a struct conforming to `OpenAIStringEnum`, with a static member per known value |
-| `oneOf` / `anyOf` of different shapes | `indirect enum` with one case per variant and `.unknown(JSONValue)`. Discriminated unions decode by their discriminator; others try variants in order. Unions with a string case are `ExpressibleByStringLiteral` |
+| `oneOf` / `anyOf` of different shapes | `indirect enum` conforming to `OpenAIModel`, with one case per variant and `.unknown(JSONValue)`. Discriminated unions decode by their discriminator; others try variants in order. Unions with a string case are `ExpressibleByStringLiteral` |
 | `additionalProperties` map | `[String: T]` |
 | Free-form object or `{}` | `JSONObject` or `JSONValue` |
 | `format: binary` | `FileUpload` |
@@ -38,6 +38,12 @@ Set `GITHUB_TOKEN` if `bump` hits GitHub's rate limit.
 Spec names that would shadow Swift, Foundation or SwiftUI types get an `Object` suffix: `Error` → `ErrorObject`, `Image` → `ImageObject`.
 
 The spec marks some properties required that its own examples leave out. The generator walks every example in the spec and makes such properties optional, so real responses decode. It also treats the `first_id`/`last_id` list cursors as optional, because the API returns `null` for empty pages.
+
+## Modules
+
+Each operation belongs to a product by its namespace: `admin.*` to `OpenAIKitAdmin`, `beta.*` to `OpenAIKitBeta`, `realtime.*` and `live.*` to `OpenAIKitRealtime`, and everything else to `OpenAIKitCore`. A schema goes in `OpenAIKitCore` when Core operations, webhooks or Core's WebSocket events use it, or when more than one optional module does; otherwise it goes in the one module that uses it. Schemas no operation reaches, such as WebSocket events, are placed by name. Optional modules depend only on Core, and the `OpenAIKit` product re-exports all four.
+
+Generated structs conform to `OpenAIModel`, which supplies `Equatable` and `Hashable` once for every type, and decode and encode with `OpenAIDynamicCodingKey` string keys instead of a `CodingKeys` enum per type. Both keep the binary small.
 
 ## How operations map to Swift
 

@@ -3,7 +3,8 @@
 #if canImport(Network)
 import Foundation
 import Testing
-@testable import OpenAIKit
+import OpenAIKit
+@testable import OpenAIKitCore
 
 /// Responses recorded from the live API, replayed by a local server.
 enum Recorded {

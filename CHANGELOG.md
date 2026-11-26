@@ -2,6 +2,21 @@
 
 All notable changes to this project are documented in this file.
 
+## Unreleased
+
+### Added
+- Separate products, so apps link only the APIs they use: `OpenAIKitCore`, `OpenAIKitRealtime` (Realtime and Live), `OpenAIKitBeta` (Agents, Vaults, Assistants, Threads, ChatKit, beta Responses) and `OpenAIKitAdmin` (Administration API). The `OpenAIKit` product still includes everything and re-exports all four modules, so existing code compiles unchanged.
+- `OpenAIModel`, the protocol every generated model conforms to.
+
+### Changed
+- Much smaller apps. A minimal app making one Responses call and one Chat Completions stream (release build, stripped):
+  - **33.4 MB → 11.1 MB** with `OpenAIKitCore`;
+  - 33.4 MB → 27.8 MB with `OpenAIKit`.
+
+  Clean release builds take 40–69 s instead of 152 s.
+- Generated models no longer each carry a `CodingKeys` enum and a synthesized `==`/`hash(into:)`. They decode with shared string keys, and `OpenAIModel` supplies `Equatable` and `Hashable` once for all types. Equality compares canonical JSON, so `nil` and an omitted field compare equal, as on the wire. It costs more per comparison than synthesized equality, so compare `id`s in hot loops.
+- Constant discriminator fields (`type`, `object`) fall back to their known value when a response omits them.
+
 ## 4.1.0 - 2026-11-26
 
 ### Changed

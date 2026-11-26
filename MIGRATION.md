@@ -74,7 +74,7 @@ These were deprecated in 3.x and are removed in 4.0.
 | `client.responses.inputItems.list(responseID:)` | Same, plus `limit:`, `order:`, `after:` and `listAll(responseID:)` |
 | `client.responses.inputTokens.create(parameters:)` | `client.responses.inputTokens.count(...)` |
 | `client.chat.completions.create(parameters:)` | `client.chat.completions.create(_:)` |
-| `client.<resource>.create(parameters: X)` | `client.<resource>.create(X')`, where `X'` is the spec's request type. Search `Sources/OpenAIKit/Generated/Resources` for the method |
+| `client.<resource>.create(parameters: X)` | `client.<resource>.create(X')`, where `X'` is the spec's request type. Search `Sources/*/Generated/Resources` for the method |
 | `retrieve(id:)`, `delete(id:)`, `cancel(id:)` | Labeled by the path parameter: `retrieve(vectorStoreID:)`, `cancel(batchID:)`, … |
 | `client.realtime.connect(options:)` (a stub) | `client.realtime.connect(model:)`, a real WebSocket with typed events |
 | `client.beta.realtime.sessions` | Still there; the GA equivalent is `client.realtime.clientSecrets.create(...)` |

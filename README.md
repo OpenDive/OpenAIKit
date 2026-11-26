@@ -23,7 +23,7 @@
 ## TL;DR
 
 ```swift
-.package(url: "https://github.com/OpenDive/OpenAIKit.git", from: "4.0.0")
+.package(url: "https://github.com/OpenDive/OpenAIKit.git", from: "4.2.0")
 ```
 
 ```swift
@@ -71,17 +71,17 @@ Real recordings of the [example app](#demo-app) talking to the live API.
 | ⚡️ **Realtime** | `client.realtime.connect(model:)` opens a typed WebSocket: send `RealtimeClientEvent`s, iterate `RealtimeServerEvent`s. |
 | 🏭 **Production details** | Retries with exponential backoff that honor `retry-after`, `Task` cancellation, timeouts, auto-pagination, multipart uploads, Standard Webhooks verification and typed `OpenAIAPIError`s with request IDs. |
 | 🧪 **Tested** | 769 examples from OpenAI's spec decode and round-trip in CI, on macOS, iOS, tvOS, watchOS, visionOS and Linux with Swift 6.2 to 6.4. |
-| 🪶 **Lightweight** | No dependencies. Swift 6 strict concurrency, every type `Sendable`. |
+| 🪶 **Lightweight** | No dependencies. Split into products so an app links only the APIs it uses: about 11 MB for the core APIs. Swift 6 strict concurrency, every type `Sendable`. |
 
 ## Install
 
-**Xcode:** File › Add Package Dependencies… › `https://github.com/OpenDive/OpenAIKit.git` › Up to Next Major from `4.0.0`.
+**Xcode:** File › Add Package Dependencies… › `https://github.com/OpenDive/OpenAIKit.git` › Up to Next Major from `4.2.0`.
 
 **Package.swift:**
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/OpenDive/OpenAIKit.git", from: "4.0.0")
+    .package(url: "https://github.com/OpenDive/OpenAIKit.git", from: "4.2.0")
 ],
 targets: [
     .target(name: "YourTarget", dependencies: ["OpenAIKit"])
@@ -89,6 +89,27 @@ targets: [
 ```
 
 Requires Swift 6.2 (Xcode 26) or later, and iOS 16, macOS 13, tvOS 16, watchOS 9, visionOS 1 or Linux.
+
+### Keep your app small
+
+The `OpenAIKit` product includes the whole API. To link only what you use, depend on `OpenAIKitCore` and add the other products as needed. The types and methods are the same; just `import` the modules you depend on.
+
+| Product | Covers | Adds to a release build* |
+| --- | --- | --- |
+| `OpenAIKitCore` | Responses, Chat Completions, Conversations, Audio, Images, Videos, Embeddings, Files, Uploads, Batches, Vector stores, Containers, Skills, Evals, Fine-tuning, Moderations, Models, Webhooks | ~11 MB |
+| `OpenAIKitRealtime` | Realtime and Live, including `client.realtime.connect(...)` | + Realtime types |
+| `OpenAIKitBeta` | Agents, Vaults, Assistants, Threads, ChatKit, beta Responses | + Beta types |
+| `OpenAIKitAdmin` | Administration API: organization, projects, users, keys, usage, costs, audit logs | + Admin types |
+| `OpenAIKit` | All of the above | ~28 MB |
+
+<sub>*A minimal app making one Responses call and one Chat Completions stream, release build, stripped, on arm64.</sub>
+
+```swift
+.target(name: "YourApp", dependencies: [
+    .product(name: "OpenAIKitCore", package: "OpenAIKit"),
+    .product(name: "OpenAIKitRealtime", package: "OpenAIKit"), // only if you use Realtime
+])
+```
 
 ## Quick start
 
@@ -471,7 +492,7 @@ SIMCTL_CHILD_OPENAI_API_KEY="$OPENAI_API_KEY" xcrun simctl launch booted com.Mar
 
 ## How it stays current
 
-[`Generator/generate.py`](Generator/README.md) turns a pinned commit of [openai/openai-openapi](https://github.com/openai/openai-openapi) into the Swift sources in `Sources/OpenAIKit/Generated`. Method names follow [openai-python](https://github.com/openai/openai-python), so the official docs translate directly: `client.beta.threads.runs.submit_tool_outputs` there is `client.beta.threads.runs.submitToolOutputs` here.
+[`Generator/generate.py`](Generator/README.md) turns a pinned commit of [openai/openai-openapi](https://github.com/openai/openai-openapi) into the Swift sources in `Sources/<Module>/Generated`. Method names follow [openai-python](https://github.com/openai/openai-python), so the official docs translate directly: `client.beta.threads.runs.submit_tool_outputs` there is `client.beta.threads.runs.submitToolOutputs` here.
 
 ```bash
 python3 Generator/generate.py bump && swift test

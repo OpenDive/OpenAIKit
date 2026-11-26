@@ -2,14 +2,14 @@
 """OpenAIKit code generator.
 
 Reads OpenAI's published OpenAPI document (pinned in Generator/config.json) and
-writes Swift sources to Sources/OpenAIKit/Generated:
+writes Swift sources to Sources/<Module>/Generated for each product:
 
   Models/      one Codable value type per schema in the spec
   Resources/   one resource struct per API namespace, with one method per operation
 
 Commands:
   python3 Generator/generate.py fetch      Download the pinned spec into Generator/.cache
-  python3 Generator/generate.py generate   Regenerate Sources/OpenAIKit/Generated
+  python3 Generator/generate.py generate   Regenerate Sources/*/Generated
   python3 Generator/generate.py check      Fail if the committed sources differ from a fresh run
   python3 Generator/generate.py naming     Refresh Generator/sdk-naming.json from openai-python
   python3 Generator/generate.py bump       Pin the newest spec and naming commits, then regenerate
@@ -34,7 +34,30 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 GEN = ROOT / "Generator"
 CACHE = GEN / ".cache"
-OUT = ROOT / "Sources" / "OpenAIKit" / "Generated"
+SOURCES = ROOT / "Sources"
+CORE = "OpenAIKitCore"
+MODULES = [CORE, "OpenAIKitRealtime", "OpenAIKitBeta", "OpenAIKitAdmin"]
+
+
+def module_for_chain(chain: str) -> str:
+    """Which product an operation's namespace ships in."""
+    root = chain.split(".")[0]
+    if root == "admin":
+        return "OpenAIKitAdmin"
+    if root == "beta":
+        return "OpenAIKitBeta"
+    if root in ("realtime", "live"):
+        return "OpenAIKitRealtime"
+    return CORE
+
+
+def module_for_socket_event(name: str) -> str:
+    """WebSocket event schemas have no HTTP operation; place them by name."""
+    if name.startswith(("Realtime", "Live")):
+        return "OpenAIKitRealtime"
+    if name.startswith("Beta"):
+        return "OpenAIKitBeta"
+    return CORE
 CONFIG_PATH = GEN / "config.json"
 NAMING_PATH = GEN / "sdk-naming.json"
 
@@ -391,6 +414,7 @@ class Decl:
         self.doc = doc
         self.nested: list[Decl] = []
         self.deprecated = False
+        self.module = CORE
         if parent is not None:
             parent.nested.append(self)
 
@@ -472,6 +496,8 @@ class Builder:
         self.info_cache: dict[str, dict] = {}
         self.extra_tops: list[Decl] = []
         self.relaxed: set = set()
+        self.current_module = CORE
+        self.component_module: dict[str, str] = {}
         self.assign_top_names()
 
     # -- top-level names ---------------------------------------------------
@@ -490,6 +516,10 @@ class Builder:
             used.add(swift)
             self.top_names[name] = swift
         self.used_top = used
+
+    def add_top(self, decl: "Decl"):
+        decl.module = self.current_module
+        self.extra_tops.append(decl)
 
     def reserve_top_name(self, wanted: str) -> str:
         name = wanted
@@ -764,7 +794,7 @@ class Builder:
     def open_enum(self, values, schema, parent, hint) -> str:
         decl = OpenEnum(self.nested_name(parent, hint), parent, schema.get("description"))
         if parent is None:
-            self.extra_tops.append(decl)
+            self.add_top(decl)
         self.fill_open_enum(decl, values, schema)
         return decl.token
 
@@ -785,7 +815,7 @@ class Builder:
     def struct_type(self, schema, parent, hint, mode) -> str:
         decl = Struct(self.nested_name(parent, hint), parent, schema.get("description"))
         if parent is None:
-            self.extra_tops.append(decl)
+            self.add_top(decl)
         self.fill_struct(decl, schema, mode)
         return decl.token
 
@@ -880,7 +910,7 @@ class Builder:
 
         decl = Union(self.nested_name(parent, hint), parent, schema.get("description"))
         if parent is None:
-            self.extra_tops.append(decl)
+            self.add_top(decl)
         self.fill_union(decl, schema, non_null, resolved, kinds, mode)
         return decl.token, nullable
 
@@ -1082,8 +1112,11 @@ class Builder:
                 self.top[name] = decl
             else:
                 self.top[name] = Alias(swift, None, description, None)
+        for name, decl in self.top.items():
+            decl.module = self.component_module.get(name, CORE)
         for name, schema in self.spec.schemas.items():
             decl = self.top[name]
+            self.current_module = decl.module
             stripped, _ = strip_null(schema)
             if stripped is None:
                 continue
@@ -1456,6 +1489,7 @@ class OperationBuilder:
         if key not in self.param_holders:
             name = "".join(pascal(c) for c in chain) + "Resource"
             decl = Struct(name, None, None)
+            decl.module = self.builder.current_module
             self.param_holders[key] = decl
         return self.param_holders[key]
 
@@ -1483,6 +1517,8 @@ class OperationBuilder:
         if query:
             o.fixed_query = [tuple(pair.split("=", 1)) for pair in query.split("&")]
         chain, name = self.naming.get(f"{method} {path}") or self.fallback_name(method, path)
+        o.module = module_for_chain(chain)
+        self.builder.current_module = o.module
         o.chain = [camel(part) for part in chain.split(".")]
         o.name = camel(name)
         o.summary = op.get("summary")
@@ -1688,7 +1724,7 @@ class ResourceEmitter:
         self.emitter = emitter
         self.ops = ops
         self.holders = holders
-        self.page_types: set = set()
+        self.page_types: dict = {}
 
     def tree(self):
         nodes: dict[str, dict] = {}
@@ -1708,23 +1744,35 @@ class ResourceEmitter:
         nodes = self.tree()
         files: dict[str, str] = {}
         roots = sorted(k for k in nodes if "." not in k)
-        root_out = HEADER + "\nimport Foundation\n\npublic extension OpenAI {\n"
-        for key in roots:
-            root_out += f"    /// Operations under `{key}`.\n    var {ident(key)}: {self.resource_name(key)} {{ {self.resource_name(key)}(client: self) }}\n\n"
-        root_out = root_out.rstrip("\n") + "\n}\n"
-        files["OpenAI+Resources.swift"] = root_out
+        module_of_root = {}
+        for op in self.ops:
+            module_of_root[op.chain[0]] = op.module
+        for module in MODULES:
+            module_roots = [r for r in roots if module_of_root.get(r) == module]
+            if not module_roots:
+                continue
+            out = module_imports(module) + "public extension OpenAI {\n"
+            for key in module_roots:
+                out += f"    /// Operations under `{key}`.\n    var {ident(key)}: {self.resource_name(key)} {{ {self.resource_name(key)}(client: self) }}\n\n"
+            out = out.rstrip("\n") + "\n}\n"
+            files[f"{module}/Resources/OpenAI+Resources.swift"] = out
         for root in roots:
-            out = HEADER + "\nimport Foundation\n#if canImport(FoundationNetworking)\nimport FoundationNetworking\n#endif\n"
+            module = module_of_root[root]
+            out = module_imports(module, networking=True).rstrip("\n") + "\n"
             stack = [root]
             while stack:
                 key = stack.pop(0)
                 out += "\n" + self.render_resource(key, nodes)
                 stack.extend(sorted(nodes[key]["children"]))
-            files[f"{self.resource_name(root)}.swift"] = out
-        pages = HEADER + "\nimport Foundation\n\n// List responses that `...All` methods page through.\n"
-        for name in sorted(self.page_types):
-            pages += f"extension {name}: OpenAIPage {{}}\n"
-        files["OpenAIPage+Conformances.swift"] = pages
+            files[f"{module}/Resources/{self.resource_name(root)}.swift"] = out
+        # Rendering the resources above registers the list types that `...All` methods page through.
+        for module in MODULES:
+            pages = [name for name, page_module in self.page_types.items() if page_module == module]
+            if pages:
+                text = module_imports(module) + "// List responses that `...All` methods page through.\n"
+                for name in sorted(pages):
+                    text += f"extension {name}: OpenAIPage {{}}\n"
+                files[f"{module}/Resources/OpenAIPage+Conformances.swift"] = text
         return files
 
     def render_resource(self, key: str, nodes) -> str:
@@ -1887,7 +1935,7 @@ class ResourceEmitter:
         if op.paging:
             cursor_param, item_text, cursor_expr, has_more = op.paging
             item = f"{result}.Item"
-            self.page_types.add(result)
+            self.page_types[result] = op.module
             params = self.param_list(op, skip=(cursor_param,))
             out += "\n" + self.docs(op, ["Fetches every page in turn and yields each item. Pages load as you iterate."], skip=(cursor_param,))
             sig_params = params
@@ -1937,6 +1985,15 @@ def build_webhook_union(spec: Spec, builder: Builder) -> Decl:
 # ---------------------------------------------------------------------------
 
 
+def module_imports(module: str, networking: bool = False) -> str:
+    text = HEADER + "\nimport Foundation\n"
+    if networking:
+        text += "#if canImport(FoundationNetworking)\nimport FoundationNetworking\n#endif\n"
+    if module != CORE:
+        text += f"import {CORE}\n"
+    return text + "\n"
+
+
 def group_key(name: str) -> str:
     words = re.findall(r"[A-Z][a-z0-9]*|[a-z0-9]+|_", name)
     first = words[0] if words else name
@@ -1950,9 +2007,18 @@ def split_outputs(files: dict[str, str]):
     return sources, tests, fixtures
 
 
+def module_sources(sources: dict[str, str]) -> dict[str, dict[str, str]]:
+    by_module: dict[str, dict[str, str]] = {module: {} for module in MODULES}
+    for rel, content in sources.items():
+        module, _, rest = rel.partition("/")
+        by_module[module][rest] = content
+    return by_module
+
+
 def write_all(files: dict[str, str]):
     sources, tests, fixtures = split_outputs(files)
-    write_outputs(OUT, sources)
+    for module, module_files in module_sources(sources).items():
+        write_outputs(SOURCES / module / "Generated", module_files)
     write_outputs(TESTS / "Generated", tests)
     for rel, content in fixtures.items():
         path = TESTS / "Fixtures" / rel
@@ -1974,7 +2040,9 @@ def generate_files(config: dict) -> dict[str, str]:
     naming = json.loads(NAMING_PATH.read_text()) if NAMING_PATH.exists() else {}
     builder = Builder(spec)
     relax_required_from_examples(spec, builder)
+    builder.component_module = assign_component_modules(spec, naming)
     builder.build_components()
+    builder.current_module = CORE
     build_webhook_union(spec, builder)
     ops_builder = OperationBuilder(spec, builder, naming, config)
     ops_builder.build()
@@ -1985,10 +2053,11 @@ def generate_files(config: dict) -> dict[str, str]:
     emitter.fix_shadowing()
 
     files: dict[str, str] = {}
-    groups: dict[str, list[Decl]] = {}
+    groups: dict[tuple, list[Decl]] = {}
     for decl in sorted(list(builder.top.values()) + builder.extra_tops, key=lambda d: d.name):
-        groups.setdefault(group_key(decl.name), []).append(decl)
-    for key, decls in sorted(groups.items()):
+        groups.setdefault((decl.module, group_key(decl.name)), []).append(decl)
+    for (module, key), decls in sorted(groups.items()):
+        prefix = module_imports(module)
         chunk: list[str] = []
         size = 0
         part = 1
@@ -1997,14 +2066,14 @@ def generate_files(config: dict) -> dict[str, str]:
             chunk.append(text)
             size += text.count("\n")
             if size > 4000:
-                files[f"Models/{key}{'' if part == 1 else part}.swift"] = HEADER + "\nimport Foundation\n\n" + "\n".join(chunk)
+                files[f"{module}/Models/{key}{'' if part == 1 else part}.swift"] = prefix + "\n".join(chunk)
                 chunk, size, part = [], 0, part + 1
         if chunk:
-            files[f"Models/{key}{'' if part == 1 else part}.swift"] = HEADER + "\nimport Foundation\n\n" + "\n".join(chunk)
+            files[f"{module}/Models/{key}{'' if part == 1 else part}.swift"] = prefix + "\n".join(chunk)
 
     resources = ResourceEmitter(emitter, ops_builder.ops, ops_builder.param_holders)
     for name, content in resources.render_all().items():
-        files[f"Resources/{name}"] = content
+        files[name] = content
 
     test_swift, test_fixture = build_spec_examples(spec, builder, ops_builder.ops, emitter)
     files["__tests__/SpecExampleDecoders.swift"] = test_swift
@@ -2016,7 +2085,7 @@ def generate_files(config: dict) -> dict[str, str]:
         "operations": len(ops_builder.ops),
         "schemas": len(spec.schemas),
     }
-    files["GeneratedMetadata.swift"] = HEADER + f"""
+    files[f"{CORE}/GeneratedMetadata.swift"] = HEADER + f"""
 import Foundation
 
 /// Facts about the OpenAPI document these sources were generated from.
@@ -2035,6 +2104,71 @@ public enum OpenAIGeneratedMetadata {{
 
 
 TESTS = ROOT / "Tests" / "OpenAIKitTests"
+
+
+def assign_component_modules(spec: Spec, naming: dict) -> dict:
+    """Place each schema in the product that needs it.
+
+    A schema used by Core operations, webhooks or Core's WebSocket events goes in Core, as does a
+    schema used by more than one optional module. Otherwise it goes in the one optional module that
+    uses it. Schemas no operation reaches are placed by name, like WebSocket events. Dependencies
+    therefore only point at Core.
+    """
+    schemas = spec.schemas
+
+    def reach(roots) -> set:
+        seen: set = set()
+        stack = list(roots)
+        while stack:
+            item = stack.pop()
+            if isinstance(item, dict):
+                ref = item.get("$ref")
+                if isinstance(ref, str) and ref.startswith("#/components/schemas/"):
+                    name = ref.split("/")[-1]
+                    if name not in seen:
+                        seen.add(name)
+                        stack.append(schemas[name])
+                stack.extend(item.values())
+            elif isinstance(item, list):
+                stack.extend(item)
+        return seen
+
+    roots: dict[str, list] = {module: [] for module in MODULES}
+    for path, item in spec.doc["paths"].items():
+        for method, op in item.items():
+            if isinstance(op, dict) and "operationId" in op:
+                chain = (naming.get(f"{method} {path}") or [path.strip("/").split("/")[0]])[0]
+                roots[module_for_chain(chain)].append(op)
+    roots[CORE].append(spec.doc.get("webhooks", {}))
+    for name in schemas:
+        if name.endswith(("ClientEvent", "ServerEvent")):
+            roots[module_for_socket_event(name)].append({"$ref": f"#/components/schemas/{name}"})
+    reached = {module: reach(items) for module, items in roots.items()}
+    everything = set().union(*reached.values())
+    # Schemas no operation reaches (mostly event types) go with their family, by name.
+    for name in schemas:
+        if name not in everything:
+            roots[module_for_socket_event(name)].append({"$ref": f"#/components/schemas/{name}"})
+    reached = {module: reach(items) for module, items in roots.items()}
+    core = reached[CORE]
+    placement = {}
+    for name in schemas:
+        if name in core:
+            placement[name] = CORE
+            continue
+        users = [m for m in MODULES[1:] if name in reached[m]]
+        placement[name] = users[0] if len(users) == 1 else CORE
+    # A schema placed in Core must not depend on one placed elsewhere: pull dependencies into Core.
+    changed = True
+    while changed:
+        changed = False
+        core_set = {n for n, m in placement.items() if m == CORE}
+        for name in list(core_set):
+            for dependency in reach([schemas[name]]):
+                if placement[dependency] != CORE:
+                    placement[dependency] = CORE
+                    changed = True
+    return placement
 
 
 def relax_required_from_examples(spec: Spec, builder: Builder):
@@ -2168,14 +2302,18 @@ def main():
     elif args.command == "generate":
         files = generate_files(config)
         write_all(files)
-        print(f"Wrote {len(files)} files to {OUT.relative_to(ROOT)} and {TESTS.relative_to(ROOT)}")
+        print(f"Wrote {len(files)} files to Sources/<module>/Generated and {TESTS.relative_to(ROOT)}")
     elif args.command == "check":
         files = generate_files(config)
         sources, tests, fixtures = split_outputs(files)
         expected = {f"Sources/{k}": v for k, v in sources.items()}
         expected.update({f"Tests/{k}": v for k, v in tests.items()})
         expected.update({f"Fixtures/{k}": v for k, v in fixtures.items()})
-        actual = {f"Sources/{p.relative_to(OUT)}": p.read_text() for p in OUT.rglob("*.swift")} if OUT.exists() else {}
+        actual = {}
+        for module in MODULES:
+            generated = SOURCES / module / "Generated"
+            if generated.exists():
+                actual.update({f"Sources/{module}/{p.relative_to(generated)}": p.read_text() for p in generated.rglob("*.swift")})
         generated_tests = TESTS / "Generated"
         if generated_tests.exists():
             actual.update({f"Tests/{p.relative_to(generated_tests)}": p.read_text() for p in generated_tests.rglob("*.swift")})

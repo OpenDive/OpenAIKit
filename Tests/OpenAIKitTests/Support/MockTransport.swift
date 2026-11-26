@@ -4,7 +4,8 @@ import Foundation
 #if canImport(FoundationNetworking)
 import FoundationNetworking
 #endif
-@testable import OpenAIKit
+import OpenAIKit
+@testable import OpenAIKitCore
 
 /// A transport that records requests and replies from a queue of canned responses.
 final class MockTransport: OpenAIHTTPTransport, @unchecked Sendable {

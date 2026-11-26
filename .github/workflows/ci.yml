@@ -73,7 +73,7 @@ jobs:
         run: |
           set -o pipefail
           xcodebuild ${{ matrix.action }} \
-            -scheme OpenAIKit \
+            -scheme OpenAIKit-Package \
             -destination "${{ matrix.destination }}" \
             CODE_SIGNING_ALLOWED=NO
 

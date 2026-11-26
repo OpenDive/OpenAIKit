@@ -8,9 +8,9 @@ Most of OpenAIKit is generated from OpenAI's OpenAPI specification. Before you c
 
 | Folder | What it holds | How to change it |
 | --- | --- | --- |
-| `Sources/OpenAIKit/Generated` | Models and resource methods | **Do not edit.** Change `Generator/generate.py` and regenerate |
-| `Sources/OpenAIKit/Core` | Client, transport, retries, streaming, pagination, webhooks | Edit directly |
-| `Sources/OpenAIKit/Helpers` | Conveniences on generated types, WebSockets, subtitles | Edit directly |
+| `Sources/<Module>/Generated` | Models and resource methods for each product (`OpenAIKitCore`, `OpenAIKitRealtime`, `OpenAIKitBeta`, `OpenAIKitAdmin`) | **Do not edit.** Change `Generator/generate.py` and regenerate |
+| `Sources/OpenAIKitCore/Core` | Client, transport, retries, streaming, pagination, webhooks | Edit directly |
+| `Sources/OpenAIKitCore/Helpers`, `Sources/OpenAIKitRealtime/Helpers` | Conveniences on generated types, WebSockets, subtitles | Edit directly |
 | `Generator` | The generator and its pinned inputs | See [Generator/README.md](Generator/README.md) |
 | `Tests/OpenAIKitTests` | Swift Testing tests | Edit directly, except `Generated/` and `Fixtures/spec-examples.json` |
 

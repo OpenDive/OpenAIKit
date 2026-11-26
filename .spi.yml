@@ -1,4 +1,4 @@
 version: 1
 builder:
   configs:
-    - documentation_targets: [OpenAIKit]
+    - documentation_targets: [OpenAIKitCore, OpenAIKitRealtime, OpenAIKitBeta, OpenAIKitAdmin]
