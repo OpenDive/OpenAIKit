@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented in this file.
 
-## Unreleased
+## 4.0.1 - 2026-11-25
 
 ### Fixed
 - Requests to a custom `baseURL`, such as your own proxy, no longer need an API key. Without one, no `Authorization` header is sent, so the server can add OpenAI's key and the app can authenticate with its own headers ([#37](https://github.com/OpenDive/OpenAIKit/issues/37)). A missing key against `api.openai.com` still throws `OpenAIError.missingAPIKey`.
