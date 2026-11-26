@@ -71,7 +71,7 @@ Real recordings of the [example app](#demo-app) talking to the live API.
 | ⚡️ **Realtime** | `client.realtime.connect(model:)` opens a typed WebSocket: send `RealtimeClientEvent`s, iterate `RealtimeServerEvent`s. |
 | 🏭 **Production details** | Retries with exponential backoff that honor `retry-after`, `Task` cancellation, timeouts, auto-pagination, multipart uploads, Standard Webhooks verification and typed `OpenAIAPIError`s with request IDs. |
 | 🧪 **Tested** | 769 examples from OpenAI's spec decode and round-trip in CI, on macOS, iOS, tvOS, watchOS, visionOS and Linux with Swift 6.2 to 6.4. |
-| 🪶 **Lightweight** | No dependencies. Split into products so an app links only the APIs it uses: about 11 MB for the core APIs. Swift 6 strict concurrency, every type `Sendable`. |
+| 🪶 **Lightweight** | No dependencies. Split into products so an app links only the APIs it uses: about 7 MB for the core APIs. Swift 6 strict concurrency, every type `Sendable`. |
 
 ## Install
 
@@ -96,11 +96,11 @@ The `OpenAIKit` product includes the whole API. To link only what you use, depen
 
 | Product | Covers | Adds to a release build* |
 | --- | --- | --- |
-| `OpenAIKitCore` | Responses, Chat Completions, Conversations, Audio, Images, Videos, Embeddings, Files, Uploads, Batches, Vector stores, Containers, Skills, Evals, Fine-tuning, Moderations, Models, Webhooks | ~11 MB |
+| `OpenAIKitCore` | Responses, Chat Completions, Conversations, Audio, Images, Videos, Embeddings, Files, Uploads, Batches, Vector stores, Containers, Skills, Evals, Fine-tuning, Moderations, Models, Webhooks | ~7 MB |
 | `OpenAIKitRealtime` | Realtime and Live, including `client.realtime.connect(...)` | + Realtime types |
 | `OpenAIKitBeta` | Agents, Vaults, Assistants, Threads, ChatKit, beta Responses | + Beta types |
 | `OpenAIKitAdmin` | Administration API: organization, projects, users, keys, usage, costs, audit logs | + Admin types |
-| `OpenAIKit` | All of the above | ~28 MB |
+| `OpenAIKit` | All of the above | ~18 MB |
 
 <sub>*A minimal app making one Responses call and one Chat Completions stream, release build, stripped, on arm64.</sub>
 

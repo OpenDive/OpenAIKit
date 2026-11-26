@@ -7,7 +7,7 @@ import FoundationNetworking
 
 /// The OpenAIKit version, sent in the `User-Agent` header.
 public enum OpenAIKitVersion {
-    public static let current = "4.1.0"
+    public static let current = "4.2.0"
 }
 
 /// A client for the OpenAI API.

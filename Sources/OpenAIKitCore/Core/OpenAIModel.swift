@@ -15,10 +15,7 @@ public protocol OpenAIModel: Codable, Hashable, Sendable {}
 
 public extension OpenAIModel {
     static func == (lhs: Self, rhs: Self) -> Bool {
-        guard let left = OpenAIModelCanonicalJSON.encode(lhs), let right = OpenAIModelCanonicalJSON.encode(rhs) else {
-            return false
-        }
-        return left == right
+        OpenAIModelCanonicalJSON.equal(lhs, rhs)
     }
 
     func hash(into hasher: inout Hasher) {
@@ -26,8 +23,19 @@ public extension OpenAIModel {
     }
 }
 
+// Never specialized or inlined, so the ~1,500 `==` and `hash(into:)` witnesses stay small calls
+// into one shared function instead of each carrying its own copy (about 200 KB in an app).
 enum OpenAIModelCanonicalJSON {
+    @inline(never)
+    @_semantics("optimize.sil.specialize.generic.never")
     static func encode<Value: Encodable>(_ value: Value) -> Data? {
         try? JSONEncoder.openAI.encode(value)
+    }
+
+    @inline(never)
+    @_semantics("optimize.sil.specialize.generic.never")
+    static func equal<Value: Encodable>(_ lhs: Value, _ rhs: Value) -> Bool {
+        guard let left = encode(lhs), let right = encode(rhs) else { return false }
+        return left == right
     }
 }
