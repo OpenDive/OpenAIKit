@@ -1,0 +1,93 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  generated:
+    name: Generated sources are current
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Regenerate from the pinned spec and compare
+        run: python3 Generator/generate.py check
+
+  macos:
+    name: macOS · Xcode ${{ matrix.xcode }} (Swift ${{ matrix.swift }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Oldest supported toolchain: swift-tools-version 6.2.
+          - runner: macos-15
+            xcode: "26.3"
+            swift: "6.2"
+          - runner: macos-26
+            xcode: "26.6"
+            swift: "6.3"
+          - runner: xcode-27
+            xcode: "27.2"
+            swift: "6.4"
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_${{ matrix.xcode }}.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@v7
+      - name: Toolchain
+        run: swift --version && xcodebuild -version
+      - name: Build
+        run: swift build
+      - name: Test
+        run: swift test --parallel
+
+  apple-platforms:
+    name: ${{ matrix.platform }} · Xcode ${{ matrix.xcode }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: macos-26, xcode: "26.6", platform: iOS, destination: "platform=iOS Simulator,name=iPhone 17 Pro,OS=26.5", action: test }
+          - { runner: macos-26, xcode: "26.6", platform: tvOS, destination: "generic/platform=tvOS Simulator", action: build }
+          - { runner: macos-26, xcode: "26.6", platform: watchOS, destination: "generic/platform=watchOS Simulator", action: build }
+          - { runner: macos-26, xcode: "26.6", platform: visionOS, destination: "generic/platform=visionOS Simulator", action: build }
+          - { runner: xcode-27, xcode: "27.2", platform: iOS, destination: "platform=iOS Simulator,name=iPhone 18 Pro,OS=27.2", action: test }
+          - { runner: xcode-27, xcode: "27.2", platform: tvOS, destination: "generic/platform=tvOS Simulator", action: build }
+          - { runner: xcode-27, xcode: "27.2", platform: watchOS, destination: "generic/platform=watchOS Simulator", action: build }
+          - { runner: xcode-27, xcode: "27.2", platform: visionOS, destination: "generic/platform=visionOS Simulator", action: build }
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_${{ matrix.xcode }}.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@v7
+      - name: ${{ matrix.action }} for ${{ matrix.platform }}
+        run: |
+          set -o pipefail
+          xcodebuild ${{ matrix.action }} \
+            -scheme OpenAIKit \
+            -destination "${{ matrix.destination }}" \
+            CODE_SIGNING_ALLOWED=NO
+
+  linux:
+    name: Linux · Swift ${{ matrix.swift }}
+    runs-on: ubuntu-latest
+    container: swift:${{ matrix.swift }}-noble
+    strategy:
+      fail-fast: false
+      matrix:
+        swift: ["6.2", "6.3", "6.4"]
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build
+        run: swift build
+      - name: Test
+        run: swift test --parallel

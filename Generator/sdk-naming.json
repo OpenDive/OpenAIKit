@@ -1,0 +1,1554 @@
+{
+ "delete /agents/automations/{automation_id}": [
+  "beta.agents.automations",
+  "delete"
+ ],
+ "delete /agents/environments/templates/{environment_template_id}": [
+  "beta.agents.environments.templates",
+  "delete"
+ ],
+ "delete /agents/sessions/{session_id}": [
+  "beta.agents.sessions",
+  "delete"
+ ],
+ "delete /agents/sessions/{session_id}/artifacts/{artifact_id}": [
+  "beta.agents.sessions.artifacts",
+  "delete"
+ ],
+ "delete /agents/{agent_id}": [
+  "beta.agents",
+  "delete"
+ ],
+ "delete /assistants/{assistant_id}": [
+  "beta.assistants",
+  "delete"
+ ],
+ "delete /audio/voice_consents/{consent_id}": [
+  "audio.voice_consents",
+  "delete"
+ ],
+ "delete /audio/voices/{voice_id}": [
+  "audio.voices",
+  "delete"
+ ],
+ "delete /chat/completions/{completion_id}": [
+  "chat.completions",
+  "delete"
+ ],
+ "delete /chatkit/threads/{thread_id}": [
+  "beta.chatkit.threads",
+  "delete"
+ ],
+ "delete /containers/{container_id}": [
+  "containers",
+  "delete"
+ ],
+ "delete /containers/{container_id}/files/{file_id}": [
+  "containers.files",
+  "delete"
+ ],
+ "delete /conversations/{conversation_id}": [
+  "conversations",
+  "delete"
+ ],
+ "delete /conversations/{conversation_id}/items/{item_id}": [
+  "conversations.items",
+  "delete"
+ ],
+ "delete /evals/{eval_id}": [
+  "evals",
+  "delete"
+ ],
+ "delete /evals/{eval_id}/runs/{run_id}": [
+  "evals.runs",
+  "delete"
+ ],
+ "delete /files/{file_id}": [
+  "files",
+  "delete"
+ ],
+ "delete /fine_tuning/checkpoints/{fine_tuned_model_checkpoint}/permissions/{permission_id}": [
+  "fine_tuning.checkpoints.permissions",
+  "delete"
+ ],
+ "delete /models/{model}": [
+  "models",
+  "delete"
+ ],
+ "delete /organization/admin_api_keys/{key_id}": [
+  "admin.organization.admin_api_keys",
+  "delete"
+ ],
+ "delete /organization/certificates/{certificate_id}": [
+  "admin.organization.certificates",
+  "delete"
+ ],
+ "delete /organization/external_keys/{external_key_id}": [
+  "admin.organization.external_keys",
+  "delete"
+ ],
+ "delete /organization/external_storage/{external_storage_id}": [
+  "admin.organization.external_storage",
+  "delete"
+ ],
+ "delete /organization/groups/{group_id}": [
+  "admin.organization.groups",
+  "delete"
+ ],
+ "delete /organization/groups/{group_id}/roles/{role_id}": [
+  "admin.organization.groups.roles",
+  "delete"
+ ],
+ "delete /organization/groups/{group_id}/users/{user_id}": [
+  "admin.organization.groups.users",
+  "delete"
+ ],
+ "delete /organization/invites/{invite_id}": [
+  "admin.organization.invites",
+  "delete"
+ ],
+ "delete /organization/projects/{project_id}/api_keys/{api_key_id}": [
+  "admin.organization.projects.api_keys",
+  "delete"
+ ],
+ "delete /organization/projects/{project_id}/groups/{group_id}": [
+  "admin.organization.projects.groups",
+  "delete"
+ ],
+ "delete /organization/projects/{project_id}/model_permissions": [
+  "admin.organization.projects.model_permissions",
+  "delete"
+ ],
+ "delete /organization/projects/{project_id}/service_accounts/{service_account_id}": [
+  "admin.organization.projects.service_accounts",
+  "delete"
+ ],
+ "delete /organization/projects/{project_id}/spend_alerts/{alert_id}": [
+  "admin.organization.projects.spend_alerts",
+  "delete"
+ ],
+ "delete /organization/projects/{project_id}/spend_limit": [
+  "admin.organization.projects.spend_limit",
+  "delete"
+ ],
+ "delete /organization/projects/{project_id}/users/{user_id}": [
+  "admin.organization.projects.users",
+  "delete"
+ ],
+ "delete /organization/roles/{role_id}": [
+  "admin.organization.roles",
+  "delete"
+ ],
+ "delete /organization/spend_alerts/{alert_id}": [
+  "admin.organization.spend_alerts",
+  "delete"
+ ],
+ "delete /organization/spend_limit": [
+  "admin.organization.spend_limit",
+  "delete"
+ ],
+ "delete /organization/users/{user_id}": [
+  "admin.organization.users",
+  "delete"
+ ],
+ "delete /organization/users/{user_id}/roles/{role_id}": [
+  "admin.organization.users.roles",
+  "delete"
+ ],
+ "delete /organization/workload_identity_providers/{workload_identity_provider_id}": [
+  "admin.organization.workload_identity_providers",
+  "delete"
+ ],
+ "delete /organization/workload_identity_providers/{workload_identity_provider_id}/federation_rules/{workload_identity_federation_rule_id}": [
+  "admin.organization.workload_identity_providers.federation_rules",
+  "delete"
+ ],
+ "delete /projects/{project_id}/groups/{group_id}/roles/{role_id}": [
+  "admin.organization.projects.groups.roles",
+  "delete"
+ ],
+ "delete /projects/{project_id}/roles/{role_id}": [
+  "admin.organization.projects.roles",
+  "delete"
+ ],
+ "delete /projects/{project_id}/users/{user_id}/roles/{role_id}": [
+  "admin.organization.projects.users.roles",
+  "delete"
+ ],
+ "delete /responses/{response_id}": [
+  "responses",
+  "delete"
+ ],
+ "delete /responses/{response_id}?beta=true": [
+  "beta.responses",
+  "delete"
+ ],
+ "delete /skills/{skill_id}": [
+  "skills",
+  "delete"
+ ],
+ "delete /skills/{skill_id}/versions/{version}": [
+  "skills.versions",
+  "delete"
+ ],
+ "delete /threads/{thread_id}": [
+  "beta.threads",
+  "delete"
+ ],
+ "delete /threads/{thread_id}/messages/{message_id}": [
+  "beta.threads.messages",
+  "delete"
+ ],
+ "delete /vaults/{vault_id}": [
+  "beta.agents.vaults",
+  "delete"
+ ],
+ "delete /vaults/{vault_id}/credentials/{credential_id}": [
+  "beta.agents.vaults.credentials",
+  "delete"
+ ],
+ "delete /vector_stores/{vector_store_id}": [
+  "vector_stores",
+  "delete"
+ ],
+ "delete /vector_stores/{vector_store_id}/files/{file_id}": [
+  "vector_stores.files",
+  "delete"
+ ],
+ "delete /videos/{video_id}": [
+  "videos",
+  "delete"
+ ],
+ "delete /webhook_endpoints/{webhook_endpoint_id}": [
+  "webhooks",
+  "delete"
+ ],
+ "get /agents": [
+  "beta.agents",
+  "list"
+ ],
+ "get /agents/automations": [
+  "beta.agents.automations",
+  "list"
+ ],
+ "get /agents/automations/{automation_id}": [
+  "beta.agents.automations",
+  "retrieve"
+ ],
+ "get /agents/automations/{automation_id}/invocations": [
+  "beta.agents.automations.invocations",
+  "list"
+ ],
+ "get /agents/automations/{automation_id}/invocations/{invocation_id}": [
+  "beta.agents.automations.invocations",
+  "retrieve"
+ ],
+ "get /agents/environments": [
+  "beta.agents.environments",
+  "list"
+ ],
+ "get /agents/environments/templates": [
+  "beta.agents.environments.templates",
+  "list"
+ ],
+ "get /agents/environments/templates/{environment_template_id}": [
+  "beta.agents.environments.templates",
+  "retrieve"
+ ],
+ "get /agents/environments/{environment_id}": [
+  "beta.agents.environments",
+  "retrieve"
+ ],
+ "get /agents/environments/{environment_id}/files": [
+  "beta.agents.environments.files",
+  "list"
+ ],
+ "get /agents/sessions": [
+  "beta.agents.sessions",
+  "list"
+ ],
+ "get /agents/sessions/{session_id}": [
+  "beta.agents.sessions",
+  "retrieve"
+ ],
+ "get /agents/sessions/{session_id}/artifacts": [
+  "beta.agents.sessions.artifacts",
+  "list"
+ ],
+ "get /agents/sessions/{session_id}/artifacts/{artifact_id}": [
+  "beta.agents.sessions.artifacts",
+  "retrieve"
+ ],
+ "get /agents/sessions/{session_id}/artifacts/{artifact_id}/content": [
+  "beta.agents.sessions.artifacts",
+  "content"
+ ],
+ "get /agents/sessions/{session_id}/events": [
+  "beta.agents.sessions.events",
+  "stream"
+ ],
+ "get /agents/sessions/{session_id}/items": [
+  "beta.agents.sessions.items",
+  "list"
+ ],
+ "get /agents/sessions/{session_id}/subagents": [
+  "beta.agents.sessions.subagents",
+  "list"
+ ],
+ "get /agents/sessions/{session_id}/subagents/{subagent_id}": [
+  "beta.agents.sessions.subagents",
+  "retrieve"
+ ],
+ "get /agents/sessions/{session_id}/subagents/{subagent_id}/items": [
+  "beta.agents.sessions.subagents.items",
+  "list"
+ ],
+ "get /agents/sessions/{session_id}/subagents/{subagent_id}/turns": [
+  "beta.agents.sessions.subagents.turns",
+  "list"
+ ],
+ "get /agents/sessions/{session_id}/subagents/{subagent_id}/turns/{turn_id}": [
+  "beta.agents.sessions.subagents.turns",
+  "retrieve"
+ ],
+ "get /agents/sessions/{session_id}/subagents/{subagent_id}/turns/{turn_id}/items": [
+  "beta.agents.sessions.subagents.turns.items",
+  "list"
+ ],
+ "get /agents/sessions/{session_id}/traces": [
+  "beta.agents.sessions.traces",
+  "list"
+ ],
+ "get /agents/sessions/{session_id}/turns": [
+  "beta.agents.sessions.turns",
+  "list"
+ ],
+ "get /agents/sessions/{session_id}/turns/{turn_id}": [
+  "beta.agents.sessions.turns",
+  "retrieve"
+ ],
+ "get /agents/sessions/{session_id}/turns/{turn_id}/items": [
+  "beta.agents.sessions.turns.items",
+  "list"
+ ],
+ "get /agents/{agent_id}": [
+  "beta.agents",
+  "retrieve"
+ ],
+ "get /assistants": [
+  "beta.assistants",
+  "list"
+ ],
+ "get /assistants/{assistant_id}": [
+  "beta.assistants",
+  "retrieve"
+ ],
+ "get /audio/voice_consents": [
+  "audio.voice_consents",
+  "list"
+ ],
+ "get /audio/voice_consents/{consent_id}": [
+  "audio.voice_consents",
+  "retrieve"
+ ],
+ "get /batches": [
+  "batches",
+  "list"
+ ],
+ "get /batches/{batch_id}": [
+  "batches",
+  "retrieve"
+ ],
+ "get /chat/completions": [
+  "chat.completions",
+  "list"
+ ],
+ "get /chat/completions/{completion_id}": [
+  "chat.completions",
+  "retrieve"
+ ],
+ "get /chat/completions/{completion_id}/messages": [
+  "chat.completions.messages",
+  "list"
+ ],
+ "get /chatkit/threads": [
+  "beta.chatkit.threads",
+  "list"
+ ],
+ "get /chatkit/threads/{thread_id}": [
+  "beta.chatkit.threads",
+  "retrieve"
+ ],
+ "get /chatkit/threads/{thread_id}/items": [
+  "beta.chatkit.threads",
+  "list_items"
+ ],
+ "get /containers": [
+  "containers",
+  "list"
+ ],
+ "get /containers/{container_id}": [
+  "containers",
+  "retrieve"
+ ],
+ "get /containers/{container_id}/files": [
+  "containers.files",
+  "list"
+ ],
+ "get /containers/{container_id}/files/{file_id}": [
+  "containers.files",
+  "retrieve"
+ ],
+ "get /containers/{container_id}/files/{file_id}/content": [
+  "containers.files.content",
+  "retrieve"
+ ],
+ "get /conversations/{conversation_id}": [
+  "conversations",
+  "retrieve"
+ ],
+ "get /conversations/{conversation_id}/items": [
+  "conversations.items",
+  "list"
+ ],
+ "get /conversations/{conversation_id}/items/{item_id}": [
+  "conversations.items",
+  "retrieve"
+ ],
+ "get /evals": [
+  "evals",
+  "list"
+ ],
+ "get /evals/{eval_id}": [
+  "evals",
+  "retrieve"
+ ],
+ "get /evals/{eval_id}/runs": [
+  "evals.runs",
+  "list"
+ ],
+ "get /evals/{eval_id}/runs/{run_id}": [
+  "evals.runs",
+  "retrieve"
+ ],
+ "get /evals/{eval_id}/runs/{run_id}/output_items": [
+  "evals.runs.output_items",
+  "list"
+ ],
+ "get /evals/{eval_id}/runs/{run_id}/output_items/{output_item_id}": [
+  "evals.runs.output_items",
+  "retrieve"
+ ],
+ "get /files": [
+  "files",
+  "list"
+ ],
+ "get /files/{file_id}": [
+  "files",
+  "retrieve"
+ ],
+ "get /files/{file_id}/content": [
+  "files",
+  "retrieve_content"
+ ],
+ "get /fine_tuning/checkpoints/{fine_tuned_model_checkpoint}/permissions": [
+  "fine_tuning.checkpoints.permissions",
+  "list"
+ ],
+ "get /fine_tuning/jobs": [
+  "fine_tuning.jobs",
+  "list"
+ ],
+ "get /fine_tuning/jobs/{fine_tuning_job_id}": [
+  "fine_tuning.jobs",
+  "retrieve"
+ ],
+ "get /fine_tuning/jobs/{fine_tuning_job_id}/checkpoints": [
+  "fine_tuning.jobs.checkpoints",
+  "list"
+ ],
+ "get /fine_tuning/jobs/{fine_tuning_job_id}/events": [
+  "fine_tuning.jobs",
+  "list_events"
+ ],
+ "get /live/sessions/{session_id}/content": [
+  "live.sessions",
+  "download_recording"
+ ],
+ "get /models": [
+  "models",
+  "list"
+ ],
+ "get /models/{model}": [
+  "models",
+  "retrieve"
+ ],
+ "get /organization/admin_api_keys": [
+  "admin.organization.admin_api_keys",
+  "list"
+ ],
+ "get /organization/admin_api_keys/{key_id}": [
+  "admin.organization.admin_api_keys",
+  "retrieve"
+ ],
+ "get /organization/audit_logs": [
+  "admin.organization.audit_logs",
+  "list"
+ ],
+ "get /organization/certificates": [
+  "admin.organization.certificates",
+  "list"
+ ],
+ "get /organization/certificates/{certificate_id}": [
+  "admin.organization.certificates",
+  "retrieve"
+ ],
+ "get /organization/costs": [
+  "admin.organization.usage",
+  "costs"
+ ],
+ "get /organization/data_retention": [
+  "admin.organization.data_retention",
+  "retrieve"
+ ],
+ "get /organization/external_keys": [
+  "admin.organization.external_keys",
+  "list"
+ ],
+ "get /organization/external_keys/{external_key_id}": [
+  "admin.organization.external_keys",
+  "retrieve"
+ ],
+ "get /organization/external_storage": [
+  "admin.organization.external_storage",
+  "list"
+ ],
+ "get /organization/external_storage/{external_storage_id}": [
+  "admin.organization.external_storage",
+  "retrieve"
+ ],
+ "get /organization/groups": [
+  "admin.organization.groups",
+  "list"
+ ],
+ "get /organization/groups/{group_id}": [
+  "admin.organization.groups",
+  "retrieve"
+ ],
+ "get /organization/groups/{group_id}/roles": [
+  "admin.organization.groups.roles",
+  "list"
+ ],
+ "get /organization/groups/{group_id}/roles/{role_id}": [
+  "admin.organization.groups.roles",
+  "retrieve"
+ ],
+ "get /organization/groups/{group_id}/users": [
+  "admin.organization.groups.users",
+  "list"
+ ],
+ "get /organization/groups/{group_id}/users/{user_id}": [
+  "admin.organization.groups.users",
+  "retrieve"
+ ],
+ "get /organization/invites": [
+  "admin.organization.invites",
+  "list"
+ ],
+ "get /organization/invites/{invite_id}": [
+  "admin.organization.invites",
+  "retrieve"
+ ],
+ "get /organization/projects": [
+  "admin.organization.projects",
+  "list"
+ ],
+ "get /organization/projects/{project_id}": [
+  "admin.organization.projects",
+  "retrieve"
+ ],
+ "get /organization/projects/{project_id}/api_keys": [
+  "admin.organization.projects.api_keys",
+  "list"
+ ],
+ "get /organization/projects/{project_id}/api_keys/{api_key_id}": [
+  "admin.organization.projects.api_keys",
+  "retrieve"
+ ],
+ "get /organization/projects/{project_id}/certificates": [
+  "admin.organization.projects.certificates",
+  "list"
+ ],
+ "get /organization/projects/{project_id}/data_retention": [
+  "admin.organization.projects.data_retention",
+  "retrieve"
+ ],
+ "get /organization/projects/{project_id}/groups": [
+  "admin.organization.projects.groups",
+  "list"
+ ],
+ "get /organization/projects/{project_id}/groups/{group_id}": [
+  "admin.organization.projects.groups",
+  "retrieve"
+ ],
+ "get /organization/projects/{project_id}/hosted_tool_permissions": [
+  "admin.organization.projects.hosted_tool_permissions",
+  "retrieve"
+ ],
+ "get /organization/projects/{project_id}/model_permissions": [
+  "admin.organization.projects.model_permissions",
+  "retrieve"
+ ],
+ "get /organization/projects/{project_id}/rate_limits": [
+  "admin.organization.projects.rate_limits",
+  "list_rate_limits"
+ ],
+ "get /organization/projects/{project_id}/service_accounts": [
+  "admin.organization.projects.service_accounts",
+  "list"
+ ],
+ "get /organization/projects/{project_id}/service_accounts/{service_account_id}": [
+  "admin.organization.projects.service_accounts",
+  "retrieve"
+ ],
+ "get /organization/projects/{project_id}/service_tier_settings": [
+  "admin.organization.projects.service_tier_settings",
+  "retrieve"
+ ],
+ "get /organization/projects/{project_id}/spend_alerts": [
+  "admin.organization.projects.spend_alerts",
+  "list"
+ ],
+ "get /organization/projects/{project_id}/spend_alerts/{alert_id}": [
+  "admin.organization.projects.spend_alerts",
+  "retrieve"
+ ],
+ "get /organization/projects/{project_id}/spend_limit": [
+  "admin.organization.projects.spend_limit",
+  "retrieve"
+ ],
+ "get /organization/projects/{project_id}/users": [
+  "admin.organization.projects.users",
+  "list"
+ ],
+ "get /organization/projects/{project_id}/users/{user_id}": [
+  "admin.organization.projects.users",
+  "retrieve"
+ ],
+ "get /organization/roles": [
+  "admin.organization.roles",
+  "list"
+ ],
+ "get /organization/roles/{role_id}": [
+  "admin.organization.roles",
+  "retrieve"
+ ],
+ "get /organization/spend_alerts": [
+  "admin.organization.spend_alerts",
+  "list"
+ ],
+ "get /organization/spend_alerts/{alert_id}": [
+  "admin.organization.spend_alerts",
+  "retrieve"
+ ],
+ "get /organization/spend_limit": [
+  "admin.organization.spend_limit",
+  "retrieve"
+ ],
+ "get /organization/usage/audio_speeches": [
+  "admin.organization.usage",
+  "audio_speeches"
+ ],
+ "get /organization/usage/audio_transcriptions": [
+  "admin.organization.usage",
+  "audio_transcriptions"
+ ],
+ "get /organization/usage/code_interpreter_sessions": [
+  "admin.organization.usage",
+  "code_interpreter_sessions"
+ ],
+ "get /organization/usage/completions": [
+  "admin.organization.usage",
+  "completions"
+ ],
+ "get /organization/usage/decisions": [
+  "admin.organization.usage",
+  "decisions"
+ ],
+ "get /organization/usage/embeddings": [
+  "admin.organization.usage",
+  "embeddings"
+ ],
+ "get /organization/usage/file_search_calls": [
+  "admin.organization.usage",
+  "file_search_calls"
+ ],
+ "get /organization/usage/images": [
+  "admin.organization.usage",
+  "images"
+ ],
+ "get /organization/usage/moderations": [
+  "admin.organization.usage",
+  "moderations"
+ ],
+ "get /organization/usage/vector_stores": [
+  "admin.organization.usage",
+  "vector_stores"
+ ],
+ "get /organization/usage/web_search_calls": [
+  "admin.organization.usage",
+  "web_search_calls"
+ ],
+ "get /organization/users": [
+  "admin.organization.users",
+  "list"
+ ],
+ "get /organization/users/{user_id}": [
+  "admin.organization.users",
+  "retrieve"
+ ],
+ "get /organization/users/{user_id}/roles": [
+  "admin.organization.users.roles",
+  "list"
+ ],
+ "get /organization/users/{user_id}/roles/{role_id}": [
+  "admin.organization.users.roles",
+  "retrieve"
+ ],
+ "get /organization/workload_identity_providers": [
+  "admin.organization.workload_identity_providers",
+  "list"
+ ],
+ "get /organization/workload_identity_providers/{workload_identity_provider_id}": [
+  "admin.organization.workload_identity_providers",
+  "retrieve"
+ ],
+ "get /organization/workload_identity_providers/{workload_identity_provider_id}/federation_rules": [
+  "admin.organization.workload_identity_providers.federation_rules",
+  "list"
+ ],
+ "get /organization/workload_identity_providers/{workload_identity_provider_id}/federation_rules/{workload_identity_federation_rule_id}": [
+  "admin.organization.workload_identity_providers.federation_rules",
+  "retrieve"
+ ],
+ "get /projects/{project_id}/groups/{group_id}/roles": [
+  "admin.organization.projects.groups.roles",
+  "list"
+ ],
+ "get /projects/{project_id}/groups/{group_id}/roles/{role_id}": [
+  "admin.organization.projects.groups.roles",
+  "retrieve"
+ ],
+ "get /projects/{project_id}/roles": [
+  "admin.organization.projects.roles",
+  "list"
+ ],
+ "get /projects/{project_id}/roles/{role_id}": [
+  "admin.organization.projects.roles",
+  "retrieve"
+ ],
+ "get /projects/{project_id}/users/{user_id}/roles": [
+  "admin.organization.projects.users.roles",
+  "list"
+ ],
+ "get /projects/{project_id}/users/{user_id}/roles/{role_id}": [
+  "admin.organization.projects.users.roles",
+  "retrieve"
+ ],
+ "get /responses/{response_id}": [
+  "responses",
+  "retrieve"
+ ],
+ "get /responses/{response_id}/input_items": [
+  "responses.input_items",
+  "list"
+ ],
+ "get /responses/{response_id}/input_items?beta=true": [
+  "beta.responses.input_items",
+  "list"
+ ],
+ "get /responses/{response_id}?beta=true": [
+  "beta.responses",
+  "retrieve"
+ ],
+ "get /safety/alerts/{id}": [
+  "safety.alerts",
+  "retrieve"
+ ],
+ "get /safety/cases/{id}": [
+  "safety.cases",
+  "retrieve"
+ ],
+ "get /skills": [
+  "skills",
+  "list"
+ ],
+ "get /skills/{skill_id}": [
+  "skills",
+  "retrieve"
+ ],
+ "get /skills/{skill_id}/content": [
+  "skills.content",
+  "retrieve"
+ ],
+ "get /skills/{skill_id}/versions": [
+  "skills.versions",
+  "list"
+ ],
+ "get /skills/{skill_id}/versions/{version}": [
+  "skills.versions",
+  "retrieve"
+ ],
+ "get /skills/{skill_id}/versions/{version}/content": [
+  "skills.versions.content",
+  "retrieve"
+ ],
+ "get /threads/{thread_id}": [
+  "beta.threads",
+  "retrieve"
+ ],
+ "get /threads/{thread_id}/messages": [
+  "beta.threads.messages",
+  "list"
+ ],
+ "get /threads/{thread_id}/messages/{message_id}": [
+  "beta.threads.messages",
+  "retrieve"
+ ],
+ "get /threads/{thread_id}/runs": [
+  "beta.threads.runs",
+  "list"
+ ],
+ "get /threads/{thread_id}/runs/{run_id}": [
+  "beta.threads.runs",
+  "retrieve"
+ ],
+ "get /threads/{thread_id}/runs/{run_id}/steps": [
+  "beta.threads.runs.steps",
+  "list"
+ ],
+ "get /threads/{thread_id}/runs/{run_id}/steps/{step_id}": [
+  "beta.threads.runs.steps",
+  "retrieve"
+ ],
+ "get /vaults": [
+  "beta.agents.vaults",
+  "list"
+ ],
+ "get /vaults/{vault_id}": [
+  "beta.agents.vaults",
+  "retrieve"
+ ],
+ "get /vaults/{vault_id}/credentials": [
+  "beta.agents.vaults.credentials",
+  "list"
+ ],
+ "get /vaults/{vault_id}/credentials/{credential_id}": [
+  "beta.agents.vaults.credentials",
+  "retrieve"
+ ],
+ "get /vector_stores": [
+  "vector_stores",
+  "list"
+ ],
+ "get /vector_stores/{vector_store_id}": [
+  "vector_stores",
+  "retrieve"
+ ],
+ "get /vector_stores/{vector_store_id}/file_batches/{batch_id}": [
+  "vector_stores.file_batches",
+  "retrieve"
+ ],
+ "get /vector_stores/{vector_store_id}/file_batches/{batch_id}/files": [
+  "vector_stores.file_batches",
+  "list_files"
+ ],
+ "get /vector_stores/{vector_store_id}/files": [
+  "vector_stores.files",
+  "list"
+ ],
+ "get /vector_stores/{vector_store_id}/files/{file_id}": [
+  "vector_stores.files",
+  "retrieve"
+ ],
+ "get /vector_stores/{vector_store_id}/files/{file_id}/content": [
+  "vector_stores.files",
+  "content"
+ ],
+ "get /videos": [
+  "videos",
+  "list"
+ ],
+ "get /videos/characters/{character_id}": [
+  "videos",
+  "get_character"
+ ],
+ "get /videos/{video_id}": [
+  "videos",
+  "retrieve"
+ ],
+ "get /videos/{video_id}/content": [
+  "videos",
+  "download_content"
+ ],
+ "get /webhook_endpoints": [
+  "webhooks",
+  "list"
+ ],
+ "get /webhook_endpoints/{webhook_endpoint_id}": [
+  "webhooks",
+  "retrieve"
+ ],
+ "get /webhook_event_types": [
+  "webhooks.event_types",
+  "list"
+ ],
+ "post /agents": [
+  "beta.agents",
+  "create"
+ ],
+ "post /agents/automations": [
+  "beta.agents.automations",
+  "create"
+ ],
+ "post /agents/automations/{automation_id}": [
+  "beta.agents.automations",
+  "update"
+ ],
+ "post /agents/automations/{automation_id}/invocations": [
+  "beta.agents.automations.invocations",
+  "create"
+ ],
+ "post /agents/automations/{automation_id}/pause": [
+  "beta.agents.automations",
+  "pause"
+ ],
+ "post /agents/automations/{automation_id}/resume": [
+  "beta.agents.automations",
+  "resume"
+ ],
+ "post /agents/environments": [
+  "beta.agents.environments",
+  "create"
+ ],
+ "post /agents/environments/templates": [
+  "beta.agents.environments.templates",
+  "create"
+ ],
+ "post /agents/environments/templates/{environment_template_id}": [
+  "beta.agents.environments.templates",
+  "update"
+ ],
+ "post /agents/environments/{environment_id}/files": [
+  "beta.agents.environments.files",
+  "create"
+ ],
+ "post /agents/sessions": [
+  "beta.agents.sessions",
+  "create"
+ ],
+ "post /agents/sessions/{session_id}": [
+  "beta.agents.sessions",
+  "update"
+ ],
+ "post /agents/sessions/{session_id}/events": [
+  "beta.agents.sessions.events",
+  "create"
+ ],
+ "post /agents/{agent_id}": [
+  "beta.agents",
+  "update"
+ ],
+ "post /assistants": [
+  "beta.assistants",
+  "create"
+ ],
+ "post /assistants/{assistant_id}": [
+  "beta.assistants",
+  "update"
+ ],
+ "post /audio/speech": [
+  "audio.speech",
+  "create"
+ ],
+ "post /audio/transcriptions": [
+  "audio.transcriptions",
+  "create"
+ ],
+ "post /audio/translations": [
+  "audio.translations",
+  "create"
+ ],
+ "post /audio/voice_consents": [
+  "audio.voice_consents",
+  "create"
+ ],
+ "post /audio/voice_consents/{consent_id}": [
+  "audio.voice_consents",
+  "update"
+ ],
+ "post /audio/voices": [
+  "audio.voices",
+  "create"
+ ],
+ "post /batches": [
+  "batches",
+  "create"
+ ],
+ "post /batches/{batch_id}/cancel": [
+  "batches",
+  "cancel"
+ ],
+ "post /chat/completions": [
+  "chat.completions",
+  "create"
+ ],
+ "post /chat/completions/{completion_id}": [
+  "chat.completions",
+  "update"
+ ],
+ "post /chatkit/sessions": [
+  "beta.chatkit.sessions",
+  "create"
+ ],
+ "post /chatkit/sessions/{session_id}/cancel": [
+  "beta.chatkit.sessions",
+  "cancel"
+ ],
+ "post /completions": [
+  "completions",
+  "create"
+ ],
+ "post /containers": [
+  "containers",
+  "create"
+ ],
+ "post /containers/{container_id}/files": [
+  "containers.files",
+  "create"
+ ],
+ "post /content_provenance_checks": [
+  "content_provenance_checks",
+  "create"
+ ],
+ "post /conversations": [
+  "conversations",
+  "create"
+ ],
+ "post /conversations/{conversation_id}": [
+  "conversations",
+  "update"
+ ],
+ "post /conversations/{conversation_id}/items": [
+  "conversations.items",
+  "create"
+ ],
+ "post /decisions": [
+  "decisions",
+  "create"
+ ],
+ "post /embeddings": [
+  "embeddings",
+  "create"
+ ],
+ "post /evals": [
+  "evals",
+  "create"
+ ],
+ "post /evals/{eval_id}": [
+  "evals",
+  "update"
+ ],
+ "post /evals/{eval_id}/runs": [
+  "evals.runs",
+  "create"
+ ],
+ "post /evals/{eval_id}/runs/{run_id}/cancel": [
+  "evals.runs",
+  "cancel"
+ ],
+ "post /files": [
+  "files",
+  "create"
+ ],
+ "post /fine_tuning/alpha/graders/run": [
+  "fine_tuning.alpha.graders",
+  "run"
+ ],
+ "post /fine_tuning/alpha/graders/validate": [
+  "fine_tuning.alpha.graders",
+  "validate"
+ ],
+ "post /fine_tuning/checkpoints/{fine_tuned_model_checkpoint}/permissions": [
+  "fine_tuning.checkpoints.permissions",
+  "create"
+ ],
+ "post /fine_tuning/jobs": [
+  "fine_tuning.jobs",
+  "create"
+ ],
+ "post /fine_tuning/jobs/{fine_tuning_job_id}/cancel": [
+  "fine_tuning.jobs",
+  "cancel"
+ ],
+ "post /fine_tuning/jobs/{fine_tuning_job_id}/pause": [
+  "fine_tuning.jobs",
+  "pause"
+ ],
+ "post /fine_tuning/jobs/{fine_tuning_job_id}/resume": [
+  "fine_tuning.jobs",
+  "resume"
+ ],
+ "post /images/edits": [
+  "images",
+  "edit"
+ ],
+ "post /images/generations": [
+  "images",
+  "generate"
+ ],
+ "post /images/variations": [
+  "images",
+  "create_variation"
+ ],
+ "post /live/sessions": [
+  "live",
+  "create"
+ ],
+ "post /live/sessions/{session_id}/accept": [
+  "live.sessions",
+  "accept"
+ ],
+ "post /live/sessions/{session_id}/fork": [
+  "live.sessions",
+  "fork"
+ ],
+ "post /live/sessions/{session_id}/hangup": [
+  "live.sessions",
+  "hangup"
+ ],
+ "post /live/sessions/{session_id}/refer": [
+  "live.sessions",
+  "refer"
+ ],
+ "post /live/sessions/{session_id}/reject": [
+  "live.sessions",
+  "reject"
+ ],
+ "post /moderations": [
+  "moderations",
+  "create"
+ ],
+ "post /organization/admin_api_keys": [
+  "admin.organization.admin_api_keys",
+  "create"
+ ],
+ "post /organization/certificates": [
+  "admin.organization.certificates",
+  "create"
+ ],
+ "post /organization/certificates/activate": [
+  "admin.organization.certificates",
+  "activate"
+ ],
+ "post /organization/certificates/deactivate": [
+  "admin.organization.certificates",
+  "deactivate"
+ ],
+ "post /organization/certificates/{certificate_id}": [
+  "admin.organization.certificates",
+  "update"
+ ],
+ "post /organization/data_retention": [
+  "admin.organization.data_retention",
+  "update"
+ ],
+ "post /organization/external_keys": [
+  "admin.organization.external_keys",
+  "create"
+ ],
+ "post /organization/external_keys/{external_key_id}/validate": [
+  "admin.organization.external_keys",
+  "validate"
+ ],
+ "post /organization/external_storage": [
+  "admin.organization.external_storage",
+  "create"
+ ],
+ "post /organization/external_storage/{external_storage_id}/validate": [
+  "admin.organization.external_storage",
+  "validate"
+ ],
+ "post /organization/groups": [
+  "admin.organization.groups",
+  "create"
+ ],
+ "post /organization/groups/{group_id}": [
+  "admin.organization.groups",
+  "update"
+ ],
+ "post /organization/groups/{group_id}/roles": [
+  "admin.organization.groups.roles",
+  "create"
+ ],
+ "post /organization/groups/{group_id}/users": [
+  "admin.organization.groups.users",
+  "create"
+ ],
+ "post /organization/invites": [
+  "admin.organization.invites",
+  "create"
+ ],
+ "post /organization/projects": [
+  "admin.organization.projects",
+  "create"
+ ],
+ "post /organization/projects/{project_id}": [
+  "admin.organization.projects",
+  "update"
+ ],
+ "post /organization/projects/{project_id}/api_keys/{api_key_id}": [
+  "admin.organization.projects.api_keys",
+  "update"
+ ],
+ "post /organization/projects/{project_id}/archive": [
+  "admin.organization.projects",
+  "archive"
+ ],
+ "post /organization/projects/{project_id}/certificates/activate": [
+  "admin.organization.projects.certificates",
+  "activate"
+ ],
+ "post /organization/projects/{project_id}/certificates/deactivate": [
+  "admin.organization.projects.certificates",
+  "deactivate"
+ ],
+ "post /organization/projects/{project_id}/data_retention": [
+  "admin.organization.projects.data_retention",
+  "update"
+ ],
+ "post /organization/projects/{project_id}/groups": [
+  "admin.organization.projects.groups",
+  "create"
+ ],
+ "post /organization/projects/{project_id}/hosted_tool_permissions": [
+  "admin.organization.projects.hosted_tool_permissions",
+  "update"
+ ],
+ "post /organization/projects/{project_id}/model_permissions": [
+  "admin.organization.projects.model_permissions",
+  "update"
+ ],
+ "post /organization/projects/{project_id}/rate_limits/{rate_limit_id}": [
+  "admin.organization.projects.rate_limits",
+  "update_rate_limit"
+ ],
+ "post /organization/projects/{project_id}/service_accounts": [
+  "admin.organization.projects.service_accounts",
+  "create"
+ ],
+ "post /organization/projects/{project_id}/service_accounts/{service_account_id}": [
+  "admin.organization.projects.service_accounts",
+  "update"
+ ],
+ "post /organization/projects/{project_id}/service_accounts/{service_account_id}/api_keys": [
+  "admin.organization.projects.service_accounts.api_keys",
+  "create"
+ ],
+ "post /organization/projects/{project_id}/service_tier_settings": [
+  "admin.organization.projects.service_tier_settings",
+  "update"
+ ],
+ "post /organization/projects/{project_id}/spend_alerts": [
+  "admin.organization.projects.spend_alerts",
+  "create"
+ ],
+ "post /organization/projects/{project_id}/spend_alerts/{alert_id}": [
+  "admin.organization.projects.spend_alerts",
+  "update"
+ ],
+ "post /organization/projects/{project_id}/spend_limit": [
+  "admin.organization.projects.spend_limit",
+  "update"
+ ],
+ "post /organization/projects/{project_id}/users": [
+  "admin.organization.projects.users",
+  "create"
+ ],
+ "post /organization/projects/{project_id}/users/{user_id}": [
+  "admin.organization.projects.users",
+  "update"
+ ],
+ "post /organization/roles": [
+  "admin.organization.roles",
+  "create"
+ ],
+ "post /organization/roles/{role_id}": [
+  "admin.organization.roles",
+  "update"
+ ],
+ "post /organization/spend_alerts": [
+  "admin.organization.spend_alerts",
+  "create"
+ ],
+ "post /organization/spend_alerts/{alert_id}": [
+  "admin.organization.spend_alerts",
+  "update"
+ ],
+ "post /organization/spend_limit": [
+  "admin.organization.spend_limit",
+  "update"
+ ],
+ "post /organization/users/{user_id}": [
+  "admin.organization.users",
+  "update"
+ ],
+ "post /organization/users/{user_id}/roles": [
+  "admin.organization.users.roles",
+  "create"
+ ],
+ "post /organization/workload_identity_providers": [
+  "admin.organization.workload_identity_providers",
+  "create"
+ ],
+ "post /organization/workload_identity_providers/{workload_identity_provider_id}": [
+  "admin.organization.workload_identity_providers",
+  "update"
+ ],
+ "post /organization/workload_identity_providers/{workload_identity_provider_id}/federation_rules": [
+  "admin.organization.workload_identity_providers.federation_rules",
+  "create"
+ ],
+ "post /organization/workload_identity_providers/{workload_identity_provider_id}/federation_rules/{workload_identity_federation_rule_id}": [
+  "admin.organization.workload_identity_providers.federation_rules",
+  "update"
+ ],
+ "post /projects/{project_id}/groups/{group_id}/roles": [
+  "admin.organization.projects.groups.roles",
+  "create"
+ ],
+ "post /projects/{project_id}/roles": [
+  "admin.organization.projects.roles",
+  "create"
+ ],
+ "post /projects/{project_id}/roles/{role_id}": [
+  "admin.organization.projects.roles",
+  "update"
+ ],
+ "post /projects/{project_id}/users/{user_id}/roles": [
+  "admin.organization.projects.users.roles",
+  "create"
+ ],
+ "post /realtime/calls": [
+  "realtime.calls",
+  "create"
+ ],
+ "post /realtime/calls/{call_id}/accept": [
+  "realtime.calls",
+  "accept"
+ ],
+ "post /realtime/calls/{call_id}/hangup": [
+  "realtime.calls",
+  "hangup"
+ ],
+ "post /realtime/calls/{call_id}/refer": [
+  "realtime.calls",
+  "refer"
+ ],
+ "post /realtime/calls/{call_id}/reject": [
+  "realtime.calls",
+  "reject"
+ ],
+ "post /realtime/client_secrets": [
+  "realtime.client_secrets",
+  "create"
+ ],
+ "post /realtime/sessions": [
+  "beta.realtime.sessions",
+  "create"
+ ],
+ "post /realtime/transcription_sessions": [
+  "beta.realtime.transcription_sessions",
+  "create"
+ ],
+ "post /realtime/translations/client_secrets": [
+  "realtime.translations.client_secrets",
+  "create"
+ ],
+ "post /responses": [
+  "responses",
+  "create"
+ ],
+ "post /responses/compact": [
+  "responses",
+  "compact"
+ ],
+ "post /responses/compact?beta=true": [
+  "beta.responses",
+  "compact"
+ ],
+ "post /responses/input_tokens": [
+  "responses.input_tokens",
+  "count"
+ ],
+ "post /responses/input_tokens?beta=true": [
+  "beta.responses.input_tokens",
+  "count"
+ ],
+ "post /responses/{response_id}/cancel": [
+  "responses",
+  "cancel"
+ ],
+ "post /responses/{response_id}/cancel?beta=true": [
+  "beta.responses",
+  "cancel"
+ ],
+ "post /responses?beta=true": [
+  "beta.responses",
+  "create"
+ ],
+ "post /skills": [
+  "skills",
+  "create"
+ ],
+ "post /skills/{skill_id}": [
+  "skills",
+  "update"
+ ],
+ "post /skills/{skill_id}/versions": [
+  "skills.versions",
+  "create"
+ ],
+ "post /threads": [
+  "beta.threads",
+  "create"
+ ],
+ "post /threads/runs": [
+  "beta.threads",
+  "create_and_run"
+ ],
+ "post /threads/{thread_id}": [
+  "beta.threads",
+  "update"
+ ],
+ "post /threads/{thread_id}/messages": [
+  "beta.threads.messages",
+  "create"
+ ],
+ "post /threads/{thread_id}/messages/{message_id}": [
+  "beta.threads.messages",
+  "update"
+ ],
+ "post /threads/{thread_id}/runs": [
+  "beta.threads.runs",
+  "create"
+ ],
+ "post /threads/{thread_id}/runs/{run_id}": [
+  "beta.threads.runs",
+  "update"
+ ],
+ "post /threads/{thread_id}/runs/{run_id}/cancel": [
+  "beta.threads.runs",
+  "cancel"
+ ],
+ "post /threads/{thread_id}/runs/{run_id}/submit_tool_outputs": [
+  "beta.threads.runs",
+  "submit_tool_outputs"
+ ],
+ "post /uploads": [
+  "uploads",
+  "create"
+ ],
+ "post /uploads/{upload_id}/cancel": [
+  "uploads",
+  "cancel"
+ ],
+ "post /uploads/{upload_id}/complete": [
+  "uploads",
+  "complete"
+ ],
+ "post /uploads/{upload_id}/parts": [
+  "uploads.parts",
+  "create"
+ ],
+ "post /vaults": [
+  "beta.agents.vaults",
+  "create"
+ ],
+ "post /vaults/{vault_id}": [
+  "beta.agents.vaults",
+  "update"
+ ],
+ "post /vaults/{vault_id}/credentials": [
+  "beta.agents.vaults.credentials",
+  "create"
+ ],
+ "post /vaults/{vault_id}/credentials/{credential_id}": [
+  "beta.agents.vaults.credentials",
+  "update"
+ ],
+ "post /vector_stores": [
+  "vector_stores",
+  "create"
+ ],
+ "post /vector_stores/{vector_store_id}": [
+  "vector_stores",
+  "update"
+ ],
+ "post /vector_stores/{vector_store_id}/file_batches": [
+  "vector_stores.file_batches",
+  "create"
+ ],
+ "post /vector_stores/{vector_store_id}/file_batches/{batch_id}/cancel": [
+  "vector_stores.file_batches",
+  "cancel"
+ ],
+ "post /vector_stores/{vector_store_id}/files": [
+  "vector_stores.files",
+  "create"
+ ],
+ "post /vector_stores/{vector_store_id}/files/{file_id}": [
+  "vector_stores.files",
+  "update"
+ ],
+ "post /vector_stores/{vector_store_id}/search": [
+  "vector_stores",
+  "search"
+ ],
+ "post /videos": [
+  "videos",
+  "create"
+ ],
+ "post /videos/characters": [
+  "videos",
+  "create_character"
+ ],
+ "post /videos/edits": [
+  "videos",
+  "edit"
+ ],
+ "post /videos/extensions": [
+  "videos",
+  "extend"
+ ],
+ "post /videos/{video_id}/remix": [
+  "videos",
+  "remix"
+ ],
+ "post /webhook_endpoints": [
+  "webhooks",
+  "create"
+ ],
+ "post /webhook_endpoints/{webhook_endpoint_id}": [
+  "webhooks",
+  "update"
+ ],
+ "post /webhook_endpoints/{webhook_endpoint_id}/rotate_secret": [
+  "webhooks",
+  "rotate_secret"
+ ],
+ "post /webhook_endpoints/{webhook_endpoint_id}/test": [
+  "webhooks",
+  "test"
+ ]
+}

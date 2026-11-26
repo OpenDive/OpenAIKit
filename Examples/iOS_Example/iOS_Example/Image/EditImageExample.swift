@@ -27,16 +27,18 @@ import SwiftUI
 import OpenAIKit
 
 struct EditImageExample: View {
-    @State private var image: UIImage = UIImage()
+    @State private var image: UIImage?
     @State private var isEditing: Bool = false
 
     var body: some View {
         if isEditing {
             VStack {
-                if image == UIImage() {
-                    Text("Loading edit...")
-                } else {
+                if let image {
                     Image(uiImage: image)
+                        .resizable()
+                        .scaledToFit()
+                } else {
+                    Text("Loading edit...")
                 }
             }
             .padding()
@@ -48,34 +50,32 @@ struct EditImageExample: View {
                     Task {
                         do {
                             // ⚠️🔑 NEVER store OpenAI API keys directly in code. Use environment variables or secrets management. Avoid git commits of keys! 🔑⚠️
-                            let config = Configuration(
-                                organizationId: "INSERT-ORGANIZATION-ID",
-                                apiKey: "INSERT-API-KEY"
-                            )
-                            let openAI = OpenAI(config)
+                            let openAI = OpenAI(Configuration(apiKey: "INSERT-API-KEY"))
 
-                            guard let image = UIImage(named: "image") else {
-                                throw OpenAIError.invalidData
+                            // Re-encode the bundled images: Xcode optimizes PNGs it copies into an iOS
+                            // app bundle into a format other decoders cannot read. The mask's transparent
+                            // pixels mark the area to edit; it must be the same size as the image.
+                            guard
+                                let imageData = UIImage(named: "image")?.pngData(),
+                                let maskData = UIImage(named: "mask")?.pngData()
+                            else {
+                                print("ERROR - image.png or mask.png is missing from the app bundle")
+                                return
                             }
 
-                            guard let mask = UIImage(named: "mask") else {
-                                throw OpenAIError.invalidData
+                            let imageResponse = try await openAI.images.edit(
+                                CreateImageEditRequest(
+                                    model: "gpt-image-2",
+                                    prompt: "A cute baby sea otter wearing a beret",
+                                    image: .file(FileUpload(data: imageData, filename: "image.png")),
+                                    mask: FileUpload(data: maskData, filename: "mask.png"),
+                                    size: ._1024x1024
+                                )
+                            )
+
+                            if let data = imageResponse.data?.first?.imageData {
+                                self.image = UIImage(data: data)
                             }
-
-                            let imageEditParam = try ImageEditParameters(
-                                image: image,
-                                mask: mask,
-                                prompt: "A cute baby sea otter wearing a beret",
-                                resolution: .small,
-                                responseFormat: .base64Json
-                            )
-
-                            let imageResponse = try await openAI.generateImageEdits(
-                                parameters: imageEditParam
-                            )
-
-                            self.image = try openAI
-                                .decodeBase64Image(imageResponse.data[0].image)
                         } catch {
                             print("ERROR - \(error)")
                         }

@@ -1,9 +1,9 @@
-//  swift-tools-version: 6.2
+// swift-tools-version: 6.2
 //
 //  Package.swift
 //  OpenAIKit
 //
-//  Copyright (c) 2023 OpenDive
+//  Copyright (c) 2023-2026 OpenDive
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -28,32 +28,29 @@ import PackageDescription
 
 let package = Package(
     name: "OpenAIKit",
-    platforms: [.iOS(.v13), .macOS(.v10_15), .watchOS(.v6), .tvOS(.v13)],
-    products: [
-        .library(
-            name: "OpenAIKit",
-            targets: ["OpenAIKit"])
+    platforms: [
+        .iOS(.v16),
+        .macOS(.v13),
+        .tvOS(.v16),
+        .watchOS(.v9),
+        .visionOS(.v1),
     ],
-    dependencies: [
+    products: [
+        .library(name: "OpenAIKit", targets: ["OpenAIKit"])
     ],
     targets: [
         .target(
             name: "OpenAIKit",
-            dependencies: [],
-            path: "Sources",
-            swiftSettings: [
-                .swiftLanguageMode(.v6)
-            ]
+            path: "Sources/OpenAIKit",
+            swiftSettings: [.swiftLanguageMode(.v6)]
         ),
         .testTarget(
             name: "OpenAIKitTests",
             dependencies: ["OpenAIKit"],
-            path: "Tests",
-            resources: [.process("Resources")],
-            swiftSettings: [
-                .swiftLanguageMode(.v6)
-            ]
-        )
+            path: "Tests/OpenAIKitTests",
+            resources: [.copy("Fixtures")],
+            swiftSettings: [.swiftLanguageMode(.v6)]
+        ),
     ],
-    swiftLanguageVersions: [.v6]
+    swiftLanguageModes: [.v6]
 )

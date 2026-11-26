@@ -36,8 +36,9 @@ struct RetrieveModelExample: View {
                 if let model = model {
                     Text("Model Details").bold().font(.title)
                     Text("Name: \(model.id)")
-                    Text("Object: \(model.object.rawValue)")
+                    Text("Object: \(model.object)")
                     Text("Owned By: \(model.ownedBy)")
+                    Text("Created: \(Date(timeIntervalSince1970: TimeInterval(model.created)).formatted())")
                 } else {
                     Text("Loading Model...")
                 }
@@ -51,10 +52,9 @@ struct RetrieveModelExample: View {
                     Task {
                         do {
                             // ⚠️🔑 NEVER store OpenAI API keys directly in code. Use environment variables or secrets management. Avoid git commits of keys! 🔑⚠️
-                            let config = Configuration(organizationId: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
-                            let openAI = OpenAI(config)
+                            let openAI = OpenAI(Configuration(apiKey: "INSERT-API-KEY"))
 
-                            self.model = try await openAI.retrieveModel(modelId: "text-davinci-001")
+                            self.model = try await openAI.models.retrieve(model: "gpt-6.2-astra")
                         } catch {
                             print("ERROR WITH - \(error)")
                         }

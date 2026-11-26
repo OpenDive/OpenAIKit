@@ -27,7 +27,7 @@ import SwiftUI
 import OpenAIKit
 
 struct RetrieveFileExample: View {
-    @State private var file: File?
+    @State private var file: OpenAIFile?
     @State private var isRetrieving: Bool = false
     
     var body: some View {
@@ -36,11 +36,12 @@ struct RetrieveFileExample: View {
                 if let file = file {
                     Text("Loading file complete!")
                     Text("ID: \(file.id)")
-                    Text("Object: \(file.object.rawValue)")
-                    Text("Size: \(file.bytes)")
-                    Text("Created At: \(String(file.createdAt))")
+                    Text("Object: \(file.object)")
+                    Text("Size: \(file.bytes.map(String.init) ?? "-") bytes")
+                    Text("Created At: \(Date(timeIntervalSince1970: TimeInterval(file.createdAt)).formatted())")
                     Text("Filename: \(file.filename)")
-                    Text("Purpose: \(file.purpose)")
+                    Text("Purpose: \(file.purpose.rawValue)")
+                    Text("Status: \(file.status.rawValue)")
                 } else {
                     Text("Loading file...")
                 }
@@ -54,10 +55,9 @@ struct RetrieveFileExample: View {
                     Task {
                         do {
                             // ⚠️🔑 NEVER store OpenAI API keys directly in code. Use environment variables or secrets management. Avoid git commits of keys! 🔑⚠️
-                            let config = Configuration(organizationId: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
-                            let openAI = OpenAI(config)
+                            let openAI = OpenAI(Configuration(apiKey: "INSERT-API-KEY"))
 
-                            self.file = try await openAI.retrieveFile(fileId: "INSERT-FILE-ID")
+                            self.file = try await openAI.files.retrieve(fileID: "INSERT-FILE-ID")
                         } catch {
                             print("ERROR - \(error)")
                         }

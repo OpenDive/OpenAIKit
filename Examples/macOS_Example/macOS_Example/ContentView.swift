@@ -27,39 +27,51 @@ import SwiftUI
 import OpenAIKit
 
 struct ContentView: View {
-    @State private var image: NSImage = NSImage()
+    @State private var image: NSImage?
     @State private var isGenerating: Bool = false
-    
+    @State private var errorMessage: String?
+
     var body: some View {
         if isGenerating {
             VStack {
-                Image(nsImage: image)
+                if let image {
+                    Image(nsImage: image)
+                        .resizable()
+                        .scaledToFit()
+                } else if let errorMessage {
+                    Text(errorMessage)
+                } else {
+                    ProgressView("Generating image...")
+                }
             }
             .padding()
         } else {
             VStack {
                 Button {
                     isGenerating = true
-                    
+
                     Task {
                         do {
-                            let config = Configuration(
-                                organization: "INSERT-ORGANIZATION-ID",
-                                apiKey: "INSERT-API-KEY"
+                            // ⚠️🔑 NEVER store OpenAI API keys directly in code. Use environment variables or secrets management. Avoid git commits of keys! 🔑⚠️
+                            let openAI = OpenAI(Configuration(apiKey: "INSERT-API-KEY"))
+
+                            // GPT Image models always return base64-encoded image data.
+                            let result = try await openAI.images.generate(
+                                CreateImageRequest(
+                                    model: "gpt-image-2",
+                                    prompt: "an avocado chair",
+                                    quality: .low,
+                                    size: ._1024x1024
+                                )
                             )
 
-                            let openAi = OpenAI(config)
-                            let imageParam = ImageParameters(
-                                prompt: "an avocado chair",
-                                resolution: .small,
-                                responseFormat: .base64Json
-                            )
-
-                            let result = try await openAi.createImage(parameters: imageParam)
-                            let b64Image = result.data[0].image
-
-                            self.image = try openAi.decodeBase64Image(b64Image)
+                            guard let data = result.data?.first?.imageData, let image = NSImage(data: data) else {
+                                self.errorMessage = "The response did not contain an image."
+                                return
+                            }
+                            self.image = image
                         } catch {
+                            self.errorMessage = error.localizedDescription
                             print("ERROR DETAILS - \(error)")
                         }
                     }
@@ -72,7 +84,9 @@ struct ContentView: View {
                         .clipShape(Capsule())
                         .padding(.top, 8)
                 }
+                .buttonStyle(.plain)
             }
+            .padding()
         }
     }
 }

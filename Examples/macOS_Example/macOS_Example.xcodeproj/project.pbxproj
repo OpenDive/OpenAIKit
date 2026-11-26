@@ -298,7 +298,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.MarcoDotIO.macOS-Example";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 			};
 			name = Debug;
 		};
@@ -325,7 +325,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.MarcoDotIO.macOS-Example";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 			};
 			name = Release;
 		};

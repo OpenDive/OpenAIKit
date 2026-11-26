@@ -33,7 +33,7 @@ struct ListModelsExample: View {
     var body: some View {
         if isListing {
             if !models.isEmpty {
-                List(models) { model in
+                List(models, id: \.id) { model in
                     Text("\(model.id)")
                 }
             } else {
@@ -47,14 +47,10 @@ struct ListModelsExample: View {
                     Task {
                         do {
                             // ⚠️🔑 NEVER store OpenAI API keys directly in code. Use environment variables or secrets management. Avoid git commits of keys! 🔑⚠️
-                            let config = Configuration(
-                                organizationId: "INSERT-ORGANIZATION-ID",
-                                apiKey: "INSERT-API-KEY"
-                            )
-                            let openAi = OpenAI(config)
-                            let modelsResponse = try await openAi.listModels()
+                            let openAI = OpenAI(Configuration(apiKey: "INSERT-API-KEY"))
+                            let modelsResponse = try await openAI.models.list()
 
-                            self.models = modelsResponse.data
+                            self.models = modelsResponse.data.sorted { $0.id < $1.id }
                         } catch {
                             print("ERROR DETAILS - \(error)")
                         }

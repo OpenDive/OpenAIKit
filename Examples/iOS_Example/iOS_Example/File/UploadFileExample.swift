@@ -27,7 +27,7 @@ import SwiftUI
 import OpenAIKit
 
 struct UploadFileExample: View {
-    @State private var file: File?
+    @State private var file: OpenAIFile?
     @State private var isUploading: Bool = false
 
     var body: some View {
@@ -36,11 +36,12 @@ struct UploadFileExample: View {
                 if let file = file {
                     Text("Upload complete!")
                     Text("ID: \(file.id)")
-                    Text("Object: \(file.object.rawValue)")
-                    Text("Size: \(file.bytes)")
-                    Text("Created At: \(String(file.createdAt))")
+                    Text("Object: \(file.object)")
+                    Text("Size: \(file.bytes.map(String.init) ?? "-") bytes")
+                    Text("Created At: \(Date(timeIntervalSince1970: TimeInterval(file.createdAt)).formatted())")
                     Text("Filename: \(file.filename)")
-                    Text("Purpose: \(file.purpose)")
+                    Text("Purpose: \(file.purpose.rawValue)")
+                    Text("Status: \(file.status.rawValue)")
                 } else {
                     Text("Uploading file...")
                 }
@@ -54,24 +55,24 @@ struct UploadFileExample: View {
                     Task {
                         do {
                             // ⚠️🔑 NEVER store OpenAI API keys directly in code. Use environment variables or secrets management. Avoid git commits of keys! 🔑⚠️
-                            let config = Configuration(organizationId: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
-                            let openAI = OpenAI(config)
+                            let openAI = OpenAI(Configuration(apiKey: "INSERT-API-KEY"))
 
                             guard let urlFile = Bundle.main.url(
                                 forResource: "SampleData",
                                 withExtension: "jsonl"
                             ) else {
-                                throw OpenAIError.invalidData
+                                print("ERROR - SampleData.jsonl is missing from the app bundle")
+                                return
                             }
-                            guard let jsonData = try? Data(contentsOf: urlFile) else { throw OpenAIError.invalidUrl }
 
-                            let uploadFileParam = UploadFileParameters(
-                                file: jsonData,
-                                fileName: "SampleData.jsonl",
-                                purpose: "fine-tune"
+                            // SampleData.jsonl uses the legacy prompt/completion layout, which current
+                            // fine-tuning jobs do not accept, so it is uploaded as general user data.
+                            self.file = try await openAI.files.create(
+                                CreateFileRequest(
+                                    file: try FileUpload(contentsOf: urlFile),
+                                    purpose: .userData
+                                )
                             )
-
-                            self.file = try await openAI.uploadFile(parameters: uploadFileParam)
                         } catch {
                             print("ERROR - \(error)")
                         }

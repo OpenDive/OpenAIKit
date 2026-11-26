@@ -27,19 +27,20 @@ import SwiftUI
 import OpenAIKit
 
 struct RetrieveFileContentsExample: View {
-    @State private var files: [FileContent]?
+    @State private var lines: [String]?
     @State private var isRetrieving: Bool = false
 
     var body: some View {
         if isRetrieving {
             VStack {
-                if let files = self.files {
+                if let lines = self.lines {
                     Text("Retrieved file!")
-                    Text("Files size: \(files.count)")
-                    Text("First three indexes (see log for full object): ")
-                    Text("\(files[0].prompt) - \(files[0].completion)")
-                    Text("\(files[1].prompt) - \(files[1].completion)")
-                    Text("\(files[2].prompt) - \(files[2].completion)")
+                    Text("Line count: \(lines.count)")
+                    Text("First three lines (see log for the full file): ")
+                    ForEach(lines.prefix(3), id: \.self) { line in
+                        Text(line)
+                            .lineLimit(3)
+                    }
                 } else {
                     Text("Retrieving file...")
                 }
@@ -53,10 +54,16 @@ struct RetrieveFileContentsExample: View {
                     Task {
                         do {
                             // ⚠️🔑 NEVER store OpenAI API keys directly in code. Use environment variables or secrets management. Avoid git commits of keys! 🔑⚠️
-                            let config = Configuration(organizationId: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY")
-                            let openAI = OpenAI(config)
+                            let openAI = OpenAI(Configuration(apiKey: "INSERT-API-KEY"))
 
-                            self.files = try await openAI.retrieveFileContent(fileId: "INSERT-FILE-ID")
+                            // Returns the file's raw bytes. The upload example sends a JSON Lines file.
+                            let data = try await openAI.files.retrieveContent(fileID: "INSERT-FILE-ID")
+                            let text = String(decoding: data, as: UTF8.self)
+                            print(text)
+
+                            self.lines = text
+                                .split(whereSeparator: \.isNewline)
+                                .map(String.init)
                         } catch {
                             print("ERROR - \(error)")
                         }

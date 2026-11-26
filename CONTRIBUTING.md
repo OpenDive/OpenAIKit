@@ -1,54 +1,57 @@
-# Contributing to Transcriptase
-We love your input! We want to make contributing to this project as easy and transparent as possible, whether it's:
+# Contributing to OpenAIKit
 
-- Reporting a bug
-- Discussing the current state of the code
-- Submitting a fix
-- Proposing new features
-- Becoming a maintainer
+We welcome bug reports, fixes, features and documentation, and we are glad to add maintainers.
 
-## We Develop with Github
-We use github to host code, to track issues and feature requests, as well as accept pull requests.
+## How the code is organized
 
-## We Use [Github Flow](https://docs.github.com/en/get-started/quickstart/github-flow), So All Code Changes Happen Through Pull Requests
-Pull requests are the best way to propose changes to the codebase (we use [Github Flow](https://docs.github.com/en/get-started/quickstart/github-flow). We actively welcome your pull requests:
+Most of OpenAIKit is generated from OpenAI's OpenAPI specification. Before you change anything, find out which part you are touching:
 
-1. Fork the repo and create your branch from `main`.
-2. If you've added code that should be tested, add tests.
-3. If you've changed APIs, update the documentation.
-4. Ensure the test suite passes.
-5. Make sure your code lints.
-6. Issue that pull request!
+| Folder | What it holds | How to change it |
+| --- | --- | --- |
+| `Sources/OpenAIKit/Generated` | Models and resource methods | **Do not edit.** Change `Generator/generate.py` and regenerate |
+| `Sources/OpenAIKit/Core` | Client, transport, retries, streaming, pagination, webhooks | Edit directly |
+| `Sources/OpenAIKit/Helpers` | Conveniences on generated types, WebSockets, subtitles | Edit directly |
+| `Generator` | The generator and its pinned inputs | See [Generator/README.md](Generator/README.md) |
+| `Tests/OpenAIKitTests` | Swift Testing tests | Edit directly, except `Generated/` and `Fixtures/spec-examples.json` |
 
-## Any contributions you make will be under the MIT Software License
-In short, when you submit code changes, your submissions are understood to be under the same [MIT License](http://choosealicense.com/licenses/mit/) that covers the project. Feel free to contact the maintainers if that's a concern.
+If an endpoint is missing or a field has the wrong type, the fix almost always belongs in the generator, or OpenAI's spec has changed and needs `python3 Generator/generate.py bump`.
 
-## Report bugs using Github's [issues](https://github.com/OpenDive/OpenAIKit/issues)
-We use GitHub issues to track public bugs. Report a bug by [opening a new issue](https://github.com/OpenDive/OpenAIKit/issues/new/choose); it's that easy!
+## Workflow
 
-## Write bug reports with detail, background, and sample code
-[This is an example](http://stackoverflow.com/q/12488905/180626) of a bug report Brian A. Danielak wrote, and I think it's not a bad model. Here's [another example from Craig Hockenberry](http://www.openradar.me/11905408), an app developer whom I greatly respect.
+We use [GitHub Flow](https://docs.github.com/en/get-started/quickstart/github-flow): every change goes through a pull request.
 
-**Great Bug Reports** tend to have:
+1. Fork the repository and create a branch from `main`.
+2. Make your change. Add tests for new behavior.
+3. If you change the public API, update `README.md`, and update `Tests/OpenAIKitTests/ReadmeSnippets.swift` to match any README code you change.
+4. Run the checks CI runs:
 
-- A quick summary and/or background
-- Steps to reproduce
-  - Be specific!
-  - Give sample code if you can. [My stackoverflow question](http://stackoverflow.com/q/12488905/180626) includes sample code that *anyone* with a base R setup can run to reproduce what I was seeing
-- What you expected would happen
-- What actually happens
-- Notes (possibly including why you think this might be happening, or stuff you tried that didn't work)
+   ```bash
+   swift build
+   swift test
+   python3 Generator/generate.py check
+   ```
 
-People *love* thorough bug reports. I'm not even kidding.
+5. Open the pull request.
 
-## Use a Consistent Coding Style
-I'm again borrowing these from [Facebook's Guidelines](https://github.com/facebook/draft-js/blob/a9316a723f9e918afde44dea68b5f9f39b7d9b00/CONTRIBUTING.md)
+Tests must not reach the network. Use `MockTransport` in `Tests/OpenAIKitTests/Support`.
 
-* 2 spaces for indentation rather than tabs
-* You can try running `swiftlint` for style unification
+## Style
+
+- Four spaces for indentation, as in the existing code.
+- Swift 6 language mode. Public types are `Sendable`.
+- No third-party dependencies, and keep Linux building (`#if canImport(FoundationNetworking)`).
+- Document public API with `///` comments.
+
+## Reporting bugs
+
+Use [GitHub issues](https://github.com/OpenDive/OpenAIKit/issues/new/choose). A helpful report has:
+
+- A short summary
+- Steps to reproduce, with sample code if you can
+- What you expected and what happened
+- The OpenAIKit version, platform and Swift version
+- For API errors, the `requestID` of the `OpenAIAPIError` (never your API key)
 
 ## License
-By contributing, you agree that your contributions will be licensed under its MIT License.
 
-## References
-This document was adapted from the open-source contribution guidelines for [Facebook's Draft](https://github.com/facebook/draft-js/blob/a9316a723f9e918afde44dea68b5f9f39b7d9b00/CONTRIBUTING.md)
+By contributing, you agree that your contributions are licensed under the project's MIT License.

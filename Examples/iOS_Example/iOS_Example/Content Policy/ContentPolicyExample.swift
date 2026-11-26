@@ -28,6 +28,7 @@ import OpenAIKit
 
 struct ContentPolicyExample: View {
     @State private var isFlagged: Bool?
+    @State private var flaggedCategories: [String] = []
     @State private var isEvaluating: Bool = false
     
     let input = "I want to kill them."
@@ -39,6 +40,10 @@ struct ContentPolicyExample: View {
 
                 if let isFlagged = isFlagged {
                     Text("Flagged: \(isFlagged ? "Yes" : "No")")
+
+                    if !flaggedCategories.isEmpty {
+                        Text("Categories: \(flaggedCategories.joined(separator: ", "))")
+                    }
                 }
             }
             .padding()
@@ -50,11 +55,18 @@ struct ContentPolicyExample: View {
                     Task {
                         do {
                             // ⚠️🔑 NEVER store OpenAI API keys directly in code. Use environment variables or secrets management. Avoid git commits of keys! 🔑⚠️
-                            let openAI = OpenAI(Configuration(organizationId: "INSERT-ORGANIZATION-ID", apiKey: "INSERT-API-KEY"))
-                            let contentParameter = ContentPolicyParameters(input: input)
-                            let contentResult = try await openAI.checkContentPolicy(parameters: contentParameter)
+                            let openAI = OpenAI(Configuration(apiKey: "INSERT-API-KEY"))
+                            let moderation = try await openAI.moderations.create(
+                                CreateModerationRequest(input: .string(input), model: .omniModerationLatest)
+                            )
 
-                            self.isFlagged = contentResult.results[0].flagged
+                            guard case .moderation(let response) = moderation, let result = response.results.first else {
+                                print("ERROR - unexpected moderation response: \(moderation)")
+                                return
+                            }
+
+                            self.isFlagged = result.flagged
+                            self.flaggedCategories = Self.flaggedCategories(in: result.categories)
                         } catch {
                             print("CRASHED WITH ERROR - \(error)")
                         }
@@ -70,6 +82,17 @@ struct ContentPolicyExample: View {
                 }
             }
         }
+    }
+
+    /// Reads the category flags generically, so new categories show up without code changes.
+    private static func flaggedCategories(in categories: some Encodable) -> [String] {
+        guard
+            let data = try? JSONEncoder().encode(categories),
+            let flags = try? JSONDecoder().decode([String: Bool?].self, from: data)
+        else {
+            return []
+        }
+        return flags.filter { $0.value == true }.map(\.key).sorted()
     }
 }
 

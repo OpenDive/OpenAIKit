@@ -102,21 +102,32 @@ struct CreateTranscriptionExample: View {
                         Task {
                             do {
                                 // ⚠️🔑 NEVER store OpenAI API keys directly in code. Use environment variables or secrets management. Avoid git commits of keys! 🔑⚠️
-                                let config = Configuration(
-                                    organizationId: "INSERT-ORGANIZATION-ID",
-                                    apiKey: "INSERT-API-KEY"
-                                )
-                                let openAI = OpenAI(config)
+                                let openAI = OpenAI(Configuration(apiKey: "INSERT-API-KEY"))
 
-                                guard let audio = self.audioData else { throw OpenAIError.invalidData }
+                                guard let audio = self.audioData else {
+                                    print("ERROR - the audio file is missing from the app bundle")
+                                    return
+                                }
+                                let file = FileUpload(data: audio, filename: "audio.mp3")
 
-                                let audioParameters = TranscriptionParameters(file: audio)
-                                let transcriptionCompletion = try await self.selectedLanguage == .english ?
-                                    openAI.createTranscription(parameters: audioParameters) :
-                                    openAI.createTranslation(parameters: audioParameters)
-
-                                if let text = transcriptionCompletion.text {
-                                    self.transcription = text
+                                switch self.selectedLanguage {
+                                case .english:
+                                    // Transcribes the audio in its own language.
+                                    let response = try await openAI.audio.transcriptions.create(
+                                        CreateTranscriptionRequest(model: .gpt4oTranscribe, file: file)
+                                    )
+                                    if case .json(let result) = response {
+                                        self.transcription = result.text
+                                    }
+                                case .dutch:
+                                    // Translates the audio into English text. OpenAI marks this endpoint as
+                                    // deprecated (it still works); translations only support whisper-1.
+                                    let response = try await openAI.audio.translations.create(
+                                        CreateTranslationRequest(model: .whisper1, file: file)
+                                    )
+                                    if case .json(let result) = response {
+                                        self.transcription = result.text
+                                    }
                                 }
                             } catch {
                                 print("ERROR DETAILS - \(error)")

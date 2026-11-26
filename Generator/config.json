@@ -1,0 +1,35 @@
+{
+  "spec": {
+    "repository": "openai/openai-openapi",
+    "commit": "abe304d1e5f1264fd3a11499ab57c0d17f5c1df3",
+    "path": "openapi.json",
+    "sha256": "c36d229258a3ba21d62830d11a3e8c67b487490fbb8305f36e6c79b0ff943448"
+  },
+  "naming": {
+    "repository": "openai/openai-python",
+    "commit": "b5b55ab8fa98faa109ba2326295fed8e2310b225",
+    "files": [
+      "api.md",
+      "docs/beta-realtime-api.md",
+      "src/openai/resources/conversations/api.md",
+      "src/openai/resources/live/api.md",
+      "src/openai/resources/realtime/api.md",
+      "src/openai/resources/responses/api.md",
+      "src/openai/resources/webhooks/api.md"
+    ]
+  },
+  "betaHeaders": {
+    "beta.agents": "agents=v1",
+    "beta.assistants": "assistants=v2",
+    "beta.threads": "assistants=v2",
+    "beta.realtime": "assistants=v2",
+    "beta.chatkit": "chatkit_beta=v1",
+    "vector_stores": "assistants=v2"
+  },
+  "streamOverrides": {
+    "post /audio/speech": {
+      "field": "stream_format",
+      "value": "sse"
+    }
+  }
+}

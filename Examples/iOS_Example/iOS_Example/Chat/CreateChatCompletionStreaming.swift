@@ -26,30 +26,20 @@
 import SwiftUI
 import OpenAIKit
 
+/// Streaming with the Chat Completions API.
 struct CreateChatCompletionStreamingExample: View {
     @State private var responseText: String = ""
     @State private var isCompleting: Bool = false
 
-    let chat: [ChatMessage] = [
-        ChatMessage(role: .system, content: "You are a helpful assistant."),
-        ChatMessage(role: .user, content: "Who won the world series in 2020?"),
-        ChatMessage(role: .assistant, content: "The Los Angeles Dodgers won the World Series in 2020."),
-        ChatMessage(role: .user, content: "Where was it played?")
-    ]
+    let chat = ExampleMessage.worldSeriesConversation
 
     var body: some View {
         VStack {
-            VStack(alignment: .leading) {
-                ForEach(chat) { message in
-                    Text("\(message.role.rawValue.capitalized): \(message.content ?? "NO CONTENT")")
-                        .padding(.vertical, 10)
-                }
-            }
-            .padding(20)
+            ExampleConversationView(messages: chat)
 
             if isCompleting {
                 VStack {
-                    Text(responseText)
+                    Text("Assistant: \(responseText)")
                 }
                 .padding()
             } else {
@@ -60,23 +50,17 @@ struct CreateChatCompletionStreamingExample: View {
                         Task {
                             do {
                                 // ⚠️🔑 NEVER store OpenAI API keys directly in code. Use environment variables or secrets management. Avoid git commits of keys! 🔑⚠️
-                                let config = Configuration(
-                                    organizationId: "INSERT-ORGANIZATION-ID",
-                                    apiKey: "INSERT-API-KEY"
-                                )
-                                let openAI = OpenAI(config)
-                                let chatParameters = ChatParameters(model: .chatGPTTurbo, messages: chat)
-                                let stream = try openAI.generateChatCompletionStreaming(
-                                    parameters: chatParameters
+                                let openAI = OpenAI(Configuration(apiKey: "INSERT-API-KEY"))
+                                let stream = openAI.chat.completions.createStream(
+                                    CreateChatCompletionRequest(
+                                        model: "gpt-6.2-astra",
+                                        messages: chat.map(\.chatCompletionMessage)
+                                    )
                                 )
 
-                                for try await result in stream {
-                                    if let delta = result.choices[0].delta {
-                                        if let role = delta.role {
-                                            self.responseText += "\(role.rawValue.capitalized): "
-                                        } else if let content = delta.content {
-                                            self.responseText += content
-                                        }
+                                for try await chunk in stream {
+                                    if let content = chunk.contentDelta {
+                                        self.responseText += content
                                     }
                                 }
                             } catch {

@@ -26,6 +26,8 @@
 import SwiftUI
 import OpenAIKit
 
+/// The legacy Completions API (`POST /completions`). New code should use the Responses API
+/// (see the Chat examples); this endpoint only serves older instruct models.
 struct GenerateCompletionExample: View {
     @State private var responseText: String?
     @State private var isCompleting: Bool = false
@@ -52,23 +54,18 @@ struct GenerateCompletionExample: View {
                     Task {
                         do {
                             // ⚠️🔑 NEVER store OpenAI API keys directly in code. Use environment variables or secrets management. Avoid git commits of keys! 🔑⚠️
-                            let config = Configuration(
-                                organizationId: "INSERT-ORGANIZATION-ID",
-                                apiKey: "INSERT-API-KEY"
-                            )
-                            let openAI = OpenAI(config)
-                            let completionParameter = CompletionParameters(
-                                model: .davinci,
-                                prompt: [prompt],
-                                maxTokens: 20,
-                                temperature: 0.98
-                            )
-                            let completionResponse = try await openAI.generateCompletion(
-                                parameters: completionParameter
+                            let openAI = OpenAI(Configuration(apiKey: "INSERT-API-KEY"))
+                            let completionResponse = try await openAI.completions.create(
+                                CreateCompletionRequest(
+                                    model: .gpt3_5TurboInstruct,
+                                    prompt: .string(prompt),
+                                    maxTokens: 20,
+                                    temperature: 0.98
+                                )
                             )
 
                             self.responseText = completionResponse
-                                .choices[0]
+                                .choices.first?
                                 .text
                                 .replacingOccurrences(of: "\n", with: "")
                         } catch {
