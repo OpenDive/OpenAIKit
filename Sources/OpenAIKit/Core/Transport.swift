@@ -20,9 +20,22 @@ public protocol OpenAIHTTPTransport: Sendable {
 /// The default transport, built on `URLSession`.
 public final class URLSessionTransport: OpenAIHTTPTransport, @unchecked Sendable {
     public let session: URLSession
+    private let router: StreamRouter
+    /// A session with the same configuration whose delegate delivers streamed bodies chunk by chunk.
+    private let streamingSession: URLSession
 
     public init(session: URLSession = .shared) {
         self.session = session
+        let router = StreamRouter()
+        let queue = OperationQueue()
+        queue.name = "OpenAIKit.URLSessionTransport.stream"
+        queue.maxConcurrentOperationCount = 1
+        self.router = router
+        self.streamingSession = URLSession(configuration: session.configuration, delegate: router, delegateQueue: queue)
+    }
+
+    deinit {
+        streamingSession.finishTasksAndInvalidate()
     }
 
     public func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
@@ -45,34 +58,91 @@ public final class URLSessionTransport: OpenAIHTTPTransport, @unchecked Sendable
         }
     }
 
+    /// Streams the body as `URLSession` receives it: one chunk per network read, with no per-byte work.
     public func stream(_ request: URLRequest) async throws -> (AsyncThrowingStream<Data, any Error>, HTTPURLResponse) {
-        #if canImport(FoundationNetworking)
-        return try await StreamingDelegate.start(request, configuration: session.configuration)
-        #else
-        let (bytes, response) = try await session.bytes(for: request)
-        guard let http = response as? HTTPURLResponse else { throw URLError(.badServerResponse) }
-        let stream = AsyncThrowingStream<Data, any Error> { continuation in
-            let task = Task {
-                do {
-                    var buffer = Data()
-                    buffer.reserveCapacity(4096)
-                    for try await byte in bytes {
-                        buffer.append(byte)
-                        if byte == 0x0A || buffer.count >= 4096 {
-                            continuation.yield(buffer)
-                            buffer.removeAll(keepingCapacity: true)
-                        }
-                    }
-                    if !buffer.isEmpty { continuation.yield(buffer) }
-                    continuation.finish()
-                } catch {
-                    continuation.finish(throwing: error)
-                }
-            }
+        try await router.start(request, on: streamingSession)
+    }
+}
+
+/// Routes delegate callbacks of a shared streaming session to each task's stream.
+private final class StreamRouter: NSObject, URLSessionDataDelegate, @unchecked Sendable {
+    private struct Route {
+        var response: CheckedContinuation<HTTPURLResponse, any Error>?
+        var data: AsyncThrowingStream<Data, any Error>.Continuation?
+    }
+
+    private let lock = NSLock()
+    private var routes: [Int: Route] = [:]
+
+    func start(_ request: URLRequest, on session: URLSession) async throws -> (AsyncThrowingStream<Data, any Error>, HTTPURLResponse) {
+        let task = session.dataTask(with: request)
+        let id = task.taskIdentifier
+        let stream = AsyncThrowingStream<Data, any Error>(bufferingPolicy: .unbounded) { continuation in
+            self.update(id) { $0.data = continuation }
             continuation.onTermination = { _ in task.cancel() }
         }
-        return (stream, http)
-        #endif
+        let handle = CancellableTask()
+        let response = try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<HTTPURLResponse, any Error>) in
+                self.update(id) { $0.response = continuation }
+                handle.start(task)
+            }
+        } onCancel: {
+            handle.cancel()
+        }
+        return (stream, response)
+    }
+
+    private func update(_ id: Int, _ change: (inout Route) -> Void) {
+        lock.lock()
+        var route = routes[id] ?? Route()
+        change(&route)
+        routes[id] = route
+        lock.unlock()
+    }
+
+    private func take(_ id: Int, response: Bool) -> CheckedContinuation<HTTPURLResponse, any Error>? {
+        lock.lock(); defer { lock.unlock() }
+        guard response else { return nil }
+        let continuation = routes[id]?.response
+        routes[id]?.response = nil
+        return continuation
+    }
+
+    private func dataContinuation(_ id: Int) -> AsyncThrowingStream<Data, any Error>.Continuation? {
+        lock.lock(); defer { lock.unlock() }
+        return routes[id]?.data
+    }
+
+    private func remove(_ id: Int) -> Route? {
+        lock.lock(); defer { lock.unlock() }
+        return routes.removeValue(forKey: id)
+    }
+
+    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse, completionHandler: @escaping (URLSession.ResponseDisposition) -> Void) {
+        let continuation = take(dataTask.taskIdentifier, response: true)
+        if let http = response as? HTTPURLResponse {
+            continuation?.resume(returning: http)
+            completionHandler(.allow)
+        } else {
+            continuation?.resume(throwing: URLError(.badServerResponse))
+            completionHandler(.cancel)
+        }
+    }
+
+    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+        dataContinuation(dataTask.taskIdentifier)?.yield(data)
+    }
+
+    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: (any Error)?) {
+        guard let route = remove(task.taskIdentifier) else { return }
+        if let error {
+            route.response?.resume(throwing: error)
+            route.data?.finish(throwing: error)
+        } else {
+            route.response?.resume(throwing: URLError(.badServerResponse))
+            route.data?.finish()
+        }
     }
 }
 
@@ -99,89 +169,3 @@ private final class CancellableTask: @unchecked Sendable {
         task?.cancel()
     }
 }
-
-#if canImport(FoundationNetworking)
-/// Streams a response body with a delegate, for platforms without `URLSession.bytes(for:)`.
-private final class StreamingDelegate: NSObject, URLSessionDataDelegate, @unchecked Sendable {
-    private let lock = NSLock()
-    private var responseContinuation: CheckedContinuation<HTTPURLResponse, any Error>?
-    private var dataContinuation: AsyncThrowingStream<Data, any Error>.Continuation?
-
-    static func start(_ request: URLRequest, configuration: URLSessionConfiguration) async throws -> (AsyncThrowingStream<Data, any Error>, HTTPURLResponse) {
-        let delegate = StreamingDelegate()
-        let session = URLSession(configuration: configuration, delegate: delegate, delegateQueue: nil)
-        let stream = AsyncThrowingStream<Data, any Error> { continuation in
-            delegate.setDataContinuation(continuation)
-        }
-        let task = session.dataTask(with: request)
-        let response = try await withTaskCancellationHandler {
-            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<HTTPURLResponse, any Error>) in
-                delegate.setResponseContinuation(continuation)
-                task.resume()
-            }
-        } onCancel: {
-            task.cancel()
-        }
-        delegate.onTermination {
-            task.cancel()
-            session.finishTasksAndInvalidate()
-        }
-        return (stream, response)
-    }
-
-    private func setDataContinuation(_ continuation: AsyncThrowingStream<Data, any Error>.Continuation) {
-        lock.lock()
-        dataContinuation = continuation
-        lock.unlock()
-    }
-
-    private func setResponseContinuation(_ continuation: CheckedContinuation<HTTPURLResponse, any Error>) {
-        lock.lock()
-        responseContinuation = continuation
-        lock.unlock()
-    }
-
-    private func onTermination(_ handler: @escaping @Sendable () -> Void) {
-        lock.lock()
-        dataContinuation?.onTermination = { _ in handler() }
-        lock.unlock()
-    }
-
-    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse, completionHandler: @escaping (URLSession.ResponseDisposition) -> Void) {
-        lock.lock()
-        let continuation = responseContinuation
-        responseContinuation = nil
-        lock.unlock()
-        if let http = response as? HTTPURLResponse {
-            continuation?.resume(returning: http)
-            completionHandler(.allow)
-        } else {
-            continuation?.resume(throwing: URLError(.badServerResponse))
-            completionHandler(.cancel)
-        }
-    }
-
-    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
-        lock.lock()
-        let continuation = dataContinuation
-        lock.unlock()
-        continuation?.yield(data)
-    }
-
-    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: (any Error)?) {
-        lock.lock()
-        let response = responseContinuation
-        responseContinuation = nil
-        let data = dataContinuation
-        lock.unlock()
-        if let error {
-            response?.resume(throwing: error)
-            data?.finish(throwing: error)
-        } else {
-            response?.resume(throwing: URLError(.badServerResponse))
-            data?.finish()
-        }
-        session.finishTasksAndInvalidate()
-    }
-}
-#endif

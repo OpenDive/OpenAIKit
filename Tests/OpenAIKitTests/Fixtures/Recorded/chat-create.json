@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-EoKzw6aRVUaDLsLTrSUI3qg2SZAfZ",
+  "object": "chat.completion",
+  "created": 1795665824,
+  "model": "gpt-6.2-astra",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Swift concurrency lets you write asynchronous code in the order you want it to happen, without blocking a thread while you wait. Mark a function `async` if it can suspend, and use `await` at a call site to show where the current task might pause. While it’s suspended, the thread is free to do other work. When the result is ready, the task resumes where it left off.\n\n`await` alone doesn’t make two operations run concurrently. If you await one call and then make another, they run in sequence. For independent operations, use `async let`:\n\n```swift\nasync let profile = fetchProfile()\nasync let photos = fetchPhotos()\n\nlet page = await ProfilePage(profile: profile, photos: photos)\n```\n\nHere, each fetch runs in a child task, so the requests can overlap. The last line waits for both results before building the page. This is **structured concurrency**: child tasks cannot outlive their enclosing scope. Task groups offer the same guarantee when the number of operations is known only at runtime. Cancellation is cooperative: a task can check for cancellation and stop early.\n\n**Actors** protect shared mutable state by allowing only one task at a time to execute code isolated to a given actor. If an actor method suspends at an `await`, another task may change the actor’s state before the method resumes. `@MainActor` applies this isolation to the main actor, making it useful for code that updates the user interface.",
+        "refusal": null,
+        "annotations": []
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 17,
+    "completion_tokens": 301,
+    "total_tokens": 318,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": null
+}
