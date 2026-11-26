@@ -35,9 +35,9 @@ enum Recorded {
 func replay(
     _ routes: [String: ReplayServer.Route],
     maxRetries: Int = 0
-) throws -> (OpenAI, ReplayServer) {
+) async throws -> (OpenAI, ReplayServer) {
     let server = try ReplayServer()
-    try server.start()
+    try await server.start()
     for (path, route) in routes { server.set(path, route) }
     let client = OpenAI(Configuration(
         apiKey: "sk-test",
@@ -50,7 +50,7 @@ func replay(
 @Suite("End to end: recorded API traffic over a local server", .serialized)
 struct EndToEndTests {
     @Test func listsModels() async throws {
-        let (client, server) = try replay(["/v1/models": .init(body: .json(try Recorded.data("models.json")))])
+        let (client, server) = try await replay(["/v1/models": .init(body: .json(try Recorded.data("models.json")))])
         defer { server.stop() }
         let expected = try JSONSerialization.jsonObject(with: try Recorded.data("models.json")) as? [String: Any]
         let models = try await client.models.list()
@@ -59,7 +59,7 @@ struct EndToEndTests {
     }
 
     @Test func createsAChatCompletion() async throws {
-        let (client, server) = try replay(["/v1/chat/completions": .init(body: .json(try Recorded.data("chat-create.json")))])
+        let (client, server) = try await replay(["/v1/chat/completions": .init(body: .json(try Recorded.data("chat-create.json")))])
         defer { server.stop() }
         let completion = try await client.chat.completions.create(CreateChatCompletionRequest(model: "gpt-6.2-astra", messages: [.user(text: "Hi")]))
         #expect((completion.firstContent ?? "").count > 200)
@@ -67,7 +67,7 @@ struct EndToEndTests {
     }
 
     @Test func createsAResponse() async throws {
-        let (client, server) = try replay(["/v1/responses": .init(body: .json(try Recorded.data("responses-create.json")))])
+        let (client, server) = try await replay(["/v1/responses": .init(body: .json(try Recorded.data("responses-create.json")))])
         defer { server.stop() }
         let response = try await client.responses.create(CreateResponse(model: "gpt-6.2-astra", input: "Hi"))
         #expect(response.outputText.count > 200)
@@ -75,7 +75,7 @@ struct EndToEndTests {
     }
 
     @Test func decodesFloatAndBase64Embeddings() async throws {
-        let (client, server) = try replay(["/v1/embeddings": .init(body: .json(try Recorded.data("embeddings-float.json")))])
+        let (client, server) = try await replay(["/v1/embeddings": .init(body: .json(try Recorded.data("embeddings-float.json")))])
         defer { server.stop() }
         let floats = try await client.embeddings.create(CreateEmbeddingRequest(model: "text-embedding-3-small", input: "a"))
         #expect(floats.data.count == 4)
@@ -88,7 +88,7 @@ struct EndToEndTests {
     }
 
     @Test func streamsEveryChatChunkInOrder() async throws {
-        let (client, server) = try replay(["/v1/chat/completions": .init(body: .events(try Recorded.events("chat-stream.sse"), interval: 0))])
+        let (client, server) = try await replay(["/v1/chat/completions": .init(body: .events(try Recorded.events("chat-stream.sse"), interval: 0))])
         defer { server.stop() }
         let payloads = try Recorded.payloads("chat-stream.sse")
         let expectedText = payloads.compactMap { (($0["choices"] as? [[String: Any]])?.first?["delta"] as? [String: Any])?["content"] as? String }.joined()
@@ -105,7 +105,7 @@ struct EndToEndTests {
     }
 
     @Test func streamsAResponseThatMatchesItsFinalOutput() async throws {
-        let (client, server) = try replay(["/v1/responses": .init(body: .events(try Recorded.events("responses-stream.sse"), interval: 0))])
+        let (client, server) = try await replay(["/v1/responses": .init(body: .events(try Recorded.events("responses-stream.sse"), interval: 0))])
         defer { server.stop() }
         var events = 0
         var unknown = 0
@@ -124,56 +124,58 @@ struct EndToEndTests {
     }
 
     @Test func deliversEventsAsTheyArrive() async throws {
-        // One event every 2 ms: the first events must reach the app long before the stream ends.
+        // One event every 10 ms. If the stream were buffered, nothing would arrive until the
+        // server had written everything. Compares event order, not wall-clock time.
         let events = Array(try Recorded.events("chat-stream.sse").prefix(60))
-        let (client, server) = try replay(["/v1/chat/completions": .init(body: .events(events, interval: 0.002))])
+        let (client, server) = try await replay(["/v1/chat/completions": .init(body: .events(events, interval: 0.01))])
         defer { server.stop() }
-        let start = Date()
-        var firstArrival: TimeInterval?
+        var firstArrival: UInt64?
         for try await _ in client.chat.completions.createStream(CreateChatCompletionRequest(model: "gpt-6.2-astra", messages: [.user(text: "Hi")])) {
-            if firstArrival == nil { firstArrival = Date().timeIntervalSince(start) }
+            if firstArrival == nil { firstArrival = DispatchTime.now().uptimeNanoseconds }
         }
-        let total = Date().timeIntervalSince(start)
+        let sent = server.takeSentTimes()
         let first = try #require(firstArrival)
-        #expect(total > 0.08, "The server paced \(events.count) events over at least 118 ms")
-        #expect(first < total / 2, "First event arrived at \(first)s of \(total)s: the stream was buffered")
+        let lastSent = try #require(sent.last)
+        #expect(sent.count == events.count)
+        #expect(first < lastSent, "The first event arrived only after the server wrote the last one: the stream was buffered")
     }
 
     @Test func stopsReceivingWhenTheConsumerStops() async throws {
+        // Paced at 20 ms per event, the whole stream takes about 17 seconds to send.
         let events = try Recorded.events("chat-stream.sse")
-        let (client, server) = try replay(["/v1/chat/completions": .init(body: .events(events, interval: 0.005))])
+        let (client, server) = try await replay(["/v1/chat/completions": .init(body: .events(events, interval: 0.02))])
         defer { server.stop() }
-        let start = Date()
         var received = 0
         for try await _ in client.chat.completions.createStream(CreateChatCompletionRequest(model: "gpt-6.2-astra", messages: [.user(text: "Hi")])) {
             received += 1
             if received == 5 { break }
         }
         #expect(received == 5)
-        #expect(Date().timeIntervalSince(start) < 2, "Breaking out of the loop must not wait for the rest of the stream")
+        #expect(server.takeSentTimes().count < events.count, "Leaving the loop must not wait for the rest of the stream")
     }
 
     @Test func cancelsAStreamFromItsTask() async throws {
         let events = try Recorded.events("chat-stream.sse")
-        let (client, server) = try replay(["/v1/chat/completions": .init(body: .events(events, interval: 0.005))])
+        let (client, server) = try await replay(["/v1/chat/completions": .init(body: .events(events, interval: 0.02))])
         defer { server.stop() }
+        let started = AsyncStream<Void>.makeStream()
         let task = Task {
             var received = 0
             for try await _ in client.chat.completions.createStream(CreateChatCompletionRequest(model: "gpt-6.2-astra", messages: [.user(text: "Hi")])) {
                 received += 1
+                if received == 1 { started.continuation.yield() }
             }
             return received
         }
-        try await Task.sleep(nanoseconds: 60_000_000)
-        let start = Date()
+        for await _ in started.stream { break }
         task.cancel()
         let received = (try? await task.value) ?? 0
-        #expect(Date().timeIntervalSince(start) < 2)
         #expect(received < events.count)
+        #expect(server.takeSentTimes().count < events.count, "Cancelling must stop the stream before the server finishes")
     }
 
     @Test func reusesConnectionsAcrossRequests() async throws {
-        let (client, server) = try replay(["/v1/models": .init(body: .json(try Recorded.data("models.json")))])
+        let (client, server) = try await replay(["/v1/models": .init(body: .json(try Recorded.data("models.json")))])
         defer { server.stop() }
         for _ in 0..<20 { _ = try await client.models.list() }
         #expect(server.servedPaths.count == 20)
@@ -181,7 +183,7 @@ struct EndToEndTests {
     }
 
     @Test func handlesConcurrentRequests() async throws {
-        let (client, server) = try replay(["/v1/responses": .init(body: .json(try Recorded.data("responses-create.json")))])
+        let (client, server) = try await replay(["/v1/responses": .init(body: .json(try Recorded.data("responses-create.json")))])
         defer { server.stop() }
         let texts = try await withThrowingTaskGroup(of: String.self) { group in
             for _ in 0..<16 {
@@ -194,7 +196,7 @@ struct EndToEndTests {
     }
 
     @Test func reportsHTTPErrorsFromTheServer() async throws {
-        let (client, server) = try replay([:])
+        let (client, server) = try await replay([:])
         defer { server.stop() }
         do {
             _ = try await client.models.list()
