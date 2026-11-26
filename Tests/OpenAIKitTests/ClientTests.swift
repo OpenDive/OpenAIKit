@@ -255,44 +255,119 @@ struct RetryTests {
 
 @Suite("Cancellation")
 struct CancellationTests {
-    /// A transport that never answers, so the only way out is cancellation.
-    struct HangingTransport: OpenAIHTTPTransport {
-        func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
-            try await Task.sleep(nanoseconds: 60_000_000_000)
+    /// A transport that never answers on its own: it suspends until the calling task is
+    /// cancelled, and records that it was. A 60-second fallback turns a regression into a
+    /// test failure instead of a hang.
+    final class SuspendingTransport: OpenAIHTTPTransport, @unchecked Sendable {
+        private let lock = NSLock()
+        private var started: CheckedContinuation<Void, Never>?
+        private var didStart = false
+        private(set) var cancelled = false
+
+        /// Returns once a request has reached the transport.
+        func waitUntilStarted() async {
+            await withCheckedContinuation { continuation in
+                register(continuation)
+            }
+        }
+
+        private func register(_ continuation: CheckedContinuation<Void, Never>) {
+            lock.lock()
+            if didStart {
+                lock.unlock()
+                continuation.resume()
+            } else {
+                started = continuation
+                lock.unlock()
+            }
+        }
+
+        private func markStarted() {
+            lock.lock()
+            didStart = true
+            let waiter = started
+            started = nil
+            lock.unlock()
+            waiter?.resume()
+        }
+
+        private var finished: Bool?
+        private var finishWaiter: CheckedContinuation<Bool, Never>?
+
+        private func markFinished(cancelled: Bool) {
+            lock.lock()
+            self.cancelled = cancelled
+            finished = cancelled
+            let waiter = finishWaiter
+            finishWaiter = nil
+            lock.unlock()
+            waiter?.resume(returning: cancelled)
+        }
+
+        /// Returns whether the request ended because it was cancelled (`false` after the fallback).
+        func waitUntilFinished() async -> Bool {
+            await withCheckedContinuation { continuation in
+                registerFinish(continuation)
+            }
+        }
+
+        private func registerFinish(_ continuation: CheckedContinuation<Bool, Never>) {
+            lock.lock()
+            if let finished {
+                lock.unlock()
+                continuation.resume(returning: finished)
+            } else {
+                finishWaiter = continuation
+                lock.unlock()
+            }
+        }
+
+        private func suspend() async throws -> Never {
+            markStarted()
+            do {
+                try await Task.sleep(nanoseconds: 60_000_000_000)
+            } catch is CancellationError {
+                markFinished(cancelled: true)
+                throw CancellationError()
+            }
+            markFinished(cancelled: false)
             throw URLError(.timedOut)
+        }
+
+        func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
+            try await suspend()
         }
 
         func stream(_ request: URLRequest) async throws -> (AsyncThrowingStream<Data, any Error>, HTTPURLResponse) {
-            try await Task.sleep(nanoseconds: 60_000_000_000)
-            throw URLError(.timedOut)
+            try await suspend()
         }
     }
 
-    @Test func cancellingTheTaskEndsTheRequest() async throws {
-        let client = OpenAI(Configuration(apiKey: "sk"), transport: HangingTransport())
+    @Test func cancellingTheTaskCancelsTheRequest() async throws {
+        let transport = SuspendingTransport()
+        let client = OpenAI(Configuration(apiKey: "sk"), transport: transport)
         let task = Task { try await client.models.list() }
-        try await Task.sleep(nanoseconds: 100_000_000)
-        let start = Date()
+        await transport.waitUntilStarted()
         task.cancel()
         let result = await task.result
-        #expect(Date().timeIntervalSince(start) < 5)
         guard case .failure(let error) = result else {
             Issue.record("Expected a failure")
             return
         }
         #expect(error is CancellationError, "Got \(error)")
+        #expect(await transport.waitUntilFinished(), "Cancellation must reach the transport")
     }
 
-    @Test func cancellingTheStreamEndsIt() async throws {
-        let client = OpenAI(Configuration(apiKey: "sk"), transport: HangingTransport())
+    @Test func cancellingTheStreamCancelsTheRequest() async throws {
+        let transport = SuspendingTransport()
+        let client = OpenAI(Configuration(apiKey: "sk"), transport: transport)
         let task = Task {
             for try await _ in client.responses.createStream(CreateResponse(model: "gpt-6.2-astra", input: "Hi")) {}
         }
-        try await Task.sleep(nanoseconds: 100_000_000)
-        let start = Date()
+        await transport.waitUntilStarted()
         task.cancel()
         _ = await task.result
-        #expect(Date().timeIntervalSince(start) < 5)
+        #expect(await transport.waitUntilFinished(), "Cancellation must reach the transport")
     }
 }
 

@@ -27,7 +27,7 @@ final class ReplayServer: @unchecked Sendable {
     private var connections = 0
     /// Monotonic send time of each SSE event written since the last reset, in order.
     private var sentTimes: [UInt64] = []
-    private(set) var port: UInt16 = 0
+    var port: UInt16 = 0
 
     init() throws {
         let parameters = NWParameters.tcp
@@ -36,16 +36,26 @@ final class ReplayServer: @unchecked Sendable {
         listener = try NWListener(using: parameters)
     }
 
-    func start() throws {
-        let ready = DispatchSemaphore(value: 0)
-        listener.stateUpdateHandler = { state in
-            if case .ready = state { ready.signal() }
+    /// Starts listening. Waits for the listener without blocking a thread, so it is safe to
+    /// call from many tests running in parallel.
+    func start() async throws {
+        let once = ResumeOnce()
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, any Error>) in
+            listener.stateUpdateHandler = { state in
+                switch state {
+                case .ready:
+                    once.run { continuation.resume() }
+                case .failed(let error):
+                    once.run { continuation.resume(throwing: error) }
+                default:
+                    break
+                }
+            }
+            listener.newConnectionHandler = { [weak self] connection in
+                self?.serve(connection)
+            }
+            listener.start(queue: queue)
         }
-        listener.newConnectionHandler = { [weak self] connection in
-            self?.serve(connection)
-        }
-        listener.start(queue: queue)
-        ready.wait()
         port = listener.port?.rawValue ?? 0
     }
 
@@ -161,6 +171,20 @@ final class ReplayServer: @unchecked Sendable {
                 self.sendEvents(rest, interval: interval, on: connection)
             }
         })
+    }
+}
+
+/// Runs a closure at most once, from any thread.
+final class ResumeOnce: @unchecked Sendable {
+    private let lock = NSLock()
+    private var done = false
+
+    func run(_ body: () -> Void) {
+        lock.lock()
+        let first = !done
+        done = true
+        lock.unlock()
+        if first { body() }
     }
 }
 
