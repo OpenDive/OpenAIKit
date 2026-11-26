@@ -5,7 +5,8 @@ import Foundation
 import FoundationNetworking
 #endif
 import Testing
-@testable import OpenAIKit
+import OpenAIKit
+@testable import OpenAIKitCore
 
 @Suite("Requests")
 struct RequestTests {

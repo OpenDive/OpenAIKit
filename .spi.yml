@@ -1,4 +1,7 @@
 version: 1
 builder:
   configs:
-    - documentation_targets: [OpenAIKit]
+    - documentation_targets: [OpenAIKitCore, OpenAIKitRealtime, OpenAIKitBeta, OpenAIKitAdmin]
+      # Drop compiler-synthesized pages (==, !=, Codable and literal initializers on every
+      # generated type). Halves the archive: OpenAIKitCore goes from 245 MB to 129 MB.
+      custom_documentation_parameters: [--experimental-skip-synthesized-symbols]

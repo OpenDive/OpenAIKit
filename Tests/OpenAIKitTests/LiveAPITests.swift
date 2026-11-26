@@ -2,7 +2,8 @@
 
 import Foundation
 import Testing
-@testable import OpenAIKit
+import OpenAIKit
+@testable import OpenAIKitCore
 
 /// Runs against the real OpenAI API, only when `OPENAI_API_KEY` is set:
 ///

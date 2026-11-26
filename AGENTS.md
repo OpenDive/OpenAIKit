@@ -4,7 +4,7 @@ OpenAIKit is a Swift package for the whole OpenAI API. Almost all of it is gener
 
 ## Using OpenAIKit in an app
 
-Add `.package(url: "https://github.com/OpenDive/OpenAIKit.git", from: "4.0.0")` and depend on the `OpenAIKit` product. It needs Swift 6.2+, and iOS 16, macOS 13, tvOS 16, watchOS 9, visionOS 1 or Linux.
+Add `.package(url: "https://github.com/OpenDive/OpenAIKit.git", from: "4.2.0")` and depend on the `OpenAIKit` product, which includes everything. To keep an app small, depend on `OpenAIKitCore` instead, and add `OpenAIKitRealtime` (Realtime and Live), `OpenAIKitBeta` (Agents, Assistants, ChatKit) or `OpenAIKitAdmin` (Administration API) only if you use them; import the same module names. It needs Swift 6.2+, and iOS 16, macOS 13, tvOS 16, watchOS 9, visionOS 1 or Linux.
 
 ```swift
 import OpenAIKit
@@ -17,13 +17,13 @@ print(response.outputText)
 How to find the right call:
 
 - **Namespaces and method names follow openai-python**, camel-cased. `client.audio.transcriptions.create` here is the same call there; `submit_tool_outputs` there is `submitToolOutputs` here. `Generator/sdk-naming.json` maps every HTTP route to its namespace and method.
-- **Find a method** by searching `Sources/OpenAIKit/Generated/Resources/` for the HTTP route, for example `` `POST /responses` ``. Every method's doc comment starts with its route.
-- **Request and response types are named after the spec's schemas**, such as `CreateResponse`, `Response`, `CreateChatCompletionRequest` and `CreateImageRequest`. Find one with `grep -rn "public struct CreateResponse:" Sources/OpenAIKit/Generated/Models`. Inline types are nested: `CreateResponse.Truncation`.
+- **Find a method** by searching `Sources/*/Generated/Resources/` for the HTTP route, for example `` `POST /responses` ``. Every method's doc comment starts with its route.
+- **Request and response types are named after the spec's schemas**, such as `CreateResponse`, `Response`, `CreateChatCompletionRequest` and `CreateImageRequest`. Find one with `grep -rn "public struct CreateResponse:" Sources/*/Generated/Models`. Inline types are nested: `CreateResponse.Truncation`.
 - **Arguments:** the body is the unlabeled first argument; path parameters are labeled (`retrieve(responseID:)`); query parameters are labeled with defaults; `options:` comes last.
 - **Streaming:** use the `…Stream` variant (`createStream`), which returns an `AsyncThrowingStream` of typed events. `event.outputTextDelta` gives Responses text.
 - **Lists:** use the `…All` variant (`listAll`) to walk every page.
 - **Enums are open structs**, so pass string literals freely (`model: "gpt-6.2-astra"`). **Unions** are enums with associated values plus `.unknown(JSONValue)`; a union with a string case accepts a string literal (`input: "Hi"`).
-- **Hand-written conveniences** are in `Sources/OpenAIKit/Helpers/Conveniences.swift`: `Response.outputText`, `functionCalls`, `decodeOutput(as:)`, `InputItem.user(_:)`, `ChatCompletionRequestMessage.user(text:)`, `FunctionToolCall.decodeArguments(as:)`, `Embedding.vector`, `ImageObject.imageData`.
+- **Hand-written conveniences** are in `Sources/OpenAIKitCore/Helpers/Conveniences.swift`: `Response.outputText`, `functionCalls`, `decodeOutput(as:)`, `InputItem.user(_:)`, `ChatCompletionRequestMessage.user(text:)`, `FunctionToolCall.decodeArguments(as:)`, `Embedding.vector`, `ImageObject.imageData`.
 - **Realtime:** `try client.realtime.connect(model:)` returns an `OpenAIWebSocket` with `send(_:)`, `send(json:)` and `events`.
 - **Errors:** HTTP failures throw `OpenAIAPIError` (`statusCode`, `kind`, `message`, `requestID`); others throw `OpenAIError`. Cancelling the Swift `Task` cancels the request.
 - **Never put an API key in app code** or commit one. Read it from the environment or a backend.
@@ -36,9 +36,11 @@ How to find the right call:
 
 | Path | What it is | Edit it? |
 | --- | --- | --- |
-| `Sources/OpenAIKit/Generated/` | Models (one Codable type per spec schema) and Resources (one struct per namespace, one method per operation) | **Never by hand.** Change the generator and regenerate |
-| `Sources/OpenAIKit/Core/` | Client, `Configuration`, `OpenAIRequest`, transport with retries and cancellation, server-sent events, pagination, `JSONValue`, `FileUpload`, errors, webhook verification | Yes |
-| `Sources/OpenAIKit/Helpers/` | Conveniences on generated types, WebSockets, subtitles | Yes |
+| `Sources/<Module>/Generated/` | Models and Resources for that product. The generator places each schema in `OpenAIKitCore` unless only Realtime/Live, Beta or Admin operations use it | **Never by hand.** Change the generator and regenerate |
+| `Sources/OpenAIKitCore/Core/` | Client, `Configuration`, `OpenAIRequest`, transport with retries and cancellation, server-sent events, pagination, `JSONValue`, `FileUpload`, `OpenAIModel`, errors, webhook verification | Yes |
+| `Sources/OpenAIKitCore/Helpers/` | Conveniences on generated types, WebSockets, subtitles | Yes |
+| `Sources/OpenAIKitRealtime/Helpers/` | `client.realtime.connect(...)` and the Realtime connection types | Yes |
+| `Sources/OpenAIKit/OpenAIKit.swift` | The umbrella product: re-exports all four modules | Rarely |
 | `Generator/generate.py` | The generator, Python 3.9+ with the standard library only. `config.json` pins the spec commit and SHA-256; `sdk-naming.json` holds the names | Yes, then regenerate |
 | `Tests/OpenAIKitTests/` | Swift Testing. `Generated/` and `Fixtures/spec-examples.json` are written by the generator | Yes, except those two |
 | `Tests/OpenAIKitTests/ReadmeSnippets.swift` | Every code block in `README.md`, compiled | Keep in sync with the README |
@@ -61,6 +63,7 @@ xcodebuild -project Examples/iOS_Example/iOS_Example.xcodeproj -scheme iOS_Examp
 ### Rules
 
 - **Generated code:** fix the generator, regenerate, and commit the generator change and the regenerated files together.
+- **Binary size matters.** Every generated type ships in every app that links its module. Generated models conform to `OpenAIModel` (shared `==`/`hash`) and decode with `OpenAIDynamicCodingKey` string keys; don't reintroduce per-type `CodingKeys` enums or synthesized `Hashable`. Optional modules may depend only on `OpenAIKitCore`.
 - **No dependencies.** Keep Linux building: guard networking with `#if canImport(FoundationNetworking)`, and don't use CryptoKit without the portable fallback in `Core/Webhooks.swift`.
 - **Swift 6 language mode.** Every public type is `Sendable`. Keep the build free of warnings.
 - **Tests:** never reach the internet by default. Unit tests use `MockTransport` in `Tests/OpenAIKitTests/Support/`. End-to-end tests replay recorded traffic from `Tests/OpenAIKitTests/Fixtures/Recorded/` through `EndToEnd/ReplayServer.swift` on 127.0.0.1. `LiveAPITests` run only when `OPENAI_API_KEY` is set. Add a test for each behavior change, and scrub account IDs and personal model names from new recordings.

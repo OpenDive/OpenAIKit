@@ -2,7 +2,8 @@
 
 import Foundation
 import Testing
-@testable import OpenAIKit
+import OpenAIKit
+@testable import OpenAIKitCore
 
 @Suite("Server-sent events")
 struct ServerSentEventParserTests {

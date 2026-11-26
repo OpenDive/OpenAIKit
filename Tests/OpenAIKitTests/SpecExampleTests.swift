@@ -2,7 +2,8 @@
 
 import Foundation
 import Testing
-@testable import OpenAIKit
+import OpenAIKit
+@testable import OpenAIKitCore
 
 /// One example from the OpenAPI spec and the generated type it should decode into.
 struct SpecExample: Decodable, Sendable, CustomTestStringConvertible {

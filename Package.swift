@@ -26,6 +26,8 @@
 
 import PackageDescription
 
+let swiftSettings: [SwiftSetting] = [.swiftLanguageMode(.v6)]
+
 let package = Package(
     name: "OpenAIKit",
     platforms: [
@@ -36,20 +38,32 @@ let package = Package(
         .visionOS(.v1),
     ],
     products: [
-        .library(name: "OpenAIKit", targets: ["OpenAIKit"])
+        // Everything. Simplest to start with.
+        .library(name: "OpenAIKit", targets: ["OpenAIKit"]),
+        // Pick only what you use to keep your app small. Core covers Responses, Chat Completions,
+        // Conversations, Audio, Images, Videos, Embeddings, Files, Uploads, Batches, Vector stores,
+        // Containers, Skills, Evals, Fine-tuning, Moderations, Models and Webhooks.
+        .library(name: "OpenAIKitCore", targets: ["OpenAIKitCore"]),
+        .library(name: "OpenAIKitRealtime", targets: ["OpenAIKitRealtime"]),
+        .library(name: "OpenAIKitBeta", targets: ["OpenAIKitBeta"]),
+        .library(name: "OpenAIKitAdmin", targets: ["OpenAIKitAdmin"]),
     ],
     targets: [
+        .target(name: "OpenAIKitCore", swiftSettings: swiftSettings),
+        .target(name: "OpenAIKitRealtime", dependencies: ["OpenAIKitCore"], swiftSettings: swiftSettings),
+        .target(name: "OpenAIKitBeta", dependencies: ["OpenAIKitCore"], swiftSettings: swiftSettings),
+        .target(name: "OpenAIKitAdmin", dependencies: ["OpenAIKitCore"], swiftSettings: swiftSettings),
         .target(
             name: "OpenAIKit",
-            path: "Sources/OpenAIKit",
-            swiftSettings: [.swiftLanguageMode(.v6)]
+            dependencies: ["OpenAIKitCore", "OpenAIKitRealtime", "OpenAIKitBeta", "OpenAIKitAdmin"],
+            swiftSettings: swiftSettings
         ),
         .testTarget(
             name: "OpenAIKitTests",
             dependencies: ["OpenAIKit"],
             path: "Tests/OpenAIKitTests",
             resources: [.copy("Fixtures")],
-            swiftSettings: [.swiftLanguageMode(.v6)]
+            swiftSettings: swiftSettings
         ),
     ],
     swiftLanguageModes: [.v6]
