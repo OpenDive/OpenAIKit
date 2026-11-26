@@ -46,8 +46,7 @@ struct ListModelsExample: View {
                     
                     Task {
                         do {
-                            // ⚠️🔑 NEVER store OpenAI API keys directly in code. Use environment variables or secrets management. Avoid git commits of keys! 🔑⚠️
-                            let openAI = OpenAI(Configuration(apiKey: "INSERT-API-KEY"))
+                            let openAI = ExampleSecrets.client
                             let modelsResponse = try await openAI.models.list()
 
                             self.models = modelsResponse.data.sorted { $0.id < $1.id }

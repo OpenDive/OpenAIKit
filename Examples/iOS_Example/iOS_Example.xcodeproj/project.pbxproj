@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7DA1C0F22ED5000100A1B2C3 /* Showcase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DA1C0F12ED5000100A1B2C3 /* Showcase.swift */; };
 		761C250429403883005066C2 /* EditImageExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761C250329403883005066C2 /* EditImageExample.swift */; };
 		761C250B2940392F005066C2 /* GenerateCompletionExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761C250A2940392F005066C2 /* GenerateCompletionExample.swift */; };
 		761C250D294039A8005066C2 /* GenerateImageVariationsExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761C250C294039A8005066C2 /* GenerateImageVariationsExample.swift */; };
@@ -47,6 +48,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		7DA1C0F12ED5000100A1B2C3 /* Showcase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Showcase.swift; sourceTree = "<group>"; };
 		761C250329403883005066C2 /* EditImageExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditImageExample.swift; sourceTree = "<group>"; };
 		761C250A2940392F005066C2 /* GenerateCompletionExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateCompletionExample.swift; sourceTree = "<group>"; };
 		761C250C294039A8005066C2 /* GenerateImageVariationsExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateImageVariationsExample.swift; sourceTree = "<group>"; };
@@ -178,6 +180,7 @@
 				76C0C268293FC8DF003075D2 /* Content Policy */,
 				76C0C253293FB7CC003075D2 /* iOS_ExampleApp.swift */,
 				76C0C255293FB7CC003075D2 /* ContentView.swift */,
+				7DA1C0F12ED5000100A1B2C3 /* Showcase.swift */,
 				76C0C257293FB7CE003075D2 /* Assets.xcassets */,
 				76C0C259293FB7CE003075D2 /* Preview Content */,
 			);
@@ -342,6 +345,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7DA1C0F22ED5000100A1B2C3 /* Showcase.swift in Sources */,
 				7D3E2ED92A7F262A0014174B /* ChatMainView.swift in Sources */,
 				76C0C26D293FC9B5003075D2 /* CreateEmbeddingsExample.swift in Sources */,
 				76C0C274293FDA7B003075D2 /* DeleteFileExample.swift in Sources */,

@@ -53,8 +53,7 @@ struct CreateResponseExample: View {
 
                         Task {
                             do {
-                                // ⚠️🔑 NEVER store OpenAI API keys directly in code. Use environment variables or secrets management. Avoid git commits of keys! 🔑⚠️
-                                let openAI = OpenAI(Configuration(apiKey: "INSERT-API-KEY"))
+                                let openAI = ExampleSecrets.client
 
                                 // A single prompt can be passed as a string literal: `input: "Hello"`.
                                 // Here the earlier turns are replayed as input items.

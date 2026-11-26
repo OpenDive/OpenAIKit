@@ -91,8 +91,7 @@ struct CreateChatFunctionCallExample: View {
 
                         Task {
                             do {
-                                // ⚠️🔑 NEVER store OpenAI API keys directly in code. Use environment variables or secrets management. Avoid git commits of keys! 🔑⚠️
-                                let openAI = OpenAI(Configuration(apiKey: "INSERT-API-KEY"))
+                                let openAI = ExampleSecrets.client
 
                                 // 1. Send the question together with the tool definition.
                                 let first = try await openAI.responses.create(

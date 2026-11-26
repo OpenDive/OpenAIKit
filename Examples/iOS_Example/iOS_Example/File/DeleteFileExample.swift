@@ -50,8 +50,7 @@ struct DeleteFileExample: View {
                     
                     Task {
                         do {
-                            // ⚠️🔑 NEVER store OpenAI API keys directly in code. Use environment variables or secrets management. Avoid git commits of keys! 🔑⚠️
-                            let openAI = OpenAI(Configuration(apiKey: "INSERT-API-KEY"))
+                            let openAI = ExampleSecrets.client
 
                             self.deleteFileResponse = try await openAI.files.delete(fileID: "INSERT-FILE-ID")
                         } catch {

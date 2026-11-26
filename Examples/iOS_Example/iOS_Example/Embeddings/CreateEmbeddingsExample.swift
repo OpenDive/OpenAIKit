@@ -73,8 +73,7 @@ struct CreateEmbeddingsExample: View {
                     
                     Task {
                         do {
-                            // ⚠️🔑 NEVER store OpenAI API keys directly in code. Use environment variables or secrets management. Avoid git commits of keys! 🔑⚠️
-                            let openAI = OpenAI(Configuration(apiKey: "INSERT-API-KEY"))
+                            let openAI = ExampleSecrets.client
 
                             self.embeddingsResponse = try await openAI.embeddings.create(
                                 CreateEmbeddingRequest(model: .textEmbedding3Small, input: .string(input))

@@ -53,8 +53,7 @@ struct CreateChatCompletionExample: View {
 
                         Task {
                             do {
-                                // ⚠️🔑 NEVER store OpenAI API keys directly in code. Use environment variables or secrets management. Avoid git commits of keys! 🔑⚠️
-                                let openAI = OpenAI(Configuration(apiKey: "INSERT-API-KEY"))
+                                let openAI = ExampleSecrets.client
                                 let chatCompletion = try await openAI.chat.completions.create(
                                     CreateChatCompletionRequest(
                                         model: "gpt-6.2-astra",

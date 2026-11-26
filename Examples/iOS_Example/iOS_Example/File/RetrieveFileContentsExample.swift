@@ -53,8 +53,7 @@ struct RetrieveFileContentsExample: View {
                     
                     Task {
                         do {
-                            // ⚠️🔑 NEVER store OpenAI API keys directly in code. Use environment variables or secrets management. Avoid git commits of keys! 🔑⚠️
-                            let openAI = OpenAI(Configuration(apiKey: "INSERT-API-KEY"))
+                            let openAI = ExampleSecrets.client
 
                             // Returns the file's raw bytes. The upload example sends a JSON Lines file.
                             let data = try await openAI.files.retrieveContent(fileID: "INSERT-FILE-ID")

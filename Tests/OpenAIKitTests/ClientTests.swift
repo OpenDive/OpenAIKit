@@ -228,6 +228,49 @@ struct RetryTests {
     }
 }
 
+@Suite("Cancellation")
+struct CancellationTests {
+    /// A transport that never answers, so the only way out is cancellation.
+    struct HangingTransport: OpenAIHTTPTransport {
+        func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
+            try await Task.sleep(nanoseconds: 60_000_000_000)
+            throw URLError(.timedOut)
+        }
+
+        func stream(_ request: URLRequest) async throws -> (AsyncThrowingStream<Data, any Error>, HTTPURLResponse) {
+            try await Task.sleep(nanoseconds: 60_000_000_000)
+            throw URLError(.timedOut)
+        }
+    }
+
+    @Test func cancellingTheTaskEndsTheRequest() async throws {
+        let client = OpenAI(Configuration(apiKey: "sk"), transport: HangingTransport())
+        let task = Task { try await client.models.list() }
+        try await Task.sleep(nanoseconds: 100_000_000)
+        let start = Date()
+        task.cancel()
+        let result = await task.result
+        #expect(Date().timeIntervalSince(start) < 5)
+        guard case .failure(let error) = result else {
+            Issue.record("Expected a failure")
+            return
+        }
+        #expect(error is CancellationError, "Got \(error)")
+    }
+
+    @Test func cancellingTheStreamEndsIt() async throws {
+        let client = OpenAI(Configuration(apiKey: "sk"), transport: HangingTransport())
+        let task = Task {
+            for try await _ in client.responses.createStream(CreateResponse(model: "gpt-6.2-astra", input: "Hi")) {}
+        }
+        try await Task.sleep(nanoseconds: 100_000_000)
+        let start = Date()
+        task.cancel()
+        _ = await task.result
+        #expect(Date().timeIntervalSince(start) < 5)
+    }
+}
+
 @Suite("Pagination")
 struct PaginationTests {
     @Test func listAllFollowsCursors() async throws {

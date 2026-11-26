@@ -54,8 +54,7 @@ struct ContentPolicyExample: View {
                     
                     Task {
                         do {
-                            // ⚠️🔑 NEVER store OpenAI API keys directly in code. Use environment variables or secrets management. Avoid git commits of keys! 🔑⚠️
-                            let openAI = OpenAI(Configuration(apiKey: "INSERT-API-KEY"))
+                            let openAI = ExampleSecrets.client
                             let moderation = try await openAI.moderations.create(
                                 CreateModerationRequest(input: .string(input), model: .omniModerationLatest)
                             )

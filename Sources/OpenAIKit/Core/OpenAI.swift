@@ -66,6 +66,7 @@ public final class OpenAI: Sendable {
                 }
                 throw OpenAIAPIError(statusCode: response.statusCode, body: data, headers: headers)
             } catch let error as URLError {
+                if error.code == .cancelled || Task.isCancelled { throw CancellationError() }
                 if attempt < resolved.resolvedMaxRetries, Self.isRetryable(error) {
                     try await Self.sleep(beforeRetry: attempt, maxRetries: resolved.resolvedMaxRetries, headers: [:])
                     attempt += 1
@@ -130,6 +131,10 @@ public final class OpenAI: Sendable {
                     }
                     continuation.finish()
                 } catch let error as URLError {
+                    if error.code == .cancelled || Task.isCancelled {
+                        continuation.finish(throwing: CancellationError())
+                        return
+                    }
                     continuation.finish(throwing: error.code == .timedOut ? OpenAIError.timeout : OpenAIError.connection(error))
                 } catch {
                     continuation.finish(throwing: error)
@@ -157,6 +162,7 @@ public final class OpenAI: Sendable {
                 }
                 throw OpenAIAPIError(statusCode: response.statusCode, body: body, headers: headers)
             } catch let error as URLError {
+                if error.code == .cancelled || Task.isCancelled { throw CancellationError() }
                 if attempt < options.resolvedMaxRetries, Self.isRetryable(error) {
                     try await Self.sleep(beforeRetry: attempt, maxRetries: options.resolvedMaxRetries, headers: [:])
                     attempt += 1

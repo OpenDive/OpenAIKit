@@ -46,7 +46,7 @@ struct ContentView: View {
         .task {
             do {
                 // ⚠️🔑 NEVER store OpenAI API keys directly in code. Use environment variables or secrets management. Avoid git commits of keys! 🔑⚠️
-                let openAI = OpenAI(Configuration(apiKey: "INSERT-API-KEY"))
+                let openAI = OpenAI(Configuration(apiKey: ProcessInfo.processInfo.environment["OPENAI_API_KEY"] ?? "INSERT-API-KEY"))
 
                 // GPT Image models always return base64-encoded image data.
                 let result = try await openAI.images.generate(

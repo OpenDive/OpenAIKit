@@ -53,8 +53,7 @@ struct GenerateCompletionExample: View {
                     
                     Task {
                         do {
-                            // ⚠️🔑 NEVER store OpenAI API keys directly in code. Use environment variables or secrets management. Avoid git commits of keys! 🔑⚠️
-                            let openAI = OpenAI(Configuration(apiKey: "INSERT-API-KEY"))
+                            let openAI = ExampleSecrets.client
                             let completionResponse = try await openAI.completions.create(
                                 CreateCompletionRequest(
                                     model: .gpt3_5TurboInstruct,

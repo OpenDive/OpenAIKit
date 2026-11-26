@@ -29,6 +29,7 @@ OpenAIKit 4.0 is generated from OpenAI's OpenAPI specification (openai/openai-op
 - `JSONValue` for arbitrary JSON, and `FileUpload` for multipart files.
 - Linux support, with a portable SHA-256/HMAC for webhook verification where CryptoKit is unavailable.
 - `Generator/generate.py`, which regenerates the package from a pinned spec, and `bump`, which pins the newest one.
+- Cancelling the Swift `Task` that made a request cancels the HTTP request, and the call throws `CancellationError`.
 
 ### Changed
 - Retries now apply only to connection errors, 408, 409, 429 and 5xx, with exponential backoff (0.5–8 s, jitter) and support for `retry-after`, `retry-after-ms` and `x-should-retry`. 3.x retried every error, including 4xx.
@@ -40,7 +41,8 @@ OpenAIKit 4.0 is generated from OpenAI's OpenAPI specification (openai/openai-op
 ### CI and Docs
 - CI builds and tests on macOS with Xcode 26.3, 26.6 and 27.2 (Swift 6.2, 6.3, 6.4); on iOS, tvOS, watchOS and visionOS simulators; and on Linux with Swift 6.2, 6.3 and 6.4. A separate job fails when the generated sources don't match the pinned spec.
 - Tests use Swift Testing. They decode every example in the spec (769 examples) and round-trip each one, and cover requests, multipart, retries, errors, streaming, pagination and webhooks.
-- Rewrote the README for 4.0. Its code samples are compiled by the test suite. Added MIGRATION.md, Generator/README.md and AGENTS.md.
+- Rewrote the README for 4.0, with demo recordings and an image gallery made with OpenAIKit. Its code samples are compiled by the test suite. Added MIGRATION.md, Generator/README.md and AGENTS.md.
+- Ported the example apps to 4.0. The iOS app has a Showcase section (streaming chat, image studio, Realtime console) and reads `OPENAI_API_KEY` from the environment.
 
 ## 3.0.0 - 2026-02-19
 

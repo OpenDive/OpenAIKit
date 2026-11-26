@@ -49,8 +49,7 @@ struct EditImageExample: View {
 
                     Task {
                         do {
-                            // ⚠️🔑 NEVER store OpenAI API keys directly in code. Use environment variables or secrets management. Avoid git commits of keys! 🔑⚠️
-                            let openAI = OpenAI(Configuration(apiKey: "INSERT-API-KEY"))
+                            let openAI = ExampleSecrets.client
 
                             // Re-encode the bundled images: Xcode optimizes PNGs it copies into an iOS
                             // app bundle into a format other decoders cannot read. The mask's transparent

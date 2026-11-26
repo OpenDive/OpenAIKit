@@ -26,17 +26,22 @@ public final class URLSessionTransport: OpenAIHTTPTransport, @unchecked Sendable
     }
 
     public func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
-        try await withCheckedThrowingContinuation { continuation in
-            let task = session.dataTask(with: request) { data, response, error in
-                if let error {
-                    continuation.resume(throwing: error)
-                } else if let response = response as? HTTPURLResponse {
-                    continuation.resume(returning: (data ?? Data(), response))
-                } else {
-                    continuation.resume(throwing: URLError(.badServerResponse))
+        let handle = CancellableTask()
+        return try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { continuation in
+                let task = session.dataTask(with: request) { data, response, error in
+                    if let error {
+                        continuation.resume(throwing: error)
+                    } else if let response = response as? HTTPURLResponse {
+                        continuation.resume(returning: (data ?? Data(), response))
+                    } else {
+                        continuation.resume(throwing: URLError(.badServerResponse))
+                    }
                 }
+                handle.start(task)
             }
-            task.resume()
+        } onCancel: {
+            handle.cancel()
         }
     }
 
@@ -68,6 +73,30 @@ public final class URLSessionTransport: OpenAIHTTPTransport, @unchecked Sendable
         }
         return (stream, http)
         #endif
+    }
+}
+
+/// Cancels a `URLSessionTask` when the Swift task that started it is cancelled, even if
+/// cancellation arrives before the task starts.
+private final class CancellableTask: @unchecked Sendable {
+    private let lock = NSLock()
+    private var task: URLSessionTask?
+    private var cancelled = false
+
+    func start(_ task: URLSessionTask) {
+        lock.lock()
+        self.task = task
+        let cancelled = self.cancelled
+        lock.unlock()
+        if cancelled { task.cancel() } else { task.resume() }
+    }
+
+    func cancel() {
+        lock.lock()
+        cancelled = true
+        let task = self.task
+        lock.unlock()
+        task?.cancel()
     }
 }
 

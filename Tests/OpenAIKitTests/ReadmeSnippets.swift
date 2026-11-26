@@ -18,6 +18,19 @@ enum ReadmeSnippets {
         print(response.outputText)
     }
 
+    static func tldr() async throws {
+        let client = OpenAI(apiKey: "sk-...")
+        let reply = try await client.responses.create(CreateResponse(model: "gpt-6.2-astra", input: "Hello!"))
+        print(reply.outputText)
+    }
+
+    static func cancellation(client: OpenAI) async {
+        let task = Task {
+            try await client.responses.create(CreateResponse(model: "gpt-6.2-astra", input: "Write a long essay."))
+        }
+        task.cancel() // The HTTP request is cancelled too; the call throws CancellationError.
+    }
+
     static func configuration() {
         let client = OpenAI(Configuration(
             apiKey: "sk-...",
