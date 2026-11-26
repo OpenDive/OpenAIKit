@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented in this file.
 
-## 4.1.0 - 2026-11-25
+## 4.1.0 - 2026-11-26
 
 ### Changed
 - Streaming is 2.3× faster and uses about 40% less CPU. In a recorded ~700-word chat stream, delivery dropped from 45.2 ms to 19.9 ms. The server-sent event parser works on bytes, each event is decoded once instead of twice, and streamed bodies arrive in network-sized chunks through a delegate-based `URLSession` instead of byte by byte.
