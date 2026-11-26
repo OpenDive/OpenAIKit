@@ -124,6 +124,24 @@ let fromEnvironment = OpenAI(.fromEnvironment())
 
 </details>
 
+<details>
+<summary><b>Proxying through your own server</b></summary>
+
+Keep the OpenAI key on your server and point the app at it. With a `baseURL` other than `api.openai.com`, the API key is optional: without one, OpenAIKit sends no `Authorization` header, and you can authenticate to your server with your own headers. For full control over every request, pass your own `OpenAIHTTPTransport`.
+
+```swift
+// Your server adds the OpenAI key, so the app never holds it.
+// With a base URL other than api.openai.com, no API key is required.
+let client = OpenAI(Configuration(
+    baseURL: URL(string: "https://api.example.com/openai/v1")!,
+    requestOptions: OpenAIRequestOptions(additionalHeaders: ["Authorization": "Bearer \(userSessionToken)"])
+))
+```
+
+The server should forward requests to `https://api.openai.com/v1` unchanged, including streaming responses.
+
+</details>
+
 ## Cookbook
 
 ### 💬 Responses

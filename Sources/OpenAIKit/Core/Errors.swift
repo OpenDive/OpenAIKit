@@ -6,9 +6,9 @@ import Foundation
 ///
 /// HTTP error responses throw ``OpenAIAPIError`` instead.
 public enum OpenAIError: Error, Sendable, LocalizedError {
-    /// The operation needs `Configuration.apiKey` and it is not set.
+    /// `Configuration.apiKey` is not set and requests go straight to OpenAI.
     case missingAPIKey
-    /// The operation is part of the Administration API and `Configuration.adminAPIKey` is not set.
+    /// The operation is part of the Administration API, `Configuration.adminAPIKey` is not set, and requests go straight to OpenAI.
     case missingAdminAPIKey
     /// The base URL and path did not form a valid URL.
     case invalidURL(String)

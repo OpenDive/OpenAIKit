@@ -7,7 +7,11 @@ public struct Configuration: Sendable {
     /// The default API base URL.
     public static let defaultBaseURL = URL(string: "https://api.openai.com/v1")!
 
-    /// The API key sent as a bearer token. Required for every operation except the Administration API.
+    /// The API key sent as a bearer token.
+    ///
+    /// Required when `baseURL` is OpenAI's API. With any other base URL, such as your own proxy
+    /// that adds the key on the server, leave it `nil` and no `Authorization` header is sent.
+    /// Send your proxy's own credentials with `requestOptions.additionalHeaders`.
     public var apiKey: String?
 
     /// An admin API key, used only by `client.admin` operations.
@@ -44,6 +48,11 @@ public struct Configuration: Sendable {
         self.webhookSecret = webhookSecret
         self.baseURL = baseURL
         self.requestOptions = requestOptions
+    }
+
+    /// Whether requests go straight to OpenAI, where a missing API key is always an error.
+    var talksToOpenAIDirectly: Bool {
+        baseURL.host?.lowercased() == Configuration.defaultBaseURL.host
     }
 
     /// Reads `OPENAI_API_KEY`, `OPENAI_ADMIN_KEY`, `OPENAI_ORG_ID`, `OPENAI_PROJECT_ID`,
