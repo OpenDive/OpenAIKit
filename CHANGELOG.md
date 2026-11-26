@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented in this file.
 
-## Unreleased
+## 4.1.0 - 2026-11-25
 
 ### Changed
 - Streaming is 2.3× faster and uses about 40% less CPU. In a recorded ~700-word chat stream, delivery dropped from 45.2 ms to 19.9 ms. The server-sent event parser works on bytes, each event is decoded once instead of twice, and streamed bodies arrive in network-sized chunks through a delegate-based `URLSession` instead of byte by byte.
@@ -11,6 +11,11 @@ All notable changes to this project are documented in this file.
 ### Added
 - End-to-end tests that replay API traffic recorded from the live API through a local server, so requests go through a real `URLSession`. They cover JSON endpoints, both stream types, pacing, early exit, cancellation, connection reuse and concurrent requests.
 - Live API tests that run only when `OPENAI_API_KEY` is set: Responses, streaming, tool calling, embeddings and a Realtime session.
+
+## 4.0.1 - 2026-11-25
+
+### Fixed
+- Requests to a custom `baseURL`, such as your own proxy, no longer need an API key. Without one, no `Authorization` header is sent, so the server can add OpenAI's key and the app can authenticate with its own headers ([#37](https://github.com/OpenDive/OpenAIKit/issues/37)). A missing key against `api.openai.com` still throws `OpenAIError.missingAPIKey`.
 
 ## 4.0.0 - 2026-11-25
 
