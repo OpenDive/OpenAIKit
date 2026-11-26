@@ -9,7 +9,7 @@ import Foundation
 ///  - Improve the quality of my chatbot
 ///  - See how well my chatbot handles customer support
 ///  - Compare how different models perform on the same task
-public struct Eval: Codable, Hashable, Sendable {
+public struct Eval: OpenAIModel {
     /// The object type.
     public var object: String = "eval"
     /// Unique identifier for the evaluation.
@@ -40,20 +40,32 @@ public struct Eval: Codable, Hashable, Sendable {
         self.metadata = metadata
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case id
-        case name
-        case dataSourceConfig = "data_source_config"
-        case testingCriteria = "testing_criteria"
-        case createdAt = "created_at"
-        case metadata
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "eval"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.dataSourceConfig = try container.decode(Eval.DataSourceConfig.self, forKey: "data_source_config")
+        self.testingCriteria = try container.decode([Eval.TestingCriteriaItem].self, forKey: "testing_criteria")
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.metadata = try container.decodeIfPresent(Metadata.self, forKey: "metadata")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.dataSourceConfig, forKey: "data_source_config")
+        try container.encode(self.testingCriteria, forKey: "testing_criteria")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
     }
 
     /// Configuration of data sources used in runs of the evaluation.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum DataSourceConfig: Codable, Hashable, Sendable {
+    public indirect enum DataSourceConfig: OpenAIModel {
         /// `type`: `custom`
         case custom(EvalCustomDataSourceConfig)
         /// `type`: `logs`
@@ -100,7 +112,7 @@ public struct Eval: Codable, Hashable, Sendable {
     }
 
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum TestingCriteriaItem: Codable, Hashable, Sendable {
+    public indirect enum TestingCriteriaItem: OpenAIModel {
         /// `type`: `label_model`
         case labelModel(EvalGraderLabelModel)
         /// `type`: `string_check`
@@ -162,7 +174,7 @@ public struct Eval: Codable, Hashable, Sendable {
 }
 
 /// An object representing an error response from the Eval API.
-public struct EvalApiError: Codable, Hashable, Sendable {
+public struct EvalApiError: OpenAIModel {
     /// The error code.
     public var code: String
     /// The error message.
@@ -173,9 +185,16 @@ public struct EvalApiError: Codable, Hashable, Sendable {
         self.message = message
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case code
-        case message
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.code = try container.decode(String.self, forKey: "code")
+        self.message = try container.decode(String.self, forKey: "message")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.code, forKey: "code")
+        try container.encode(self.message, forKey: "message")
     }
 }
 
@@ -183,7 +202,7 @@ public struct EvalApiError: Codable, Hashable, Sendable {
 /// The response schema defines the shape of the data that will be:
 /// - Used to define your testing criteria and
 /// - What data is required when creating a run
-public struct EvalCustomDataSourceConfig: Codable, Hashable, Sendable {
+public struct EvalCustomDataSourceConfig: OpenAIModel {
     /// The type of data source. Always `custom`.
     public var type: String = "custom"
     /// The json schema for the run data source items.
@@ -194,15 +213,22 @@ public struct EvalCustomDataSourceConfig: Codable, Hashable, Sendable {
         self.schema = schema
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case schema
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "custom"
+        self.schema = try container.decode(JSONObject.self, forKey: "schema")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.schema, forKey: "schema")
     }
 }
 
 public typealias EvalGraderLabelModel = GraderLabelModel
 
-public struct EvalGraderPython: Codable, Hashable, Sendable {
+public struct EvalGraderPython: OpenAIModel {
     /// The object type, which is always `python`.
     public var type: String = "python"
     /// The name of the grader.
@@ -226,16 +252,26 @@ public struct EvalGraderPython: Codable, Hashable, Sendable {
         self.passThreshold = passThreshold
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
-        case source
-        case imageTag = "image_tag"
-        case passThreshold = "pass_threshold"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "python"
+        self.name = try container.decode(String.self, forKey: "name")
+        self.source = try container.decode(String.self, forKey: "source")
+        self.imageTag = try container.decodeIfPresent(String.self, forKey: "image_tag")
+        self.passThreshold = try container.decodeIfPresent(Double.self, forKey: "pass_threshold")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.source, forKey: "source")
+        try container.encodeIfPresent(self.imageTag, forKey: "image_tag")
+        try container.encodeIfPresent(self.passThreshold, forKey: "pass_threshold")
     }
 }
 
-public struct EvalGraderScoreModel: Codable, Hashable, Sendable {
+public struct EvalGraderScoreModel: OpenAIModel {
     /// The object type, which is always `score_model`.
     public var type: String = "score_model"
     /// The name of the grader.
@@ -267,18 +303,30 @@ public struct EvalGraderScoreModel: Codable, Hashable, Sendable {
         self.passThreshold = passThreshold
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
-        case model
-        case samplingParams = "sampling_params"
-        case input
-        case range
-        case passThreshold = "pass_threshold"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "score_model"
+        self.name = try container.decode(String.self, forKey: "name")
+        self.model = try container.decode(String.self, forKey: "model")
+        self.samplingParams = try container.decodeIfPresent(EvalGraderScoreModel.SamplingParams.self, forKey: "sampling_params")
+        self.input = try container.decode([EvalItem].self, forKey: "input")
+        self.range = try container.decodeIfPresent([Double].self, forKey: "range")
+        self.passThreshold = try container.decodeIfPresent(Double.self, forKey: "pass_threshold")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.model, forKey: "model")
+        try container.encodeIfPresent(self.samplingParams, forKey: "sampling_params")
+        try container.encode(self.input, forKey: "input")
+        try container.encodeIfPresent(self.range, forKey: "range")
+        try container.encodeIfPresent(self.passThreshold, forKey: "pass_threshold")
     }
 
     /// The sampling parameters for the model.
-    public struct SamplingParams: Codable, Hashable, Sendable {
+    public struct SamplingParams: OpenAIModel {
         public var seed: Int?
         public var topP: Double?
         public var temperature: Double?
@@ -299,19 +347,29 @@ public struct EvalGraderScoreModel: Codable, Hashable, Sendable {
             self.reasoningEffort = reasoningEffort
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case seed
-            case topP = "top_p"
-            case temperature
-            case maxCompletionsTokens = "max_completions_tokens"
-            case reasoningEffort = "reasoning_effort"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.seed = try container.decodeIfPresent(Int.self, forKey: "seed")
+            self.topP = try container.decodeIfPresent(Double.self, forKey: "top_p")
+            self.temperature = try container.decodeIfPresent(Double.self, forKey: "temperature")
+            self.maxCompletionsTokens = try container.decodeIfPresent(Int.self, forKey: "max_completions_tokens")
+            self.reasoningEffort = try container.decodeIfPresent(ReasoningEffort.self, forKey: "reasoning_effort")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.seed, forKey: "seed")
+            try container.encodeIfPresent(self.topP, forKey: "top_p")
+            try container.encodeIfPresent(self.temperature, forKey: "temperature")
+            try container.encodeIfPresent(self.maxCompletionsTokens, forKey: "max_completions_tokens")
+            try container.encodeIfPresent(self.reasoningEffort, forKey: "reasoning_effort")
         }
     }
 }
 
 public typealias EvalGraderStringCheck = GraderStringCheck
 
-public struct EvalGraderTextSimilarity: Codable, Hashable, Sendable {
+public struct EvalGraderTextSimilarity: OpenAIModel {
     /// The type of grader.
     public var type: String = "text_similarity"
     /// The name of the grader.
@@ -341,13 +399,24 @@ public struct EvalGraderTextSimilarity: Codable, Hashable, Sendable {
         self.passThreshold = passThreshold
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
-        case input
-        case reference
-        case evaluationMetric = "evaluation_metric"
-        case passThreshold = "pass_threshold"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "text_similarity"
+        self.name = try container.decode(String.self, forKey: "name")
+        self.input = try container.decode(String.self, forKey: "input")
+        self.reference = try container.decode(String.self, forKey: "reference")
+        self.evaluationMetric = try container.decode(EvalGraderTextSimilarity.EvaluationMetric.self, forKey: "evaluation_metric")
+        self.passThreshold = try container.decode(Double.self, forKey: "pass_threshold")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.input, forKey: "input")
+        try container.encode(self.reference, forKey: "reference")
+        try container.encode(self.evaluationMetric, forKey: "evaluation_metric")
+        try container.encode(self.passThreshold, forKey: "pass_threshold")
     }
 
     /// The evaluation metric to use. One of `cosine`, `fuzzy_match`, `bleu`,
@@ -385,7 +454,7 @@ public struct EvalGraderTextSimilarity: Codable, Hashable, Sendable {
 /// precedence over instructions given with the `user` role. Messages with the
 /// `assistant` role are presumed to have been generated by the model in previous
 /// interactions.
-public struct EvalItem: Codable, Hashable, Sendable {
+public struct EvalItem: OpenAIModel {
     /// The role of the message input. One of `user`, `assistant`, `system`, or
     /// `developer`.
     public var role: EvalItem.Role
@@ -398,10 +467,18 @@ public struct EvalItem: Codable, Hashable, Sendable {
         self.content = content
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case role
-        case content
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.role = try container.decode(EvalItem.Role.self, forKey: "role")
+        self.content = try container.decode(EvalItemContent.self, forKey: "content")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.role, forKey: "role")
+        try container.encode(self.content, forKey: "content")
+        try container.encodeIfPresent(self.type, forKey: "type")
     }
 
     /// The role of the message input. One of `user`, `assistant`, `system`, or
@@ -427,7 +504,7 @@ public struct EvalItem: Codable, Hashable, Sendable {
 }
 
 /// Inputs to the model - can contain template strings. Supports text, output text, input images, and input audio, either as a single item or an array of items.
-public indirect enum EvalItemContent: Codable, Hashable, Sendable {
+public indirect enum EvalItemContent: OpenAIModel {
     case item(EvalItemContentItem)
     case array(EvalItemContentArray)
     /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
@@ -466,7 +543,7 @@ public typealias EvalItemContentArray = [EvalItemContentItem]
 /// A single content item: input text, output text, input image, or input audio.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum EvalItemContentItem: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+public indirect enum EvalItemContentItem: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
     case evalItemContentText(EvalItemContentText)
     /// `type`: `input_text`
     case inputText(InputTextContent)
@@ -531,7 +608,7 @@ public indirect enum EvalItemContentItem: Codable, Hashable, Sendable, Expressib
 }
 
 /// A text output from the model.
-public struct EvalItemContentOutputText: Codable, Hashable, Sendable {
+public struct EvalItemContentOutputText: OpenAIModel {
     /// The type of the output text. Always `output_text`.
     public var type: String = "output_text"
     /// The text output from the model.
@@ -541,9 +618,16 @@ public struct EvalItemContentOutputText: Codable, Hashable, Sendable {
         self.text = text
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case text
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "output_text"
+        self.text = try container.decode(String.self, forKey: "text")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.text, forKey: "text")
     }
 }
 
@@ -551,7 +635,7 @@ public struct EvalItemContentOutputText: Codable, Hashable, Sendable {
 public typealias EvalItemContentText = String
 
 /// An image input block used within EvalItem content arrays.
-public struct EvalItemInputImage: Codable, Hashable, Sendable {
+public struct EvalItemInputImage: OpenAIModel {
     /// The type of the image input. Always `input_image`.
     public var type: String = "input_image"
     /// The URL of the image input.
@@ -564,14 +648,22 @@ public struct EvalItemInputImage: Codable, Hashable, Sendable {
         self.detail = detail
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case imageURL = "image_url"
-        case detail
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "input_image"
+        self.imageURL = try container.decode(String.self, forKey: "image_url")
+        self.detail = try container.decodeIfPresent(String.self, forKey: "detail")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.imageURL, forKey: "image_url")
+        try container.encodeIfPresent(self.detail, forKey: "detail")
     }
 }
 
-public struct EvalJsonlFileContentSource: Codable, Hashable, Sendable {
+public struct EvalJsonlFileContentSource: OpenAIModel {
     /// The type of jsonl source. Always `file_content`.
     public var type: String = "file_content"
     /// The content of the jsonl file.
@@ -581,12 +673,19 @@ public struct EvalJsonlFileContentSource: Codable, Hashable, Sendable {
         self.content = content
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case content
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "file_content"
+        self.content = try container.decode([EvalJsonlFileContentSource.ContentItem].self, forKey: "content")
     }
 
-    public struct ContentItem: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.content, forKey: "content")
+    }
+
+    public struct ContentItem: OpenAIModel {
         public var item: JSONObject
         public var sample: JSONObject?
 
@@ -595,14 +694,21 @@ public struct EvalJsonlFileContentSource: Codable, Hashable, Sendable {
             self.sample = sample
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case item
-            case sample
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.item = try container.decode(JSONObject.self, forKey: "item")
+            self.sample = try container.decodeIfPresent(JSONObject.self, forKey: "sample")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.item, forKey: "item")
+            try container.encodeIfPresent(self.sample, forKey: "sample")
         }
     }
 }
 
-public struct EvalJsonlFileIdSource: Codable, Hashable, Sendable {
+public struct EvalJsonlFileIdSource: OpenAIModel {
     /// The type of jsonl source. Always `file_id`.
     public var type: String = "file_id"
     /// The identifier of the file.
@@ -612,14 +718,21 @@ public struct EvalJsonlFileIdSource: Codable, Hashable, Sendable {
         self.id = id
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "file_id"
+        self.id = try container.decode(String.self, forKey: "id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
     }
 }
 
 /// An object representing a list of evals.
-public struct EvalList: Codable, Hashable, Sendable {
+public struct EvalList: OpenAIModel {
     /// The type of this object. It is always set to "list".
     public var object: String = "list"
     /// An array of eval objects.
@@ -643,12 +756,22 @@ public struct EvalList: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([Eval].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
@@ -656,7 +779,7 @@ public struct EvalList: Codable, Hashable, Sendable {
 /// This is usually metadata like `usecase=chatbot` or `prompt-version=v2`, etc.
 /// The schema returned by this data source config is used to defined what variables are available in your evals.
 /// `item` and `sample` are both defined when using this data source config.
-public struct EvalLogsDataSourceConfig: Codable, Hashable, Sendable {
+public struct EvalLogsDataSourceConfig: OpenAIModel {
     /// The type of data source. Always `logs`.
     public var type: String = "logs"
     public var metadata: Metadata?
@@ -669,15 +792,23 @@ public struct EvalLogsDataSourceConfig: Codable, Hashable, Sendable {
         self.metadata = metadata
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case metadata
-        case schema
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "logs"
+        self.metadata = try container.decodeIfPresent(Metadata.self, forKey: "metadata")
+        self.schema = try container.decode(JSONObject.self, forKey: "schema")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
+        try container.encode(self.schema, forKey: "schema")
     }
 }
 
 /// A EvalResponsesSource object describing a run data source configuration.
-public struct EvalResponsesSource: Codable, Hashable, Sendable {
+public struct EvalResponsesSource: OpenAIModel {
     /// The type of run data source. Always `responses`.
     public var type: String = "responses"
     public var metadata: JSONObject?
@@ -715,23 +846,39 @@ public struct EvalResponsesSource: Codable, Hashable, Sendable {
         self.tools = tools
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case metadata
-        case model
-        case instructionsSearch = "instructions_search"
-        case createdAfter = "created_after"
-        case createdBefore = "created_before"
-        case reasoningEffort = "reasoning_effort"
-        case temperature
-        case topP = "top_p"
-        case users
-        case tools
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "responses"
+        self.metadata = try container.decodeIfPresent(JSONObject.self, forKey: "metadata")
+        self.model = try container.decodeIfPresent(String.self, forKey: "model")
+        self.instructionsSearch = try container.decodeIfPresent(String.self, forKey: "instructions_search")
+        self.createdAfter = try container.decodeIfPresent(Int.self, forKey: "created_after")
+        self.createdBefore = try container.decodeIfPresent(Int.self, forKey: "created_before")
+        self.reasoningEffort = try container.decodeIfPresent(ReasoningEffort.self, forKey: "reasoning_effort")
+        self.temperature = try container.decodeIfPresent(Double.self, forKey: "temperature")
+        self.topP = try container.decodeIfPresent(Double.self, forKey: "top_p")
+        self.users = try container.decodeIfPresent([String].self, forKey: "users")
+        self.tools = try container.decodeIfPresent([String].self, forKey: "tools")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encodeIfPresent(self.instructionsSearch, forKey: "instructions_search")
+        try container.encodeIfPresent(self.createdAfter, forKey: "created_after")
+        try container.encodeIfPresent(self.createdBefore, forKey: "created_before")
+        try container.encodeIfPresent(self.reasoningEffort, forKey: "reasoning_effort")
+        try container.encodeIfPresent(self.temperature, forKey: "temperature")
+        try container.encodeIfPresent(self.topP, forKey: "top_p")
+        try container.encodeIfPresent(self.users, forKey: "users")
+        try container.encodeIfPresent(self.tools, forKey: "tools")
     }
 }
 
 /// A schema representing an evaluation run.
-public struct EvalRun: Codable, Hashable, Sendable {
+public struct EvalRun: OpenAIModel {
     /// The type of the object. Always "eval.run".
     public var object: String = "eval.run"
     /// Unique identifier for the evaluation run.
@@ -789,25 +936,44 @@ public struct EvalRun: Codable, Hashable, Sendable {
         self.error = error
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case id
-        case evalID = "eval_id"
-        case status
-        case model
-        case name
-        case createdAt = "created_at"
-        case reportURL = "report_url"
-        case resultCounts = "result_counts"
-        case perModelUsage = "per_model_usage"
-        case perTestingCriteriaResults = "per_testing_criteria_results"
-        case dataSource = "data_source"
-        case metadata
-        case error
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "eval.run"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.evalID = try container.decode(String.self, forKey: "eval_id")
+        self.status = try container.decode(String.self, forKey: "status")
+        self.model = try container.decodeIfPresent(String.self, forKey: "model")
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.reportURL = try container.decode(String.self, forKey: "report_url")
+        self.resultCounts = try container.decode(EvalRun.ResultCounts.self, forKey: "result_counts")
+        self.perModelUsage = try container.decodeIfPresent([EvalRun.PerModelUsageItem].self, forKey: "per_model_usage")
+        self.perTestingCriteriaResults = try container.decodeIfPresent([EvalRun.PerTestingCriteriaResult].self, forKey: "per_testing_criteria_results")
+        self.dataSource = try container.decode(EvalRun.DataSource.self, forKey: "data_source")
+        self.metadata = try container.decodeIfPresent(Metadata.self, forKey: "metadata")
+        self.error = try container.decodeIfPresent(EvalApiError.self, forKey: "error")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.evalID, forKey: "eval_id")
+        try container.encode(self.status, forKey: "status")
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.reportURL, forKey: "report_url")
+        try container.encode(self.resultCounts, forKey: "result_counts")
+        try container.encodeIfPresent(self.perModelUsage, forKey: "per_model_usage")
+        try container.encodeIfPresent(self.perTestingCriteriaResults, forKey: "per_testing_criteria_results")
+        try container.encode(self.dataSource, forKey: "data_source")
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
+        try container.encodeIfPresent(self.error, forKey: "error")
     }
 
     /// Counters summarizing the outcomes of the evaluation run.
-    public struct ResultCounts: Codable, Hashable, Sendable {
+    public struct ResultCounts: OpenAIModel {
         /// Total number of executed output items.
         public var total: Int
         /// Number of output items that resulted in an error.
@@ -829,15 +995,24 @@ public struct EvalRun: Codable, Hashable, Sendable {
             self.passed = passed
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case total
-            case errored
-            case failed
-            case passed
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.total = try container.decode(Int.self, forKey: "total")
+            self.errored = try container.decode(Int.self, forKey: "errored")
+            self.failed = try container.decode(Int.self, forKey: "failed")
+            self.passed = try container.decode(Int.self, forKey: "passed")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.total, forKey: "total")
+            try container.encode(self.errored, forKey: "errored")
+            try container.encode(self.failed, forKey: "failed")
+            try container.encode(self.passed, forKey: "passed")
         }
     }
 
-    public struct PerModelUsageItem: Codable, Hashable, Sendable {
+    public struct PerModelUsageItem: OpenAIModel {
         /// The name of the model.
         public var modelName: String
         /// The number of invocations.
@@ -867,17 +1042,28 @@ public struct EvalRun: Codable, Hashable, Sendable {
             self.cachedTokens = cachedTokens
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case modelName = "model_name"
-            case invocationCount = "invocation_count"
-            case promptTokens = "prompt_tokens"
-            case completionTokens = "completion_tokens"
-            case totalTokens = "total_tokens"
-            case cachedTokens = "cached_tokens"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.modelName = try container.decode(String.self, forKey: "model_name")
+            self.invocationCount = try container.decode(Int.self, forKey: "invocation_count")
+            self.promptTokens = try container.decode(Int.self, forKey: "prompt_tokens")
+            self.completionTokens = try container.decode(Int.self, forKey: "completion_tokens")
+            self.totalTokens = try container.decode(Int.self, forKey: "total_tokens")
+            self.cachedTokens = try container.decode(Int.self, forKey: "cached_tokens")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.modelName, forKey: "model_name")
+            try container.encode(self.invocationCount, forKey: "invocation_count")
+            try container.encode(self.promptTokens, forKey: "prompt_tokens")
+            try container.encode(self.completionTokens, forKey: "completion_tokens")
+            try container.encode(self.totalTokens, forKey: "total_tokens")
+            try container.encode(self.cachedTokens, forKey: "cached_tokens")
         }
     }
 
-    public struct PerTestingCriteriaResult: Codable, Hashable, Sendable {
+    public struct PerTestingCriteriaResult: OpenAIModel {
         /// A description of the testing criteria.
         public var testingCriteria: String
         /// Number of tests passed for this criteria.
@@ -895,17 +1081,25 @@ public struct EvalRun: Codable, Hashable, Sendable {
             self.failed = failed
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case testingCriteria = "testing_criteria"
-            case passed
-            case failed
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.testingCriteria = try container.decode(String.self, forKey: "testing_criteria")
+            self.passed = try container.decode(Int.self, forKey: "passed")
+            self.failed = try container.decode(Int.self, forKey: "failed")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.testingCriteria, forKey: "testing_criteria")
+            try container.encode(self.passed, forKey: "passed")
+            try container.encode(self.failed, forKey: "failed")
         }
     }
 
     /// Information about the run's data source.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum DataSource: Codable, Hashable, Sendable {
+    public indirect enum DataSource: OpenAIModel {
         /// `type`: `jsonl`
         case jsonl(CreateEvalJsonlRunDataSource)
         /// `type`: `completions`
@@ -953,7 +1147,7 @@ public struct EvalRun: Codable, Hashable, Sendable {
 }
 
 /// An object representing a list of runs for an evaluation.
-public struct EvalRunList: Codable, Hashable, Sendable {
+public struct EvalRunList: OpenAIModel {
     /// The type of this object. It is always set to "list".
     public var object: String = "list"
     /// An array of eval run objects.
@@ -977,17 +1171,27 @@ public struct EvalRunList: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([EvalRun].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
 /// A schema representing an evaluation run output item.
-public struct EvalRunOutputItem: Codable, Hashable, Sendable {
+public struct EvalRunOutputItem: OpenAIModel {
     /// The type of the object. Always "eval.run.output_item".
     public var object: String = "eval.run.output_item"
     /// Unique identifier for the evaluation run output item.
@@ -1031,21 +1235,36 @@ public struct EvalRunOutputItem: Codable, Hashable, Sendable {
         self.sample = sample
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case id
-        case runID = "run_id"
-        case evalID = "eval_id"
-        case createdAt = "created_at"
-        case status
-        case datasourceItemID = "datasource_item_id"
-        case datasourceItem = "datasource_item"
-        case results
-        case sample
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "eval.run.output_item"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.runID = try container.decode(String.self, forKey: "run_id")
+        self.evalID = try container.decode(String.self, forKey: "eval_id")
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.status = try container.decode(String.self, forKey: "status")
+        self.datasourceItemID = try container.decode(Int.self, forKey: "datasource_item_id")
+        self.datasourceItem = try container.decode(JSONObject.self, forKey: "datasource_item")
+        self.results = try container.decode([EvalRunOutputItemResult].self, forKey: "results")
+        self.sample = try container.decode(EvalRunOutputItem.Sample.self, forKey: "sample")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.runID, forKey: "run_id")
+        try container.encode(self.evalID, forKey: "eval_id")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.status, forKey: "status")
+        try container.encode(self.datasourceItemID, forKey: "datasource_item_id")
+        try container.encode(self.datasourceItem, forKey: "datasource_item")
+        try container.encode(self.results, forKey: "results")
+        try container.encode(self.sample, forKey: "sample")
     }
 
     /// A sample containing the input and output of the evaluation run.
-    public struct Sample: Codable, Hashable, Sendable {
+    public struct Sample: OpenAIModel {
         /// An array of input messages.
         public var input: [EvalRunOutputItem.Sample.InputItem]
         /// An array of output messages.
@@ -1090,21 +1309,36 @@ public struct EvalRunOutputItem: Codable, Hashable, Sendable {
             self.error = error
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case input
-            case output
-            case finishReason = "finish_reason"
-            case model
-            case usage
-            case error
-            case temperature
-            case maxCompletionTokens = "max_completion_tokens"
-            case topP = "top_p"
-            case seed
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.input = try container.decode([EvalRunOutputItem.Sample.InputItem].self, forKey: "input")
+            self.output = try container.decode([EvalRunOutputItem.Sample.OutputItem].self, forKey: "output")
+            self.finishReason = try container.decode(String.self, forKey: "finish_reason")
+            self.model = try container.decode(String.self, forKey: "model")
+            self.usage = try container.decode(EvalRunOutputItem.Sample.Usage.self, forKey: "usage")
+            self.error = try container.decodeIfPresent(EvalApiError.self, forKey: "error")
+            self.temperature = try container.decode(Double.self, forKey: "temperature")
+            self.maxCompletionTokens = try container.decode(Int.self, forKey: "max_completion_tokens")
+            self.topP = try container.decode(Double.self, forKey: "top_p")
+            self.seed = try container.decode(Int.self, forKey: "seed")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.input, forKey: "input")
+            try container.encode(self.output, forKey: "output")
+            try container.encode(self.finishReason, forKey: "finish_reason")
+            try container.encode(self.model, forKey: "model")
+            try container.encode(self.usage, forKey: "usage")
+            try container.encodeIfPresent(self.error, forKey: "error")
+            try container.encode(self.temperature, forKey: "temperature")
+            try container.encode(self.maxCompletionTokens, forKey: "max_completion_tokens")
+            try container.encode(self.topP, forKey: "top_p")
+            try container.encode(self.seed, forKey: "seed")
         }
 
         /// An input message.
-        public struct InputItem: Codable, Hashable, Sendable {
+        public struct InputItem: OpenAIModel {
             /// The role of the message sender (e.g., system, user, developer).
             public var role: String
             /// The content of the message.
@@ -1115,13 +1349,20 @@ public struct EvalRunOutputItem: Codable, Hashable, Sendable {
                 self.content = content
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case role
-                case content
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.role = try container.decode(String.self, forKey: "role")
+                self.content = try container.decode(String.self, forKey: "content")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encode(self.role, forKey: "role")
+                try container.encode(self.content, forKey: "content")
             }
         }
 
-        public struct OutputItem: Codable, Hashable, Sendable {
+        public struct OutputItem: OpenAIModel {
             /// The role of the message (e.g. "system", "assistant", "user").
             public var role: String?
             /// The content of the message.
@@ -1132,14 +1373,21 @@ public struct EvalRunOutputItem: Codable, Hashable, Sendable {
                 self.content = content
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case role
-                case content
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.role = try container.decodeIfPresent(String.self, forKey: "role")
+                self.content = try container.decodeIfPresent(String.self, forKey: "content")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.role, forKey: "role")
+                try container.encodeIfPresent(self.content, forKey: "content")
             }
         }
 
         /// Token usage details for the sample.
-        public struct Usage: Codable, Hashable, Sendable {
+        public struct Usage: OpenAIModel {
             /// The total number of tokens used.
             public var totalTokens: Int
             /// The number of completion tokens generated.
@@ -1161,18 +1409,27 @@ public struct EvalRunOutputItem: Codable, Hashable, Sendable {
                 self.cachedTokens = cachedTokens
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case totalTokens = "total_tokens"
-                case completionTokens = "completion_tokens"
-                case promptTokens = "prompt_tokens"
-                case cachedTokens = "cached_tokens"
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.totalTokens = try container.decode(Int.self, forKey: "total_tokens")
+                self.completionTokens = try container.decode(Int.self, forKey: "completion_tokens")
+                self.promptTokens = try container.decode(Int.self, forKey: "prompt_tokens")
+                self.cachedTokens = try container.decode(Int.self, forKey: "cached_tokens")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encode(self.totalTokens, forKey: "total_tokens")
+                try container.encode(self.completionTokens, forKey: "completion_tokens")
+                try container.encode(self.promptTokens, forKey: "prompt_tokens")
+                try container.encode(self.cachedTokens, forKey: "cached_tokens")
             }
         }
     }
 }
 
 /// An object representing a list of output items for an evaluation run.
-public struct EvalRunOutputItemList: Codable, Hashable, Sendable {
+public struct EvalRunOutputItemList: OpenAIModel {
     /// The type of this object. It is always set to "list".
     public var object: String = "list"
     /// An array of eval run output item objects.
@@ -1196,17 +1453,27 @@ public struct EvalRunOutputItemList: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([EvalRunOutputItem].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
 /// A single grader result for an evaluation run output item.
-public struct EvalRunOutputItemResult: Codable, Hashable, Sendable {
+public struct EvalRunOutputItemResult: OpenAIModel {
     /// The name of the grader.
     public var name: String
     /// The grader type (for example, "string-check-grader").
@@ -1232,17 +1499,27 @@ public struct EvalRunOutputItemResult: Codable, Hashable, Sendable {
         self.sample = sample
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case name
-        case type
-        case score
-        case passed
-        case sample
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.name = try container.decode(String.self, forKey: "name")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type")
+        self.score = try container.decode(Double.self, forKey: "score")
+        self.passed = try container.decode(Bool.self, forKey: "passed")
+        self.sample = try container.decodeIfPresent(JSONObject.self, forKey: "sample")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.name, forKey: "name")
+        try container.encodeIfPresent(self.type, forKey: "type")
+        try container.encode(self.score, forKey: "score")
+        try container.encode(self.passed, forKey: "passed")
+        try container.encodeIfPresent(self.sample, forKey: "sample")
     }
 }
 
 /// Deprecated in favor of LogsDataSourceConfig.
-public struct EvalStoredCompletionsDataSourceConfig: Codable, Hashable, Sendable {
+public struct EvalStoredCompletionsDataSourceConfig: OpenAIModel {
     /// The type of data source. Always `stored_completions`.
     public var type: String = "stored_completions"
     public var metadata: Metadata?
@@ -1255,15 +1532,23 @@ public struct EvalStoredCompletionsDataSourceConfig: Codable, Hashable, Sendable
         self.metadata = metadata
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case metadata
-        case schema
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "stored_completions"
+        self.metadata = try container.decodeIfPresent(Metadata.self, forKey: "metadata")
+        self.schema = try container.decode(JSONObject.self, forKey: "schema")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
+        try container.encode(self.schema, forKey: "schema")
     }
 }
 
 /// A StoredCompletionsRunDataSource configuration describing a set of filters
-public struct EvalStoredCompletionsSource: Codable, Hashable, Sendable {
+public struct EvalStoredCompletionsSource: OpenAIModel {
     /// The type of source. Always `stored_completions`.
     public var type: String = "stored_completions"
     public var metadata: Metadata?
@@ -1286,12 +1571,23 @@ public struct EvalStoredCompletionsSource: Codable, Hashable, Sendable {
         self.limit = limit
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case metadata
-        case model
-        case createdAfter = "created_after"
-        case createdBefore = "created_before"
-        case limit
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "stored_completions"
+        self.metadata = try container.decodeIfPresent(Metadata.self, forKey: "metadata")
+        self.model = try container.decodeIfPresent(String.self, forKey: "model")
+        self.createdAfter = try container.decodeIfPresent(Int.self, forKey: "created_after")
+        self.createdBefore = try container.decodeIfPresent(Int.self, forKey: "created_before")
+        self.limit = try container.decodeIfPresent(Int.self, forKey: "limit")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encodeIfPresent(self.createdAfter, forKey: "created_after")
+        try container.encodeIfPresent(self.createdBefore, forKey: "created_before")
+        try container.encodeIfPresent(self.limit, forKey: "limit")
     }
 }

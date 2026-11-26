@@ -4,7 +4,7 @@
 import Foundation
 
 /// The `File` object represents a document that has been uploaded to OpenAI.
-public struct OpenAIFile: Codable, Hashable, Sendable {
+public struct OpenAIFile: OpenAIModel {
     /// The file identifier, which can be referenced in the API endpoints.
     public var id: String
     /// The size of the file, in bytes. In a completed file upload response, this can
@@ -50,16 +50,30 @@ public struct OpenAIFile: Codable, Hashable, Sendable {
         self.statusDetails = statusDetails
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case bytes
-        case createdAt = "created_at"
-        case expiresAt = "expires_at"
-        case filename
-        case object
-        case purpose
-        case status
-        case statusDetails = "status_details"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.bytes = try container.decodeIfPresent(Int.self, forKey: "bytes")
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.expiresAt = try container.decodeIfPresent(Int.self, forKey: "expires_at")
+        self.filename = try container.decode(String.self, forKey: "filename")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "file"
+        self.purpose = try container.decode(OpenAIFile.Purpose.self, forKey: "purpose")
+        self.status = try container.decode(OpenAIFile.Status.self, forKey: "status")
+        self.statusDetails = try container.decodeIfPresent(String.self, forKey: "status_details")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encodeIfPresent(self.bytes, forKey: "bytes")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encodeIfPresent(self.expiresAt, forKey: "expires_at")
+        try container.encode(self.filename, forKey: "filename")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.purpose, forKey: "purpose")
+        try container.encode(self.status, forKey: "status")
+        try container.encodeIfPresent(self.statusDetails, forKey: "status_details")
     }
 
     /// The intended purpose of the file. Supported values are `assistants`, `assistants_output`, `batch`, `batch_output`, `fine-tune`, `fine-tune-results`, `vision`, and `user_data`.

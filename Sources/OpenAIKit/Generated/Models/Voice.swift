@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct VoiceConsentDeletedResource: Codable, Hashable, Sendable {
+public struct VoiceConsentDeletedResource: OpenAIModel {
     /// The consent recording identifier.
     public var id: String
     public var object: String = "audio.voice_consent"
@@ -14,14 +14,22 @@ public struct VoiceConsentDeletedResource: Codable, Hashable, Sendable {
         self.deleted = deleted
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case deleted
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "audio.voice_consent"
+        self.deleted = try container.decode(Bool.self, forKey: "deleted")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.deleted, forKey: "deleted")
     }
 }
 
-public struct VoiceConsentListResource: Codable, Hashable, Sendable {
+public struct VoiceConsentListResource: OpenAIModel {
     public var object: String = "list"
     public var data: [VoiceConsentResource]
     public var firstID: String?
@@ -40,17 +48,27 @@ public struct VoiceConsentListResource: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([VoiceConsentResource].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
 /// A consent recording used to authorize creation of a custom voice.
-public struct VoiceConsentResource: Codable, Hashable, Sendable {
+public struct VoiceConsentResource: OpenAIModel {
     /// The object type, which is always `audio.voice_consent`.
     public var object: String = "audio.voice_consent"
     /// The consent recording identifier.
@@ -74,16 +92,26 @@ public struct VoiceConsentResource: Codable, Hashable, Sendable {
         self.createdAt = createdAt
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case id
-        case name
-        case language
-        case createdAt = "created_at"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "audio.voice_consent"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.language = try container.decode(String.self, forKey: "language")
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.language, forKey: "language")
+        try container.encode(self.createdAt, forKey: "created_at")
     }
 }
 
-public struct VoiceDeletedResource: Codable, Hashable, Sendable {
+public struct VoiceDeletedResource: OpenAIModel {
     /// The voice identifier.
     public var id: String
     /// The object type, which is always `audio.voice.deleted`.
@@ -96,15 +124,23 @@ public struct VoiceDeletedResource: Codable, Hashable, Sendable {
         self.deleted = deleted
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case deleted
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "audio.voice.deleted"
+        self.deleted = try container.decode(Bool.self, forKey: "deleted")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.deleted, forKey: "deleted")
     }
 }
 
 /// A built-in voice name or a custom voice reference.
-public indirect enum VoiceIdsOrCustomVoice: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+public indirect enum VoiceIdsOrCustomVoice: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
     case voiceIdsShared(VoiceIdsShared)
     /// Custom voice reference.
     case variant2(VoiceIdsOrCustomVoice.Variant2)
@@ -141,7 +177,7 @@ public indirect enum VoiceIdsOrCustomVoice: Codable, Hashable, Sendable, Express
     }
 
     /// Custom voice reference.
-    public struct Variant2: Codable, Hashable, Sendable {
+    public struct Variant2: OpenAIModel {
         /// The custom voice ID, e.g. `voice_1234`.
         public var id: String
 
@@ -149,8 +185,14 @@ public indirect enum VoiceIdsOrCustomVoice: Codable, Hashable, Sendable, Express
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decode(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.id, forKey: "id")
         }
     }
 }
@@ -180,7 +222,7 @@ public struct VoiceIdsShared: OpenAIStringEnum {
 }
 
 /// A custom voice that can be used for audio output. Voices created from text prompts are supported only in Live.
-public struct VoiceResource: Codable, Hashable, Sendable {
+public struct VoiceResource: OpenAIModel {
     /// The object type, which is always `audio.voice`.
     public var object: String = "audio.voice"
     /// The voice identifier, which can be referenced in API endpoints.
@@ -208,13 +250,24 @@ public struct VoiceResource: Codable, Hashable, Sendable {
         self.prompt = prompt
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case id
-        case type
-        case prompt
-        case name
-        case createdAt = "created_at"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "audio.voice"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.type = try container.decode(VoiceResource.Kind.self, forKey: "type")
+        self.prompt = try container.decodeIfPresent(String.self, forKey: "prompt")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.prompt, forKey: "prompt")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.createdAt, forKey: "created_at")
     }
 
     /// How the voice was created.

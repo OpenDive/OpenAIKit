@@ -6,7 +6,7 @@ import Foundation
 /// Content item used to generate a response.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum Item: Codable, Hashable, Sendable {
+public indirect enum Item: OpenAIModel {
     /// `type`: `message`
     case message(InputMessage)
     case outputMessage(OutputMessage)
@@ -230,7 +230,7 @@ public indirect enum Item: Codable, Hashable, Sendable {
 /// An item representing a message, tool call, tool output, reasoning, or other response element.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum ItemField: Codable, Hashable, Sendable {
+public indirect enum ItemField: OpenAIModel {
     /// `type`: `message`
     case message(Message)
     /// `type`: `program`
@@ -452,7 +452,7 @@ public indirect enum ItemField: Codable, Hashable, Sendable {
 }
 
 /// An internal identifier for an item to reference.
-public struct ItemReferenceParam: Codable, Hashable, Sendable {
+public struct ItemReferenceParam: OpenAIModel {
     public var type: String?
     /// The ID of the item to reference.
     public var id: String
@@ -462,16 +462,23 @@ public struct ItemReferenceParam: Codable, Hashable, Sendable {
         self.type = type
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type")
+        self.id = try container.decode(String.self, forKey: "id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
     }
 }
 
 /// Content item used to generate a response.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum ItemResource: Codable, Hashable, Sendable {
+public indirect enum ItemResource: OpenAIModel {
     /// `type`: `message`
     case message(InputMessageResource)
     case outputMessage(OutputMessage)

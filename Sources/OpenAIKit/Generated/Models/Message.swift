@@ -4,7 +4,7 @@
 import Foundation
 
 /// A message to or from the model.
-public struct Message: Codable, Hashable, Sendable {
+public struct Message: OpenAIModel {
     /// The type of the message. Always set to `message`.
     public var type: String = "message"
     /// The unique ID of the message.
@@ -31,19 +31,30 @@ public struct Message: Codable, Hashable, Sendable {
         self.phase = phase
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case status
-        case role
-        case content
-        case phase
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "message"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.status = try container.decode(MessageStatus.self, forKey: "status")
+        self.role = try container.decode(MessageRole.self, forKey: "role")
+        self.content = try container.decode([Message.ContentItem].self, forKey: "content")
+        self.phase = try container.decodeIfPresent(MessagePhase2.self, forKey: "phase")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.status, forKey: "status")
+        try container.encode(self.role, forKey: "role")
+        try container.encode(self.content, forKey: "content")
+        try container.encodeIfPresent(self.phase, forKey: "phase")
     }
 
     /// A content part that makes up an input or output item.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum ContentItem: Codable, Hashable, Sendable {
+    public indirect enum ContentItem: OpenAIModel {
         /// `type`: `input_text`
         case inputText(InputTextContent)
         /// `type`: `output_text`
@@ -133,7 +144,7 @@ public struct Message: Codable, Hashable, Sendable {
 }
 
 /// References an image [File](https://developers.openai.com/api/reference/resources/files) in the content of a message.
-public struct MessageContentImageFileObject: Codable, Hashable, Sendable {
+public struct MessageContentImageFileObject: OpenAIModel {
     /// Always `image_file`.
     public var type: String = "image_file"
     public var imageFile: MessageContentImageFileObject.ImageFile
@@ -142,12 +153,19 @@ public struct MessageContentImageFileObject: Codable, Hashable, Sendable {
         self.imageFile = imageFile
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case imageFile = "image_file"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "image_file"
+        self.imageFile = try container.decode(MessageContentImageFileObject.ImageFile.self, forKey: "image_file")
     }
 
-    public struct ImageFile: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.imageFile, forKey: "image_file")
+    }
+
+    public struct ImageFile: OpenAIModel {
         /// The [File](https://developers.openai.com/api/reference/resources/files) ID of the image in the message content. Set `purpose="vision"` when uploading the File if you need to later display the file content.
         public var fileID: String
         /// Specifies the detail level of the image if specified by the user. `low` uses fewer tokens, you can opt in to high resolution using `high`.
@@ -158,9 +176,16 @@ public struct MessageContentImageFileObject: Codable, Hashable, Sendable {
             self.detail = detail
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case fileID = "file_id"
-            case detail
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.fileID = try container.decode(String.self, forKey: "file_id")
+            self.detail = try container.decodeIfPresent(MessageContentImageFileObject.ImageFile.Detail.self, forKey: "detail")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.fileID, forKey: "file_id")
+            try container.encodeIfPresent(self.detail, forKey: "detail")
         }
 
         /// Specifies the detail level of the image if specified by the user. `low` uses fewer tokens, you can opt in to high resolution using `high`.
@@ -185,7 +210,7 @@ public struct MessageContentImageFileObject: Codable, Hashable, Sendable {
 }
 
 /// References an image URL in the content of a message.
-public struct MessageContentImageUrlObject: Codable, Hashable, Sendable {
+public struct MessageContentImageUrlObject: OpenAIModel {
     /// The type of the content part.
     public var type: String = "image_url"
     public var imageURL: MessageContentImageUrlObject.ImageURL
@@ -194,12 +219,19 @@ public struct MessageContentImageUrlObject: Codable, Hashable, Sendable {
         self.imageURL = imageURL
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case imageURL = "image_url"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "image_url"
+        self.imageURL = try container.decode(MessageContentImageUrlObject.ImageURL.self, forKey: "image_url")
     }
 
-    public struct ImageURL: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.imageURL, forKey: "image_url")
+    }
+
+    public struct ImageURL: OpenAIModel {
         /// The external URL of the image, must be a supported image types: jpeg, jpg, png, gif, webp.
         public var url: String
         /// Specifies the detail level of the image. `low` uses fewer tokens, you can opt in to high resolution using `high`. Default value is `auto`
@@ -210,9 +242,16 @@ public struct MessageContentImageUrlObject: Codable, Hashable, Sendable {
             self.detail = detail
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case url
-            case detail
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.url = try container.decode(String.self, forKey: "url")
+            self.detail = try container.decodeIfPresent(MessageContentImageUrlObject.ImageURL.Detail.self, forKey: "detail")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.url, forKey: "url")
+            try container.encodeIfPresent(self.detail, forKey: "detail")
         }
 
         /// Specifies the detail level of the image. `low` uses fewer tokens, you can opt in to high resolution using `high`. Default value is `auto`
@@ -237,7 +276,7 @@ public struct MessageContentImageUrlObject: Codable, Hashable, Sendable {
 }
 
 /// The refusal content generated by the assistant.
-public struct MessageContentRefusalObject: Codable, Hashable, Sendable {
+public struct MessageContentRefusalObject: OpenAIModel {
     /// Always `refusal`.
     public var type: String = "refusal"
     public var refusal: String
@@ -246,16 +285,23 @@ public struct MessageContentRefusalObject: Codable, Hashable, Sendable {
         self.refusal = refusal
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case refusal
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "refusal"
+        self.refusal = try container.decode(String.self, forKey: "refusal")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.refusal, forKey: "refusal")
     }
 }
 
 /// A content part in a session message.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum MessageContentResource: Codable, Hashable, Sendable {
+public indirect enum MessageContentResource: OpenAIModel {
     /// `type`: `input_text`
     case inputText(MessageContentResourceInputText)
     /// `type`: `input_image`
@@ -302,7 +348,7 @@ public indirect enum MessageContentResource: Codable, Hashable, Sendable {
 }
 
 /// An image supplied by the user.
-public struct MessageContentResourceInputImage: Codable, Hashable, Sendable {
+public struct MessageContentResourceInputImage: OpenAIModel {
     /// The type of the object. Always `input_image`.
     public var type: String = "input_image"
     /// The URL of the image supplied by the user, which may be a base64-encoded data URL.
@@ -312,14 +358,21 @@ public struct MessageContentResourceInputImage: Codable, Hashable, Sendable {
         self.imageURL = imageURL
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case imageURL = "image_url"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "input_image"
+        self.imageURL = try container.decode(String.self, forKey: "image_url")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.imageURL, forKey: "image_url")
     }
 }
 
 /// Text supplied by the user.
-public struct MessageContentResourceInputText: Codable, Hashable, Sendable {
+public struct MessageContentResourceInputText: OpenAIModel {
     /// The type of the object. Always `input_text`.
     public var type: String = "input_text"
     /// The text supplied by the user.
@@ -329,14 +382,21 @@ public struct MessageContentResourceInputText: Codable, Hashable, Sendable {
         self.text = text
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case text
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "input_text"
+        self.text = try container.decode(String.self, forKey: "text")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.text, forKey: "text")
     }
 }
 
 /// Text produced by the assistant.
-public struct MessageContentResourceOutputText: Codable, Hashable, Sendable {
+public struct MessageContentResourceOutputText: OpenAIModel {
     /// The type of the object. Always `output_text`.
     public var type: String = "output_text"
     /// The text produced by the assistant.
@@ -346,14 +406,21 @@ public struct MessageContentResourceOutputText: Codable, Hashable, Sendable {
         self.text = text
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case text
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "output_text"
+        self.text = try container.decode(String.self, forKey: "text")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.text, forKey: "text")
     }
 }
 
 /// A citation within the message that points to a specific quote from a specific File associated with the assistant or the message. Generated when the assistant uses the "file_search" tool to search files.
-public struct MessageContentTextAnnotationsFileCitationObject: Codable, Hashable, Sendable {
+public struct MessageContentTextAnnotationsFileCitationObject: OpenAIModel {
     /// Always `file_citation`.
     public var type: String = "file_citation"
     /// The text in the message content that needs to be replaced.
@@ -374,15 +441,25 @@ public struct MessageContentTextAnnotationsFileCitationObject: Codable, Hashable
         self.endIndex = endIndex
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case text
-        case fileCitation = "file_citation"
-        case startIndex = "start_index"
-        case endIndex = "end_index"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "file_citation"
+        self.text = try container.decode(String.self, forKey: "text")
+        self.fileCitation = try container.decode(MessageContentTextAnnotationsFileCitationObject.FileCitation.self, forKey: "file_citation")
+        self.startIndex = try container.decode(Int.self, forKey: "start_index")
+        self.endIndex = try container.decode(Int.self, forKey: "end_index")
     }
 
-    public struct FileCitation: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.text, forKey: "text")
+        try container.encode(self.fileCitation, forKey: "file_citation")
+        try container.encode(self.startIndex, forKey: "start_index")
+        try container.encode(self.endIndex, forKey: "end_index")
+    }
+
+    public struct FileCitation: OpenAIModel {
         /// The ID of the specific File the citation is from.
         public var fileID: String
 
@@ -390,14 +467,20 @@ public struct MessageContentTextAnnotationsFileCitationObject: Codable, Hashable
             self.fileID = fileID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case fileID = "file_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.fileID = try container.decode(String.self, forKey: "file_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.fileID, forKey: "file_id")
         }
     }
 }
 
 /// A URL for the file that's generated when the assistant used the `code_interpreter` tool to generate a file.
-public struct MessageContentTextAnnotationsFilePathObject: Codable, Hashable, Sendable {
+public struct MessageContentTextAnnotationsFilePathObject: OpenAIModel {
     /// Always `file_path`.
     public var type: String = "file_path"
     /// The text in the message content that needs to be replaced.
@@ -418,15 +501,25 @@ public struct MessageContentTextAnnotationsFilePathObject: Codable, Hashable, Se
         self.endIndex = endIndex
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case text
-        case filePath = "file_path"
-        case startIndex = "start_index"
-        case endIndex = "end_index"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "file_path"
+        self.text = try container.decode(String.self, forKey: "text")
+        self.filePath = try container.decode(MessageContentTextAnnotationsFilePathObject.FilePath.self, forKey: "file_path")
+        self.startIndex = try container.decode(Int.self, forKey: "start_index")
+        self.endIndex = try container.decode(Int.self, forKey: "end_index")
     }
 
-    public struct FilePath: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.text, forKey: "text")
+        try container.encode(self.filePath, forKey: "file_path")
+        try container.encode(self.startIndex, forKey: "start_index")
+        try container.encode(self.endIndex, forKey: "end_index")
+    }
+
+    public struct FilePath: OpenAIModel {
         /// The ID of the file that was generated.
         public var fileID: String
 
@@ -434,14 +527,20 @@ public struct MessageContentTextAnnotationsFilePathObject: Codable, Hashable, Se
             self.fileID = fileID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case fileID = "file_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.fileID = try container.decode(String.self, forKey: "file_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.fileID, forKey: "file_id")
         }
     }
 }
 
 /// The text content that is part of a message.
-public struct MessageContentTextObject: Codable, Hashable, Sendable {
+public struct MessageContentTextObject: OpenAIModel {
     /// Always `text`.
     public var type: String = "text"
     public var text: MessageContentTextObject.TextValue
@@ -450,12 +549,19 @@ public struct MessageContentTextObject: Codable, Hashable, Sendable {
         self.text = text
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case text
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "text"
+        self.text = try container.decode(MessageContentTextObject.TextValue.self, forKey: "text")
     }
 
-    public struct TextValue: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.text, forKey: "text")
+    }
+
+    public struct TextValue: OpenAIModel {
         /// The data that makes up the text.
         public var value: String
         public var annotations: [MessageContentTextObject.TextValue.Annotation]
@@ -465,13 +571,20 @@ public struct MessageContentTextObject: Codable, Hashable, Sendable {
             self.annotations = annotations
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case value
-            case annotations
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.value = try container.decode(String.self, forKey: "value")
+            self.annotations = try container.decode([MessageContentTextObject.TextValue.Annotation].self, forKey: "annotations")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.value, forKey: "value")
+            try container.encode(self.annotations, forKey: "annotations")
         }
 
         /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-        public indirect enum Annotation: Codable, Hashable, Sendable {
+        public indirect enum Annotation: OpenAIModel {
             /// `type`: `file_citation`
             case fileCitation(MessageContentTextAnnotationsFileCitationObject)
             /// `type`: `file_path`
@@ -513,7 +626,7 @@ public struct MessageContentTextObject: Codable, Hashable, Sendable {
 }
 
 /// References an image [File](https://developers.openai.com/api/reference/resources/files) in the content of a message.
-public struct MessageDeltaContentImageFileObject: Codable, Hashable, Sendable {
+public struct MessageDeltaContentImageFileObject: OpenAIModel {
     /// The index of the content part in the message.
     public var index: Int
     /// Always `image_file`.
@@ -525,13 +638,21 @@ public struct MessageDeltaContentImageFileObject: Codable, Hashable, Sendable {
         self.imageFile = imageFile
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case index
-        case type
-        case imageFile = "image_file"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.index = try container.decode(Int.self, forKey: "index")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "image_file"
+        self.imageFile = try container.decodeIfPresent(MessageDeltaContentImageFileObject.ImageFile.self, forKey: "image_file")
     }
 
-    public struct ImageFile: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.index, forKey: "index")
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.imageFile, forKey: "image_file")
+    }
+
+    public struct ImageFile: OpenAIModel {
         /// The [File](https://developers.openai.com/api/reference/resources/files) ID of the image in the message content. Set `purpose="vision"` when uploading the File if you need to later display the file content.
         public var fileID: String?
         /// Specifies the detail level of the image if specified by the user. `low` uses fewer tokens, you can opt in to high resolution using `high`.
@@ -542,9 +663,16 @@ public struct MessageDeltaContentImageFileObject: Codable, Hashable, Sendable {
             self.detail = detail
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case fileID = "file_id"
-            case detail
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.fileID = try container.decodeIfPresent(String.self, forKey: "file_id")
+            self.detail = try container.decodeIfPresent(MessageDeltaContentImageFileObject.ImageFile.Detail.self, forKey: "detail")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.fileID, forKey: "file_id")
+            try container.encodeIfPresent(self.detail, forKey: "detail")
         }
 
         /// Specifies the detail level of the image if specified by the user. `low` uses fewer tokens, you can opt in to high resolution using `high`.
@@ -569,7 +697,7 @@ public struct MessageDeltaContentImageFileObject: Codable, Hashable, Sendable {
 }
 
 /// References an image URL in the content of a message.
-public struct MessageDeltaContentImageUrlObject: Codable, Hashable, Sendable {
+public struct MessageDeltaContentImageUrlObject: OpenAIModel {
     /// The index of the content part in the message.
     public var index: Int
     /// Always `image_url`.
@@ -581,13 +709,21 @@ public struct MessageDeltaContentImageUrlObject: Codable, Hashable, Sendable {
         self.imageURL = imageURL
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case index
-        case type
-        case imageURL = "image_url"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.index = try container.decode(Int.self, forKey: "index")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "image_url"
+        self.imageURL = try container.decodeIfPresent(MessageDeltaContentImageUrlObject.ImageURL.self, forKey: "image_url")
     }
 
-    public struct ImageURL: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.index, forKey: "index")
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.imageURL, forKey: "image_url")
+    }
+
+    public struct ImageURL: OpenAIModel {
         /// The URL of the image, must be a supported image types: jpeg, jpg, png, gif, webp.
         public var url: String?
         /// Specifies the detail level of the image. `low` uses fewer tokens, you can opt in to high resolution using `high`.
@@ -598,9 +734,16 @@ public struct MessageDeltaContentImageUrlObject: Codable, Hashable, Sendable {
             self.detail = detail
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case url
-            case detail
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.url = try container.decodeIfPresent(String.self, forKey: "url")
+            self.detail = try container.decodeIfPresent(MessageDeltaContentImageUrlObject.ImageURL.Detail.self, forKey: "detail")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.url, forKey: "url")
+            try container.encodeIfPresent(self.detail, forKey: "detail")
         }
 
         /// Specifies the detail level of the image. `low` uses fewer tokens, you can opt in to high resolution using `high`.
@@ -625,7 +768,7 @@ public struct MessageDeltaContentImageUrlObject: Codable, Hashable, Sendable {
 }
 
 /// The refusal content that is part of a message.
-public struct MessageDeltaContentRefusalObject: Codable, Hashable, Sendable {
+public struct MessageDeltaContentRefusalObject: OpenAIModel {
     /// The index of the refusal part in the message.
     public var index: Int
     /// Always `refusal`.
@@ -637,15 +780,23 @@ public struct MessageDeltaContentRefusalObject: Codable, Hashable, Sendable {
         self.refusal = refusal
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case index
-        case type
-        case refusal
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.index = try container.decode(Int.self, forKey: "index")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "refusal"
+        self.refusal = try container.decodeIfPresent(String.self, forKey: "refusal")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.index, forKey: "index")
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.refusal, forKey: "refusal")
     }
 }
 
 /// A citation within the message that points to a specific quote from a specific File associated with the assistant or the message. Generated when the assistant uses the "file_search" tool to search files.
-public struct MessageDeltaContentTextAnnotationsFileCitationObject: Codable, Hashable, Sendable {
+public struct MessageDeltaContentTextAnnotationsFileCitationObject: OpenAIModel {
     /// The index of the annotation in the text content part.
     public var index: Int
     /// Always `file_citation`.
@@ -670,16 +821,27 @@ public struct MessageDeltaContentTextAnnotationsFileCitationObject: Codable, Has
         self.endIndex = endIndex
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case index
-        case type
-        case text
-        case fileCitation = "file_citation"
-        case startIndex = "start_index"
-        case endIndex = "end_index"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.index = try container.decode(Int.self, forKey: "index")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "file_citation"
+        self.text = try container.decodeIfPresent(String.self, forKey: "text")
+        self.fileCitation = try container.decodeIfPresent(MessageDeltaContentTextAnnotationsFileCitationObject.FileCitation.self, forKey: "file_citation")
+        self.startIndex = try container.decodeIfPresent(Int.self, forKey: "start_index")
+        self.endIndex = try container.decodeIfPresent(Int.self, forKey: "end_index")
     }
 
-    public struct FileCitation: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.index, forKey: "index")
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.text, forKey: "text")
+        try container.encodeIfPresent(self.fileCitation, forKey: "file_citation")
+        try container.encodeIfPresent(self.startIndex, forKey: "start_index")
+        try container.encodeIfPresent(self.endIndex, forKey: "end_index")
+    }
+
+    public struct FileCitation: OpenAIModel {
         /// The ID of the specific File the citation is from.
         public var fileID: String?
         /// The specific quote in the file.
@@ -690,15 +852,22 @@ public struct MessageDeltaContentTextAnnotationsFileCitationObject: Codable, Has
             self.quote = quote
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case fileID = "file_id"
-            case quote
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.fileID = try container.decodeIfPresent(String.self, forKey: "file_id")
+            self.quote = try container.decodeIfPresent(String.self, forKey: "quote")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.fileID, forKey: "file_id")
+            try container.encodeIfPresent(self.quote, forKey: "quote")
         }
     }
 }
 
 /// A URL for the file that's generated when the assistant used the `code_interpreter` tool to generate a file.
-public struct MessageDeltaContentTextAnnotationsFilePathObject: Codable, Hashable, Sendable {
+public struct MessageDeltaContentTextAnnotationsFilePathObject: OpenAIModel {
     /// The index of the annotation in the text content part.
     public var index: Int
     /// Always `file_path`.
@@ -723,16 +892,27 @@ public struct MessageDeltaContentTextAnnotationsFilePathObject: Codable, Hashabl
         self.endIndex = endIndex
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case index
-        case type
-        case text
-        case filePath = "file_path"
-        case startIndex = "start_index"
-        case endIndex = "end_index"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.index = try container.decode(Int.self, forKey: "index")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "file_path"
+        self.text = try container.decodeIfPresent(String.self, forKey: "text")
+        self.filePath = try container.decodeIfPresent(MessageDeltaContentTextAnnotationsFilePathObject.FilePath.self, forKey: "file_path")
+        self.startIndex = try container.decodeIfPresent(Int.self, forKey: "start_index")
+        self.endIndex = try container.decodeIfPresent(Int.self, forKey: "end_index")
     }
 
-    public struct FilePath: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.index, forKey: "index")
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.text, forKey: "text")
+        try container.encodeIfPresent(self.filePath, forKey: "file_path")
+        try container.encodeIfPresent(self.startIndex, forKey: "start_index")
+        try container.encodeIfPresent(self.endIndex, forKey: "end_index")
+    }
+
+    public struct FilePath: OpenAIModel {
         /// The ID of the file that was generated.
         public var fileID: String?
 
@@ -740,14 +920,20 @@ public struct MessageDeltaContentTextAnnotationsFilePathObject: Codable, Hashabl
             self.fileID = fileID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case fileID = "file_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.fileID = try container.decodeIfPresent(String.self, forKey: "file_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.fileID, forKey: "file_id")
         }
     }
 }
 
 /// The text content that is part of a message.
-public struct MessageDeltaContentTextObject: Codable, Hashable, Sendable {
+public struct MessageDeltaContentTextObject: OpenAIModel {
     /// The index of the content part in the message.
     public var index: Int
     /// Always `text`.
@@ -759,13 +945,21 @@ public struct MessageDeltaContentTextObject: Codable, Hashable, Sendable {
         self.text = text
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case index
-        case type
-        case text
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.index = try container.decode(Int.self, forKey: "index")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "text"
+        self.text = try container.decodeIfPresent(MessageDeltaContentTextObject.TextValue.self, forKey: "text")
     }
 
-    public struct TextValue: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.index, forKey: "index")
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.text, forKey: "text")
+    }
+
+    public struct TextValue: OpenAIModel {
         /// The data that makes up the text.
         public var value: String?
         public var annotations: [MessageDeltaContentTextObject.TextValue.Annotation]?
@@ -775,13 +969,20 @@ public struct MessageDeltaContentTextObject: Codable, Hashable, Sendable {
             self.annotations = annotations
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case value
-            case annotations
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.value = try container.decodeIfPresent(String.self, forKey: "value")
+            self.annotations = try container.decodeIfPresent([MessageDeltaContentTextObject.TextValue.Annotation].self, forKey: "annotations")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.value, forKey: "value")
+            try container.encodeIfPresent(self.annotations, forKey: "annotations")
         }
 
         /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-        public indirect enum Annotation: Codable, Hashable, Sendable {
+        public indirect enum Annotation: OpenAIModel {
             /// `type`: `file_citation`
             case fileCitation(MessageDeltaContentTextAnnotationsFileCitationObject)
             /// `type`: `file_path`
@@ -823,7 +1024,7 @@ public struct MessageDeltaContentTextObject: Codable, Hashable, Sendable {
 }
 
 /// Represents a message delta i.e. any changed fields on a message during streaming.
-public struct MessageDeltaObject: Codable, Hashable, Sendable {
+public struct MessageDeltaObject: OpenAIModel {
     /// The identifier of the message, which can be referenced in API endpoints.
     public var id: String
     /// The object type, which is always `thread.message.delta`.
@@ -836,14 +1037,22 @@ public struct MessageDeltaObject: Codable, Hashable, Sendable {
         self.delta = delta
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case delta
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "thread.message.delta"
+        self.delta = try container.decode(MessageDeltaObject.Delta.self, forKey: "delta")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.delta, forKey: "delta")
     }
 
     /// The delta containing the fields that have changed on the Message.
-    public struct Delta: Codable, Hashable, Sendable {
+    public struct Delta: OpenAIModel {
         /// The entity that produced the message. One of `user` or `assistant`.
         public var role: MessageDeltaObject.Delta.Role?
         /// The content of the message in array of text and/or images.
@@ -854,9 +1063,16 @@ public struct MessageDeltaObject: Codable, Hashable, Sendable {
             self.content = content
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case role
-            case content
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.role = try container.decodeIfPresent(MessageDeltaObject.Delta.Role.self, forKey: "role")
+            self.content = try container.decodeIfPresent([MessageDeltaObject.Delta.ContentItem].self, forKey: "content")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.role, forKey: "role")
+            try container.encodeIfPresent(self.content, forKey: "content")
         }
 
         /// The entity that produced the message. One of `user` or `assistant`.
@@ -878,7 +1094,7 @@ public struct MessageDeltaObject: Codable, Hashable, Sendable {
         }
 
         /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-        public indirect enum ContentItem: Codable, Hashable, Sendable {
+        public indirect enum ContentItem: OpenAIModel {
             /// `type`: `image_file`
             case imageFile(MessageDeltaContentImageFileObject)
             /// `type`: `text`
@@ -934,7 +1150,7 @@ public struct MessageDeltaObject: Codable, Hashable, Sendable {
 }
 
 /// A user or assistant message recorded in a session.
-public struct MessageItemResource: Codable, Hashable, Sendable {
+public struct MessageItemResource: OpenAIModel {
     /// The item type. Always `message`.
     public var type: String = "message"
     /// The ID of this item, or null for legacy user messages whose ID was not recorded.
@@ -966,19 +1182,31 @@ public struct MessageItemResource: Codable, Hashable, Sendable {
         self.phase = phase
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case turnID = "turn_id"
-        case role
-        case content
-        case status
-        case phase
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "message"
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.turnID = try container.decode(String.self, forKey: "turn_id")
+        self.role = try container.decode(SessionMessageRoleResource.self, forKey: "role")
+        self.content = try container.decode([MessageContentResource].self, forKey: "content")
+        self.status = try container.decode(OutputItemStatusResource.self, forKey: "status")
+        self.phase = try container.decodeIfPresent(MessagePhaseResource.self, forKey: "phase")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encode(self.turnID, forKey: "turn_id")
+        try container.encode(self.role, forKey: "role")
+        try container.encode(self.content, forKey: "content")
+        try container.encode(self.status, forKey: "status")
+        try container.encodeIfPresent(self.phase, forKey: "phase")
     }
 }
 
 /// Represents a message within a [thread](https://developers.openai.com/api/docs/assistants/migration).
-public struct MessageObject: Codable, Hashable, Sendable {
+public struct MessageObject: OpenAIModel {
     /// The identifier, which can be referenced in API endpoints.
     public var id: String
     /// The object type, which is always `thread.message`.
@@ -1031,21 +1259,40 @@ public struct MessageObject: Codable, Hashable, Sendable {
         self.metadata = metadata
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
-        case threadID = "thread_id"
-        case status
-        case incompleteDetails = "incomplete_details"
-        case completedAt = "completed_at"
-        case incompleteAt = "incomplete_at"
-        case role
-        case content
-        case assistantID = "assistant_id"
-        case runID = "run_id"
-        case attachments
-        case metadata
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "thread.message"
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.threadID = try container.decode(String.self, forKey: "thread_id")
+        self.status = try container.decode(MessageObject.Status.self, forKey: "status")
+        self.incompleteDetails = try container.decodeIfPresent(MessageObject.IncompleteDetails.self, forKey: "incomplete_details")
+        self.completedAt = try container.decodeIfPresent(Int.self, forKey: "completed_at")
+        self.incompleteAt = try container.decodeIfPresent(Int.self, forKey: "incomplete_at")
+        self.role = try container.decode(MessageObject.Role.self, forKey: "role")
+        self.content = try container.decode([MessageObject.ContentItem].self, forKey: "content")
+        self.assistantID = try container.decodeIfPresent(String.self, forKey: "assistant_id")
+        self.runID = try container.decodeIfPresent(String.self, forKey: "run_id")
+        self.attachments = try container.decodeIfPresent([MessageObject.Attachment].self, forKey: "attachments")
+        self.metadata = try container.decodeIfPresent(Metadata.self, forKey: "metadata")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.threadID, forKey: "thread_id")
+        try container.encode(self.status, forKey: "status")
+        try container.encodeIfPresent(self.incompleteDetails, forKey: "incomplete_details")
+        try container.encodeIfPresent(self.completedAt, forKey: "completed_at")
+        try container.encodeIfPresent(self.incompleteAt, forKey: "incomplete_at")
+        try container.encode(self.role, forKey: "role")
+        try container.encode(self.content, forKey: "content")
+        try container.encodeIfPresent(self.assistantID, forKey: "assistant_id")
+        try container.encodeIfPresent(self.runID, forKey: "run_id")
+        try container.encodeIfPresent(self.attachments, forKey: "attachments")
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
     }
 
     /// The status of the message, which can be either `in_progress`, `incomplete`, or `completed`.
@@ -1068,7 +1315,7 @@ public struct MessageObject: Codable, Hashable, Sendable {
     }
 
     /// On an incomplete message, details about why the message is incomplete.
-    public struct IncompleteDetails: Codable, Hashable, Sendable {
+    public struct IncompleteDetails: OpenAIModel {
         /// The reason the message is incomplete.
         public var reason: MessageObject.IncompleteDetails.Reason
 
@@ -1076,8 +1323,14 @@ public struct MessageObject: Codable, Hashable, Sendable {
             self.reason = reason
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case reason
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.reason = try container.decode(MessageObject.IncompleteDetails.Reason.self, forKey: "reason")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.reason, forKey: "reason")
         }
 
         /// The reason the message is incomplete.
@@ -1121,7 +1374,7 @@ public struct MessageObject: Codable, Hashable, Sendable {
     }
 
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum ContentItem: Codable, Hashable, Sendable {
+    public indirect enum ContentItem: OpenAIModel {
         /// `type`: `image_file`
         case imageFile(MessageContentImageFileObject)
         /// `type`: `image_url`
@@ -1174,7 +1427,7 @@ public struct MessageObject: Codable, Hashable, Sendable {
         }
     }
 
-    public struct Attachment: Codable, Hashable, Sendable {
+    public struct Attachment: OpenAIModel {
         /// The ID of the file to attach to the message.
         public var fileID: String?
         /// The tools to add this file to.
@@ -1185,13 +1438,20 @@ public struct MessageObject: Codable, Hashable, Sendable {
             self.tools = tools
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case fileID = "file_id"
-            case tools
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.fileID = try container.decodeIfPresent(String.self, forKey: "file_id")
+            self.tools = try container.decodeIfPresent([MessageObject.Attachment.Tool].self, forKey: "tools")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.fileID, forKey: "file_id")
+            try container.encodeIfPresent(self.tools, forKey: "tools")
         }
 
         /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-        public indirect enum Tool: Codable, Hashable, Sendable {
+        public indirect enum Tool: OpenAIModel {
             /// `type`: `code_interpreter`
             case codeInterpreter(AssistantToolsCode)
             /// `type`: `file_search`
@@ -1303,7 +1563,7 @@ public struct MessagePhaseResource: OpenAIStringEnum {
 }
 
 /// The text content that is part of a message.
-public struct MessageRequestContentTextObject: Codable, Hashable, Sendable {
+public struct MessageRequestContentTextObject: OpenAIModel {
     /// Always `text`.
     public var type: String = "text"
     /// Text content to be sent to the model
@@ -1313,9 +1573,16 @@ public struct MessageRequestContentTextObject: Codable, Hashable, Sendable {
         self.text = text
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case text
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "text"
+        self.text = try container.decode(String.self, forKey: "text")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.text, forKey: "text")
     }
 }
 
@@ -1359,7 +1626,7 @@ public struct MessageStatus: OpenAIStringEnum {
 }
 
 /// Decoding picks the case from the `event` field. Values this version does not know decode as `.unknown`.
-public indirect enum MessageStreamEvent: Codable, Hashable, Sendable {
+public indirect enum MessageStreamEvent: OpenAIModel {
     /// Occurs when a [message](https://developers.openai.com/api/docs/assistants/migration) is created.
     ///
     /// `event`: `thread.message.created`
@@ -1429,7 +1696,7 @@ public indirect enum MessageStreamEvent: Codable, Hashable, Sendable {
     }
 
     /// Occurs when a [message](https://developers.openai.com/api/docs/assistants/migration) is created.
-    public struct ThreadMessageCreated: Codable, Hashable, Sendable {
+    public struct ThreadMessageCreated: OpenAIModel {
         public var event: String = "thread.message.created"
         public var data: MessageObject
 
@@ -1437,14 +1704,21 @@ public indirect enum MessageStreamEvent: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case event
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.event = try container.decodeIfPresent(String.self, forKey: "event") ?? "thread.message.created"
+            self.data = try container.decode(MessageObject.self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.event, forKey: "event")
+            try container.encode(self.data, forKey: "data")
         }
     }
 
     /// Occurs when a [message](https://developers.openai.com/api/docs/assistants/migration) moves to an `in_progress` state.
-    public struct ThreadMessageInProgress: Codable, Hashable, Sendable {
+    public struct ThreadMessageInProgress: OpenAIModel {
         public var event: String = "thread.message.in_progress"
         public var data: MessageObject
 
@@ -1452,14 +1726,21 @@ public indirect enum MessageStreamEvent: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case event
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.event = try container.decodeIfPresent(String.self, forKey: "event") ?? "thread.message.in_progress"
+            self.data = try container.decode(MessageObject.self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.event, forKey: "event")
+            try container.encode(self.data, forKey: "data")
         }
     }
 
     /// Occurs when parts of a [Message](https://developers.openai.com/api/docs/assistants/migration) are being streamed.
-    public struct ThreadMessageDelta: Codable, Hashable, Sendable {
+    public struct ThreadMessageDelta: OpenAIModel {
         public var event: String = "thread.message.delta"
         public var data: MessageDeltaObject
 
@@ -1467,14 +1748,21 @@ public indirect enum MessageStreamEvent: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case event
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.event = try container.decodeIfPresent(String.self, forKey: "event") ?? "thread.message.delta"
+            self.data = try container.decode(MessageDeltaObject.self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.event, forKey: "event")
+            try container.encode(self.data, forKey: "data")
         }
     }
 
     /// Occurs when a [message](https://developers.openai.com/api/docs/assistants/migration) is completed.
-    public struct ThreadMessageCompleted: Codable, Hashable, Sendable {
+    public struct ThreadMessageCompleted: OpenAIModel {
         public var event: String = "thread.message.completed"
         public var data: MessageObject
 
@@ -1482,14 +1770,21 @@ public indirect enum MessageStreamEvent: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case event
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.event = try container.decodeIfPresent(String.self, forKey: "event") ?? "thread.message.completed"
+            self.data = try container.decode(MessageObject.self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.event, forKey: "event")
+            try container.encode(self.data, forKey: "data")
         }
     }
 
     /// Occurs when a [message](https://developers.openai.com/api/docs/assistants/migration) ends before it is completed.
-    public struct ThreadMessageIncomplete: Codable, Hashable, Sendable {
+    public struct ThreadMessageIncomplete: OpenAIModel {
         public var event: String = "thread.message.incomplete"
         public var data: MessageObject
 
@@ -1497,9 +1792,16 @@ public indirect enum MessageStreamEvent: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case event
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.event = try container.decodeIfPresent(String.self, forKey: "event") ?? "thread.message.incomplete"
+            self.data = try container.decode(MessageObject.self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.event, forKey: "event")
+            try container.encode(self.data, forKey: "data")
         }
     }
 }

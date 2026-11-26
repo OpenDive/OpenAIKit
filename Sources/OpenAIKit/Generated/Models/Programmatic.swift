@@ -3,14 +3,20 @@
 
 import Foundation
 
-public struct ProgrammaticToolCallingParam: Codable, Hashable, Sendable {
+public struct ProgrammaticToolCallingParam: OpenAIModel {
     /// The type of the tool. Always `programmatic_tool_calling`.
     public var type: String = "programmatic_tool_calling"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "programmatic_tool_calling"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }

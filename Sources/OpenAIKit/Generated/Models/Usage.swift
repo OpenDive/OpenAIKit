@@ -4,7 +4,7 @@
 import Foundation
 
 /// The aggregated audio speeches usage details of the specific time bucket.
-public struct UsageAudioSpeechesResult: Codable, Hashable, Sendable {
+public struct UsageAudioSpeechesResult: OpenAIModel {
     public var object: String = "organization.usage.audio_speeches.result"
     /// The number of characters processed.
     public var characters: Int
@@ -31,19 +31,31 @@ public struct UsageAudioSpeechesResult: Codable, Hashable, Sendable {
         self.apiKeyID = apiKeyID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case characters
-        case numModelRequests = "num_model_requests"
-        case projectID = "project_id"
-        case userID = "user_id"
-        case apiKeyID = "api_key_id"
-        case model
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.usage.audio_speeches.result"
+        self.characters = try container.decode(Int.self, forKey: "characters")
+        self.numModelRequests = try container.decode(Int.self, forKey: "num_model_requests")
+        self.projectID = try container.decodeIfPresent(String.self, forKey: "project_id")
+        self.userID = try container.decodeIfPresent(String.self, forKey: "user_id")
+        self.apiKeyID = try container.decodeIfPresent(String.self, forKey: "api_key_id")
+        self.model = try container.decodeIfPresent(String.self, forKey: "model")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.characters, forKey: "characters")
+        try container.encode(self.numModelRequests, forKey: "num_model_requests")
+        try container.encodeIfPresent(self.projectID, forKey: "project_id")
+        try container.encodeIfPresent(self.userID, forKey: "user_id")
+        try container.encodeIfPresent(self.apiKeyID, forKey: "api_key_id")
+        try container.encodeIfPresent(self.model, forKey: "model")
     }
 }
 
 /// The aggregated audio transcriptions usage details of the specific time bucket.
-public struct UsageAudioTranscriptionsResult: Codable, Hashable, Sendable {
+public struct UsageAudioTranscriptionsResult: OpenAIModel {
     public var object: String = "organization.usage.audio_transcriptions.result"
     /// The number of seconds processed.
     public var seconds: Int64
@@ -70,19 +82,31 @@ public struct UsageAudioTranscriptionsResult: Codable, Hashable, Sendable {
         self.apiKeyID = apiKeyID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case seconds
-        case numModelRequests = "num_model_requests"
-        case projectID = "project_id"
-        case userID = "user_id"
-        case apiKeyID = "api_key_id"
-        case model
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.usage.audio_transcriptions.result"
+        self.seconds = try container.decode(Int64.self, forKey: "seconds")
+        self.numModelRequests = try container.decode(Int.self, forKey: "num_model_requests")
+        self.projectID = try container.decodeIfPresent(String.self, forKey: "project_id")
+        self.userID = try container.decodeIfPresent(String.self, forKey: "user_id")
+        self.apiKeyID = try container.decodeIfPresent(String.self, forKey: "api_key_id")
+        self.model = try container.decodeIfPresent(String.self, forKey: "model")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.seconds, forKey: "seconds")
+        try container.encode(self.numModelRequests, forKey: "num_model_requests")
+        try container.encodeIfPresent(self.projectID, forKey: "project_id")
+        try container.encodeIfPresent(self.userID, forKey: "user_id")
+        try container.encodeIfPresent(self.apiKeyID, forKey: "api_key_id")
+        try container.encodeIfPresent(self.model, forKey: "model")
     }
 }
 
 /// The aggregated code interpreter sessions usage details of the specific time bucket.
-public struct UsageCodeInterpreterSessionsResult: Codable, Hashable, Sendable {
+public struct UsageCodeInterpreterSessionsResult: OpenAIModel {
     public var object: String = "organization.usage.code_interpreter_sessions.result"
     /// The number of code interpreter sessions.
     public var numSessions: Int
@@ -93,15 +117,23 @@ public struct UsageCodeInterpreterSessionsResult: Codable, Hashable, Sendable {
         self.projectID = projectID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case numSessions = "num_sessions"
-        case projectID = "project_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.usage.code_interpreter_sessions.result"
+        self.numSessions = try container.decode(Int.self, forKey: "num_sessions")
+        self.projectID = try container.decodeIfPresent(String.self, forKey: "project_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.numSessions, forKey: "num_sessions")
+        try container.encodeIfPresent(self.projectID, forKey: "project_id")
     }
 }
 
 /// The aggregated completions usage details of the specific time bucket.
-public struct UsageCompletionsResult: Codable, Hashable, Sendable {
+public struct UsageCompletionsResult: OpenAIModel {
     /// When grouped by `api_source`, `agents_api` identifies attributed Agents API activity and `unlabeled` includes all records without published source attribution, including historical and unknown origins. Unlabeled does not imply direct API usage. Without source grouping, this field is null.
     public var apiSource: UsageCompletionsResult.APISource?
     public var object: String = "organization.usage.completions.result"
@@ -197,32 +229,62 @@ public struct UsageCompletionsResult: Codable, Hashable, Sendable {
         self.serviceTier = serviceTier
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case apiSource = "api_source"
-        case object
-        case inputTokens = "input_tokens"
-        case inputCachedTokens = "input_cached_tokens"
-        case inputCacheWriteTokens = "input_cache_write_tokens"
-        case inputCacheWrite30mTokens = "input_cache_write_30m_tokens"
-        case inputCacheWrite12hTokens = "input_cache_write_12h_tokens"
-        case inputUncachedTokens = "input_uncached_tokens"
-        case outputTokens = "output_tokens"
-        case inputTextTokens = "input_text_tokens"
-        case outputTextTokens = "output_text_tokens"
-        case inputCachedTextTokens = "input_cached_text_tokens"
-        case inputAudioTokens = "input_audio_tokens"
-        case inputCachedAudioTokens = "input_cached_audio_tokens"
-        case outputAudioTokens = "output_audio_tokens"
-        case inputImageTokens = "input_image_tokens"
-        case inputCachedImageTokens = "input_cached_image_tokens"
-        case outputImageTokens = "output_image_tokens"
-        case numModelRequests = "num_model_requests"
-        case projectID = "project_id"
-        case userID = "user_id"
-        case apiKeyID = "api_key_id"
-        case model
-        case batch
-        case serviceTier = "service_tier"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.apiSource = try container.decodeIfPresent(UsageCompletionsResult.APISource.self, forKey: "api_source")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.usage.completions.result"
+        self.inputTokens = try container.decode(Int.self, forKey: "input_tokens")
+        self.inputCachedTokens = try container.decodeIfPresent(Int.self, forKey: "input_cached_tokens")
+        self.inputCacheWriteTokens = try container.decodeIfPresent(Int.self, forKey: "input_cache_write_tokens")
+        self.inputCacheWrite30mTokens = try container.decodeIfPresent(Int.self, forKey: "input_cache_write_30m_tokens")
+        self.inputCacheWrite12hTokens = try container.decodeIfPresent(Int.self, forKey: "input_cache_write_12h_tokens")
+        self.inputUncachedTokens = try container.decodeIfPresent(Int.self, forKey: "input_uncached_tokens")
+        self.outputTokens = try container.decode(Int.self, forKey: "output_tokens")
+        self.inputTextTokens = try container.decodeIfPresent(Int.self, forKey: "input_text_tokens")
+        self.outputTextTokens = try container.decodeIfPresent(Int.self, forKey: "output_text_tokens")
+        self.inputCachedTextTokens = try container.decodeIfPresent(Int.self, forKey: "input_cached_text_tokens")
+        self.inputAudioTokens = try container.decodeIfPresent(Int.self, forKey: "input_audio_tokens")
+        self.inputCachedAudioTokens = try container.decodeIfPresent(Int.self, forKey: "input_cached_audio_tokens")
+        self.outputAudioTokens = try container.decodeIfPresent(Int.self, forKey: "output_audio_tokens")
+        self.inputImageTokens = try container.decodeIfPresent(Int.self, forKey: "input_image_tokens")
+        self.inputCachedImageTokens = try container.decodeIfPresent(Int.self, forKey: "input_cached_image_tokens")
+        self.outputImageTokens = try container.decodeIfPresent(Int.self, forKey: "output_image_tokens")
+        self.numModelRequests = try container.decode(Int.self, forKey: "num_model_requests")
+        self.projectID = try container.decodeIfPresent(String.self, forKey: "project_id")
+        self.userID = try container.decodeIfPresent(String.self, forKey: "user_id")
+        self.apiKeyID = try container.decodeIfPresent(String.self, forKey: "api_key_id")
+        self.model = try container.decodeIfPresent(String.self, forKey: "model")
+        self.batch = try container.decodeIfPresent(Bool.self, forKey: "batch")
+        self.serviceTier = try container.decodeIfPresent(String.self, forKey: "service_tier")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.apiSource, forKey: "api_source")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.inputTokens, forKey: "input_tokens")
+        try container.encodeIfPresent(self.inputCachedTokens, forKey: "input_cached_tokens")
+        try container.encodeIfPresent(self.inputCacheWriteTokens, forKey: "input_cache_write_tokens")
+        try container.encodeIfPresent(self.inputCacheWrite30mTokens, forKey: "input_cache_write_30m_tokens")
+        try container.encodeIfPresent(self.inputCacheWrite12hTokens, forKey: "input_cache_write_12h_tokens")
+        try container.encodeIfPresent(self.inputUncachedTokens, forKey: "input_uncached_tokens")
+        try container.encode(self.outputTokens, forKey: "output_tokens")
+        try container.encodeIfPresent(self.inputTextTokens, forKey: "input_text_tokens")
+        try container.encodeIfPresent(self.outputTextTokens, forKey: "output_text_tokens")
+        try container.encodeIfPresent(self.inputCachedTextTokens, forKey: "input_cached_text_tokens")
+        try container.encodeIfPresent(self.inputAudioTokens, forKey: "input_audio_tokens")
+        try container.encodeIfPresent(self.inputCachedAudioTokens, forKey: "input_cached_audio_tokens")
+        try container.encodeIfPresent(self.outputAudioTokens, forKey: "output_audio_tokens")
+        try container.encodeIfPresent(self.inputImageTokens, forKey: "input_image_tokens")
+        try container.encodeIfPresent(self.inputCachedImageTokens, forKey: "input_cached_image_tokens")
+        try container.encodeIfPresent(self.outputImageTokens, forKey: "output_image_tokens")
+        try container.encode(self.numModelRequests, forKey: "num_model_requests")
+        try container.encodeIfPresent(self.projectID, forKey: "project_id")
+        try container.encodeIfPresent(self.userID, forKey: "user_id")
+        try container.encodeIfPresent(self.apiKeyID, forKey: "api_key_id")
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encodeIfPresent(self.batch, forKey: "batch")
+        try container.encodeIfPresent(self.serviceTier, forKey: "service_tier")
     }
 
     /// When grouped by `api_source`, `agents_api` identifies attributed Agents API activity and `unlabeled` includes all records without published source attribution, including historical and unknown origins. Unlabeled does not imply direct API usage. Without source grouping, this field is null.
@@ -245,7 +307,7 @@ public struct UsageCompletionsResult: Codable, Hashable, Sendable {
 }
 
 /// The aggregated embeddings usage details of the specific time bucket.
-public struct UsageEmbeddingsResult: Codable, Hashable, Sendable {
+public struct UsageEmbeddingsResult: OpenAIModel {
     public var object: String = "organization.usage.embeddings.result"
     /// The aggregated number of input tokens used.
     public var inputTokens: Int
@@ -272,19 +334,31 @@ public struct UsageEmbeddingsResult: Codable, Hashable, Sendable {
         self.apiKeyID = apiKeyID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case inputTokens = "input_tokens"
-        case numModelRequests = "num_model_requests"
-        case projectID = "project_id"
-        case userID = "user_id"
-        case apiKeyID = "api_key_id"
-        case model
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.usage.embeddings.result"
+        self.inputTokens = try container.decode(Int.self, forKey: "input_tokens")
+        self.numModelRequests = try container.decode(Int.self, forKey: "num_model_requests")
+        self.projectID = try container.decodeIfPresent(String.self, forKey: "project_id")
+        self.userID = try container.decodeIfPresent(String.self, forKey: "user_id")
+        self.apiKeyID = try container.decodeIfPresent(String.self, forKey: "api_key_id")
+        self.model = try container.decodeIfPresent(String.self, forKey: "model")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.inputTokens, forKey: "input_tokens")
+        try container.encode(self.numModelRequests, forKey: "num_model_requests")
+        try container.encodeIfPresent(self.projectID, forKey: "project_id")
+        try container.encodeIfPresent(self.userID, forKey: "user_id")
+        try container.encodeIfPresent(self.apiKeyID, forKey: "api_key_id")
+        try container.encodeIfPresent(self.model, forKey: "model")
     }
 }
 
 /// The aggregated file search calls usage details of the specific time bucket.
-public struct UsageFileSearchCallsResult: Codable, Hashable, Sendable {
+public struct UsageFileSearchCallsResult: OpenAIModel {
     public var object: String = "organization.usage.file_searches.result"
     /// The count of file search calls.
     public var numRequests: Int
@@ -307,18 +381,29 @@ public struct UsageFileSearchCallsResult: Codable, Hashable, Sendable {
         self.vectorStoreID = vectorStoreID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case numRequests = "num_requests"
-        case projectID = "project_id"
-        case userID = "user_id"
-        case apiKeyID = "api_key_id"
-        case vectorStoreID = "vector_store_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.usage.file_searches.result"
+        self.numRequests = try container.decode(Int.self, forKey: "num_requests")
+        self.projectID = try container.decodeIfPresent(String.self, forKey: "project_id")
+        self.userID = try container.decodeIfPresent(String.self, forKey: "user_id")
+        self.apiKeyID = try container.decodeIfPresent(String.self, forKey: "api_key_id")
+        self.vectorStoreID = try container.decodeIfPresent(String.self, forKey: "vector_store_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.numRequests, forKey: "num_requests")
+        try container.encodeIfPresent(self.projectID, forKey: "project_id")
+        try container.encodeIfPresent(self.userID, forKey: "user_id")
+        try container.encodeIfPresent(self.apiKeyID, forKey: "api_key_id")
+        try container.encodeIfPresent(self.vectorStoreID, forKey: "vector_store_id")
     }
 }
 
 /// The aggregated images usage details of the specific time bucket.
-public struct UsageImagesResult: Codable, Hashable, Sendable {
+public struct UsageImagesResult: OpenAIModel {
     public var object: String = "organization.usage.images.result"
     /// The number of images processed.
     public var images: Int
@@ -351,21 +436,35 @@ public struct UsageImagesResult: Codable, Hashable, Sendable {
         self.apiKeyID = apiKeyID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case images
-        case numModelRequests = "num_model_requests"
-        case source
-        case size
-        case projectID = "project_id"
-        case userID = "user_id"
-        case apiKeyID = "api_key_id"
-        case model
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.usage.images.result"
+        self.images = try container.decode(Int.self, forKey: "images")
+        self.numModelRequests = try container.decode(Int.self, forKey: "num_model_requests")
+        self.source = try container.decodeIfPresent(String.self, forKey: "source")
+        self.size = try container.decodeIfPresent(String.self, forKey: "size")
+        self.projectID = try container.decodeIfPresent(String.self, forKey: "project_id")
+        self.userID = try container.decodeIfPresent(String.self, forKey: "user_id")
+        self.apiKeyID = try container.decodeIfPresent(String.self, forKey: "api_key_id")
+        self.model = try container.decodeIfPresent(String.self, forKey: "model")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.images, forKey: "images")
+        try container.encode(self.numModelRequests, forKey: "num_model_requests")
+        try container.encodeIfPresent(self.source, forKey: "source")
+        try container.encodeIfPresent(self.size, forKey: "size")
+        try container.encodeIfPresent(self.projectID, forKey: "project_id")
+        try container.encodeIfPresent(self.userID, forKey: "user_id")
+        try container.encodeIfPresent(self.apiKeyID, forKey: "api_key_id")
+        try container.encodeIfPresent(self.model, forKey: "model")
     }
 }
 
 /// The aggregated moderations usage details of the specific time bucket.
-public struct UsageModerationsResult: Codable, Hashable, Sendable {
+public struct UsageModerationsResult: OpenAIModel {
     public var object: String = "organization.usage.moderations.result"
     /// The aggregated number of input tokens used.
     public var inputTokens: Int
@@ -392,18 +491,30 @@ public struct UsageModerationsResult: Codable, Hashable, Sendable {
         self.apiKeyID = apiKeyID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case inputTokens = "input_tokens"
-        case numModelRequests = "num_model_requests"
-        case projectID = "project_id"
-        case userID = "user_id"
-        case apiKeyID = "api_key_id"
-        case model
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.usage.moderations.result"
+        self.inputTokens = try container.decode(Int.self, forKey: "input_tokens")
+        self.numModelRequests = try container.decode(Int.self, forKey: "num_model_requests")
+        self.projectID = try container.decodeIfPresent(String.self, forKey: "project_id")
+        self.userID = try container.decodeIfPresent(String.self, forKey: "user_id")
+        self.apiKeyID = try container.decodeIfPresent(String.self, forKey: "api_key_id")
+        self.model = try container.decodeIfPresent(String.self, forKey: "model")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.inputTokens, forKey: "input_tokens")
+        try container.encode(self.numModelRequests, forKey: "num_model_requests")
+        try container.encodeIfPresent(self.projectID, forKey: "project_id")
+        try container.encodeIfPresent(self.userID, forKey: "user_id")
+        try container.encodeIfPresent(self.apiKeyID, forKey: "api_key_id")
+        try container.encodeIfPresent(self.model, forKey: "model")
     }
 }
 
-public struct UsageResponse: Codable, Hashable, Sendable {
+public struct UsageResponse: OpenAIModel {
     public var object: String = "page"
     public var data: [UsageTimeBucket]
     public var hasMore: Bool
@@ -419,15 +530,24 @@ public struct UsageResponse: Codable, Hashable, Sendable {
         self.nextPage = nextPage
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case hasMore = "has_more"
-        case nextPage = "next_page"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "page"
+        self.data = try container.decode([UsageTimeBucket].self, forKey: "data")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+        self.nextPage = try container.decodeIfPresent(String.self, forKey: "next_page")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encode(self.hasMore, forKey: "has_more")
+        try container.encodeIfPresent(self.nextPage, forKey: "next_page")
     }
 }
 
-public struct UsageTimeBucket: Codable, Hashable, Sendable {
+public struct UsageTimeBucket: OpenAIModel {
     public var object: String = "bucket"
     public var startTime: Int
     public var endTime: Int
@@ -443,15 +563,24 @@ public struct UsageTimeBucket: Codable, Hashable, Sendable {
         self.results = results
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case startTime = "start_time"
-        case endTime = "end_time"
-        case results
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "bucket"
+        self.startTime = try container.decode(Int.self, forKey: "start_time")
+        self.endTime = try container.decode(Int.self, forKey: "end_time")
+        self.results = try container.decode([UsageTimeBucket.ResultValue].self, forKey: "results")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.startTime, forKey: "start_time")
+        try container.encode(self.endTime, forKey: "end_time")
+        try container.encode(self.results, forKey: "results")
     }
 
     /// Decoding picks the case from the `object` field. Values this version does not know decode as `.unknown`.
-    public indirect enum ResultValue: Codable, Hashable, Sendable {
+    public indirect enum ResultValue: OpenAIModel {
         /// `object`: `organization.usage.completions.result`
         case organizationUsageCompletionsResult(UsageCompletionsResult)
         /// `object`: `organization.usage.embeddings.result`
@@ -555,7 +684,7 @@ public struct UsageTimeBucket: Codable, Hashable, Sendable {
 }
 
 /// The aggregated vector stores usage details of the specific time bucket.
-public struct UsageVectorStoresResult: Codable, Hashable, Sendable {
+public struct UsageVectorStoresResult: OpenAIModel {
     public var object: String = "organization.usage.vector_stores.result"
     /// The vector stores usage in bytes.
     public var usageBytes: Int
@@ -566,15 +695,23 @@ public struct UsageVectorStoresResult: Codable, Hashable, Sendable {
         self.projectID = projectID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case usageBytes = "usage_bytes"
-        case projectID = "project_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.usage.vector_stores.result"
+        self.usageBytes = try container.decode(Int.self, forKey: "usage_bytes")
+        self.projectID = try container.decodeIfPresent(String.self, forKey: "project_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.usageBytes, forKey: "usage_bytes")
+        try container.encodeIfPresent(self.projectID, forKey: "project_id")
     }
 }
 
 /// The aggregated web search calls usage details of the specific time bucket.
-public struct UsageWebSearchCallsResult: Codable, Hashable, Sendable {
+public struct UsageWebSearchCallsResult: OpenAIModel {
     /// When grouped by `api_source`, `agents_api` identifies attributed Agents API activity and `unlabeled` includes all records without published source attribution, including historical and unknown origins. Unlabeled does not imply direct API usage. Without source grouping, this field is null.
     public var apiSource: UsageWebSearchCallsResult.APISource?
     public var object: String = "organization.usage.web_searches.result"
@@ -608,16 +745,30 @@ public struct UsageWebSearchCallsResult: Codable, Hashable, Sendable {
         self.contextLevel = contextLevel
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case apiSource = "api_source"
-        case object
-        case numModelRequests = "num_model_requests"
-        case numRequests = "num_requests"
-        case projectID = "project_id"
-        case userID = "user_id"
-        case apiKeyID = "api_key_id"
-        case model
-        case contextLevel = "context_level"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.apiSource = try container.decodeIfPresent(UsageWebSearchCallsResult.APISource.self, forKey: "api_source")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.usage.web_searches.result"
+        self.numModelRequests = try container.decode(Int.self, forKey: "num_model_requests")
+        self.numRequests = try container.decode(Int.self, forKey: "num_requests")
+        self.projectID = try container.decodeIfPresent(String.self, forKey: "project_id")
+        self.userID = try container.decodeIfPresent(String.self, forKey: "user_id")
+        self.apiKeyID = try container.decodeIfPresent(String.self, forKey: "api_key_id")
+        self.model = try container.decodeIfPresent(String.self, forKey: "model")
+        self.contextLevel = try container.decodeIfPresent(String.self, forKey: "context_level")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.apiSource, forKey: "api_source")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.numModelRequests, forKey: "num_model_requests")
+        try container.encode(self.numRequests, forKey: "num_requests")
+        try container.encodeIfPresent(self.projectID, forKey: "project_id")
+        try container.encodeIfPresent(self.userID, forKey: "user_id")
+        try container.encodeIfPresent(self.apiKeyID, forKey: "api_key_id")
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encodeIfPresent(self.contextLevel, forKey: "context_level")
     }
 
     /// When grouped by `api_source`, `agents_api` identifies attributed Agents API activity and `unlabeled` includes all records without published source attribution, including historical and unknown origins. Unlabeled does not imply direct API usage. Without source grouping, this field is null.

@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct CompleteUploadRequest: Codable, Hashable, Sendable {
+public struct CompleteUploadRequest: OpenAIModel {
     /// The ordered list of Part IDs.
     public var partIDs: [String]
     /// The optional md5 checksum for the file contents to verify if the bytes uploaded matches what you expect.
@@ -14,8 +14,15 @@ public struct CompleteUploadRequest: Codable, Hashable, Sendable {
         self.md5 = md5
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case partIDs = "part_ids"
-        case md5
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.partIDs = try container.decode([String].self, forKey: "part_ids")
+        self.md5 = try container.decodeIfPresent(String.self, forKey: "md5")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.partIDs, forKey: "part_ids")
+        try container.encodeIfPresent(self.md5, forKey: "md5")
     }
 }

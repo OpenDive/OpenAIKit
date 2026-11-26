@@ -4,7 +4,7 @@
 import Foundation
 
 /// A command execution produced by the agent.
-public struct CommandExecutionItemResource: Codable, Hashable, Sendable {
+public struct CommandExecutionItemResource: OpenAIModel {
     /// The item type. Always `command_execution`.
     public var type: String = "command_execution"
     /// The ID of the command execution item.
@@ -44,15 +44,29 @@ public struct CommandExecutionItemResource: Codable, Hashable, Sendable {
         self.durationMs = durationMs
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case turnID = "turn_id"
-        case command
-        case cwd
-        case status
-        case output
-        case exitCode = "exit_code"
-        case durationMs = "duration_ms"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "command_execution"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.turnID = try container.decode(String.self, forKey: "turn_id")
+        self.command = try container.decode(String.self, forKey: "command")
+        self.cwd = try container.decodeIfPresent(String.self, forKey: "cwd")
+        self.status = try container.decode(FunctionCallStatusResource.self, forKey: "status")
+        self.output = try container.decodeIfPresent(String.self, forKey: "output")
+        self.exitCode = try container.decodeIfPresent(Int64.self, forKey: "exit_code")
+        self.durationMs = try container.decodeIfPresent(Int64.self, forKey: "duration_ms")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.turnID, forKey: "turn_id")
+        try container.encode(self.command, forKey: "command")
+        try container.encodeIfPresent(self.cwd, forKey: "cwd")
+        try container.encode(self.status, forKey: "status")
+        try container.encodeIfPresent(self.output, forKey: "output")
+        try container.encodeIfPresent(self.exitCode, forKey: "exit_code")
+        try container.encodeIfPresent(self.durationMs, forKey: "duration_ms")
     }
 }

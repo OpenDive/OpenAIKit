@@ -6,7 +6,7 @@ import Foundation
 /// The chunking strategy used to chunk the file(s). If not set, will use the `auto` strategy.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum ChunkingStrategyRequestParam: Codable, Hashable, Sendable {
+public indirect enum ChunkingStrategyRequestParam: OpenAIModel {
     /// `type`: `auto`
     case auto(AutoChunkingStrategyRequestParam)
     /// `type`: `static`

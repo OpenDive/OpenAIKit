@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct UploadedJwksVerification: Codable, Hashable, Sendable {
+public struct UploadedJwksVerification: OpenAIModel {
     public var type: String = "uploaded_jwks"
     public var jwks: JSONObject
 
@@ -11,13 +11,20 @@ public struct UploadedJwksVerification: Codable, Hashable, Sendable {
         self.jwks = jwks
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case jwks
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "uploaded_jwks"
+        self.jwks = try container.decode(JSONObject.self, forKey: "jwks")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.jwks, forKey: "jwks")
     }
 }
 
-public struct UploadedJwksVerificationParam: Codable, Hashable, Sendable {
+public struct UploadedJwksVerificationParam: OpenAIModel {
     public var type: String = "uploaded_jwks"
     public var jwks: JSONObject
 
@@ -25,8 +32,15 @@ public struct UploadedJwksVerificationParam: Codable, Hashable, Sendable {
         self.jwks = jwks
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case jwks
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "uploaded_jwks"
+        self.jwks = try container.decode(JSONObject.self, forKey: "jwks")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.jwks, forKey: "jwks")
     }
 }

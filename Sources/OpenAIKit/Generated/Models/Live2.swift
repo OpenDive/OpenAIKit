@@ -3,8 +3,705 @@
 
 import Foundation
 
+/// This type is open: it accepts values the spec does not list yet.
+public struct LiveFunctionCallItemStatus: OpenAIStringEnum {
+    public let rawValue: String
+
+    public init(rawValue: String) {
+        self.rawValue = rawValue
+    }
+
+    public static let inProgress: Self = "in_progress"
+    public static let completed: Self = "completed"
+    public static let incomplete: Self = "incomplete"
+
+    public static var knownValues: [Self] {
+        [.inProgress, .completed, .incomplete]
+    }
+}
+
+public struct LiveFunctionToolChoiceParam: OpenAIModel {
+    /// The tool to call. Always `function`.
+    public var type: String = "function"
+    /// The name of the function tool to call.
+    public var name: String
+
+    public init(name: String) {
+        self.name = name
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "function"
+        self.name = try container.decode(String.self, forKey: "name")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.name, forKey: "name")
+    }
+}
+
+/// A function tool available to the Responses backend when the Live model delegates a task.
+public struct LiveFunctionToolInputParam: OpenAIModel {
+    /// The tool type. Always `function`.
+    public var type: String = "function"
+    /// The name the delegated Responses model uses when calling this function.
+    public var name: String
+    public var description: String?
+    public var parameters: JSONObject?
+    public var strict: Bool?
+
+    public init(
+        name: String,
+        description: String? = nil,
+        parameters: JSONObject? = nil,
+        strict: Bool? = nil
+    ) {
+        self.name = name
+        self.description = description
+        self.parameters = parameters
+        self.strict = strict
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "function"
+        self.name = try container.decode(String.self, forKey: "name")
+        self.description = try container.decodeIfPresent(String.self, forKey: "description")
+        self.parameters = try container.decodeIfPresent(JSONObject.self, forKey: "parameters")
+        self.strict = try container.decodeIfPresent(Bool.self, forKey: "strict")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.name, forKey: "name")
+        try container.encodeIfPresent(self.description, forKey: "description")
+        try container.encodeIfPresent(self.parameters, forKey: "parameters")
+        try container.encodeIfPresent(self.strict, forKey: "strict")
+    }
+}
+
+public struct LiveHostedShellContainerAutoParam: OpenAIModel {
+    /// Automatically creates a container for this request
+    public var type: String = "container_auto"
+    public var fileIDs: [String]?
+    public var memoryLimit: LiveContainerMemoryLimit?
+    public var networkPolicy: LiveHostedShellContainerAutoParam.NetworkPolicy?
+    public var skills: [LiveHostedShellContainerAutoParam.Skill]?
+
+    public init(
+        fileIDs: [String]? = nil,
+        memoryLimit: LiveContainerMemoryLimit? = nil,
+        networkPolicy: LiveHostedShellContainerAutoParam.NetworkPolicy? = nil,
+        skills: [LiveHostedShellContainerAutoParam.Skill]? = nil
+    ) {
+        self.fileIDs = fileIDs
+        self.memoryLimit = memoryLimit
+        self.networkPolicy = networkPolicy
+        self.skills = skills
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "container_auto"
+        self.fileIDs = try container.decodeIfPresent([String].self, forKey: "file_ids")
+        self.memoryLimit = try container.decodeIfPresent(LiveContainerMemoryLimit.self, forKey: "memory_limit")
+        self.networkPolicy = try container.decodeIfPresent(LiveHostedShellContainerAutoParam.NetworkPolicy.self, forKey: "network_policy")
+        self.skills = try container.decodeIfPresent([LiveHostedShellContainerAutoParam.Skill].self, forKey: "skills")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.fileIDs, forKey: "file_ids")
+        try container.encodeIfPresent(self.memoryLimit, forKey: "memory_limit")
+        try container.encodeIfPresent(self.networkPolicy, forKey: "network_policy")
+        try container.encodeIfPresent(self.skills, forKey: "skills")
+    }
+
+    /// Network access policy for the container.
+    ///
+    /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
+    public indirect enum NetworkPolicy: OpenAIModel {
+        /// `type`: `disabled`
+        case disabled(LiveContainerNetworkPolicyDisabledParam)
+        /// `type`: `allowlist`
+        case allowlist(LiveHostedShellNetworkPolicyAllowlistParam)
+        /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
+        case unknown(JSONValue)
+
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            if let keyed = try? decoder.container(keyedBy: OpenAIDynamicCodingKey.self),
+               let discriminator = try? keyed.decode(String.self, forKey: OpenAIDynamicCodingKey("type")) {
+                switch discriminator {
+                case "disabled":
+                    self = .disabled(try container.decode(LiveContainerNetworkPolicyDisabledParam.self))
+                    return
+                case "allowlist":
+                    self = .allowlist(try container.decode(LiveHostedShellNetworkPolicyAllowlistParam.self))
+                    return
+                default:
+                    break
+                }
+            }
+            self = .unknown(try container.decode(JSONValue.self))
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.singleValueContainer()
+            switch self {
+            case .disabled(let value):
+                try container.encode(value)
+            case .allowlist(let value):
+                try container.encode(value)
+            case .unknown(let value):
+                try container.encode(value)
+            }
+        }
+    }
+
+    /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
+    public indirect enum Skill: OpenAIModel {
+        /// `type`: `skill_reference`
+        case skillReference(LiveSkillReferenceParam)
+        /// `type`: `inline`
+        case inline(LiveInlineSkillParam)
+        /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
+        case unknown(JSONValue)
+
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            if let keyed = try? decoder.container(keyedBy: OpenAIDynamicCodingKey.self),
+               let discriminator = try? keyed.decode(String.self, forKey: OpenAIDynamicCodingKey("type")) {
+                switch discriminator {
+                case "skill_reference":
+                    self = .skillReference(try container.decode(LiveSkillReferenceParam.self))
+                    return
+                case "inline":
+                    self = .inline(try container.decode(LiveInlineSkillParam.self))
+                    return
+                default:
+                    break
+                }
+            }
+            self = .unknown(try container.decode(JSONValue.self))
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.singleValueContainer()
+            switch self {
+            case .skillReference(let value):
+                try container.encode(value)
+            case .inline(let value):
+                try container.encode(value)
+            case .unknown(let value):
+                try container.encode(value)
+            }
+        }
+    }
+}
+
+public struct LiveHostedShellNetworkPolicyAllowlistParam: OpenAIModel {
+    /// Allow outbound network access only to specified domains. Always `allowlist`.
+    public var type: String = "allowlist"
+    /// A list of allowed domains when type is `allowlist`.
+    public var allowedDomains: [String]
+
+    public init(allowedDomains: [String]) {
+        self.allowedDomains = allowedDomains
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "allowlist"
+        self.allowedDomains = try container.decode([String].self, forKey: "allowed_domains")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.allowedDomains, forKey: "allowed_domains")
+    }
+}
+
+/// A Responses shell tool. Use a hosted container or return local shell results with response.item.create. Domain secrets are not supported.
+public struct LiveHostedShellToolInputParam: OpenAIModel {
+    public var type: String = "shell"
+    public var environment: LiveHostedShellToolInputParam.EnvironmentValue?
+
+    public init(environment: LiveHostedShellToolInputParam.EnvironmentValue? = nil) {
+        self.environment = environment
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "shell"
+        self.environment = try container.decodeIfPresent(LiveHostedShellToolInputParam.EnvironmentValue.self, forKey: "environment")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.environment, forKey: "environment")
+    }
+
+    /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
+    public indirect enum EnvironmentValue: OpenAIModel {
+        /// `type`: `container_auto`
+        case containerAuto(LiveHostedShellContainerAutoParam)
+        /// `type`: `container_reference`
+        case containerReference(LiveContainerReferenceParam)
+        /// `type`: `local`
+        case local(LiveLocalEnvironmentParam)
+        /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
+        case unknown(JSONValue)
+
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            if let keyed = try? decoder.container(keyedBy: OpenAIDynamicCodingKey.self),
+               let discriminator = try? keyed.decode(String.self, forKey: OpenAIDynamicCodingKey("type")) {
+                switch discriminator {
+                case "container_auto":
+                    self = .containerAuto(try container.decode(LiveHostedShellContainerAutoParam.self))
+                    return
+                case "container_reference":
+                    self = .containerReference(try container.decode(LiveContainerReferenceParam.self))
+                    return
+                case "local":
+                    self = .local(try container.decode(LiveLocalEnvironmentParam.self))
+                    return
+                default:
+                    break
+                }
+            }
+            self = .unknown(try container.decode(JSONValue.self))
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.singleValueContainer()
+            switch self {
+            case .containerAuto(let value):
+                try container.encode(value)
+            case .containerReference(let value):
+                try container.encode(value)
+            case .local(let value):
+                try container.encode(value)
+            case .unknown(let value):
+                try container.encode(value)
+            }
+        }
+    }
+}
+
+public struct LiveImageGenerationToolInputParam: OpenAIModel {
+    public var type: String = "image_generation"
+
+    public init() {
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "image_generation"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+    }
+}
+
+/// An informational notice about the Live session, such as the event permissions applied to a frontend data channel.
+public struct LiveInfoEvent: OpenAIModel {
+    /// The unique ID of the Live server event.
+    public var eventID: String
+    /// The event_id of the client command associated with this server event, when supplied.
+    public var clientEventID: String?
+    /// The event type, always `info`.
+    public var type: String = "info"
+    /// A machine-readable code for the notice, such as `data_channel_permissions`.
+    public var code: String
+    /// A human-readable explanation of the Live session notice.
+    public var message: String
+
+    public init(
+        eventID: String,
+        code: String,
+        message: String,
+        clientEventID: String? = nil
+    ) {
+        self.eventID = eventID
+        self.code = code
+        self.message = message
+        self.clientEventID = clientEventID
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.clientEventID = try container.decodeIfPresent(String.self, forKey: "client_event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "info"
+        self.code = try container.decode(String.self, forKey: "code")
+        self.message = try container.decode(String.self, forKey: "message")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encodeIfPresent(self.clientEventID, forKey: "client_event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.code, forKey: "code")
+        try container.encode(self.message, forKey: "message")
+    }
+}
+
+/// An assistant message included in the initial text history of a Live session.
+public struct LiveInitialAssistantMessageItemParam: OpenAIModel {
+    public var id: String?
+    /// The history item type. Always `message`.
+    public var type: String? = "message"
+    public var status: LiveInitialMessageStatus?
+    /// The author of this history message. Always `assistant`.
+    public var role: String = "assistant"
+    /// The message content. Supply exactly one text part for the initial Live conversation history.
+    public var content: [LiveInitialAssistantMessageItemParam.ContentItem]
+
+    public init(
+        content: [LiveInitialAssistantMessageItemParam.ContentItem],
+        id: String? = nil,
+        status: LiveInitialMessageStatus? = nil
+    ) {
+        self.content = content
+        self.id = id
+        self.status = status
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type")
+        self.status = try container.decodeIfPresent(LiveInitialMessageStatus.self, forKey: "status")
+        self.role = try container.decodeIfPresent(String.self, forKey: "role") ?? "assistant"
+        self.content = try container.decode([LiveInitialAssistantMessageItemParam.ContentItem].self, forKey: "content")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encodeIfPresent(self.type, forKey: "type")
+        try container.encodeIfPresent(self.status, forKey: "status")
+        try container.encode(self.role, forKey: "role")
+        try container.encode(self.content, forKey: "content")
+    }
+
+    /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
+    public indirect enum ContentItem: OpenAIModel {
+        /// `type`: `text`
+        case text(LiveInitialTextContentPartParam)
+        /// `type`: `output_text`
+        case outputText(LiveInitialOutputTextContentPartParam)
+        /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
+        case unknown(JSONValue)
+
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            if let keyed = try? decoder.container(keyedBy: OpenAIDynamicCodingKey.self),
+               let discriminator = try? keyed.decode(String.self, forKey: OpenAIDynamicCodingKey("type")) {
+                switch discriminator {
+                case "text":
+                    self = .text(try container.decode(LiveInitialTextContentPartParam.self))
+                    return
+                case "output_text":
+                    self = .outputText(try container.decode(LiveInitialOutputTextContentPartParam.self))
+                    return
+                default:
+                    break
+                }
+            }
+            self = .unknown(try container.decode(JSONValue.self))
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.singleValueContainer()
+            switch self {
+            case .text(let value):
+                try container.encode(value)
+            case .outputText(let value):
+                try container.encode(value)
+            case .unknown(let value):
+                try container.encode(value)
+            }
+        }
+    }
+}
+
+/// A developer message included in the initial text history of a Live session.
+public struct LiveInitialDeveloperMessageItemParam: OpenAIModel {
+    public var id: String?
+    /// The history item type. Always `message`.
+    public var type: String? = "message"
+    public var status: LiveInitialMessageStatus?
+    /// The author of this history message. Always `developer`.
+    public var role: String = "developer"
+    /// The message content. Supply exactly one text part for the initial Live conversation history.
+    public var content: [LiveInitialInputTextContentPartParam]
+
+    public init(
+        content: [LiveInitialInputTextContentPartParam],
+        id: String? = nil,
+        status: LiveInitialMessageStatus? = nil
+    ) {
+        self.content = content
+        self.id = id
+        self.status = status
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type")
+        self.status = try container.decodeIfPresent(LiveInitialMessageStatus.self, forKey: "status")
+        self.role = try container.decodeIfPresent(String.self, forKey: "role") ?? "developer"
+        self.content = try container.decode([LiveInitialInputTextContentPartParam].self, forKey: "content")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encodeIfPresent(self.type, forKey: "type")
+        try container.encodeIfPresent(self.status, forKey: "status")
+        try container.encode(self.role, forKey: "role")
+        try container.encode(self.content, forKey: "content")
+    }
+}
+
+/// Text supplied in a developer or user message when starting a Live session.
+public struct LiveInitialInputTextContentPartParam: OpenAIModel {
+    /// The text content type. Always `input_text`.
+    public var type: String? = "input_text"
+    /// The message text to include in the Live session’s initial conversation history.
+    public var text: String
+
+    public init(text: String) {
+        self.text = text
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type")
+        self.text = try container.decode(String.self, forKey: "text")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.type, forKey: "type")
+        try container.encode(self.text, forKey: "text")
+    }
+}
+
+/// A developer, user, or assistant message supplied as text history before the Live session starts.
+///
+/// Decoding picks the case from the `role` field. Values this version does not know decode as `.unknown`.
+public indirect enum LiveInitialItem: OpenAIModel {
+    /// `role`: `developer`
+    case developer(LiveInitialDeveloperMessageItemParam)
+    /// `role`: `user`
+    case user(LiveInitialUserMessageItemParam)
+    /// `role`: `assistant`
+    case assistant(LiveInitialAssistantMessageItemParam)
+    /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
+    case unknown(JSONValue)
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let keyed = try? decoder.container(keyedBy: OpenAIDynamicCodingKey.self),
+           let discriminator = try? keyed.decode(String.self, forKey: OpenAIDynamicCodingKey("role")) {
+            switch discriminator {
+            case "developer":
+                self = .developer(try container.decode(LiveInitialDeveloperMessageItemParam.self))
+                return
+            case "user":
+                self = .user(try container.decode(LiveInitialUserMessageItemParam.self))
+                return
+            case "assistant":
+                self = .assistant(try container.decode(LiveInitialAssistantMessageItemParam.self))
+                return
+            default:
+                break
+            }
+        }
+        self = .unknown(try container.decode(JSONValue.self))
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .developer(let value):
+            try container.encode(value)
+        case .user(let value):
+            try container.encode(value)
+        case .assistant(let value):
+            try container.encode(value)
+        case .unknown(let value):
+            try container.encode(value)
+        }
+    }
+}
+
+/// This type is open: it accepts values the spec does not list yet.
+public struct LiveInitialMessageStatus: OpenAIStringEnum {
+    public let rawValue: String
+
+    public init(rawValue: String) {
+        self.rawValue = rawValue
+    }
+
+    public static let incomplete: Self = "incomplete"
+    public static let completed: Self = "completed"
+
+    public static var knownValues: [Self] {
+        [.incomplete, .completed]
+    }
+}
+
+/// Assistant output text supplied as conversation history when starting a Live session.
+public struct LiveInitialOutputTextContentPartParam: OpenAIModel {
+    /// The text content type. Always `output_text`.
+    public var type: String = "output_text"
+    /// The message text to include in the Live session’s initial conversation history.
+    public var text: String
+
+    public init(text: String) {
+        self.text = text
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "output_text"
+        self.text = try container.decode(String.self, forKey: "text")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.text, forKey: "text")
+    }
+}
+
+/// Settings for speech generated by the Live model. Choose the voice before starting the session.
+public struct LiveInitialSessionAudioOutputParam: OpenAIModel {
+    /// The voice used for Live speech, as a built-in voice name or a custom voice object containing its ID. Defaults to `marin` and cannot change after startup.
+    public var voice: LiveInitialSessionAudioOutputParam.Voice?
+
+    public init(voice: LiveInitialSessionAudioOutputParam.Voice? = nil) {
+        self.voice = voice
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.voice = try container.decodeIfPresent(LiveInitialSessionAudioOutputParam.Voice.self, forKey: "voice")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.voice, forKey: "voice")
+    }
+
+    /// The voice used for Live speech, as a built-in voice name or a custom voice object containing its ID. Defaults to `marin` and cannot change after startup.
+    public indirect enum Voice: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+        case string(LiveInitialSessionAudioOutputParam.Voice.StringValue)
+        case liveCustomVoiceParam(LiveCustomVoiceParam)
+        /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
+        case unknown(JSONValue)
+
+        public init(stringLiteral value: String) {
+            self = .string(LiveInitialSessionAudioOutputParam.Voice.StringValue(rawValue: value))
+        }
+
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            if let value = try? container.decode(LiveInitialSessionAudioOutputParam.Voice.StringValue.self) {
+                self = .string(value)
+                return
+            }
+            if let value = try? container.decode(LiveCustomVoiceParam.self) {
+                self = .liveCustomVoiceParam(value)
+                return
+            }
+            self = .unknown(try container.decode(JSONValue.self))
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.singleValueContainer()
+            switch self {
+            case .string(let value):
+                try container.encode(value)
+            case .liveCustomVoiceParam(let value):
+                try container.encode(value)
+            case .unknown(let value):
+                try container.encode(value)
+            }
+        }
+
+        /// This type is open: it accepts values the spec does not list yet.
+        public struct StringValue: OpenAIStringEnum {
+            public let rawValue: String
+
+            public init(rawValue: String) {
+                self.rawValue = rawValue
+            }
+
+            public static let alloy: Self = "alloy"
+            public static let ash: Self = "ash"
+            public static let ballad: Self = "ballad"
+            public static let beacon: Self = "beacon"
+            public static let bossa: Self = "bossa"
+            public static let brise: Self = "brise"
+            public static let calandria: Self = "calandria"
+            public static let cedar: Self = "cedar"
+            public static let cinder: Self = "cinder"
+            public static let compas: Self = "compas"
+            public static let coral: Self = "coral"
+            public static let delta: Self = "delta"
+            public static let destello: Self = "destello"
+            public static let echo: Self = "echo"
+            public static let flitz: Self = "flitz"
+            public static let gleam: Self = "gleam"
+            public static let halo: Self = "halo"
+            public static let harema: Self = "harema"
+            public static let hornero: Self = "hornero"
+            public static let juni: Self = "juni"
+            public static let luciernaga: Self = "luciernaga"
+            public static let marin: Self = "marin"
+            public static let meridian: Self = "meridian"
+            public static let nira: Self = "nira"
+            public static let noeul: Self = "noeul"
+            public static let nuri: Self = "nuri"
+            public static let pearl: Self = "pearl"
+            public static let quartz: Self = "quartz"
+            public static let ripple: Self = "ripple"
+            public static let sage: Self = "sage"
+            public static let shida: Self = "shida"
+            public static let shimmer: Self = "shimmer"
+            public static let sillage: Self = "sillage"
+            public static let stone: Self = "stone"
+            public static let tempo: Self = "tempo"
+            public static let verse: Self = "verse"
+            public static let vesper: Self = "vesper"
+            public static let willow: Self = "willow"
+
+            public static var knownValues: [Self] {
+                [.alloy, .ash, .ballad, .beacon, .bossa, .brise, .calandria, .cedar, .cinder, .compas, .coral, .delta, .destello, .echo, .flitz, .gleam, .halo, .harema, .hornero, .juni, .luciernaga, .marin, .meridian, .nira, .noeul, .nuri, .pearl, .quartz, .ripple, .sage, .shida, .shimmer, .sillage, .stone, .tempo, .verse, .vesper, .willow]
+            }
+        }
+    }
+}
+
 /// Startup audio configuration. Only primary WebSockets accept audio.format; WebRTC and SIP negotiate their media format. Voice and format are immutable after startup.
-public struct LiveInitialSessionAudioParam: Codable, Hashable, Sendable {
+public struct LiveInitialSessionAudioParam: OpenAIModel {
     /// Audio encoding and sample rate for audio sent and received over a Live WebSocket connection. WebRTC and SIP negotiate their media format separately.
     public var format: LiveAudioFormat?
     /// The voice used for speech generated by the Live model.
@@ -15,14 +712,21 @@ public struct LiveInitialSessionAudioParam: Codable, Hashable, Sendable {
         self.output = output
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case format
-        case output
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.format = try container.decodeIfPresent(LiveAudioFormat.self, forKey: "format")
+        self.output = try container.decodeIfPresent(LiveInitialSessionAudioOutputParam.self, forKey: "output")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.format, forKey: "format")
+        try container.encodeIfPresent(self.output, forKey: "output")
     }
 }
 
 /// Assistant text supplied as conversation history when starting a Live session.
-public struct LiveInitialTextContentPartParam: Codable, Hashable, Sendable {
+public struct LiveInitialTextContentPartParam: OpenAIModel {
     /// The text content type. Always `text`.
     public var type: String? = "text"
     /// The message text to include in the Live session’s initial conversation history.
@@ -32,14 +736,21 @@ public struct LiveInitialTextContentPartParam: Codable, Hashable, Sendable {
         self.text = text
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case text
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type")
+        self.text = try container.decode(String.self, forKey: "text")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.type, forKey: "type")
+        try container.encode(self.text, forKey: "text")
     }
 }
 
 /// A user message included in the initial text history of a Live session.
-public struct LiveInitialUserMessageItemParam: Codable, Hashable, Sendable {
+public struct LiveInitialUserMessageItemParam: OpenAIModel {
     public var id: String?
     /// The history item type. Always `message`.
     public var type: String? = "message"
@@ -59,16 +770,26 @@ public struct LiveInitialUserMessageItemParam: Codable, Hashable, Sendable {
         self.status = status
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case type
-        case status
-        case role
-        case content
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type")
+        self.status = try container.decodeIfPresent(LiveInitialMessageStatus.self, forKey: "status")
+        self.role = try container.decodeIfPresent(String.self, forKey: "role") ?? "user"
+        self.content = try container.decode([LiveInitialInputTextContentPartParam].self, forKey: "content")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encodeIfPresent(self.type, forKey: "type")
+        try container.encodeIfPresent(self.status, forKey: "status")
+        try container.encode(self.role, forKey: "role")
+        try container.encode(self.content, forKey: "content")
     }
 }
 
-public struct LiveInlineSkillParam: Codable, Hashable, Sendable {
+public struct LiveInlineSkillParam: OpenAIModel {
     /// Defines an inline skill for this request.
     public var type: String = "inline"
     /// The name of the skill.
@@ -88,16 +809,25 @@ public struct LiveInlineSkillParam: Codable, Hashable, Sendable {
         self.source = source
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
-        case description
-        case source
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "inline"
+        self.name = try container.decode(String.self, forKey: "name")
+        self.description = try container.decode(String.self, forKey: "description")
+        self.source = try container.decode(LiveInlineSkillSourceParam.self, forKey: "source")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.description, forKey: "description")
+        try container.encode(self.source, forKey: "source")
     }
 }
 
 /// Inline skill payload
-public struct LiveInlineSkillSourceParam: Codable, Hashable, Sendable {
+public struct LiveInlineSkillSourceParam: OpenAIModel {
     /// The type of the inline skill source. Must be `base64`.
     public var type: String = "base64"
     /// The media type of the inline skill payload. Must be `application/zip`.
@@ -109,15 +839,23 @@ public struct LiveInlineSkillSourceParam: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case mediaType = "media_type"
-        case data
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "base64"
+        self.mediaType = try container.decodeIfPresent(String.self, forKey: "media_type") ?? "application/zip"
+        self.data = try container.decode(String.self, forKey: "data")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.mediaType, forKey: "media_type")
+        try container.encode(self.data, forKey: "data")
     }
 }
 
 /// Input audio received from the primary transport and reflected to a Live sideband connection before model-input muting.
-public struct LiveInputAudioAppend: Codable, Hashable, Sendable {
+public struct LiveInputAudioAppend: OpenAIModel {
     /// The event type, always `session.input_audio.append`.
     public var type: String = "session.input_audio.append"
     /// Base64-encoded raw mono PCM16LE at 24 kHz received from the primary transport, reflected to the sideband before model-input muting. This server event uses the same audio key as the client command, but is not an acknowledgment of it.
@@ -127,14 +865,21 @@ public struct LiveInputAudioAppend: Codable, Hashable, Sendable {
         self.audio = audio
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case audio
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "session.input_audio.append"
+        self.audio = try container.decode(String.self, forKey: "audio")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.audio, forKey: "audio")
     }
 }
 
 /// Send audio to a Live session over its primary WebSocket. WebRTC and SIP sessions send audio over their media transport.
-public struct LiveInputAudioAppendEvent: Codable, Hashable, Sendable {
+public struct LiveInputAudioAppendEvent: OpenAIModel {
     public var eventID: String?
     /// The Live client event type. Always `session.input_audio.append`.
     public var type: String = "session.input_audio.append"
@@ -146,15 +891,23 @@ public struct LiveInputAudioAppendEvent: Codable, Hashable, Sendable {
         self.eventID = eventID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case type
-        case audio
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decodeIfPresent(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "session.input_audio.append"
+        self.audio = try container.decode(String.self, forKey: "audio")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.audio, forKey: "audio")
     }
 }
 
 /// Mute audio input to the Live model without closing the session. The server acknowledges with `session.input_audio.muted`.
-public struct LiveInputAudioMuteParam: Codable, Hashable, Sendable {
+public struct LiveInputAudioMuteParam: OpenAIModel {
     public var eventID: String?
     /// The Live client event type. Always `session.input_audio.mute`.
     public var type: String = "session.input_audio.mute"
@@ -163,14 +916,21 @@ public struct LiveInputAudioMuteParam: Codable, Hashable, Sendable {
         self.eventID = eventID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decodeIfPresent(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "session.input_audio.mute"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// Acknowledges a session.input_audio.mute command. An independent input mute sends silence to the model and preserves sideband audio reflection. Fixture playback does not emit this event.
-public struct LiveInputAudioMuted: Codable, Hashable, Sendable {
+public struct LiveInputAudioMuted: OpenAIModel {
     /// The unique ID of the Live server event.
     public var eventID: String
     /// The event_id of the client command associated with this server event, when supplied.
@@ -183,15 +943,23 @@ public struct LiveInputAudioMuted: Codable, Hashable, Sendable {
         self.clientEventID = clientEventID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case clientEventID = "client_event_id"
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.clientEventID = try container.decodeIfPresent(String.self, forKey: "client_event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "session.input_audio.muted"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encodeIfPresent(self.clientEventID, forKey: "client_event_id")
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// Resume audio input to a Live model after muting it. The server acknowledges with `session.input_audio.unmuted`. An active audio fixture still pauses inference until playback finishes.
-public struct LiveInputAudioUnmuteParam: Codable, Hashable, Sendable {
+public struct LiveInputAudioUnmuteParam: OpenAIModel {
     public var eventID: String?
     /// The Live client event type. Always `session.input_audio.unmute`.
     public var type: String = "session.input_audio.unmute"
@@ -200,14 +968,21 @@ public struct LiveInputAudioUnmuteParam: Codable, Hashable, Sendable {
         self.eventID = eventID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decodeIfPresent(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "session.input_audio.unmute"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// Acknowledges a session.input_audio.unmute command, removing the independent input mute. An active audio fixture still pauses inference until playback finishes. Fixture playback does not emit this event.
-public struct LiveInputAudioUnmuted: Codable, Hashable, Sendable {
+public struct LiveInputAudioUnmuted: OpenAIModel {
     /// The unique ID of the Live server event.
     public var eventID: String
     /// The event_id of the client command associated with this server event, when supplied.
@@ -220,15 +995,23 @@ public struct LiveInputAudioUnmuted: Codable, Hashable, Sendable {
         self.clientEventID = clientEventID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case clientEventID = "client_event_id"
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.clientEventID = try container.decodeIfPresent(String.self, forKey: "client_event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "session.input_audio.unmuted"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encodeIfPresent(self.clientEventID, forKey: "client_event_id")
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// A transcript fragment for user input audio in the Live session. Accumulate fragments in delivery order; these events do not define complete turns or include a transcript-done event.
-public struct LiveInputTranscriptDelta: Codable, Hashable, Sendable {
+public struct LiveInputTranscriptDelta: OpenAIModel {
     /// The unique ID of the Live server event.
     public var eventID: String
     /// The event_id of the client command associated with this server event, when supplied.
@@ -256,18 +1039,29 @@ public struct LiveInputTranscriptDelta: Codable, Hashable, Sendable {
         self.clientEventID = clientEventID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case clientEventID = "client_event_id"
-        case startMs = "start_ms"
-        case endMs = "end_ms"
-        case delta
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.clientEventID = try container.decodeIfPresent(String.self, forKey: "client_event_id")
+        self.startMs = try container.decode(Int.self, forKey: "start_ms")
+        self.endMs = try container.decode(Int.self, forKey: "end_ms")
+        self.delta = try container.decode(String.self, forKey: "delta")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "session.input_transcript.delta"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encodeIfPresent(self.clientEventID, forKey: "client_event_id")
+        try container.encode(self.startMs, forKey: "start_ms")
+        try container.encode(self.endMs, forKey: "end_ms")
+        try container.encode(self.delta, forKey: "delta")
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// Append developer instructions to the Live conversation while it is running, optionally associating them with an existing client delegation. Rejected while an audio fixture is active. These instructions remain in conversation history through compaction and are included in future backend delegations. For external audio, describe content already delivered so the assistant does not repeat it.
-public struct LiveInstructionsAppendParam: Codable, Hashable, Sendable {
+public struct LiveInstructionsAppendParam: OpenAIModel {
     public var eventID: String?
     /// The Live client event type. Always `session.instructions.append`.
     public var type: String = "session.instructions.append"
@@ -285,16 +1079,25 @@ public struct LiveInstructionsAppendParam: Codable, Hashable, Sendable {
         self.delegationID = delegationID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case type
-        case delegationID = "delegation_id"
-        case content
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decodeIfPresent(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "session.instructions.append"
+        self.delegationID = try container.decodeIfPresent(String.self, forKey: "delegation_id")
+        self.content = try container.decode(String.self, forKey: "content")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.delegationID, forKey: "delegation_id")
+        try container.encode(self.content, forKey: "content")
     }
 }
 
 /// Returned when a session.instructions.append command is accepted into the Live session timeline. Acknowledges the appended instructions without guaranteeing that the model has acted on them.
-public struct LiveInstructionsAppended: Codable, Hashable, Sendable {
+public struct LiveInstructionsAppended: OpenAIModel {
     /// The unique ID of the Live server event.
     public var eventID: String
     /// The event_id of the client command associated with this server event, when supplied.
@@ -318,17 +1121,27 @@ public struct LiveInstructionsAppended: Codable, Hashable, Sendable {
         self.clientEventID = clientEventID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case clientEventID = "client_event_id"
-        case startMs = "start_ms"
-        case endMs = "end_ms"
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.clientEventID = try container.decodeIfPresent(String.self, forKey: "client_event_id")
+        self.startMs = try container.decode(Int.self, forKey: "start_ms")
+        self.endMs = try container.decode(Int.self, forKey: "end_ms")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "session.instructions.appended"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encodeIfPresent(self.clientEventID, forKey: "client_event_id")
+        try container.encode(self.startMs, forKey: "start_ms")
+        try container.encode(self.endMs, forKey: "end_ms")
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// Details of an error encountered by the Live session, including the affected parameter or client command when available.
-public struct LiveLiveError: Codable, Hashable, Sendable {
+public struct LiveLiveError: OpenAIModel {
     /// The category of error, such as `invalid_request_error` for an invalid Live client command.
     public var type: String
     /// A machine-readable code identifying the Live error, such as `unknown_parameter`.
@@ -354,16 +1167,26 @@ public struct LiveLiveError: Codable, Hashable, Sendable {
         self.clientEventID = clientEventID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case code
-        case message
-        case param
-        case clientEventID = "client_event_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decode(String.self, forKey: "type")
+        self.code = try container.decode(String.self, forKey: "code")
+        self.message = try container.decode(String.self, forKey: "message")
+        self.param = try container.decodeIfPresent(String.self, forKey: "param")
+        self.clientEventID = try container.decodeIfPresent(String.self, forKey: "client_event_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.code, forKey: "code")
+        try container.encode(self.message, forKey: "message")
+        try container.encodeIfPresent(self.param, forKey: "param")
+        try container.encodeIfPresent(self.clientEventID, forKey: "client_event_id")
     }
 }
 
-public struct LiveLocalEnvironmentParam: Codable, Hashable, Sendable {
+public struct LiveLocalEnvironmentParam: OpenAIModel {
     /// Use a local computer environment.
     public var type: String = "local"
     public var skills: [LiveLocalSkillParam]?
@@ -372,13 +1195,20 @@ public struct LiveLocalEnvironmentParam: Codable, Hashable, Sendable {
         self.skills = skills
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case skills
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "local"
+        self.skills = try container.decodeIfPresent([LiveLocalSkillParam].self, forKey: "skills")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.skills, forKey: "skills")
     }
 }
 
-public struct LiveLocalSkillParam: Codable, Hashable, Sendable {
+public struct LiveLocalSkillParam: OpenAIModel {
     /// The name of the skill.
     public var name: String
     /// The description of the skill.
@@ -396,10 +1226,18 @@ public struct LiveLocalSkillParam: Codable, Hashable, Sendable {
         self.path = path
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case name
-        case description
-        case path
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.name = try container.decode(String.self, forKey: "name")
+        self.description = try container.decode(String.self, forKey: "description")
+        self.path = try container.decode(String.self, forKey: "path")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.description, forKey: "description")
+        try container.encode(self.path, forKey: "path")
     }
 }
 
@@ -419,7 +1257,7 @@ public struct LiveMCPRequireApprovalApiEnum: OpenAIStringEnum {
     }
 }
 
-public struct LiveMCPRequireApprovalFilterParam: Codable, Hashable, Sendable {
+public struct LiveMCPRequireApprovalFilterParam: OpenAIModel {
     public var always: LiveMCPToolFilterParam?
     public var never: LiveMCPToolFilterParam?
 
@@ -428,13 +1266,20 @@ public struct LiveMCPRequireApprovalFilterParam: Codable, Hashable, Sendable {
         self.never = never
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case always
-        case never
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.always = try container.decodeIfPresent(LiveMCPToolFilterParam.self, forKey: "always")
+        self.never = try container.decodeIfPresent(LiveMCPToolFilterParam.self, forKey: "never")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.always, forKey: "always")
+        try container.encodeIfPresent(self.never, forKey: "never")
     }
 }
 
-public struct LiveMCPToolChoiceParam: Codable, Hashable, Sendable {
+public struct LiveMCPToolChoiceParam: OpenAIModel {
     /// The tool to call. Always `mcp`.
     public var type: String = "mcp"
     /// The label of the MCP server to call.
@@ -446,14 +1291,22 @@ public struct LiveMCPToolChoiceParam: Codable, Hashable, Sendable {
         self.name = name
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case serverLabel = "server_label"
-        case name
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "mcp"
+        self.serverLabel = try container.decode(String.self, forKey: "server_label")
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.serverLabel, forKey: "server_label")
+        try container.encodeIfPresent(self.name, forKey: "name")
     }
 }
 
-public struct LiveMCPToolFilterParam: Codable, Hashable, Sendable {
+public struct LiveMCPToolFilterParam: OpenAIModel {
     public var toolNames: [String]?
     public var readOnly: Bool?
 
@@ -462,13 +1315,20 @@ public struct LiveMCPToolFilterParam: Codable, Hashable, Sendable {
         self.readOnly = readOnly
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case toolNames = "tool_names"
-        case readOnly = "read_only"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.toolNames = try container.decodeIfPresent([String].self, forKey: "tool_names")
+        self.readOnly = try container.decodeIfPresent(Bool.self, forKey: "read_only")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.toolNames, forKey: "tool_names")
+        try container.encodeIfPresent(self.readOnly, forKey: "read_only")
     }
 }
 
-public struct LiveMCPToolInputParam: Codable, Hashable, Sendable {
+public struct LiveMCPToolInputParam: OpenAIModel {
     public var type: String = "mcp"
     /// A label used to identify the MCP server.
     public var serverLabel: String?
@@ -511,23 +1371,40 @@ public struct LiveMCPToolInputParam: Codable, Hashable, Sendable {
         self.deferLoading = deferLoading
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case serverLabel = "server_label"
-        case serverURL = "server_url"
-        case serverDescription = "server_description"
-        case authorization
-        case headers
-        case allowedTools = "allowed_tools"
-        case requireApproval = "require_approval"
-        case connectorID = "connector_id"
-        case tunnelID = "tunnel_id"
-        case allowedCallers = "allowed_callers"
-        case deferLoading = "defer_loading"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "mcp"
+        self.serverLabel = try container.decodeIfPresent(String.self, forKey: "server_label")
+        self.serverURL = try container.decodeIfPresent(String.self, forKey: "server_url")
+        self.serverDescription = try container.decodeIfPresent(String.self, forKey: "server_description")
+        self.authorization = try container.decodeIfPresent(String.self, forKey: "authorization")
+        self.headers = try container.decodeIfPresent([String: String].self, forKey: "headers")
+        self.allowedTools = try container.decodeIfPresent(LiveMCPToolInputParam.AllowedTools.self, forKey: "allowed_tools")
+        self.requireApproval = try container.decodeIfPresent(LiveMCPToolInputParam.RequireApproval.self, forKey: "require_approval")
+        self.connectorID = try container.decodeIfPresent(String.self, forKey: "connector_id")
+        self.tunnelID = try container.decodeIfPresent(String.self, forKey: "tunnel_id")
+        self.allowedCallers = try container.decodeIfPresent([LiveCallableToolAllowedCaller].self, forKey: "allowed_callers")
+        self.deferLoading = try container.decodeIfPresent(Bool.self, forKey: "defer_loading")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.serverLabel, forKey: "server_label")
+        try container.encodeIfPresent(self.serverURL, forKey: "server_url")
+        try container.encodeIfPresent(self.serverDescription, forKey: "server_description")
+        try container.encodeIfPresent(self.authorization, forKey: "authorization")
+        try container.encodeIfPresent(self.headers, forKey: "headers")
+        try container.encodeIfPresent(self.allowedTools, forKey: "allowed_tools")
+        try container.encodeIfPresent(self.requireApproval, forKey: "require_approval")
+        try container.encodeIfPresent(self.connectorID, forKey: "connector_id")
+        try container.encodeIfPresent(self.tunnelID, forKey: "tunnel_id")
+        try container.encodeIfPresent(self.allowedCallers, forKey: "allowed_callers")
+        try container.encodeIfPresent(self.deferLoading, forKey: "defer_loading")
     }
 
     /// A list of MCP tool names that are allowed for this server.
-    public indirect enum AllowedTools: Codable, Hashable, Sendable {
+    public indirect enum AllowedTools: OpenAIModel {
         case strings([String])
         case liveMCPToolFilterParam(LiveMCPToolFilterParam)
         /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
@@ -560,7 +1437,7 @@ public struct LiveMCPToolInputParam: Codable, Hashable, Sendable {
     }
 
     /// Controls which MCP tools require explicit user approval before execution.
-    public indirect enum RequireApproval: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum RequireApproval: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         case filterParam(LiveMCPRequireApprovalFilterParam)
         case apiEnum(LiveMCPRequireApprovalApiEnum)
         /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
@@ -598,20 +1475,26 @@ public struct LiveMCPToolInputParam: Codable, Hashable, Sendable {
 }
 
 /// Startup audio output configuration. WebRTC and SIP negotiate the media format; audio.format is only accepted for primary WebSockets. Voice cannot change after startup.
-public struct LiveMediaSessionAudioParam: Codable, Hashable, Sendable {
+public struct LiveMediaSessionAudioParam: OpenAIModel {
     public var output: LiveInitialSessionAudioOutputParam?
 
     public init(output: LiveInitialSessionAudioOutputParam? = nil) {
         self.output = output
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case output
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.output = try container.decodeIfPresent(LiveInitialSessionAudioOutputParam.self, forKey: "output")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.output, forKey: "output")
     }
 }
 
 /// Startup configuration for a Live media session. Follow the [Live prompting guide](https://developers.openai.com/api/docs/guides/live-prompting) when writing frontend instructions and the backend prompt under delegation.responses.instructions.
-public struct LiveMediaSessionCreateParams: Codable, Hashable, Sendable {
+public struct LiveMediaSessionCreateParams: OpenAIModel {
     public var model: ModelIdsLive
     public var safetyIdentifier: SafetyIdentifier?
     public var instructions: Instructions?
@@ -651,23 +1534,39 @@ public struct LiveMediaSessionCreateParams: Codable, Hashable, Sendable {
         self.idleTimeoutS = idleTimeoutS
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case model
-        case safetyIdentifier = "safety_identifier"
-        case instructions
-        case audio
-        case delegation
-        case triggers
-        case store
-        case input
-        case client
-        case wakePolicy = "wake_policy"
-        case idleTimeoutS = "idle_timeout_s"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.model = try container.decode(ModelIdsLive.self, forKey: "model")
+        self.safetyIdentifier = try container.decodeIfPresent(SafetyIdentifier.self, forKey: "safety_identifier")
+        self.instructions = try container.decodeIfPresent(Instructions.self, forKey: "instructions")
+        self.audio = try container.decodeIfPresent(LiveMediaSessionAudioParam.self, forKey: "audio")
+        self.delegation = try container.decodeIfPresent(Delegation.self, forKey: "delegation")
+        self.triggers = try container.decodeIfPresent(Triggers.self, forKey: "triggers")
+        self.store = try container.decodeIfPresent(Store.self, forKey: "store")
+        self.input = try container.decodeIfPresent(Input.self, forKey: "input")
+        self.client = try container.decodeIfPresent(LiveClientConfigParam.self, forKey: "client")
+        self.wakePolicy = try container.decodeIfPresent(LiveSpeechWakePolicyParam.self, forKey: "wake_policy")
+        self.idleTimeoutS = try container.decodeIfPresent(IdleTimeoutS.self, forKey: "idle_timeout_s")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.model, forKey: "model")
+        try container.encodeIfPresent(self.safetyIdentifier, forKey: "safety_identifier")
+        try container.encodeIfPresent(self.instructions, forKey: "instructions")
+        try container.encodeIfPresent(self.audio, forKey: "audio")
+        try container.encodeIfPresent(self.delegation, forKey: "delegation")
+        try container.encodeIfPresent(self.triggers, forKey: "triggers")
+        try container.encodeIfPresent(self.store, forKey: "store")
+        try container.encodeIfPresent(self.input, forKey: "input")
+        try container.encodeIfPresent(self.client, forKey: "client")
+        try container.encodeIfPresent(self.wakePolicy, forKey: "wake_policy")
+        try container.encodeIfPresent(self.idleTimeoutS, forKey: "idle_timeout_s")
     }
 }
 
 /// Optional overrides for a stored Live session. Omitted settings are inherited. The model, voice, frontend instructions, and prior conversation come from the stored session. WebRTC negotiates its audio format; audio.format is only supported on WebSocket forks.
-public struct LiveMediaSessionForkParams: Codable, Hashable, Sendable {
+public struct LiveMediaSessionForkParams: OpenAIModel {
     public var store: PropertiesStore?
     public var delegation: LiveResponsesDelegationUpdateParam?
     public var client: LiveClientConfigParam?
@@ -682,10 +1581,18 @@ public struct LiveMediaSessionForkParams: Codable, Hashable, Sendable {
         self.client = client
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case store
-        case delegation
-        case client
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.store = try container.decodeIfPresent(PropertiesStore.self, forKey: "store")
+        self.delegation = try container.decodeIfPresent(LiveResponsesDelegationUpdateParam.self, forKey: "delegation")
+        self.client = try container.decodeIfPresent(LiveClientConfigParam.self, forKey: "client")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.store, forKey: "store")
+        try container.encodeIfPresent(self.delegation, forKey: "delegation")
+        try container.encodeIfPresent(self.client, forKey: "client")
     }
 }
 
@@ -705,19 +1612,25 @@ public struct LiveMessagePhase: OpenAIStringEnum {
     }
 }
 
-public struct LiveNamespaceToolInputParam: Codable, Hashable, Sendable {
+public struct LiveNamespaceToolInputParam: OpenAIModel {
     public var type: String = "namespace"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "namespace"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// An audio chunk generated by the Live model. Decode and play primary WebSocket chunks in delivery order using the configured session audio format. Sideband connections receive reflected output audio with timestamps.
-public struct LiveOutputAudioDelta: Codable, Hashable, Sendable {
+public struct LiveOutputAudioDelta: OpenAIModel {
     /// The event type, always `session.output_audio.delta`.
     public var type: String = "session.output_audio.delta"
     /// Base64-encoded raw audio. Primary WebSocket events use the session's configured format; reflected sideband events use mono PCM16LE at 24 kHz.
@@ -737,16 +1650,25 @@ public struct LiveOutputAudioDelta: Codable, Hashable, Sendable {
         self.endMs = endMs
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case delta
-        case startMs = "start_ms"
-        case endMs = "end_ms"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "session.output_audio.delta"
+        self.delta = try container.decode(String.self, forKey: "delta")
+        self.startMs = try container.decodeIfPresent(Int.self, forKey: "start_ms")
+        self.endMs = try container.decodeIfPresent(Int.self, forKey: "end_ms")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.delta, forKey: "delta")
+        try container.encodeIfPresent(self.startMs, forKey: "start_ms")
+        try container.encodeIfPresent(self.endMs, forKey: "end_ms")
     }
 }
 
 /// Play one complete audio fixture through the session output. Send this event over the primary WebSocket or a server sideband. Audio must be raw mono PCM16 little-endian at 24 kHz, regardless of the session audio format, and at most 30 seconds. The entire payload is validated before model speech is interrupted and input is muted. Only one fixture can be active. fixture.playing acknowledges acceptance and fixture.played reports server mixer drain. These notifications are not exact transport-media boundaries. Input arriving during playback is dropped and not replayed.
-public struct LiveOutputAudioFixturePlayParam: Codable, Hashable, Sendable {
+public struct LiveOutputAudioFixturePlayParam: OpenAIModel {
     public var eventID: String?
     public var type: String = "session.output_audio.fixture.play"
     /// Base64-encoded raw mono PCM16 audio, little-endian, at 24 kHz. Do not include a WAV or other container header.
@@ -757,15 +1679,23 @@ public struct LiveOutputAudioFixturePlayParam: Codable, Hashable, Sendable {
         self.eventID = eventID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case type
-        case audio
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decodeIfPresent(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "session.output_audio.fixture.play"
+        self.audio = try container.decode(String.self, forKey: "audio")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.audio, forKey: "audio")
     }
 }
 
 /// The complete audio fixture has drained from the server mixer and normal inference has resumed. Transport buffers may still contain audio; this event does not prove listener-side completion. The optional client_event_id echoes the play command. This event is not emitted for canceled or failed playback.
-public struct LiveOutputAudioFixturePlayed: Codable, Hashable, Sendable {
+public struct LiveOutputAudioFixturePlayed: OpenAIModel {
     /// The unique ID of the Live server event.
     public var eventID: String
     /// The event_id of the client command associated with this server event, when supplied.
@@ -777,15 +1707,23 @@ public struct LiveOutputAudioFixturePlayed: Codable, Hashable, Sendable {
         self.clientEventID = clientEventID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case clientEventID = "client_event_id"
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.clientEventID = try container.decodeIfPresent(String.self, forKey: "client_event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "session.output_audio.fixture.played"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encodeIfPresent(self.clientEventID, forKey: "client_event_id")
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// The existing playback path has accepted the validated audio fixture. This acknowledgment does not identify when the listener receives the first sample. The optional client_event_id echoes the play command.
-public struct LiveOutputAudioFixturePlaying: Codable, Hashable, Sendable {
+public struct LiveOutputAudioFixturePlaying: OpenAIModel {
     /// The unique ID of the Live server event.
     public var eventID: String
     /// The event_id of the client command associated with this server event, when supplied.
@@ -797,15 +1735,23 @@ public struct LiveOutputAudioFixturePlaying: Codable, Hashable, Sendable {
         self.clientEventID = clientEventID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case clientEventID = "client_event_id"
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.clientEventID = try container.decodeIfPresent(String.self, forKey: "client_event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "session.output_audio.fixture.playing"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encodeIfPresent(self.clientEventID, forKey: "client_event_id")
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// A transcript fragment for assistant output audio in the Live session. Accumulate fragments in delivery order; these events do not define complete turns or include a transcript-done event.
-public struct LiveOutputTranscriptDelta: Codable, Hashable, Sendable {
+public struct LiveOutputTranscriptDelta: OpenAIModel {
     /// The unique ID of the Live server event.
     public var eventID: String
     /// The event_id of the client command associated with this server event, when supplied.
@@ -833,24 +1779,41 @@ public struct LiveOutputTranscriptDelta: Codable, Hashable, Sendable {
         self.clientEventID = clientEventID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case clientEventID = "client_event_id"
-        case startMs = "start_ms"
-        case endMs = "end_ms"
-        case delta
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.clientEventID = try container.decodeIfPresent(String.self, forKey: "client_event_id")
+        self.startMs = try container.decode(Int.self, forKey: "start_ms")
+        self.endMs = try container.decode(Int.self, forKey: "end_ms")
+        self.delta = try container.decode(String.self, forKey: "delta")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "session.output_transcript.delta"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encodeIfPresent(self.clientEventID, forKey: "client_event_id")
+        try container.encode(self.startMs, forKey: "start_ms")
+        try container.encode(self.endMs, forKey: "end_ms")
+        try container.encode(self.delta, forKey: "delta")
+        try container.encode(self.type, forKey: "type")
     }
 }
 
-public struct LiveProgrammaticToolInputParam: Codable, Hashable, Sendable {
+public struct LiveProgrammaticToolInputParam: OpenAIModel {
     public var type: String = "programmatic_tool_calling"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "programmatic_tool_calling"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
@@ -892,7 +1855,7 @@ public struct LiveReasoningSummary: OpenAIStringEnum {
 }
 
 /// Request a response from the Live session’s Responses backend, or continue a delegated response waiting for tool results. Requires Responses delegation.
-public struct LiveResponseCreateParam: Codable, Hashable, Sendable {
+public struct LiveResponseCreateParam: OpenAIModel {
     public var eventID: String?
     /// The Live client event type. Always `response.create`.
     public var type: String = "response.create"
@@ -901,14 +1864,21 @@ public struct LiveResponseCreateParam: Codable, Hashable, Sendable {
         self.eventID = eventID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decodeIfPresent(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.create"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// A streaming Responses API event from a backend delegated to by the Live session. Use the outer delegation_id to associate the nested stream with its Live delegation.
-public struct LiveResponseEvent: Codable, Hashable, Sendable {
+public struct LiveResponseEvent: OpenAIModel {
     /// The unique ID of the Live server event.
     public var eventID: String
     /// The event_id of the client command associated with this server event, when supplied.
@@ -931,17 +1901,27 @@ public struct LiveResponseEvent: Codable, Hashable, Sendable {
         self.delegationID = delegationID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case clientEventID = "client_event_id"
-        case type
-        case delegationID = "delegation_id"
-        case event
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.clientEventID = try container.decodeIfPresent(String.self, forKey: "client_event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.event"
+        self.delegationID = try container.decodeIfPresent(String.self, forKey: "delegation_id")
+        self.event = try container.decode(JSONObject.self, forKey: "event")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encodeIfPresent(self.clientEventID, forKey: "client_event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.delegationID, forKey: "delegation_id")
+        try container.encode(self.event, forKey: "event")
     }
 }
 
 /// Add an input item to the Live session’s Responses backend. Requires Responses delegation; use `response.create` to request a response.
-public struct LiveResponseItemCreateParam: Codable, Hashable, Sendable {
+public struct LiveResponseItemCreateParam: OpenAIModel {
     public var eventID: String?
     /// The Live client event type. Always `response.item.create`.
     public var type: String = "response.item.create"
@@ -953,15 +1933,23 @@ public struct LiveResponseItemCreateParam: Codable, Hashable, Sendable {
         self.eventID = eventID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case type
-        case item
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decodeIfPresent(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.item.create"
+        self.item = try container.decode(InputItem.self, forKey: "item")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.item, forKey: "item")
     }
 }
 
 /// Delegate tasks to a Responses model managed by the Live session.
-public struct LiveResponsesDelegationParam: Codable, Hashable, Sendable {
+public struct LiveResponsesDelegationParam: OpenAIModel {
     /// Milliseconds to wait before requesting an automatic spoken acknowledgement for a delegation. The model may still speak before this delay. Any commentary or thinking appended to the session cancels all pending acknowledgements, including those for other delegations. Defaults to 400 for Decisions sessions and 0 (request immediately) for other sessions. Omission in a session update preserves the current value. Updates apply to subsequent delegations.
     public var acknowledgementDelayMs: Int?
     /// The delegation owner. Always `responses` for tasks handled by the Responses API.
@@ -974,15 +1962,23 @@ public struct LiveResponsesDelegationParam: Codable, Hashable, Sendable {
         self.acknowledgementDelayMs = acknowledgementDelayMs
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case acknowledgementDelayMs = "acknowledgement_delay_ms"
-        case type
-        case responses
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.acknowledgementDelayMs = try container.decodeIfPresent(Int.self, forKey: "acknowledgement_delay_ms")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "responses"
+        self.responses = try container.decode(LiveResponsesDelegationSettingsInputParam.self, forKey: "responses")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.acknowledgementDelayMs, forKey: "acknowledgement_delay_ms")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.responses, forKey: "responses")
     }
 }
 
 /// Model, prompt, and tool settings for tasks delegated by the Live session to a Responses backend.
-public struct LiveResponsesDelegationSettingsInputParam: Codable, Hashable, Sendable {
+public struct LiveResponsesDelegationSettingsInputParam: OpenAIModel {
     /// The model used for server-owned Responses delegations.
     public var model: String
     public var instructions: String?
@@ -1018,20 +2014,34 @@ public struct LiveResponsesDelegationSettingsInputParam: Codable, Hashable, Send
         self.parallelToolCalls = parallelToolCalls
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case model
-        case instructions
-        case maxOutputTokens = "max_output_tokens"
-        case serviceTier = "service_tier"
-        case reasoning
-        case text
-        case tools
-        case toolChoice = "tool_choice"
-        case parallelToolCalls = "parallel_tool_calls"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.model = try container.decode(String.self, forKey: "model")
+        self.instructions = try container.decodeIfPresent(String.self, forKey: "instructions")
+        self.maxOutputTokens = try container.decodeIfPresent(Int.self, forKey: "max_output_tokens")
+        self.serviceTier = try container.decodeIfPresent(LiveResponsesServiceTier.self, forKey: "service_tier")
+        self.reasoning = try container.decodeIfPresent(LiveDelegationReasoningInputParam.self, forKey: "reasoning")
+        self.text = try container.decodeIfPresent(LiveDelegationTextInputParam.self, forKey: "text")
+        self.tools = try container.decodeIfPresent([LiveResponsesDelegationSettingsInputParam.Tool].self, forKey: "tools")
+        self.toolChoice = try container.decodeIfPresent(LiveResponsesDelegationSettingsInputParam.ToolChoice.self, forKey: "tool_choice")
+        self.parallelToolCalls = try container.decodeIfPresent(Bool.self, forKey: "parallel_tool_calls")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.model, forKey: "model")
+        try container.encodeIfPresent(self.instructions, forKey: "instructions")
+        try container.encodeIfPresent(self.maxOutputTokens, forKey: "max_output_tokens")
+        try container.encodeIfPresent(self.serviceTier, forKey: "service_tier")
+        try container.encodeIfPresent(self.reasoning, forKey: "reasoning")
+        try container.encodeIfPresent(self.text, forKey: "text")
+        try container.encodeIfPresent(self.tools, forKey: "tools")
+        try container.encodeIfPresent(self.toolChoice, forKey: "tool_choice")
+        try container.encodeIfPresent(self.parallelToolCalls, forKey: "parallel_tool_calls")
     }
 
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Tool: Codable, Hashable, Sendable {
+    public indirect enum Tool: OpenAIModel {
         /// `type`: `function`
         case function(LiveFunctionToolInputParam)
         /// `type`: `web_search`
@@ -1148,7 +2158,7 @@ public struct LiveResponsesDelegationSettingsInputParam: Codable, Hashable, Send
     }
 
     /// Controls which tool the Responses backend uses when handling a task delegated by the Live model.
-    public indirect enum ToolChoice: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum ToolChoice: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         case toolChoiceEnum(LiveToolChoiceEnum)
         case variant2(LiveResponsesDelegationSettingsInputParam.ToolChoice.Variant2)
         case allowedToolsChoiceParam(LiveAllowedToolsChoiceParam)
@@ -1191,7 +2201,7 @@ public struct LiveResponsesDelegationSettingsInputParam: Codable, Hashable, Send
         }
 
         /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-        public indirect enum Variant2: Codable, Hashable, Sendable {
+        public indirect enum Variant2: OpenAIModel {
             /// `type`: `function`
             case function(LiveFunctionToolChoiceParam)
             /// `type`: `mcp`
@@ -1303,7 +2313,7 @@ public struct LiveResponsesDelegationSettingsInputParam: Codable, Hashable, Send
 }
 
 /// Updates to the Responses backend of an existing Live session. Omitted settings retain their current values.
-public struct LiveResponsesDelegationSettingsUpdateInputParam: Codable, Hashable, Sendable {
+public struct LiveResponsesDelegationSettingsUpdateInputParam: OpenAIModel {
     /// The Responses backend model to use for subsequent delegated requests. Omit to keep the current backend model.
     public var model: String?
     public var instructions: String?
@@ -1339,20 +2349,34 @@ public struct LiveResponsesDelegationSettingsUpdateInputParam: Codable, Hashable
         self.parallelToolCalls = parallelToolCalls
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case model
-        case instructions
-        case maxOutputTokens = "max_output_tokens"
-        case serviceTier = "service_tier"
-        case reasoning
-        case text
-        case tools
-        case toolChoice = "tool_choice"
-        case parallelToolCalls = "parallel_tool_calls"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.model = try container.decodeIfPresent(String.self, forKey: "model")
+        self.instructions = try container.decodeIfPresent(String.self, forKey: "instructions")
+        self.maxOutputTokens = try container.decodeIfPresent(Int.self, forKey: "max_output_tokens")
+        self.serviceTier = try container.decodeIfPresent(LiveResponsesServiceTier.self, forKey: "service_tier")
+        self.reasoning = try container.decodeIfPresent(LiveDelegationReasoningInputParam.self, forKey: "reasoning")
+        self.text = try container.decodeIfPresent(LiveDelegationTextInputParam.self, forKey: "text")
+        self.tools = try container.decodeIfPresent([LiveResponsesDelegationSettingsUpdateInputParam.Tool].self, forKey: "tools")
+        self.toolChoice = try container.decodeIfPresent(LiveResponsesDelegationSettingsUpdateInputParam.ToolChoice.self, forKey: "tool_choice")
+        self.parallelToolCalls = try container.decodeIfPresent(Bool.self, forKey: "parallel_tool_calls")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encodeIfPresent(self.instructions, forKey: "instructions")
+        try container.encodeIfPresent(self.maxOutputTokens, forKey: "max_output_tokens")
+        try container.encodeIfPresent(self.serviceTier, forKey: "service_tier")
+        try container.encodeIfPresent(self.reasoning, forKey: "reasoning")
+        try container.encodeIfPresent(self.text, forKey: "text")
+        try container.encodeIfPresent(self.tools, forKey: "tools")
+        try container.encodeIfPresent(self.toolChoice, forKey: "tool_choice")
+        try container.encodeIfPresent(self.parallelToolCalls, forKey: "parallel_tool_calls")
     }
 
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Tool: Codable, Hashable, Sendable {
+    public indirect enum Tool: OpenAIModel {
         /// `type`: `function`
         case function(LiveFunctionToolInputParam)
         /// `type`: `web_search`
@@ -1469,7 +2493,7 @@ public struct LiveResponsesDelegationSettingsUpdateInputParam: Codable, Hashable
     }
 
     /// Controls which tool the Responses backend uses when handling a task delegated by the Live model.
-    public indirect enum ToolChoice: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum ToolChoice: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         case toolChoiceEnum(LiveToolChoiceEnum)
         case variant2(LiveResponsesDelegationSettingsUpdateInputParam.ToolChoice.Variant2)
         case allowedToolsChoiceParam(LiveAllowedToolsChoiceParam)
@@ -1512,7 +2536,7 @@ public struct LiveResponsesDelegationSettingsUpdateInputParam: Codable, Hashable
         }
 
         /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-        public indirect enum Variant2: Codable, Hashable, Sendable {
+        public indirect enum Variant2: OpenAIModel {
             /// `type`: `function`
             case function(LiveFunctionToolChoiceParam)
             /// `type`: `mcp`
@@ -1624,7 +2648,7 @@ public struct LiveResponsesDelegationSettingsUpdateInputParam: Codable, Hashable
 }
 
 /// Update the Responses backend for an existing Live session without changing delegation ownership.
-public struct LiveResponsesDelegationUpdateParam: Codable, Hashable, Sendable {
+public struct LiveResponsesDelegationUpdateParam: OpenAIModel {
     /// Milliseconds to wait before requesting an automatic spoken acknowledgement for a delegation. The model may still speak before this delay. Any commentary or thinking appended to the session cancels all pending acknowledgements, including those for other delegations. Defaults to 400 for Decisions sessions and 0 (request immediately) for other sessions. Omission in a session update preserves the current value. Updates apply to subsequent delegations.
     public var acknowledgementDelayMs: Int?
     /// The delegation owner. Always `responses` for tasks handled by the Responses API.
@@ -1637,10 +2661,18 @@ public struct LiveResponsesDelegationUpdateParam: Codable, Hashable, Sendable {
         self.responses = responses
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case acknowledgementDelayMs = "acknowledgement_delay_ms"
-        case type
-        case responses
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.acknowledgementDelayMs = try container.decodeIfPresent(Int.self, forKey: "acknowledgement_delay_ms")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "responses"
+        self.responses = try container.decodeIfPresent(LiveResponsesDelegationSettingsUpdateInputParam.self, forKey: "responses")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.acknowledgementDelayMs, forKey: "acknowledgement_delay_ms")
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.responses, forKey: "responses")
     }
 }
 
@@ -1665,7 +2697,7 @@ public struct LiveResponsesServiceTier: OpenAIStringEnum {
 }
 
 /// Place an outbound SIP call using your provider's trunk. The trunk must support TLS signaling, Opus audio, and SDES-SRTP media. See [Telephony and SIP](https://developers.openai.com/api/docs/guides/voice-sip?api=live#place-an-outbound-call).
-public struct LiveSIPTransport: Codable, Hashable, Sendable {
+public struct LiveSIPTransport: OpenAIModel {
     /// The transport used for the Live session. Always `sip`.
     public var type: String = "sip"
     /// Phone number to call in E.164 format. SIP URI destinations are not supported.
@@ -1677,15 +2709,23 @@ public struct LiveSIPTransport: Codable, Hashable, Sendable {
         self.trunk = trunk
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case destination
-        case trunk
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "sip"
+        self.destination = try container.decode(String.self, forKey: "destination")
+        self.trunk = try container.decode(LiveSIPTrunk.self, forKey: "trunk")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.destination, forKey: "destination")
+        try container.encode(self.trunk, forKey: "trunk")
     }
 }
 
 /// SIP trunk configuration supplied for this call. Keep trunk credentials on your server. The creation response does not return this configuration.
-public struct LiveSIPTrunk: Codable, Hashable, Sendable {
+public struct LiveSIPTrunk: OpenAIModel {
     /// Provider endpoint in the form `sips:host[:port][;transport=tcp]`. The default port is 5061. IPv6 addresses must be bracketed. TLS signaling is required; plaintext SIP is not supported. Do not include userinfo, a path, URI headers, or other URI parameters. Local hostnames and literal private, loopback, link-local, unspecified, multicast, and broadcast IP addresses are rejected.
     public var providerURL: String
     public var auth: LiveSIPTrunkAuth
@@ -1702,15 +2742,23 @@ public struct LiveSIPTrunk: Codable, Hashable, Sendable {
         self.callerNumber = callerNumber
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case providerURL = "provider_url"
-        case auth
-        case callerNumber = "caller_number"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.providerURL = try container.decode(String.self, forKey: "provider_url")
+        self.auth = try container.decode(LiveSIPTrunkAuth.self, forKey: "auth")
+        self.callerNumber = try container.decode(String.self, forKey: "caller_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.providerURL, forKey: "provider_url")
+        try container.encode(self.auth, forKey: "auth")
+        try container.encode(self.callerNumber, forKey: "caller_number")
     }
 }
 
 /// Credentials for SIP Digest authentication with your trunk provider.
-public struct LiveSIPTrunkAuth: Codable, Hashable, Sendable {
+public struct LiveSIPTrunkAuth: OpenAIModel {
     /// Use `digest` for SIP Digest authentication. Handles 401 and 407 challenges.
     public var type: String = "digest"
     /// Provider username. Must contain a non-whitespace character, be at most 256 bytes, and contain no CR, LF, or NUL.
@@ -1723,10 +2771,18 @@ public struct LiveSIPTrunkAuth: Codable, Hashable, Sendable {
         self.password = password
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case username
-        case password
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "digest"
+        self.username = try container.decode(String.self, forKey: "username")
+        self.password = try container.decode(String.self, forKey: "password")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.username, forKey: "username")
+        try container.encode(self.password, forKey: "password")
     }
 }
 
@@ -1736,7 +2792,7 @@ public typealias LiveServerEvent = LiveServerEvent2
 /// An event sent by the Live API on a primary WebSocket or sideband connection.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum LiveServerEvent2: Codable, Hashable, Sendable {
+public indirect enum LiveServerEvent2: OpenAIModel {
     /// `type`: `session.started`
     case sessionStarted(LiveSessionStarted)
     /// `type`: `session.updated`
@@ -1965,7 +3021,7 @@ public indirect enum LiveServerEvent2: Codable, Hashable, Sendable {
 }
 
 /// Raw, mono G.711 A-law audio for a Live WebSocket connection.
-public struct LiveSessionAudioFormatPCMAParam: Codable, Hashable, Sendable {
+public struct LiveSessionAudioFormatPCMAParam: OpenAIModel {
     /// The audio encoding. Always `audio/pcma`.
     public var type: String = "audio/pcma"
     /// Audio sample rate in hertz. G.711 audio uses 8000 Hz.
@@ -1975,14 +3031,21 @@ public struct LiveSessionAudioFormatPCMAParam: Codable, Hashable, Sendable {
         self.rate = rate
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case rate
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "audio/pcma"
+        self.rate = try container.decode(Int.self, forKey: "rate")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.rate, forKey: "rate")
     }
 }
 
 /// Raw, mono 16-bit little-endian PCM audio for a Live WebSocket connection.
-public struct LiveSessionAudioFormatPCMParam: Codable, Hashable, Sendable {
+public struct LiveSessionAudioFormatPCMParam: OpenAIModel {
     /// The audio encoding. Always `audio/pcm`.
     public var type: String = "audio/pcm"
     /// Audio sample rate in hertz. Live WebSocket PCM audio supports 16000 or 24000 Hz.
@@ -1992,14 +3055,21 @@ public struct LiveSessionAudioFormatPCMParam: Codable, Hashable, Sendable {
         self.rate = rate
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case rate
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "audio/pcm"
+        self.rate = try container.decode(Int.self, forKey: "rate")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.rate, forKey: "rate")
     }
 }
 
 /// Raw, mono G.711 μ-law audio for a Live WebSocket connection.
-public struct LiveSessionAudioFormatPCMUParam: Codable, Hashable, Sendable {
+public struct LiveSessionAudioFormatPCMUParam: OpenAIModel {
     /// The audio encoding. Always `audio/pcmu`.
     public var type: String = "audio/pcmu"
     /// Audio sample rate in hertz. G.711 audio uses 8000 Hz.
@@ -2009,14 +3079,21 @@ public struct LiveSessionAudioFormatPCMUParam: Codable, Hashable, Sendable {
         self.rate = rate
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case rate
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "audio/pcmu"
+        self.rate = try container.decode(Int.self, forKey: "rate")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.rate, forKey: "rate")
     }
 }
 
 /// Request that the Live session close. The terminal `session.closed` event contains the close reason and final usage.
-public struct LiveSessionCloseParam: Codable, Hashable, Sendable {
+public struct LiveSessionCloseParam: OpenAIModel {
     public var eventID: String?
     /// The Live client event type. Always `session.close`.
     public var type: String = "session.close"
@@ -2025,14 +3102,21 @@ public struct LiveSessionCloseParam: Codable, Hashable, Sendable {
         self.eventID = eventID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decodeIfPresent(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "session.close"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// Returned after the Live session finishes finalizing, with the close reason, final session snapshot, and cumulative audio usage. A connection closing without this event does not confirm successful finalization.
-public struct LiveSessionClosed: Codable, Hashable, Sendable {
+public struct LiveSessionClosed: OpenAIModel {
     /// The unique ID of the Live server event.
     public var eventID: String
     /// The event_id of the client command associated with this server event, when supplied.
@@ -2059,13 +3143,24 @@ public struct LiveSessionClosed: Codable, Hashable, Sendable {
         self.clientEventID = clientEventID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case clientEventID = "client_event_id"
-        case type
-        case reason
-        case session
-        case usage
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.clientEventID = try container.decodeIfPresent(String.self, forKey: "client_event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "session.closed"
+        self.reason = try container.decode(LiveSessionClosed.Reason.self, forKey: "reason")
+        self.session = try container.decode(LiveSessionResourceParam.self, forKey: "session")
+        self.usage = try container.decode(LiveSessionUsage.self, forKey: "usage")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encodeIfPresent(self.clientEventID, forKey: "client_event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.reason, forKey: "reason")
+        try container.encode(self.session, forKey: "session")
+        try container.encode(self.usage, forKey: "usage")
     }
 
     /// Why the Live session ended: `close_requested` for an application close or hangup request, `expired` for the session duration limit, `content` for a safety filter, `remote_hangup` for a graceful remote disconnect, or `connection_lost` for an unexpected primary or upstream disconnection.
@@ -2091,7 +3186,7 @@ public struct LiveSessionClosed: Codable, Hashable, Sendable {
 }
 
 /// Initial configuration for a Live session, including its model, conversation instructions, audio, and delegated task handling.
-public struct LiveSessionCreateParams: Codable, Hashable, Sendable {
+public struct LiveSessionCreateParams: OpenAIModel {
     public var model: ModelIdsLive
     public var safetyIdentifier: String?
     public var instructions: String?
@@ -2129,22 +3224,36 @@ public struct LiveSessionCreateParams: Codable, Hashable, Sendable {
         self.client = client
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case model
-        case safetyIdentifier = "safety_identifier"
-        case instructions
-        case input
-        case audio
-        case delegation
-        case triggers
-        case store
-        case client
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.model = try container.decode(ModelIdsLive.self, forKey: "model")
+        self.safetyIdentifier = try container.decodeIfPresent(String.self, forKey: "safety_identifier")
+        self.instructions = try container.decodeIfPresent(String.self, forKey: "instructions")
+        self.input = try container.decodeIfPresent([LiveInitialItem].self, forKey: "input")
+        self.audio = try container.decodeIfPresent(LiveInitialSessionAudioParam.self, forKey: "audio")
+        self.delegation = try container.decodeIfPresent(LiveSessionCreateParams.Delegation.self, forKey: "delegation")
+        self.triggers = try container.decodeIfPresent([LiveDecisionTriggerInputParam].self, forKey: "triggers")
+        self.store = try container.decodeIfPresent(Bool.self, forKey: "store")
+        self.client = try container.decodeIfPresent(LiveClientConfigParam.self, forKey: "client")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.model, forKey: "model")
+        try container.encodeIfPresent(self.safetyIdentifier, forKey: "safety_identifier")
+        try container.encodeIfPresent(self.instructions, forKey: "instructions")
+        try container.encodeIfPresent(self.input, forKey: "input")
+        try container.encodeIfPresent(self.audio, forKey: "audio")
+        try container.encodeIfPresent(self.delegation, forKey: "delegation")
+        try container.encodeIfPresent(self.triggers, forKey: "triggers")
+        try container.encodeIfPresent(self.store, forKey: "store")
+        try container.encodeIfPresent(self.client, forKey: "client")
     }
 
     /// Who handles tasks delegated by the Live model. Omitted or null selects your application; use `responses` or `decisions` to delegate to the corresponding API.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Delegation: Codable, Hashable, Sendable {
+    public indirect enum Delegation: OpenAIModel {
         /// `type`: `client`
         case client(LiveClientDelegationParam)
         /// `type`: `responses`
@@ -2192,7 +3301,7 @@ public struct LiveSessionCreateParams: Codable, Hashable, Sendable {
 }
 
 /// Create a Live session with a WebRTC SDP offer or place an outbound SIP call. Follow the [Live prompting guide](https://developers.openai.com/api/docs/guides/live-prompting) before choosing frontend and backend instructions. The request starts the session; do not send session.start again on the data channel or sideband.
-public struct LiveSessionCreateRequest: Codable, Hashable, Sendable {
+public struct LiveSessionCreateRequest: OpenAIModel {
     /// Startup configuration for the Live session.
     public var session: LiveMediaSessionCreateParams
     /// WebRTC transport with an SDP offer, or SIP transport with a destination and per-call trunk credentials.
@@ -2203,15 +3312,22 @@ public struct LiveSessionCreateRequest: Codable, Hashable, Sendable {
         self.transport = transport
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case session
-        case transport
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.session = try container.decode(LiveMediaSessionCreateParams.self, forKey: "session")
+        self.transport = try container.decode(LiveSessionCreateRequest.Transport.self, forKey: "transport")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.session, forKey: "session")
+        try container.encode(self.transport, forKey: "transport")
     }
 
     /// WebRTC transport with an SDP offer, or SIP transport with a destination and per-call trunk credentials.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Transport: Codable, Hashable, Sendable {
+    public indirect enum Transport: OpenAIModel {
         /// `type`: `webrtc`
         case webrtc(LiveWebRTCTransport)
         /// `type`: `sip`
@@ -2252,7 +3368,7 @@ public struct LiveSessionCreateRequest: Codable, Hashable, Sendable {
 }
 
 /// The created Live session and its transport. WebRTC creation returns 201 Created with an SDP answer. Outbound SIP creation returns 201 Created after initialization, before the callee necessarily answers, without SDP or trunk credentials.
-public struct LiveSessionCreateResponse: Codable, Hashable, Sendable {
+public struct LiveSessionCreateResponse: OpenAIModel {
     public var session: Session
     /// WebRTC transport with an SDP answer, or SIP transport without SDP or trunk credentials. For SIP, attach a sideband using session.id to receive transport.ringing, transport.answered, and transport.failed notifications.
     public var transport: LiveSessionCreateResponse.Transport
@@ -2262,15 +3378,22 @@ public struct LiveSessionCreateResponse: Codable, Hashable, Sendable {
         self.transport = transport
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case session
-        case transport
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.session = try container.decode(Session.self, forKey: "session")
+        self.transport = try container.decode(LiveSessionCreateResponse.Transport.self, forKey: "transport")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.session, forKey: "session")
+        try container.encode(self.transport, forKey: "transport")
     }
 
     /// WebRTC transport with an SDP answer, or SIP transport without SDP or trunk credentials. For SIP, attach a sideband using session.id to receive transport.ringing, transport.answered, and transport.failed notifications.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Transport: Codable, Hashable, Sendable {
+    public indirect enum Transport: OpenAIModel {
         /// `type`: `webrtc`
         case webrtc(LiveWebRTCTransport)
         /// The SIP transport. Trunk credentials and SDP are not returned.
@@ -2311,22 +3434,28 @@ public struct LiveSessionCreateResponse: Codable, Hashable, Sendable {
         }
 
         /// The SIP transport. Trunk credentials and SDP are not returned.
-        public struct SIP: Codable, Hashable, Sendable {
+        public struct SIP: OpenAIModel {
             /// The transport used for the Live session. Always `sip`.
             public var type: String = "sip"
 
             public init() {
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case type
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "sip"
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encode(self.type, forKey: "type")
             }
         }
     }
 }
 
 /// Sent when the idle timeout pauses inference in a Live WebRTC session. The WebRTC connection, sideband, and session ID persist. Delivered to the sideband and, when permitted by its event settings, the data channel.
-public struct LiveSessionPaused: Codable, Hashable, Sendable {
+public struct LiveSessionPaused: OpenAIModel {
     /// The unique ID of the Live server event.
     public var eventID: String
     /// The event_id of the client command associated with this server event, when supplied.
@@ -2338,15 +3467,23 @@ public struct LiveSessionPaused: Codable, Hashable, Sendable {
         self.clientEventID = clientEventID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case clientEventID = "client_event_id"
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.clientEventID = try container.decodeIfPresent(String.self, forKey: "client_event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "session.paused"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encodeIfPresent(self.clientEventID, forKey: "client_event_id")
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// The resolved Live session configuration and server-assigned session metadata.
-public struct LiveSessionResourceParam: Codable, Hashable, Sendable {
+public struct LiveSessionResourceParam: OpenAIModel {
     public var model: ModelIdsLive
     public var safetyIdentifier: String?
     public var instructions: String?
@@ -2394,25 +3531,42 @@ public struct LiveSessionResourceParam: Codable, Hashable, Sendable {
         self.client = client
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case model
-        case safetyIdentifier = "safety_identifier"
-        case instructions
-        case input
-        case audio
-        case delegation
-        case triggers
-        case store
-        case client
-        case id
-        case expiresAt = "expires_at"
-        case status
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.model = try container.decode(ModelIdsLive.self, forKey: "model")
+        self.safetyIdentifier = try container.decodeIfPresent(String.self, forKey: "safety_identifier")
+        self.instructions = try container.decodeIfPresent(String.self, forKey: "instructions")
+        self.input = try container.decodeIfPresent([LiveInitialItem].self, forKey: "input")
+        self.audio = try container.decodeIfPresent(LiveInitialSessionAudioParam.self, forKey: "audio")
+        self.delegation = try container.decodeIfPresent(LiveSessionResourceParam.Delegation.self, forKey: "delegation")
+        self.triggers = try container.decodeIfPresent([LiveDecisionTriggerInputParam].self, forKey: "triggers")
+        self.store = try container.decodeIfPresent(Bool.self, forKey: "store")
+        self.client = try container.decodeIfPresent(LiveClientConfigParam.self, forKey: "client")
+        self.id = try container.decode(String.self, forKey: "id")
+        self.expiresAt = try container.decode(Int.self, forKey: "expires_at")
+        self.status = try container.decodeIfPresent(String.self, forKey: "status") ?? "active"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.model, forKey: "model")
+        try container.encodeIfPresent(self.safetyIdentifier, forKey: "safety_identifier")
+        try container.encodeIfPresent(self.instructions, forKey: "instructions")
+        try container.encodeIfPresent(self.input, forKey: "input")
+        try container.encodeIfPresent(self.audio, forKey: "audio")
+        try container.encodeIfPresent(self.delegation, forKey: "delegation")
+        try container.encodeIfPresent(self.triggers, forKey: "triggers")
+        try container.encodeIfPresent(self.store, forKey: "store")
+        try container.encodeIfPresent(self.client, forKey: "client")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.expiresAt, forKey: "expires_at")
+        try container.encode(self.status, forKey: "status")
     }
 
     /// Who handles tasks delegated by the Live model. Omitted or null selects your application; use `responses` or `decisions` to delegate to the corresponding API.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Delegation: Codable, Hashable, Sendable {
+    public indirect enum Delegation: OpenAIModel {
         /// `type`: `client`
         case client(LiveClientDelegationParam)
         /// `type`: `responses`
@@ -2460,7 +3614,7 @@ public struct LiveSessionResourceParam: Codable, Hashable, Sendable {
 }
 
 /// Sent when speech wakes inference and it is ready for audio in a Live WebRTC session. This occurs on the first wake and after each later wake. Delivered to the sideband and, when permitted by its event settings, the data channel.
-public struct LiveSessionResumed: Codable, Hashable, Sendable {
+public struct LiveSessionResumed: OpenAIModel {
     /// The unique ID of the Live server event.
     public var eventID: String
     /// The event_id of the client command associated with this server event, when supplied.
@@ -2472,15 +3626,23 @@ public struct LiveSessionResumed: Codable, Hashable, Sendable {
         self.clientEventID = clientEventID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case clientEventID = "client_event_id"
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.clientEventID = try container.decodeIfPresent(String.self, forKey: "client_event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "session.resumed"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encodeIfPresent(self.clientEventID, forKey: "client_event_id")
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// Start a Live session on a primary WebSocket. Send this event before other commands and wait for `session.started`.
-public struct LiveSessionStartEvent: Codable, Hashable, Sendable {
+public struct LiveSessionStartEvent: OpenAIModel {
     public var eventID: String?
     /// The Live client event type. Always `session.start`.
     public var type: String = "session.start"
@@ -2492,15 +3654,23 @@ public struct LiveSessionStartEvent: Codable, Hashable, Sendable {
         self.eventID = eventID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case type
-        case session
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decodeIfPresent(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "session.start"
+        self.session = try container.decode(LiveSessionCreateParams.self, forKey: "session")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.session, forKey: "session")
     }
 }
 
 /// Returned when a Live session has started. Contains the resolved session configuration, including server defaults.
-public struct LiveSessionStarted: Codable, Hashable, Sendable {
+public struct LiveSessionStarted: OpenAIModel {
     /// The event type, always `session.started`.
     public var type: String = "session.started"
     /// The unique ID of the Live server event.
@@ -2519,16 +3689,25 @@ public struct LiveSessionStarted: Codable, Hashable, Sendable {
         self.clientEventID = clientEventID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case clientEventID = "client_event_id"
-        case session
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "session.started"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.clientEventID = try container.decodeIfPresent(String.self, forKey: "client_event_id")
+        self.session = try container.decode(LiveSessionResourceParam.self, forKey: "session")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encodeIfPresent(self.clientEventID, forKey: "client_event_id")
+        try container.encode(self.session, forKey: "session")
     }
 }
 
 /// Update the delegation settings or transcript triggers of an active Live session. The server acknowledges accepted changes with `session.updated`.
-public struct LiveSessionUpdateParam: Codable, Hashable, Sendable {
+public struct LiveSessionUpdateParam: OpenAIModel {
     public var eventID: String?
     /// The Live client event type. Always `session.update`.
     public var type: String = "session.update"
@@ -2540,15 +3719,23 @@ public struct LiveSessionUpdateParam: Codable, Hashable, Sendable {
         self.eventID = eventID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case type
-        case session
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decodeIfPresent(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "session.update"
+        self.session = try container.decode(LiveSessionUpdateParams.self, forKey: "session")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.session, forKey: "session")
     }
 }
 
 /// Changes to an active Live session's delegation settings and transcript triggers.
-public struct LiveSessionUpdateParams: Codable, Hashable, Sendable {
+public struct LiveSessionUpdateParams: OpenAIModel {
     public var delegation: LiveSessionUpdateParams.Delegation?
     /// At most one Decisions trigger per transcript event type. Triggers run independently of delegation. On update, omit triggers to keep the current configuration, send a list to replace it, or send an empty list to disable triggers.
     public var triggers: [LiveDecisionTriggerInputParam]?
@@ -2558,15 +3745,22 @@ public struct LiveSessionUpdateParams: Codable, Hashable, Sendable {
         self.triggers = triggers
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case delegation
-        case triggers
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.delegation = try container.decodeIfPresent(LiveSessionUpdateParams.Delegation.self, forKey: "delegation")
+        self.triggers = try container.decodeIfPresent([LiveDecisionTriggerInputParam].self, forKey: "triggers")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.delegation, forKey: "delegation")
+        try container.encodeIfPresent(self.triggers, forKey: "triggers")
     }
 
     /// Delegation settings to update. The delegation type must match the current session; omitted settings retain their values.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Delegation: Codable, Hashable, Sendable {
+    public indirect enum Delegation: OpenAIModel {
         /// `type`: `client`
         case client(LiveClientDelegationParam)
         /// `type`: `responses`
@@ -2614,7 +3808,7 @@ public struct LiveSessionUpdateParams: Codable, Hashable, Sendable {
 }
 
 /// Returned when a Live session update is accepted. Contains the resolved session configuration after the update.
-public struct LiveSessionUpdated: Codable, Hashable, Sendable {
+public struct LiveSessionUpdated: OpenAIModel {
     /// The event type, always `session.updated`.
     public var type: String = "session.updated"
     /// The unique ID of the Live server event.
@@ -2633,16 +3827,25 @@ public struct LiveSessionUpdated: Codable, Hashable, Sendable {
         self.clientEventID = clientEventID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case clientEventID = "client_event_id"
-        case session
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "session.updated"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.clientEventID = try container.decodeIfPresent(String.self, forKey: "client_event_id")
+        self.session = try container.decode(LiveSessionResourceParam.self, forKey: "session")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encodeIfPresent(self.clientEventID, forKey: "client_event_id")
+        try container.encode(self.session, forKey: "session")
     }
 }
 
 /// Cumulative billable duration for a Live session. Eligible WebRTC sessions also report the active and paused breakdown. Do not sum values across usage events.
-public struct LiveSessionUsage: Codable, Hashable, Sendable {
+public struct LiveSessionUsage: OpenAIModel {
     /// The cumulative billable duration in whole seconds. When present, the active and paused breakdown adds up to this total.
     public var seconds: Int
     /// The remaining billable seconds attributed to active audio and any unused prepaid duration.
@@ -2660,15 +3863,23 @@ public struct LiveSessionUsage: Codable, Hashable, Sendable {
         self.pausedSeconds = pausedSeconds
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case seconds
-        case activeSeconds = "active_seconds"
-        case pausedSeconds = "paused_seconds"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.seconds = try container.decode(Int.self, forKey: "seconds")
+        self.activeSeconds = try container.decodeIfPresent(Int.self, forKey: "active_seconds")
+        self.pausedSeconds = try container.decodeIfPresent(Int.self, forKey: "paused_seconds")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.seconds, forKey: "seconds")
+        try container.encodeIfPresent(self.activeSeconds, forKey: "active_seconds")
+        try container.encodeIfPresent(self.pausedSeconds, forKey: "paused_seconds")
     }
 }
 
 /// Reports cumulative Live audio usage and, when available, the most recent context-window usage. Delegated Responses token usage is reported separately in response.event events.
-public struct LiveSessionUsageUpdated: Codable, Hashable, Sendable {
+public struct LiveSessionUsageUpdated: OpenAIModel {
     /// The unique ID of the Live server event.
     public var eventID: String
     /// The event_id of the client command associated with this server event, when supplied.
@@ -2692,19 +3903,29 @@ public struct LiveSessionUsageUpdated: Codable, Hashable, Sendable {
         self.contextWindow = contextWindow
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case clientEventID = "client_event_id"
-        case type
-        case usage
-        case contextWindow = "context_window"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.clientEventID = try container.decodeIfPresent(String.self, forKey: "client_event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "session.usage.updated"
+        self.usage = try container.decode(LiveSessionUsage.self, forKey: "usage")
+        self.contextWindow = try container.decodeIfPresent(LiveContextWindowUsage.self, forKey: "context_window")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encodeIfPresent(self.clientEventID, forKey: "client_event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.usage, forKey: "usage")
+        try container.encodeIfPresent(self.contextWindow, forKey: "context_window")
     }
 }
 
 /// Client events accepted by an attached Live sideband WebSocket. The session has already started. Send input audio over the primary connection.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum LiveSidebandClientEvent: Codable, Hashable, Sendable {
+public indirect enum LiveSidebandClientEvent: OpenAIModel {
     /// `type`: `session.update`
     case sessionUpdate(LiveSessionUpdateParam)
     /// `type`: `session.input_audio.mute`
@@ -2828,7 +4049,7 @@ public indirect enum LiveSidebandClientEvent: Codable, Hashable, Sendable {
 }
 
 /// Connection options for a sideband WebSocket attached to an existing Live session.
-public struct LiveSidebandConnectParams: Codable, Hashable, Sendable {
+public struct LiveSidebandConnectParams: OpenAIModel {
     /// Opt in to the graceful WebSocket closing handshake when the session ends. The server may also enable this behavior by default.
     public var gracefulClose: Bool?
 
@@ -2836,13 +4057,19 @@ public struct LiveSidebandConnectParams: Codable, Hashable, Sendable {
         self.gracefulClose = gracefulClose
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case gracefulClose = "graceful_close"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.gracefulClose = try container.decodeIfPresent(Bool.self, forKey: "graceful_close")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.gracefulClose, forKey: "graceful_close")
     }
 }
 
 /// Identifies the Live session to observe and control through a sideband WebSocket.
-public struct LiveSidebandPathParams: Codable, Hashable, Sendable {
+public struct LiveSidebandPathParams: OpenAIModel {
     /// The ID of the existing Live session to attach to.
     public var sessionID: String
 
@@ -2850,692 +4077,13 @@ public struct LiveSidebandPathParams: Codable, Hashable, Sendable {
         self.sessionID = sessionID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case sessionID = "session_id"
-    }
-}
-
-/// Server events received by an attached Live sideband WebSocket. Audio deltas are delivered over the primary connection.
-///
-/// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum LiveSidebandServerEvent: Codable, Hashable, Sendable {
-    /// `type`: `transport.ringing`
-    case transportRinging(LiveTransportRinging)
-    /// `type`: `transport.answered`
-    case transportAnswered(LiveTransportAnswered)
-    /// `type`: `transport.failed`
-    case transportFailed(LiveTransportFailed)
-    /// `type`: `transport.dtmf.received`
-    case transportDtmfReceived(LiveTransportDTMFReceived)
-    /// `type`: `transport.dtmf.sent`
-    case transportDtmfSent(LiveTransportDTMFSent)
-    /// `type`: `session.started`
-    case sessionStarted(LiveSessionStarted)
-    /// `type`: `session.updated`
-    case sessionUpdated(LiveSessionUpdated)
-    /// `type`: `session.resumed`
-    case sessionResumed(LiveSessionResumed)
-    /// `type`: `session.paused`
-    case sessionPaused(LiveSessionPaused)
-    /// `type`: `session.input_audio.muted`
-    case sessionInputAudioMuted(LiveInputAudioMuted)
-    /// `type`: `session.input_audio.unmuted`
-    case sessionInputAudioUnmuted(LiveInputAudioUnmuted)
-    /// `type`: `session.output_audio.fixture.playing`
-    case sessionOutputAudioFixturePlaying(LiveOutputAudioFixturePlaying)
-    /// `type`: `session.output_audio.fixture.played`
-    case sessionOutputAudioFixturePlayed(LiveOutputAudioFixturePlayed)
-    /// `type`: `session.instructions.appended`
-    case sessionInstructionsAppended(LiveInstructionsAppended)
-    /// `type`: `session.thinking.appended`
-    case sessionThinkingAppended(LiveThinkingAppended)
-    /// `type`: `session.commentary.appended`
-    case sessionCommentaryAppended(LiveCommentaryAppended)
-    /// `type`: `session.input_transcript.delta`
-    case sessionInputTranscriptDelta(LiveInputTranscriptDelta)
-    /// `type`: `session.output_transcript.delta`
-    case sessionOutputTranscriptDelta(LiveOutputTranscriptDelta)
-    /// `type`: `session.delegation.created`
-    case sessionDelegationCreated(LiveDelegationCreated)
-    /// `type`: `decision.event`
-    case decisionEvent(LiveDecisionEvent)
-    /// `type`: `decision.item.created`
-    case decisionItemCreated(LiveDecisionItemCreated)
-    /// `type`: `decision.item.deleted`
-    case decisionItemDeleted(LiveDecisionItemDeleted)
-    /// `type`: `response.event`
-    case responseEvent(LiveResponseEvent)
-    /// `type`: `session.usage.updated`
-    case sessionUsageUpdated(LiveSessionUsageUpdated)
-    /// `type`: `session.closed`
-    case sessionClosed(LiveSessionClosed)
-    /// `type`: `error`
-    case error(LiveErrorEvent)
-    /// `type`: `info`
-    case info(LiveInfoEvent)
-    /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
-    case unknown(JSONValue)
-
     public init(from decoder: any Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        if let keyed = try? decoder.container(keyedBy: OpenAIDynamicCodingKey.self),
-           let discriminator = try? keyed.decode(String.self, forKey: OpenAIDynamicCodingKey("type")) {
-            switch discriminator {
-            case "transport.ringing":
-                self = .transportRinging(try container.decode(LiveTransportRinging.self))
-                return
-            case "transport.answered":
-                self = .transportAnswered(try container.decode(LiveTransportAnswered.self))
-                return
-            case "transport.failed":
-                self = .transportFailed(try container.decode(LiveTransportFailed.self))
-                return
-            case "transport.dtmf.received":
-                self = .transportDtmfReceived(try container.decode(LiveTransportDTMFReceived.self))
-                return
-            case "transport.dtmf.sent":
-                self = .transportDtmfSent(try container.decode(LiveTransportDTMFSent.self))
-                return
-            case "session.started":
-                self = .sessionStarted(try container.decode(LiveSessionStarted.self))
-                return
-            case "session.updated":
-                self = .sessionUpdated(try container.decode(LiveSessionUpdated.self))
-                return
-            case "session.resumed":
-                self = .sessionResumed(try container.decode(LiveSessionResumed.self))
-                return
-            case "session.paused":
-                self = .sessionPaused(try container.decode(LiveSessionPaused.self))
-                return
-            case "session.input_audio.muted":
-                self = .sessionInputAudioMuted(try container.decode(LiveInputAudioMuted.self))
-                return
-            case "session.input_audio.unmuted":
-                self = .sessionInputAudioUnmuted(try container.decode(LiveInputAudioUnmuted.self))
-                return
-            case "session.output_audio.fixture.playing":
-                self = .sessionOutputAudioFixturePlaying(try container.decode(LiveOutputAudioFixturePlaying.self))
-                return
-            case "session.output_audio.fixture.played":
-                self = .sessionOutputAudioFixturePlayed(try container.decode(LiveOutputAudioFixturePlayed.self))
-                return
-            case "session.instructions.appended":
-                self = .sessionInstructionsAppended(try container.decode(LiveInstructionsAppended.self))
-                return
-            case "session.thinking.appended":
-                self = .sessionThinkingAppended(try container.decode(LiveThinkingAppended.self))
-                return
-            case "session.commentary.appended":
-                self = .sessionCommentaryAppended(try container.decode(LiveCommentaryAppended.self))
-                return
-            case "session.input_transcript.delta":
-                self = .sessionInputTranscriptDelta(try container.decode(LiveInputTranscriptDelta.self))
-                return
-            case "session.output_transcript.delta":
-                self = .sessionOutputTranscriptDelta(try container.decode(LiveOutputTranscriptDelta.self))
-                return
-            case "session.delegation.created":
-                self = .sessionDelegationCreated(try container.decode(LiveDelegationCreated.self))
-                return
-            case "decision.event":
-                self = .decisionEvent(try container.decode(LiveDecisionEvent.self))
-                return
-            case "decision.item.created":
-                self = .decisionItemCreated(try container.decode(LiveDecisionItemCreated.self))
-                return
-            case "decision.item.deleted":
-                self = .decisionItemDeleted(try container.decode(LiveDecisionItemDeleted.self))
-                return
-            case "response.event":
-                self = .responseEvent(try container.decode(LiveResponseEvent.self))
-                return
-            case "session.usage.updated":
-                self = .sessionUsageUpdated(try container.decode(LiveSessionUsageUpdated.self))
-                return
-            case "session.closed":
-                self = .sessionClosed(try container.decode(LiveSessionClosed.self))
-                return
-            case "error":
-                self = .error(try container.decode(LiveErrorEvent.self))
-                return
-            case "info":
-                self = .info(try container.decode(LiveInfoEvent.self))
-                return
-            default:
-                break
-            }
-        }
-        self = .unknown(try container.decode(JSONValue.self))
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.sessionID = try container.decode(String.self, forKey: "session_id")
     }
 
     public func encode(to encoder: any Encoder) throws {
-        var container = encoder.singleValueContainer()
-        switch self {
-        case .transportRinging(let value):
-            try container.encode(value)
-        case .transportAnswered(let value):
-            try container.encode(value)
-        case .transportFailed(let value):
-            try container.encode(value)
-        case .transportDtmfReceived(let value):
-            try container.encode(value)
-        case .transportDtmfSent(let value):
-            try container.encode(value)
-        case .sessionStarted(let value):
-            try container.encode(value)
-        case .sessionUpdated(let value):
-            try container.encode(value)
-        case .sessionResumed(let value):
-            try container.encode(value)
-        case .sessionPaused(let value):
-            try container.encode(value)
-        case .sessionInputAudioMuted(let value):
-            try container.encode(value)
-        case .sessionInputAudioUnmuted(let value):
-            try container.encode(value)
-        case .sessionOutputAudioFixturePlaying(let value):
-            try container.encode(value)
-        case .sessionOutputAudioFixturePlayed(let value):
-            try container.encode(value)
-        case .sessionInstructionsAppended(let value):
-            try container.encode(value)
-        case .sessionThinkingAppended(let value):
-            try container.encode(value)
-        case .sessionCommentaryAppended(let value):
-            try container.encode(value)
-        case .sessionInputTranscriptDelta(let value):
-            try container.encode(value)
-        case .sessionOutputTranscriptDelta(let value):
-            try container.encode(value)
-        case .sessionDelegationCreated(let value):
-            try container.encode(value)
-        case .decisionEvent(let value):
-            try container.encode(value)
-        case .decisionItemCreated(let value):
-            try container.encode(value)
-        case .decisionItemDeleted(let value):
-            try container.encode(value)
-        case .responseEvent(let value):
-            try container.encode(value)
-        case .sessionUsageUpdated(let value):
-            try container.encode(value)
-        case .sessionClosed(let value):
-            try container.encode(value)
-        case .error(let value):
-            try container.encode(value)
-        case .info(let value):
-            try container.encode(value)
-        case .unknown(let value):
-            try container.encode(value)
-        }
-    }
-}
-
-public struct LiveSkillReferenceParam: Codable, Hashable, Sendable {
-    /// References a skill created with the /v1/skills endpoint.
-    public var type: String = "skill_reference"
-    /// The ID of the referenced skill.
-    public var skillID: String
-    public var version: String?
-
-    public init(skillID: String, version: String? = nil) {
-        self.skillID = skillID
-        self.version = version
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case skillID = "skill_id"
-        case version
-    }
-}
-
-/// Forces the model to call the apply_patch tool when executing a tool call.
-public struct LiveSpecificApplyPatchParam: Codable, Hashable, Sendable {
-    /// The tool to call. Always `apply_patch`.
-    public var type: String = "apply_patch"
-
-    public init() {
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-    }
-}
-
-public struct LiveSpecificCodeInterpreterParam: Codable, Hashable, Sendable {
-    /// The tool to call. Always `code_interpreter`.
-    public var type: String = "code_interpreter"
-
-    public init() {
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-    }
-}
-
-public struct LiveSpecificComputerParam: Codable, Hashable, Sendable {
-    /// The tool to call. Always `computer`.
-    public var type: String = "computer"
-
-    public init() {
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-    }
-}
-
-public struct LiveSpecificCustomToolParam: Codable, Hashable, Sendable {
-    /// The tool to call. Always `custom`.
-    public var type: String = "custom"
-    /// The name of the custom tool to call.
-    public var name: String
-
-    public init(name: String) {
-        self.name = name
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
-    }
-}
-
-public struct LiveSpecificFileSearchParam: Codable, Hashable, Sendable {
-    /// The tool to call. Always `file_search`.
-    public var type: String = "file_search"
-
-    public init() {
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-    }
-}
-
-/// Forces the model to call the shell tool when a tool call is required.
-public struct LiveSpecificFunctionShellParam: Codable, Hashable, Sendable {
-    /// The tool to call. Always `shell`.
-    public var type: String = "shell"
-
-    public init() {
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-    }
-}
-
-public struct LiveSpecificImageGenParam: Codable, Hashable, Sendable {
-    /// The tool to call. Always `image_generation`.
-    public var type: String = "image_generation"
-
-    public init() {
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-    }
-}
-
-public struct LiveSpecificProgrammaticToolCallingParam: Codable, Hashable, Sendable {
-    /// The tool to call. Always `programmatic_tool_calling`.
-    public var type: String = "programmatic_tool_calling"
-
-    public init() {
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-    }
-}
-
-public struct LiveSpecificWebSearchParam: Codable, Hashable, Sendable {
-    /// The tool to call. Always `web_search`.
-    public var type: String = "web_search"
-
-    public init() {
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-    }
-}
-
-public struct LiveSpecificWebSearchPreviewParam: Codable, Hashable, Sendable {
-    /// The tool to call. Always `web_search_preview`.
-    public var type: String = "web_search_preview"
-
-    public init() {
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-    }
-}
-
-/// Starts inference when microphone speech is detected.
-public struct LiveSpeechWakePolicyParam: Codable, Hashable, Sendable {
-    /// The wake policy type, always `speech`.
-    public var type: String = "speech"
-    /// The speech detection threshold for the first wake and each later wake, from 0 to 1 inclusive. Defaults to 0.5. Higher values require stronger evidence of speech. This setting is independent of active turn detection.
-    public var vadThreshold: Double?
-
-    public init(vadThreshold: Double? = nil) {
-        self.vadThreshold = vadThreshold
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case vadThreshold = "vad_threshold"
-    }
-}
-
-/// This type is open: it accepts values the spec does not list yet.
-public struct LiveTextVerbosity: OpenAIStringEnum {
-    public let rawValue: String
-
-    public init(rawValue: String) {
-        self.rawValue = rawValue
-    }
-
-    public static let low: Self = "low"
-    public static let medium: Self = "medium"
-    public static let high: Self = "high"
-
-    public static var knownValues: [Self] {
-        [.low, .medium, .high]
-    }
-}
-
-/// Provide silent reasoning or progress context to the Live model, optionally for an existing client delegation. Rejected while an audio fixture is active.
-public struct LiveThinkingAppendParam: Codable, Hashable, Sendable {
-    public var eventID: String?
-    /// The Live client event type. Always `session.thinking.append`.
-    public var type: String = "session.thinking.append"
-    public var delegationID: String?
-    /// Silent reasoning or progress context, limited to 500 tokens. It does not directly request speech, but can influence later speech and is not a secrecy boundary.
-    public var content: String
-
-    public init(
-        content: String,
-        eventID: String? = nil,
-        delegationID: String? = nil
-    ) {
-        self.content = content
-        self.eventID = eventID
-        self.delegationID = delegationID
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case type
-        case delegationID = "delegation_id"
-        case content
-    }
-}
-
-/// Returned when a session.thinking.append command is accepted into the Live session timeline. Acknowledges the added reasoning context without guaranteeing any spoken output.
-public struct LiveThinkingAppended: Codable, Hashable, Sendable {
-    /// The unique ID of the Live server event.
-    public var eventID: String
-    /// The event_id of the client command associated with this server event, when supplied.
-    public var clientEventID: String?
-    /// The start of this event on the Live session timeline, in milliseconds from the beginning of the session.
-    public var startMs: Int
-    /// The end of this event on the Live session timeline, in milliseconds from the beginning of the session. For appended context, this can equal start_ms.
-    public var endMs: Int
-    /// The event type, always `session.thinking.appended`.
-    public var type: String = "session.thinking.appended"
-
-    public init(
-        eventID: String,
-        startMs: Int,
-        endMs: Int,
-        clientEventID: String? = nil
-    ) {
-        self.eventID = eventID
-        self.startMs = startMs
-        self.endMs = endMs
-        self.clientEventID = clientEventID
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case clientEventID = "client_event_id"
-        case startMs = "start_ms"
-        case endMs = "end_ms"
-        case type
-    }
-}
-
-/// This type is open: it accepts values the spec does not list yet.
-public struct LiveToolChoiceEnum: OpenAIStringEnum {
-    public let rawValue: String
-
-    public init(rawValue: String) {
-        self.rawValue = rawValue
-    }
-
-    public static let auto: Self = "auto"
-    public static let noneValue: Self = "none"
-    public static let required: Self = "required"
-
-    public static var knownValues: [Self] {
-        [.auto, .noneValue, .required]
-    }
-}
-
-/// This type is open: it accepts values the spec does not list yet.
-public struct LiveToolChoiceValueEnum: OpenAIStringEnum {
-    public let rawValue: String
-
-    public init(rawValue: String) {
-        self.rawValue = rawValue
-    }
-
-    public static let noneValue: Self = "none"
-    public static let auto: Self = "auto"
-    public static let required: Self = "required"
-
-    public static var knownValues: [Self] {
-        [.noneValue, .auto, .required]
-    }
-}
-
-public struct LiveToolSearchToolInputParam: Codable, Hashable, Sendable {
-    public var type: String = "tool_search"
-
-    public init() {
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-    }
-}
-
-/// The outbound SIP provider leg answered and media is established. Delivered only to sideband observers.
-public struct LiveTransportAnswered: Codable, Hashable, Sendable {
-    public var eventID: String
-    /// The canonical Live session ID.
-    public var sessionID: String
-    public var type: String = "transport.answered"
-
-    public init(eventID: String, sessionID: String) {
-        self.eventID = eventID
-        self.sessionID = sessionID
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case sessionID = "session_id"
-        case type
-    }
-}
-
-public struct LiveTransportCallError: Codable, Hashable, Sendable {
-    public var type: String = "call_error"
-    /// The call setup failure code.
-    public var code: String
-    public var message: String
-    /// The parameter related to the error, if any. Empty when no parameter applies.
-    public var param: String?
-
-    public init(
-        code: String,
-        message: String,
-        param: String? = nil
-    ) {
-        self.code = code
-        self.message = message
-        self.param = param
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case code
-        case message
-        case param
-    }
-}
-
-/// A SIP DTMF keypress received from the caller. Delivered only to sideband observers.
-public struct LiveTransportDTMFReceived: Codable, Hashable, Sendable {
-    public var type: String = "transport.dtmf.received"
-    public var eventID: String
-    public var event: String
-
-    public init(eventID: String, event: String) {
-        self.eventID = eventID
-        self.event = event
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case event
-    }
-}
-
-/// Send one DTMF keypress to the SIP trunk through a Live sideband connection. This command is supported only for SIP calls. A successful send emits `transport.dtmf.sent` on sideband. If you provide `event_id`, the success notification includes it as `client_event_id`; a failure includes it as `error.client_event_id`. Send separate events for multiple keypresses.
-public struct LiveTransportDTMFSendParam: Codable, Hashable, Sendable {
-    public var eventID: String?
-    public var type: String = "transport.dtmf.send"
-    /// The DTMF key to send: one of `0`–`9`, `A`–`D`, `*`, or `#`.
-    public var event: String
-
-    public init(event: String, eventID: String? = nil) {
-        self.event = event
-        self.eventID = eventID
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case type
-        case event
-    }
-}
-
-/// A SIP DTMF keypress successfully sent to the SIP trunk. Delivered only to sideband observers; this is not a client command.
-public struct LiveTransportDTMFSent: Codable, Hashable, Sendable {
-    public var type: String = "transport.dtmf.sent"
-    public var eventID: String
-    public var event: String
-    /// The event_id of the client command, when supplied.
-    public var clientEventID: String?
-
-    public init(
-        eventID: String,
-        event: String,
-        clientEventID: String? = nil
-    ) {
-        self.eventID = eventID
-        self.event = event
-        self.clientEventID = clientEventID
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case event
-        case clientEventID = "client_event_id"
-    }
-}
-
-/// An asynchronous outbound SIP setup failure. Delivered only to sideband observers.
-public struct LiveTransportFailed: Codable, Hashable, Sendable {
-    public var eventID: String
-    /// The canonical Live session ID.
-    public var sessionID: String
-    public var type: String = "transport.failed"
-    public var error: LiveTransportCallError
-
-    public init(
-        eventID: String,
-        sessionID: String,
-        error: LiveTransportCallError
-    ) {
-        self.eventID = eventID
-        self.sessionID = sessionID
-        self.error = error
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case sessionID = "session_id"
-        case type
-        case error
-    }
-}
-
-/// The outbound SIP provider leg is ringing or providing early media. Delivered only to sideband observers.
-public struct LiveTransportRinging: Codable, Hashable, Sendable {
-    public var eventID: String
-    /// The canonical Live session ID.
-    public var sessionID: String
-    public var type: String = "transport.ringing"
-
-    public init(eventID: String, sessionID: String) {
-        self.eventID = eventID
-        self.sessionID = sessionID
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case sessionID = "session_id"
-        case type
-    }
-}
-
-/// WebRTC transport carrying the offer SDP in a creation request or answer SDP in its response.
-public struct LiveWebRTCTransport: Codable, Hashable, Sendable {
-    /// The transport used for the Live session. Always `webrtc`.
-    public var type: String = "webrtc"
-    /// Session Description Protocol message for the WebRTC connection.
-    public var sdp: String
-
-    public init(sdp: String) {
-        self.sdp = sdp
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case sdp
-    }
-}
-
-/// A web search tool available to the Live session’s Responses backend.
-public struct LiveWebSearchToolInputParam: Codable, Hashable, Sendable {
-    /// The tool type. Always `web_search`.
-    public var type: String = "web_search"
-
-    public init() {
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.sessionID, forKey: "session_id")
     }
 }

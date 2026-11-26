@@ -3,25 +3,37 @@
 
 import Foundation
 
-public struct DirectToolCallCaller: Codable, Hashable, Sendable {
+public struct DirectToolCallCaller: OpenAIModel {
     public var type: String = "direct"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "direct"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
-public struct DirectToolCallCallerParam: Codable, Hashable, Sendable {
+public struct DirectToolCallCallerParam: OpenAIModel {
     /// The caller type. Always `direct`.
     public var type: String = "direct"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "direct"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }

@@ -6,7 +6,7 @@ import Foundation
 /// Who handles tasks delegated by the Live model. Omitted or null selects your application; use `responses` or `decisions` to delegate to the corresponding API.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum Delegation: Codable, Hashable, Sendable {
+public indirect enum Delegation: OpenAIModel {
     /// `type`: `client`
     case client(LiveClientDelegationParam)
     /// `type`: `responses`

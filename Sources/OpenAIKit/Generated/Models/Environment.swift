@@ -4,7 +4,7 @@
 import Foundation
 
 /// A paginated list of live execution environment files.
-public struct EnvironmentFileListResource: Codable, Hashable, Sendable {
+public struct EnvironmentFileListResource: OpenAIModel {
     /// The object type. Always `page`.
     public var object: EnvironmentFilePageObjectResource
     /// Files available on the current page.
@@ -26,11 +26,20 @@ public struct EnvironmentFileListResource: Codable, Hashable, Sendable {
         self.next = next
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case next
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decode(EnvironmentFilePageObjectResource.self, forKey: "object")
+        self.data = try container.decode([EnvironmentFileResource].self, forKey: "data")
+        self.next = try container.decodeIfPresent(String.self, forKey: "next")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.next, forKey: "next")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
@@ -38,7 +47,7 @@ public struct EnvironmentFileListResource: Codable, Hashable, Sendable {
 public typealias EnvironmentFilePageObjectResource = String
 
 /// A live file in an execution environment.
-public struct EnvironmentFileResource: Codable, Hashable, Sendable {
+public struct EnvironmentFileResource: OpenAIModel {
     /// The object type. Always `agent.environment.file`.
     public var object: String = "agent.environment.file"
     /// The ID of the environment containing this file.
@@ -58,16 +67,25 @@ public struct EnvironmentFileResource: Codable, Hashable, Sendable {
         self.sizeBytes = sizeBytes
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case environmentID = "environment_id"
-        case path
-        case sizeBytes = "size_bytes"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "agent.environment.file"
+        self.environmentID = try container.decode(String.self, forKey: "environment_id")
+        self.path = try container.decode(String.self, forKey: "path")
+        self.sizeBytes = try container.decode(Int64.self, forKey: "size_bytes")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.environmentID, forKey: "environment_id")
+        try container.encode(self.path, forKey: "path")
+        try container.encode(self.sizeBytes, forKey: "size_bytes")
     }
 }
 
 /// Packages to install in an OpenAI-hosted environment.
-public struct EnvironmentPackagesParam: Codable, Hashable, Sendable {
+public struct EnvironmentPackagesParam: OpenAIModel {
     /// Python packages to install. Defaults to an empty list.
     public var python: [String]?
     /// System packages to install. Defaults to an empty list.
@@ -85,15 +103,23 @@ public struct EnvironmentPackagesParam: Codable, Hashable, Sendable {
         self.npm = npm
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case python
-        case system
-        case npm
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.python = try container.decodeIfPresent([String].self, forKey: "python")
+        self.system = try container.decodeIfPresent([String].self, forKey: "system")
+        self.npm = try container.decodeIfPresent([String].self, forKey: "npm")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.python, forKey: "python")
+        try container.encodeIfPresent(self.system, forKey: "system")
+        try container.encodeIfPresent(self.npm, forKey: "npm")
     }
 }
 
 /// Packages installed in an OpenAI-hosted environment.
-public struct EnvironmentPackagesResource: Codable, Hashable, Sendable {
+public struct EnvironmentPackagesResource: OpenAIModel {
     /// Python packages installed in the environment.
     public var python: [String]
     /// System packages installed in the environment.
@@ -111,17 +137,25 @@ public struct EnvironmentPackagesResource: Codable, Hashable, Sendable {
         self.npm = npm
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case python
-        case system
-        case npm
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.python = try container.decode([String].self, forKey: "python")
+        self.system = try container.decode([String].self, forKey: "system")
+        self.npm = try container.decode([String].self, forKey: "npm")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.python, forKey: "python")
+        try container.encode(self.system, forKey: "system")
+        try container.encode(self.npm, forKey: "npm")
     }
 }
 
 /// The execution environment and optional reusable template for a session.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum EnvironmentParam: Codable, Hashable, Sendable {
+public indirect enum EnvironmentParam: OpenAIModel {
     /// `type`: `none`
     case noneValue(EnvironmentParamNone)
     /// `type`: `openai_hosted`
@@ -168,20 +202,26 @@ public indirect enum EnvironmentParam: Codable, Hashable, Sendable {
 }
 
 /// Runs the agent without an execution environment.
-public struct EnvironmentParamNone: Codable, Hashable, Sendable {
+public struct EnvironmentParamNone: OpenAIModel {
     /// The type of the object. Always `none`.
     public var type: String = "none"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "none"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// An existing OpenAI-hosted environment or new inline/template-based hosted configuration.
-public struct EnvironmentParamOpenaiHosted: Codable, Hashable, Sendable {
+public struct EnvironmentParamOpenaiHosted: OpenAIModel {
     /// The type of the object. Always `openai_hosted`.
     public var type: String = "openai_hosted"
     /// Packages to install in the environment. Defaults to empty package lists.
@@ -237,25 +277,43 @@ public struct EnvironmentParamOpenaiHosted: Codable, Hashable, Sendable {
         self.containerSize = containerSize
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case packages
-        case setupCommands = "setup_commands"
-        case network
-        case desktop
-        case env
-        case capabilityDirectories = "capability_directories"
-        case skills
-        case plugins
-        case files
-        case environmentID = "environment_id"
-        case environmentTemplateID = "environment_template_id"
-        case containerSize = "container_size"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "openai_hosted"
+        self.packages = try container.decodeIfPresent(EnvironmentPackagesParam.self, forKey: "packages")
+        self.setupCommands = try container.decodeIfPresent([SetupCommandParam].self, forKey: "setup_commands")
+        self.network = try container.decodeIfPresent(NetworkPolicyParam.self, forKey: "network")
+        self.desktop = try container.decodeIfPresent(DesktopParam.self, forKey: "desktop")
+        self.env = try container.decodeIfPresent([String: String].self, forKey: "env")
+        self.capabilityDirectories = try container.decodeIfPresent([String].self, forKey: "capability_directories")
+        self.skills = try container.decodeIfPresent([HostedSkillParam].self, forKey: "skills")
+        self.plugins = try container.decodeIfPresent([HostedPluginParam].self, forKey: "plugins")
+        self.files = try container.decodeIfPresent([HostedEnvironmentFileParam].self, forKey: "files")
+        self.environmentID = try container.decodeIfPresent(String.self, forKey: "environment_id")
+        self.environmentTemplateID = try container.decodeIfPresent(String.self, forKey: "environment_template_id")
+        self.containerSize = try container.decodeIfPresent(ContainerSizeParam.self, forKey: "container_size")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.packages, forKey: "packages")
+        try container.encodeIfPresent(self.setupCommands, forKey: "setup_commands")
+        try container.encodeIfPresent(self.network, forKey: "network")
+        try container.encodeIfPresent(self.desktop, forKey: "desktop")
+        try container.encodeIfPresent(self.env, forKey: "env")
+        try container.encodeIfPresent(self.capabilityDirectories, forKey: "capability_directories")
+        try container.encodeIfPresent(self.skills, forKey: "skills")
+        try container.encodeIfPresent(self.plugins, forKey: "plugins")
+        try container.encodeIfPresent(self.files, forKey: "files")
+        try container.encodeIfPresent(self.environmentID, forKey: "environment_id")
+        try container.encodeIfPresent(self.environmentTemplateID, forKey: "environment_template_id")
+        try container.encodeIfPresent(self.containerSize, forKey: "container_size")
     }
 }
 
 /// An application-hosted environment configured inline.
-public struct EnvironmentParamSelfHosted: Codable, Hashable, Sendable {
+public struct EnvironmentParamSelfHosted: OpenAIModel {
     /// The type of the object. Always `self_hosted`.
     public var type: String = "self_hosted"
     /// Directories that contain capabilities exposed to the agent. Defaults to an empty list.
@@ -268,17 +326,25 @@ public struct EnvironmentParamSelfHosted: Codable, Hashable, Sendable {
         self.capabilityDirectories = capabilityDirectories
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case capabilityDirectories = "capability_directories"
-        case workspaceDirectory = "workspace_directory"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "self_hosted"
+        self.capabilityDirectories = try container.decodeIfPresent([String].self, forKey: "capability_directories")
+        self.workspaceDirectory = try container.decode(String.self, forKey: "workspace_directory")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.capabilityDirectories, forKey: "capability_directories")
+        try container.encode(self.workspaceDirectory, forKey: "workspace_directory")
     }
 }
 
 /// The execution environment for a session.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum EnvironmentResource: Codable, Hashable, Sendable {
+public indirect enum EnvironmentResource: OpenAIModel {
     /// `type`: `none`
     case noneValue(EnvironmentResourceNone)
     /// `type`: `openai_hosted`
@@ -325,20 +391,26 @@ public indirect enum EnvironmentResource: Codable, Hashable, Sendable {
 }
 
 /// The session talks to CCA without selecting or provisioning an execution environment.
-public struct EnvironmentResourceNone: Codable, Hashable, Sendable {
+public struct EnvironmentResourceNone: OpenAIModel {
     /// The type of the object. Always `none`.
     public var type: String = "none"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "none"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// An environment hosted by OpenAI.
-public struct EnvironmentResourceOpenaiHosted: Codable, Hashable, Sendable {
+public struct EnvironmentResourceOpenaiHosted: OpenAIModel {
     /// The type of the object. Always `openai_hosted`.
     public var type: String = "openai_hosted"
     /// The public ID of the environment.
@@ -382,22 +454,37 @@ public struct EnvironmentResourceOpenaiHosted: Codable, Hashable, Sendable {
         self.containerSize = containerSize
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case containerSize = "container_size"
-        case packages
-        case network
-        case desktop
-        case capabilityDirectories = "capability_directories"
-        case skills
-        case plugins
-        case files
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "openai_hosted"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.containerSize = try container.decodeIfPresent(ContainerSizeResource.self, forKey: "container_size")
+        self.packages = try container.decode(EnvironmentPackagesResource.self, forKey: "packages")
+        self.network = try container.decode(NetworkPolicyResource.self, forKey: "network")
+        self.desktop = try container.decode(DesktopResource.self, forKey: "desktop")
+        self.capabilityDirectories = try container.decode([String].self, forKey: "capability_directories")
+        self.skills = try container.decode([HostedSkillResource].self, forKey: "skills")
+        self.plugins = try container.decode([HostedPluginResource].self, forKey: "plugins")
+        self.files = try container.decode([HostedEnvironmentFileResource].self, forKey: "files")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encodeIfPresent(self.containerSize, forKey: "container_size")
+        try container.encode(self.packages, forKey: "packages")
+        try container.encode(self.network, forKey: "network")
+        try container.encode(self.desktop, forKey: "desktop")
+        try container.encode(self.capabilityDirectories, forKey: "capability_directories")
+        try container.encode(self.skills, forKey: "skills")
+        try container.encode(self.plugins, forKey: "plugins")
+        try container.encode(self.files, forKey: "files")
     }
 }
 
 /// An environment hosted by the application.
-public struct EnvironmentResourceSelfHosted: Codable, Hashable, Sendable {
+public struct EnvironmentResourceSelfHosted: OpenAIModel {
     /// The type of the object. Always `self_hosted`.
     public var type: String = "self_hosted"
     /// Pass this URL unchanged to `codex exec-server --remote` when connecting this environment.
@@ -421,12 +508,22 @@ public struct EnvironmentResourceSelfHosted: Codable, Hashable, Sendable {
         self.capabilityDirectories = capabilityDirectories
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case remoteURL = "remote_url"
-        case id
-        case workspaceDirectory = "workspace_directory"
-        case capabilityDirectories = "capability_directories"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "self_hosted"
+        self.remoteURL = try container.decode(String.self, forKey: "remote_url")
+        self.id = try container.decode(String.self, forKey: "id")
+        self.workspaceDirectory = try container.decode(String.self, forKey: "workspace_directory")
+        self.capabilityDirectories = try container.decode([String].self, forKey: "capability_directories")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.remoteURL, forKey: "remote_url")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.workspaceDirectory, forKey: "workspace_directory")
+        try container.encode(self.capabilityDirectories, forKey: "capability_directories")
     }
 }
 
@@ -454,7 +551,7 @@ public struct EnvironmentStatusResource: OpenAIStringEnum {
 }
 
 /// A page of Agents API resources, with IDs for retrieving additional pages.
-public struct EnvironmentTemplateListResource: Codable, Hashable, Sendable {
+public struct EnvironmentTemplateListResource: OpenAIModel {
     /// The object type, which is always `list`.
     public var object: String = "list"
     /// The resources returned in this page, in the requested sort order.
@@ -478,17 +575,27 @@ public struct EnvironmentTemplateListResource: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([EnvironmentTemplateResource].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
 /// Reusable configuration that provisions a fresh OpenAI-hosted environment for each session.
-public struct EnvironmentTemplateResource: Codable, Hashable, Sendable {
+public struct EnvironmentTemplateResource: OpenAIModel {
     /// The ID of the reusable environment template.
     public var id: String
     /// An optional human-readable display name for the template.
@@ -540,19 +647,36 @@ public struct EnvironmentTemplateResource: Codable, Hashable, Sendable {
         self.name = name
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case name
-        case object
-        case createdAt = "created_at"
-        case updatedAt = "updated_at"
-        case packages
-        case network
-        case desktop
-        case capabilityDirectories = "capability_directories"
-        case skills
-        case plugins
-        case files
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "agent.environment.template"
+        self.createdAt = try container.decode(Int64.self, forKey: "created_at")
+        self.updatedAt = try container.decode(Int64.self, forKey: "updated_at")
+        self.packages = try container.decode(EnvironmentPackagesResource.self, forKey: "packages")
+        self.network = try container.decode(NetworkPolicyResource.self, forKey: "network")
+        self.desktop = try container.decode(DesktopResource.self, forKey: "desktop")
+        self.capabilityDirectories = try container.decode([String].self, forKey: "capability_directories")
+        self.skills = try container.decode([HostedTemplateSkillResource].self, forKey: "skills")
+        self.plugins = try container.decode([HostedPluginResource].self, forKey: "plugins")
+        self.files = try container.decode([HostedTemplateFileResource].self, forKey: "files")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.updatedAt, forKey: "updated_at")
+        try container.encode(self.packages, forKey: "packages")
+        try container.encode(self.network, forKey: "network")
+        try container.encode(self.desktop, forKey: "desktop")
+        try container.encode(self.capabilityDirectories, forKey: "capability_directories")
+        try container.encode(self.skills, forKey: "skills")
+        try container.encode(self.plugins, forKey: "plugins")
+        try container.encode(self.files, forKey: "files")
     }
 }
 

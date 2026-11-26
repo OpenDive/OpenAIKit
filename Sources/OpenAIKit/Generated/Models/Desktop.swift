@@ -4,7 +4,7 @@
 import Foundation
 
 /// Desktop configuration for an OpenAI-hosted environment.
-public struct DesktopParam: Codable, Hashable, Sendable {
+public struct DesktopParam: OpenAIModel {
     /// Whether to provision the desktop and its browser proxy.
     public var enabled: Bool
 
@@ -12,13 +12,19 @@ public struct DesktopParam: Codable, Hashable, Sendable {
         self.enabled = enabled
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case enabled
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.enabled = try container.decode(Bool.self, forKey: "enabled")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.enabled, forKey: "enabled")
     }
 }
 
 /// The effective desktop configuration for an OpenAI-hosted environment.
-public struct DesktopResource: Codable, Hashable, Sendable {
+public struct DesktopResource: OpenAIModel {
     /// Whether the environment provisions a desktop and browser proxy.
     public var enabled: Bool
 
@@ -26,7 +32,13 @@ public struct DesktopResource: Codable, Hashable, Sendable {
         self.enabled = enabled
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case enabled
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.enabled = try container.decode(Bool.self, forKey: "enabled")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.enabled, forKey: "enabled")
     }
 }

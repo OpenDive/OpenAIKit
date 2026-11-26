@@ -12,7 +12,7 @@ import Foundation
 /// **Important:** when using JSON mode, you **must** also instruct the model to produce JSON yourself via a system or user message. Without this, the model may generate an unending stream of whitespace until the generation reaches the token limit, resulting in a long-running and seemingly "stuck" request. Also note that the message content may be partially cut off if `finish_reason="length"`, which indicates the generation exceeded `max_tokens` or the conversation exceeded the max context length.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum AssistantsApiResponseFormatOption: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+public indirect enum AssistantsApiResponseFormatOption: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
     /// `auto` is the default value
     case string(String)
     /// `type`: `text`
@@ -75,7 +75,7 @@ public indirect enum AssistantsApiResponseFormatOption: Codable, Hashable, Senda
 /// `auto` is the default value and means the model can pick between generating a message or calling one or more tools.
 /// `required` means the model must call one or more tools before responding to the user.
 /// Specifying a particular tool like `{"type": "file_search"}` or `{"type": "function", "function": {"name": "my_function"}}` forces the model to call that tool.
-public indirect enum AssistantsApiToolChoiceOption: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+public indirect enum AssistantsApiToolChoiceOption: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
     /// `none` means the model will not call any tools and instead generates a message. `auto` means the model can pick between generating a message or calling one or more tools. `required` means the model must call one or more tools before responding to the user.
     case string(AssistantsApiToolChoiceOption.StringValue)
     case assistantsNamedToolChoice(AssistantsNamedToolChoice)
@@ -132,7 +132,7 @@ public indirect enum AssistantsApiToolChoiceOption: Codable, Hashable, Sendable,
 }
 
 /// Specifies a tool the model should use. Use to force the model to call a specific tool.
-public struct AssistantsNamedToolChoice: Codable, Hashable, Sendable {
+public struct AssistantsNamedToolChoice: OpenAIModel {
     /// The type of the tool. If type is `function`, the function name must be set
     public var type: AssistantsNamedToolChoice.Kind
     public var function: AssistantsNamedToolChoice.Function?
@@ -142,9 +142,16 @@ public struct AssistantsNamedToolChoice: Codable, Hashable, Sendable {
         self.function = function
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case function
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decode(AssistantsNamedToolChoice.Kind.self, forKey: "type")
+        self.function = try container.decodeIfPresent(AssistantsNamedToolChoice.Function.self, forKey: "function")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.function, forKey: "function")
     }
 
     /// The type of the tool. If type is `function`, the function name must be set
@@ -166,7 +173,7 @@ public struct AssistantsNamedToolChoice: Codable, Hashable, Sendable {
         }
     }
 
-    public struct Function: Codable, Hashable, Sendable {
+    public struct Function: OpenAIModel {
         /// The name of the function to call.
         public var name: String
 
@@ -174,8 +181,14 @@ public struct AssistantsNamedToolChoice: Codable, Hashable, Sendable {
             self.name = name
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case name
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.name = try container.decode(String.self, forKey: "name")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.name, forKey: "name")
         }
     }
 }

@@ -4,7 +4,7 @@
 import Foundation
 
 /// Moderation results or errors for the response input and output.
-public struct Moderation: Codable, Hashable, Sendable {
+public struct Moderation: OpenAIModel {
     /// Moderation for the response input.
     public var input: Moderation.Input
     /// Moderation for the response output.
@@ -15,15 +15,22 @@ public struct Moderation: Codable, Hashable, Sendable {
         self.output = output
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case input
-        case output
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.input = try container.decode(Moderation.Input.self, forKey: "input")
+        self.output = try container.decode(Moderation.Output.self, forKey: "output")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.input, forKey: "input")
+        try container.encode(self.output, forKey: "output")
     }
 
     /// Moderation for the response input.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Input: Codable, Hashable, Sendable {
+    public indirect enum Input: OpenAIModel {
         /// `type`: `moderation_result`
         case moderationResult(ModerationResultBody)
         /// `type`: `error`
@@ -65,7 +72,7 @@ public struct Moderation: Codable, Hashable, Sendable {
     /// Moderation for the response output.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Output: Codable, Hashable, Sendable {
+    public indirect enum Output: OpenAIModel {
         /// `type`: `moderation_result`
         case moderationResult(ModerationResultBody)
         /// `type`: `error`
@@ -106,20 +113,26 @@ public struct Moderation: Codable, Hashable, Sendable {
 }
 
 /// The moderation policy for the response input.
-public struct ModerationConfigParam: Codable, Hashable, Sendable {
+public struct ModerationConfigParam: OpenAIModel {
     public var mode: ModerationMode
 
     public init(mode: ModerationMode) {
         self.mode = mode
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case mode
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.mode = try container.decode(ModerationMode.self, forKey: "mode")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.mode, forKey: "mode")
     }
 }
 
 /// An error produced while attempting moderation for the response input or output.
-public struct ModerationErrorBody: Codable, Hashable, Sendable {
+public struct ModerationErrorBody: OpenAIModel {
     /// The object type, which was always `error` for moderation failures.
     public var type: String = "error"
     /// The error code.
@@ -132,10 +145,18 @@ public struct ModerationErrorBody: Codable, Hashable, Sendable {
         self.message = message
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case code
-        case message
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "error"
+        self.code = try container.decode(String.self, forKey: "code")
+        self.message = try container.decode(String.self, forKey: "message")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.code, forKey: "code")
+        try container.encode(self.message, forKey: "message")
     }
 }
 
@@ -172,7 +193,7 @@ public struct ModerationMode: OpenAIStringEnum {
 }
 
 /// Configuration for running moderation on the input and output of this response.
-public struct ModerationParam: Codable, Hashable, Sendable {
+public struct ModerationParam: OpenAIModel {
     /// The moderation model to use for moderated completions, e.g. 'omni-moderation-latest'.
     public var model: String
     public var policy: ModerationPolicyParam?
@@ -182,14 +203,21 @@ public struct ModerationParam: Codable, Hashable, Sendable {
         self.policy = policy
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case model
-        case policy
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.model = try container.decode(String.self, forKey: "model")
+        self.policy = try container.decodeIfPresent(ModerationPolicyParam.self, forKey: "policy")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.model, forKey: "model")
+        try container.encodeIfPresent(self.policy, forKey: "policy")
     }
 }
 
 /// The policy to apply to moderated response input and output.
-public struct ModerationPolicyParam: Codable, Hashable, Sendable {
+public struct ModerationPolicyParam: OpenAIModel {
     public var input: ModerationConfigParam?
     public var output: ModerationConfigParam?
 
@@ -198,14 +226,21 @@ public struct ModerationPolicyParam: Codable, Hashable, Sendable {
         self.output = output
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case input
-        case output
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.input = try container.decodeIfPresent(ModerationConfigParam.self, forKey: "input")
+        self.output = try container.decodeIfPresent(ModerationConfigParam.self, forKey: "output")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.input, forKey: "input")
+        try container.encodeIfPresent(self.output, forKey: "output")
     }
 }
 
 /// A moderation result produced for the response input or output.
-public struct ModerationResultBody: Codable, Hashable, Sendable {
+public struct ModerationResultBody: OpenAIModel {
     /// The object type, which was always `moderation_result` for successful moderation results.
     public var type: String = "moderation_result"
     /// The moderation model that produced this result.
@@ -233,12 +268,23 @@ public struct ModerationResultBody: Codable, Hashable, Sendable {
         self.categoryAppliedInputTypes = categoryAppliedInputTypes
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case model
-        case flagged
-        case categories
-        case categoryScores = "category_scores"
-        case categoryAppliedInputTypes = "category_applied_input_types"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "moderation_result"
+        self.model = try container.decode(String.self, forKey: "model")
+        self.flagged = try container.decode(Bool.self, forKey: "flagged")
+        self.categories = try container.decode([String: Bool].self, forKey: "categories")
+        self.categoryScores = try container.decode([String: Double].self, forKey: "category_scores")
+        self.categoryAppliedInputTypes = try container.decode([String: [ModerationInputType]].self, forKey: "category_applied_input_types")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.model, forKey: "model")
+        try container.encode(self.flagged, forKey: "flagged")
+        try container.encode(self.categories, forKey: "categories")
+        try container.encode(self.categoryScores, forKey: "category_scores")
+        try container.encode(self.categoryAppliedInputTypes, forKey: "category_applied_input_types")
     }
 }

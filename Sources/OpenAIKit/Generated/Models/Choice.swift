@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct ChoiceOptionParam: Codable, Hashable, Sendable {
+public struct ChoiceOptionParam: OpenAIModel {
     public var value: ChoiceValueParam
     public var description: String?
 
@@ -12,13 +12,20 @@ public struct ChoiceOptionParam: Codable, Hashable, Sendable {
         self.description = description
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case value
-        case description
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.value = try container.decode(ChoiceValueParam.self, forKey: "value")
+        self.description = try container.decodeIfPresent(String.self, forKey: "description")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.value, forKey: "value")
+        try container.encodeIfPresent(self.description, forKey: "description")
     }
 }
 
-public struct ChoiceProbabilityResource: Codable, Hashable, Sendable {
+public struct ChoiceProbabilityResource: OpenAIModel {
     public var value: ChoiceValueResource
     public var probability: Double
 
@@ -27,14 +34,21 @@ public struct ChoiceProbabilityResource: Codable, Hashable, Sendable {
         self.probability = probability
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case value
-        case probability
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.value = try container.decode(ChoiceValueResource.self, forKey: "value")
+        self.probability = try container.decode(Double.self, forKey: "probability")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.value, forKey: "value")
+        try container.encode(self.probability, forKey: "probability")
     }
 }
 
 /// Choice values are typed: a string and a boolean with the same text are distinct.
-public indirect enum ChoiceValueParam: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+public indirect enum ChoiceValueParam: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
     case string(String)
     case bool(Bool)
     /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
@@ -71,7 +85,7 @@ public indirect enum ChoiceValueParam: Codable, Hashable, Sendable, ExpressibleB
 }
 
 /// Choice values are typed: a string and a boolean with the same text are distinct.
-public indirect enum ChoiceValueResource: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+public indirect enum ChoiceValueResource: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
     case string(String)
     case bool(Bool)
     /// A value this version of OpenAIKit does not recognize, kept as raw JSON.

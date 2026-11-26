@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct AdminAPIKeysCreateRequest: Codable, Hashable, Sendable {
+public struct AdminAPIKeysCreateRequest: OpenAIModel {
     public var name: String
     /// The number of seconds until the API key expires. Omit this field for a key that does not expire.
     public var expiresInSeconds: Int?
@@ -13,13 +13,20 @@ public struct AdminAPIKeysCreateRequest: Codable, Hashable, Sendable {
         self.expiresInSeconds = expiresInSeconds
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case name
-        case expiresInSeconds = "expires_in_seconds"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.name = try container.decode(String.self, forKey: "name")
+        self.expiresInSeconds = try container.decodeIfPresent(Int.self, forKey: "expires_in_seconds")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.name, forKey: "name")
+        try container.encodeIfPresent(self.expiresInSeconds, forKey: "expires_in_seconds")
     }
 }
 
-public struct AdminAPIKeysDeleteResponse: Codable, Hashable, Sendable {
+public struct AdminAPIKeysDeleteResponse: OpenAIModel {
     public var id: String
     public var object: String = "organization.admin_api_key.deleted"
     public var deleted: Bool
@@ -29,15 +36,23 @@ public struct AdminAPIKeysDeleteResponse: Codable, Hashable, Sendable {
         self.deleted = deleted
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case deleted
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.admin_api_key.deleted"
+        self.deleted = try container.decode(Bool.self, forKey: "deleted")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.deleted, forKey: "deleted")
     }
 }
 
 /// Represents an individual Admin API key in an org.
-public struct AdminApiKey: Codable, Hashable, Sendable {
+public struct AdminApiKey: OpenAIModel {
     /// The object type, which is always `organization.admin_api_key`
     public var object: String = "organization.admin_api_key"
     /// The identifier, which can be referenced in API endpoints
@@ -70,18 +85,31 @@ public struct AdminApiKey: Codable, Hashable, Sendable {
         self.lastUsedAt = lastUsedAt
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case id
-        case name
-        case redactedValue = "redacted_value"
-        case createdAt = "created_at"
-        case expiresAt = "expires_at"
-        case lastUsedAt = "last_used_at"
-        case owner
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.admin_api_key"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.redactedValue = try container.decode(String.self, forKey: "redacted_value")
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.expiresAt = try container.decodeIfPresent(Int.self, forKey: "expires_at")
+        self.lastUsedAt = try container.decodeIfPresent(Int.self, forKey: "last_used_at")
+        self.owner = try container.decode(AdminApiKey.Owner.self, forKey: "owner")
     }
 
-    public struct Owner: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.id, forKey: "id")
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encode(self.redactedValue, forKey: "redacted_value")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encodeIfPresent(self.expiresAt, forKey: "expires_at")
+        try container.encodeIfPresent(self.lastUsedAt, forKey: "last_used_at")
+        try container.encode(self.owner, forKey: "owner")
+    }
+
+    public struct Owner: OpenAIModel {
         /// Always `user`
         public var type: String?
         /// The object type, which is always organization.user
@@ -111,18 +139,29 @@ public struct AdminApiKey: Codable, Hashable, Sendable {
             self.role = role
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case object
-            case id
-            case name
-            case createdAt = "created_at"
-            case role
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type")
+            self.object = try container.decodeIfPresent(String.self, forKey: "object")
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.name = try container.decodeIfPresent(String.self, forKey: "name")
+            self.createdAt = try container.decodeIfPresent(Int.self, forKey: "created_at")
+            self.role = try container.decodeIfPresent(String.self, forKey: "role")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.type, forKey: "type")
+            try container.encodeIfPresent(self.object, forKey: "object")
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.name, forKey: "name")
+            try container.encodeIfPresent(self.createdAt, forKey: "created_at")
+            try container.encodeIfPresent(self.role, forKey: "role")
         }
     }
 }
 
-public struct AdminApiKeyCreateResponse: Codable, Hashable, Sendable {
+public struct AdminApiKeyCreateResponse: OpenAIModel {
     /// The object type, which is always `organization.admin_api_key`
     public var object: String = "organization.admin_api_key"
     /// The identifier, which can be referenced in API endpoints
@@ -159,19 +198,33 @@ public struct AdminApiKeyCreateResponse: Codable, Hashable, Sendable {
         self.lastUsedAt = lastUsedAt
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case id
-        case name
-        case redactedValue = "redacted_value"
-        case createdAt = "created_at"
-        case expiresAt = "expires_at"
-        case lastUsedAt = "last_used_at"
-        case owner
-        case value
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.admin_api_key"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.redactedValue = try container.decode(String.self, forKey: "redacted_value")
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.expiresAt = try container.decodeIfPresent(Int.self, forKey: "expires_at")
+        self.lastUsedAt = try container.decodeIfPresent(Int.self, forKey: "last_used_at")
+        self.owner = try container.decode(AdminApiKeyCreateResponse.Owner.self, forKey: "owner")
+        self.value = try container.decode(String.self, forKey: "value")
     }
 
-    public struct Owner: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.id, forKey: "id")
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encode(self.redactedValue, forKey: "redacted_value")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encodeIfPresent(self.expiresAt, forKey: "expires_at")
+        try container.encodeIfPresent(self.lastUsedAt, forKey: "last_used_at")
+        try container.encode(self.owner, forKey: "owner")
+        try container.encode(self.value, forKey: "value")
+    }
+
+    public struct Owner: OpenAIModel {
         /// Always `user`
         public var type: String?
         /// The object type, which is always organization.user
@@ -201,13 +254,24 @@ public struct AdminApiKeyCreateResponse: Codable, Hashable, Sendable {
             self.role = role
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case object
-            case id
-            case name
-            case createdAt = "created_at"
-            case role
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type")
+            self.object = try container.decodeIfPresent(String.self, forKey: "object")
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.name = try container.decodeIfPresent(String.self, forKey: "name")
+            self.createdAt = try container.decodeIfPresent(Int.self, forKey: "created_at")
+            self.role = try container.decodeIfPresent(String.self, forKey: "role")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.type, forKey: "type")
+            try container.encodeIfPresent(self.object, forKey: "object")
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.name, forKey: "name")
+            try container.encodeIfPresent(self.createdAt, forKey: "created_at")
+            try container.encodeIfPresent(self.role, forKey: "role")
         }
     }
 }

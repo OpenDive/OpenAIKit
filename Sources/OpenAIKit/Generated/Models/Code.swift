@@ -4,7 +4,7 @@
 import Foundation
 
 /// The output of a code interpreter tool call that is a file.
-public struct CodeInterpreterFileOutput: Codable, Hashable, Sendable {
+public struct CodeInterpreterFileOutput: OpenAIModel {
     /// The type of the code interpreter file output. Always `files`.
     public var type: String = "files"
     public var files: [CodeInterpreterFileOutput.File]
@@ -13,12 +13,19 @@ public struct CodeInterpreterFileOutput: Codable, Hashable, Sendable {
         self.files = files
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case files
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "files"
+        self.files = try container.decode([CodeInterpreterFileOutput.File].self, forKey: "files")
     }
 
-    public struct File: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.files, forKey: "files")
+    }
+
+    public struct File: OpenAIModel {
         /// The MIME type of the file.
         public var mimeType: String
         /// The ID of the file.
@@ -29,15 +36,22 @@ public struct CodeInterpreterFileOutput: Codable, Hashable, Sendable {
             self.fileID = fileID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case mimeType = "mime_type"
-            case fileID = "file_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.mimeType = try container.decode(String.self, forKey: "mime_type")
+            self.fileID = try container.decode(String.self, forKey: "file_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.mimeType, forKey: "mime_type")
+            try container.encode(self.fileID, forKey: "file_id")
         }
     }
 }
 
 /// The image output from the code interpreter.
-public struct CodeInterpreterOutputImage: Codable, Hashable, Sendable {
+public struct CodeInterpreterOutputImage: OpenAIModel {
     /// The type of the output. Always `image`.
     public var type: String = "image"
     /// The URL of the image output from the code interpreter.
@@ -47,14 +61,21 @@ public struct CodeInterpreterOutputImage: Codable, Hashable, Sendable {
         self.url = url
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case url
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "image"
+        self.url = try container.decode(String.self, forKey: "url")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.url, forKey: "url")
     }
 }
 
 /// The logs output from the code interpreter.
-public struct CodeInterpreterOutputLogs: Codable, Hashable, Sendable {
+public struct CodeInterpreterOutputLogs: OpenAIModel {
     /// The type of the output. Always `logs`.
     public var type: String = "logs"
     /// The logs output from the code interpreter.
@@ -64,14 +85,21 @@ public struct CodeInterpreterOutputLogs: Codable, Hashable, Sendable {
         self.logs = logs
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case logs
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "logs"
+        self.logs = try container.decode(String.self, forKey: "logs")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.logs, forKey: "logs")
     }
 }
 
 /// The output of a code interpreter tool call that is text.
-public struct CodeInterpreterTextOutput: Codable, Hashable, Sendable {
+public struct CodeInterpreterTextOutput: OpenAIModel {
     /// The type of the code interpreter text output. Always `logs`.
     public var type: String = "logs"
     /// The logs of the code interpreter tool call.
@@ -81,14 +109,21 @@ public struct CodeInterpreterTextOutput: Codable, Hashable, Sendable {
         self.logs = logs
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case logs
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "logs"
+        self.logs = try container.decode(String.self, forKey: "logs")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.logs, forKey: "logs")
     }
 }
 
 /// A tool that runs Python code to help generate a response to a prompt.
-public struct CodeInterpreterTool: Codable, Hashable, Sendable {
+public struct CodeInterpreterTool: OpenAIModel {
     /// The type of the code interpreter tool. Always `code_interpreter`.
     public var type: String = "code_interpreter"
     /// The code interpreter container. Can be a container ID or an object that
@@ -102,16 +137,24 @@ public struct CodeInterpreterTool: Codable, Hashable, Sendable {
         self.allowedCallers = allowedCallers
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case container
-        case allowedCallers = "allowed_callers"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "code_interpreter"
+        self.container = try container.decode(CodeInterpreterTool.Container.self, forKey: "container")
+        self.allowedCallers = try container.decodeIfPresent([CallableToolAllowedCaller].self, forKey: "allowed_callers")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.container, forKey: "container")
+        try container.encodeIfPresent(self.allowedCallers, forKey: "allowed_callers")
     }
 
     /// The code interpreter container. Can be a container ID or an object that
     /// specifies uploaded file IDs to make available to your code, along with an
     /// optional `memory_limit` setting.
-    public indirect enum Container: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum Container: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         /// The container ID.
         case string(String)
         case autoCodeInterpreterToolParam(AutoCodeInterpreterToolParam)
@@ -150,7 +193,7 @@ public struct CodeInterpreterTool: Codable, Hashable, Sendable {
 }
 
 /// A tool call to run code.
-public struct CodeInterpreterToolCall: Codable, Hashable, Sendable {
+public struct CodeInterpreterToolCall: OpenAIModel {
     /// The type of the code interpreter tool call. Always `code_interpreter_call`.
     public var type: String = "code_interpreter_call"
     /// The unique ID of the code interpreter tool call.
@@ -176,13 +219,24 @@ public struct CodeInterpreterToolCall: Codable, Hashable, Sendable {
         self.outputs = outputs
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case status
-        case containerID = "container_id"
-        case code
-        case outputs
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "code_interpreter_call"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.status = try container.decode(CodeInterpreterToolCall.Status.self, forKey: "status")
+        self.containerID = try container.decode(String.self, forKey: "container_id")
+        self.code = try container.decodeIfPresent(String.self, forKey: "code")
+        self.outputs = try container.decodeIfPresent([CodeInterpreterToolCall.Output].self, forKey: "outputs")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.status, forKey: "status")
+        try container.encode(self.containerID, forKey: "container_id")
+        try container.encodeIfPresent(self.code, forKey: "code")
+        try container.encodeIfPresent(self.outputs, forKey: "outputs")
     }
 
     /// The status of the code interpreter tool call. Valid values are `in_progress`, `completed`, `incomplete`, `interpreting`, and `failed`.
@@ -207,7 +261,7 @@ public struct CodeInterpreterToolCall: Codable, Hashable, Sendable {
     }
 
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Output: Codable, Hashable, Sendable {
+    public indirect enum Output: OpenAIModel {
         /// `type`: `logs`
         case logs(CodeInterpreterOutputLogs)
         /// `type`: `image`

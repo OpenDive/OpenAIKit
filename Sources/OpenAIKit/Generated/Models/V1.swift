@@ -4,7 +4,7 @@
 import Foundation
 
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum V1OrganizationExternalKeysPostRequest: Codable, Hashable, Sendable {
+public indirect enum V1OrganizationExternalKeysPostRequest: OpenAIModel {
     /// `type`: `aws`
     case aws(AwsExternalKeyParams)
     /// `type`: `gcp`

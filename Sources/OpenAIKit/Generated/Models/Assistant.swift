@@ -4,7 +4,7 @@
 import Foundation
 
 /// Assistant-authored message within a thread.
-public struct AssistantMessageItem: Codable, Hashable, Sendable {
+public struct AssistantMessageItem: OpenAIModel {
     /// Identifier of the thread item.
     public var id: String
     /// Type discriminator that is always `chatkit.thread_item`.
@@ -30,18 +30,29 @@ public struct AssistantMessageItem: Codable, Hashable, Sendable {
         self.content = content
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
-        case threadID = "thread_id"
-        case type
-        case content
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "chatkit.thread_item"
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.threadID = try container.decode(String.self, forKey: "thread_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "chatkit.assistant_message"
+        self.content = try container.decode([ResponseOutputText].self, forKey: "content")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.threadID, forKey: "thread_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.content, forKey: "content")
     }
 }
 
 /// An assistant message produced by the agent.
-public struct AssistantMessageItemResource: Codable, Hashable, Sendable {
+public struct AssistantMessageItemResource: OpenAIModel {
     /// The item type. Always `message`.
     public var type: String = "message"
     /// The ID of the message.
@@ -71,19 +82,31 @@ public struct AssistantMessageItemResource: Codable, Hashable, Sendable {
         self.phase = phase
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case turnID = "turn_id"
-        case role
-        case status
-        case content
-        case phase
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "message"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.turnID = try container.decode(String.self, forKey: "turn_id")
+        self.role = try container.decodeIfPresent(String.self, forKey: "role") ?? "assistant"
+        self.status = try container.decode(OutputItemStatusResource.self, forKey: "status")
+        self.content = try container.decode([OutputTextResource].self, forKey: "content")
+        self.phase = try container.decodeIfPresent(MessagePhaseResource.self, forKey: "phase")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.turnID, forKey: "turn_id")
+        try container.encode(self.role, forKey: "role")
+        try container.encode(self.status, forKey: "status")
+        try container.encode(self.content, forKey: "content")
+        try container.encodeIfPresent(self.phase, forKey: "phase")
     }
 }
 
 /// Represents an `assistant` that can call the model and use tools.
-public struct AssistantObject: Codable, Hashable, Sendable {
+public struct AssistantObject: OpenAIModel {
     /// The identifier, which can be referenced in API endpoints.
     public var id: String
     /// The object type, which is always `assistant`.
@@ -131,24 +154,42 @@ public struct AssistantObject: Codable, Hashable, Sendable {
         self.responseFormat = responseFormat
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
-        case name
-        case description
-        case model
-        case instructions
-        case tools
-        case toolResources = "tool_resources"
-        case metadata
-        case temperature
-        case topP = "top_p"
-        case responseFormat = "response_format"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "assistant"
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.description = try container.decodeIfPresent(String.self, forKey: "description")
+        self.model = try container.decode(String.self, forKey: "model")
+        self.instructions = try container.decodeIfPresent(String.self, forKey: "instructions")
+        self.tools = try container.decode([AssistantObject.Tool].self, forKey: "tools")
+        self.toolResources = try container.decodeIfPresent(AssistantObject.ToolResources.self, forKey: "tool_resources")
+        self.metadata = try container.decodeIfPresent(Metadata.self, forKey: "metadata")
+        self.temperature = try container.decodeIfPresent(Double.self, forKey: "temperature")
+        self.topP = try container.decodeIfPresent(Double.self, forKey: "top_p")
+        self.responseFormat = try container.decodeIfPresent(AssistantsApiResponseFormatOption.self, forKey: "response_format")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encodeIfPresent(self.description, forKey: "description")
+        try container.encode(self.model, forKey: "model")
+        try container.encodeIfPresent(self.instructions, forKey: "instructions")
+        try container.encode(self.tools, forKey: "tools")
+        try container.encodeIfPresent(self.toolResources, forKey: "tool_resources")
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
+        try container.encodeIfPresent(self.temperature, forKey: "temperature")
+        try container.encodeIfPresent(self.topP, forKey: "top_p")
+        try container.encodeIfPresent(self.responseFormat, forKey: "response_format")
     }
 
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Tool: Codable, Hashable, Sendable {
+    public indirect enum Tool: OpenAIModel {
         /// `type`: `code_interpreter`
         case codeInterpreter(AssistantToolsCode)
         /// `type`: `file_search`
@@ -195,7 +236,7 @@ public struct AssistantObject: Codable, Hashable, Sendable {
     }
 
     /// A set of resources that are used by the assistant's tools. The resources are specific to the type of tool. For example, the `code_interpreter` tool requires a list of file IDs, while the `file_search` tool requires a list of vector store IDs.
-    public struct ToolResources: Codable, Hashable, Sendable {
+    public struct ToolResources: OpenAIModel {
         public var codeInterpreter: AssistantObject.ToolResources.CodeInterpreter?
         public var fileSearch: AssistantObject.ToolResources.FileSearch?
 
@@ -204,12 +245,19 @@ public struct AssistantObject: Codable, Hashable, Sendable {
             self.fileSearch = fileSearch
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case codeInterpreter = "code_interpreter"
-            case fileSearch = "file_search"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.codeInterpreter = try container.decodeIfPresent(AssistantObject.ToolResources.CodeInterpreter.self, forKey: "code_interpreter")
+            self.fileSearch = try container.decodeIfPresent(AssistantObject.ToolResources.FileSearch.self, forKey: "file_search")
         }
 
-        public struct CodeInterpreter: Codable, Hashable, Sendable {
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.codeInterpreter, forKey: "code_interpreter")
+            try container.encodeIfPresent(self.fileSearch, forKey: "file_search")
+        }
+
+        public struct CodeInterpreter: OpenAIModel {
             /// A list of [file](https://developers.openai.com/api/reference/resources/files) IDs made available to the `code_interpreter`` tool. There can be a maximum of 20 files associated with the tool.
             public var fileIDs: [String]?
 
@@ -217,12 +265,18 @@ public struct AssistantObject: Codable, Hashable, Sendable {
                 self.fileIDs = fileIDs
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case fileIDs = "file_ids"
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.fileIDs = try container.decodeIfPresent([String].self, forKey: "file_ids")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.fileIDs, forKey: "file_ids")
             }
         }
 
-        public struct FileSearch: Codable, Hashable, Sendable {
+        public struct FileSearch: OpenAIModel {
             /// The ID of the [vector store](https://developers.openai.com/api/reference/resources/vector_stores) attached to this assistant. There can be a maximum of 1 vector store attached to the assistant.
             public var vectorStoreIDs: [String]?
 
@@ -230,8 +284,14 @@ public struct AssistantObject: Codable, Hashable, Sendable {
                 self.vectorStoreIDs = vectorStoreIDs
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case vectorStoreIDs = "vector_store_ids"
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.vectorStoreIDs = try container.decodeIfPresent([String].self, forKey: "vector_store_ids")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.vectorStoreIDs, forKey: "vector_store_ids")
             }
         }
     }
@@ -256,7 +316,7 @@ public struct AssistantObject: Codable, Hashable, Sendable {
 /// We may add additional events over time, so we recommend handling unknown events gracefully
 /// in your code. See the [Assistants API quickstart](https://developers.openai.com/api/docs/assistants/migration) to learn how to
 /// integrate the Assistants API with streaming.
-public indirect enum AssistantStreamEvent: Codable, Hashable, Sendable {
+public indirect enum AssistantStreamEvent: OpenAIModel {
     case threadStream(ThreadStreamEvent)
     case runStream(RunStreamEvent)
     case runStepStream(RunStepStreamEvent)
@@ -372,19 +432,25 @@ public struct AssistantSupportedModels: OpenAIStringEnum {
     }
 }
 
-public struct AssistantToolsCode: Codable, Hashable, Sendable {
+public struct AssistantToolsCode: OpenAIModel {
     /// The type of tool being defined: `code_interpreter`
     public var type: String = "code_interpreter"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "code_interpreter"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
-public struct AssistantToolsFileSearch: Codable, Hashable, Sendable {
+public struct AssistantToolsFileSearch: OpenAIModel {
     /// The type of tool being defined: `file_search`
     public var type: String = "file_search"
     /// Overrides for the file search tool.
@@ -394,13 +460,20 @@ public struct AssistantToolsFileSearch: Codable, Hashable, Sendable {
         self.fileSearch = fileSearch
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case fileSearch = "file_search"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "file_search"
+        self.fileSearch = try container.decodeIfPresent(AssistantToolsFileSearch.FileSearch.self, forKey: "file_search")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.fileSearch, forKey: "file_search")
     }
 
     /// Overrides for the file search tool.
-    public struct FileSearch: Codable, Hashable, Sendable {
+    public struct FileSearch: OpenAIModel {
         /// The maximum number of results the file search tool should output. The default is 20 for `gpt-4*` models and 5 for `gpt-3.5-turbo`. This number should be between 1 and 50 inclusive.
         ///
         /// Note that the file search tool may output fewer than `max_num_results` results. See the [file search tool documentation](https://developers.openai.com/api/docs/guides/tools-file-search#retrieval-customization) for more information.
@@ -412,26 +485,39 @@ public struct AssistantToolsFileSearch: Codable, Hashable, Sendable {
             self.rankingOptions = rankingOptions
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case maxNumResults = "max_num_results"
-            case rankingOptions = "ranking_options"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.maxNumResults = try container.decodeIfPresent(Int.self, forKey: "max_num_results")
+            self.rankingOptions = try container.decodeIfPresent(FileSearchRankingOptions.self, forKey: "ranking_options")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.maxNumResults, forKey: "max_num_results")
+            try container.encodeIfPresent(self.rankingOptions, forKey: "ranking_options")
         }
     }
 }
 
-public struct AssistantToolsFileSearchTypeOnly: Codable, Hashable, Sendable {
+public struct AssistantToolsFileSearchTypeOnly: OpenAIModel {
     /// The type of tool being defined: `file_search`
     public var type: String = "file_search"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "file_search"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
-public struct AssistantToolsFunction: Codable, Hashable, Sendable {
+public struct AssistantToolsFunction: OpenAIModel {
     /// The type of tool being defined: `function`
     public var type: String = "function"
     public var function: FunctionObject
@@ -440,8 +526,15 @@ public struct AssistantToolsFunction: Codable, Hashable, Sendable {
         self.function = function
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case function
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "function"
+        self.function = try container.decode(FunctionObject.self, forKey: "function")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.function, forKey: "function")
     }
 }

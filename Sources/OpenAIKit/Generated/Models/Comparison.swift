@@ -4,7 +4,7 @@
 import Foundation
 
 /// A filter used to compare a specified attribute key to a given value using a defined comparison operation.
-public struct ComparisonFilter: Codable, Hashable, Sendable {
+public struct ComparisonFilter: OpenAIModel {
     /// Specifies the comparison operator: `eq`, `ne`, `gt`, `gte`, `lt`, `lte`, `in`, `nin`.
     /// - `eq`: equals
     /// - `ne`: not equal
@@ -30,10 +30,18 @@ public struct ComparisonFilter: Codable, Hashable, Sendable {
         self.value = value
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case key
-        case value
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decode(ComparisonFilter.Kind.self, forKey: "type")
+        self.key = try container.decode(String.self, forKey: "key")
+        self.value = try container.decode(ComparisonFilter.Value.self, forKey: "value")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.key, forKey: "key")
+        try container.encode(self.value, forKey: "value")
     }
 
     /// Specifies the comparison operator: `eq`, `ne`, `gt`, `gte`, `lt`, `lte`, `in`, `nin`.
@@ -69,7 +77,7 @@ public struct ComparisonFilter: Codable, Hashable, Sendable {
     }
 
     /// The value to compare against the attribute key; supports string, number, or boolean types.
-    public indirect enum Value: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum Value: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         case string(String)
         case number(Double)
         case bool(Bool)
@@ -118,7 +126,7 @@ public struct ComparisonFilter: Codable, Hashable, Sendable {
             }
         }
 
-        public indirect enum Item: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+        public indirect enum Item: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
             case string(String)
             case number(Double)
             /// A value this version of OpenAIKit does not recognize, kept as raw JSON.

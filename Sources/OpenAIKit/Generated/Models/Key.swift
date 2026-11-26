@@ -4,7 +4,7 @@
 import Foundation
 
 /// A collection of keypresses the model would like to perform.
-public struct KeyPressAction: Codable, Hashable, Sendable {
+public struct KeyPressAction: OpenAIModel {
     /// Specifies the event type. For a keypress action, this property is always set to `keypress`.
     public var type: String = "keypress"
     /// The combination of keys the model is requesting to be pressed. This is an array of strings, each representing a key.
@@ -14,8 +14,15 @@ public struct KeyPressAction: Codable, Hashable, Sendable {
         self.keys = keys
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case keys
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "keypress"
+        self.keys = try container.decode([String].self, forKey: "keys")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.keys, forKey: "keys")
     }
 }

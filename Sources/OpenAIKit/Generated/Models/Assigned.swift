@@ -4,7 +4,7 @@
 import Foundation
 
 /// Detailed information about a role assignment entry returned when listing assignments.
-public struct AssignedRoleDetails: Codable, Hashable, Sendable {
+public struct AssignedRoleDetails: OpenAIModel {
     /// Identifier for the role.
     public var id: String
     /// Name of the role.
@@ -58,22 +58,39 @@ public struct AssignedRoleDetails: Codable, Hashable, Sendable {
         self.assignmentSources = assignmentSources
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case name
-        case permissions
-        case resourceType = "resource_type"
-        case predefinedRole = "predefined_role"
-        case description
-        case createdAt = "created_at"
-        case updatedAt = "updated_at"
-        case createdBy = "created_by"
-        case createdByUserObj = "created_by_user_obj"
-        case metadata
-        case assignmentSources = "assignment_sources"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.permissions = try container.decode([String].self, forKey: "permissions")
+        self.resourceType = try container.decode(String.self, forKey: "resource_type")
+        self.predefinedRole = try container.decode(Bool.self, forKey: "predefined_role")
+        self.description = try container.decodeIfPresent(String.self, forKey: "description")
+        self.createdAt = try container.decodeIfPresent(Int.self, forKey: "created_at")
+        self.updatedAt = try container.decodeIfPresent(Int.self, forKey: "updated_at")
+        self.createdBy = try container.decodeIfPresent(String.self, forKey: "created_by")
+        self.createdByUserObj = try container.decodeIfPresent(JSONObject.self, forKey: "created_by_user_obj")
+        self.metadata = try container.decodeIfPresent(JSONObject.self, forKey: "metadata")
+        self.assignmentSources = try container.decodeIfPresent([AssignedRoleDetails.AssignmentSource].self, forKey: "assignment_sources")
     }
 
-    public struct AssignmentSource: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.permissions, forKey: "permissions")
+        try container.encode(self.resourceType, forKey: "resource_type")
+        try container.encode(self.predefinedRole, forKey: "predefined_role")
+        try container.encodeIfPresent(self.description, forKey: "description")
+        try container.encodeIfPresent(self.createdAt, forKey: "created_at")
+        try container.encodeIfPresent(self.updatedAt, forKey: "updated_at")
+        try container.encodeIfPresent(self.createdBy, forKey: "created_by")
+        try container.encodeIfPresent(self.createdByUserObj, forKey: "created_by_user_obj")
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
+        try container.encodeIfPresent(self.assignmentSources, forKey: "assignment_sources")
+    }
+
+    public struct AssignmentSource: OpenAIModel {
         public var principalID: String
         public var principalType: String
 
@@ -82,9 +99,16 @@ public struct AssignedRoleDetails: Codable, Hashable, Sendable {
             self.principalType = principalType
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case principalID = "principal_id"
-            case principalType = "principal_type"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.principalID = try container.decode(String.self, forKey: "principal_id")
+            self.principalType = try container.decode(String.self, forKey: "principal_type")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.principalID, forKey: "principal_id")
+            try container.encode(self.principalType, forKey: "principal_type")
         }
     }
 }

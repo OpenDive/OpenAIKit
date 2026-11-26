@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct LocalEnvironmentParam: Codable, Hashable, Sendable {
+public struct LocalEnvironmentParam: OpenAIModel {
     /// Use a local computer environment.
     public var type: String = "local"
     /// An optional list of skills.
@@ -13,27 +13,40 @@ public struct LocalEnvironmentParam: Codable, Hashable, Sendable {
         self.skills = skills
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case skills
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "local"
+        self.skills = try container.decodeIfPresent([LocalSkillParam].self, forKey: "skills")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.skills, forKey: "skills")
     }
 }
 
 /// Represents the use of a local environment to perform shell actions.
-public struct LocalEnvironmentResource: Codable, Hashable, Sendable {
+public struct LocalEnvironmentResource: OpenAIModel {
     /// The environment type. Always `local`.
     public var type: String = "local"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "local"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// Execute a shell command on the server.
-public struct LocalShellExecAction: Codable, Hashable, Sendable {
+public struct LocalShellExecAction: OpenAIModel {
     /// The type of the local shell action. Always `exec`.
     public var type: String = "exec"
     /// The command to run.
@@ -58,18 +71,29 @@ public struct LocalShellExecAction: Codable, Hashable, Sendable {
         self.user = user
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case command
-        case timeoutMs = "timeout_ms"
-        case workingDirectory = "working_directory"
-        case env
-        case user
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "exec"
+        self.command = try container.decode([String].self, forKey: "command")
+        self.timeoutMs = try container.decodeIfPresent(Int.self, forKey: "timeout_ms")
+        self.workingDirectory = try container.decodeIfPresent(String.self, forKey: "working_directory")
+        self.env = try container.decode([String: String].self, forKey: "env")
+        self.user = try container.decodeIfPresent(String.self, forKey: "user")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.command, forKey: "command")
+        try container.encodeIfPresent(self.timeoutMs, forKey: "timeout_ms")
+        try container.encodeIfPresent(self.workingDirectory, forKey: "working_directory")
+        try container.encode(self.env, forKey: "env")
+        try container.encodeIfPresent(self.user, forKey: "user")
     }
 }
 
 /// A tool call to run a command on the local shell.
-public struct LocalShellToolCall: Codable, Hashable, Sendable {
+public struct LocalShellToolCall: OpenAIModel {
     /// The type of the local shell call. Always `local_shell_call`.
     public var type: String = "local_shell_call"
     /// The unique ID of the local shell call.
@@ -92,12 +116,22 @@ public struct LocalShellToolCall: Codable, Hashable, Sendable {
         self.status = status
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case callID = "call_id"
-        case action
-        case status
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "local_shell_call"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.action = try container.decode(LocalShellExecAction.self, forKey: "action")
+        self.status = try container.decode(LocalShellToolCall.Status.self, forKey: "status")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encode(self.action, forKey: "action")
+        try container.encode(self.status, forKey: "status")
     }
 
     /// The status of the local shell call.
@@ -121,7 +155,7 @@ public struct LocalShellToolCall: Codable, Hashable, Sendable {
 }
 
 /// The output of a local shell tool call.
-public struct LocalShellToolCallOutput: Codable, Hashable, Sendable {
+public struct LocalShellToolCallOutput: OpenAIModel {
     /// The type of the local shell tool call output. Always `local_shell_call_output`.
     public var type: String = "local_shell_call_output"
     /// The unique ID of the local shell tool call generated by the model.
@@ -140,11 +174,20 @@ public struct LocalShellToolCallOutput: Codable, Hashable, Sendable {
         self.status = status
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case output
-        case status
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "local_shell_call_output"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.output = try container.decode(String.self, forKey: "output")
+        self.status = try container.decodeIfPresent(LocalShellToolCallOutput.Status.self, forKey: "status")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.output, forKey: "output")
+        try container.encodeIfPresent(self.status, forKey: "status")
     }
 
     /// The status of the item. One of `in_progress`, `completed`, or `incomplete`.
@@ -168,19 +211,25 @@ public struct LocalShellToolCallOutput: Codable, Hashable, Sendable {
 }
 
 /// A tool that allows the model to execute shell commands in a local environment.
-public struct LocalShellToolParam: Codable, Hashable, Sendable {
+public struct LocalShellToolParam: OpenAIModel {
     /// The type of the local shell tool. Always `local_shell`.
     public var type: String = "local_shell"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "local_shell"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
-public struct LocalSkillParam: Codable, Hashable, Sendable {
+public struct LocalSkillParam: OpenAIModel {
     /// The name of the skill.
     public var name: String
     /// The description of the skill.
@@ -198,9 +247,17 @@ public struct LocalSkillParam: Codable, Hashable, Sendable {
         self.path = path
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case name
-        case description
-        case path
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.name = try container.decode(String.self, forKey: "name")
+        self.description = try container.decode(String.self, forKey: "description")
+        self.path = try container.decode(String.self, forKey: "path")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.description, forKey: "description")
+        try container.encode(self.path, forKey: "path")
     }
 }

@@ -4,7 +4,7 @@
 import Foundation
 
 /// Controls how much historical context is retained for the session.
-public struct HistoryParam: Codable, Hashable, Sendable {
+public struct HistoryParam: OpenAIModel {
     /// Enables chat users to access previous ChatKit threads. Defaults to true.
     public var enabled: Bool?
     /// Number of recent ChatKit threads users have access to. Defaults to unlimited when unset.
@@ -15,8 +15,15 @@ public struct HistoryParam: Codable, Hashable, Sendable {
         self.recentThreads = recentThreads
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case enabled
-        case recentThreads = "recent_threads"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.enabled = try container.decodeIfPresent(Bool.self, forKey: "enabled")
+        self.recentThreads = try container.decodeIfPresent(Int.self, forKey: "recent_threads")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.enabled, forKey: "enabled")
+        try container.encodeIfPresent(self.recentThreads, forKey: "recent_threads")
     }
 }

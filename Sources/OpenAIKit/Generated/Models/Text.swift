@@ -4,7 +4,7 @@
 import Foundation
 
 /// A text content.
-public struct TextContent: Codable, Hashable, Sendable {
+public struct TextContent: OpenAIModel {
     public var type: String = "text"
     public var text: String
 
@@ -12,16 +12,23 @@ public struct TextContent: Codable, Hashable, Sendable {
         self.text = text
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case text
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "text"
+        self.text = try container.decode(String.self, forKey: "text")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.text, forKey: "text")
     }
 }
 
 /// The output format for generated text.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum TextFormatParam: Codable, Hashable, Sendable {
+public indirect enum TextFormatParam: OpenAIModel {
     /// `type`: `text`
     case text(TextFormatParamText)
     /// `type`: `json_schema`
@@ -61,7 +68,7 @@ public indirect enum TextFormatParam: Codable, Hashable, Sendable {
 }
 
 /// Constrains generated text to a JSON Schema.
-public struct TextFormatParamJsonSchema: Codable, Hashable, Sendable {
+public struct TextFormatParamJsonSchema: OpenAIModel {
     /// The type of the object. Always `json_schema`.
     public var type: String = "json_schema"
     /// The JSON Schema that generated text must match.
@@ -71,29 +78,42 @@ public struct TextFormatParamJsonSchema: Codable, Hashable, Sendable {
         self.schema = schema
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case schema
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "json_schema"
+        self.schema = try container.decode(JSONObject.self, forKey: "schema")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.schema, forKey: "schema")
     }
 }
 
 /// Generates ordinary text without a structured-output constraint.
-public struct TextFormatParamText: Codable, Hashable, Sendable {
+public struct TextFormatParamText: OpenAIModel {
     /// The type of the object. Always `text`.
     public var type: String = "text"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "text"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// The effective output format for generated text.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum TextFormatResource: Codable, Hashable, Sendable {
+public indirect enum TextFormatResource: OpenAIModel {
     /// `type`: `text`
     case text(TextFormatResourceText)
     /// `type`: `json_schema`
@@ -133,7 +153,7 @@ public indirect enum TextFormatResource: Codable, Hashable, Sendable {
 }
 
 /// Constrains generated text to a JSON Schema.
-public struct TextFormatResourceJsonSchema: Codable, Hashable, Sendable {
+public struct TextFormatResourceJsonSchema: OpenAIModel {
     /// The type of the object. Always `json_schema`.
     public var type: String = "json_schema"
     /// The JSON Schema that generated text must match.
@@ -143,27 +163,40 @@ public struct TextFormatResourceJsonSchema: Codable, Hashable, Sendable {
         self.schema = schema
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case schema
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "json_schema"
+        self.schema = try container.decode(JSONObject.self, forKey: "schema")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.schema, forKey: "schema")
     }
 }
 
 /// Generates ordinary text without a structured-output constraint.
-public struct TextFormatResourceText: Codable, Hashable, Sendable {
+public struct TextFormatResourceText: OpenAIModel {
     /// The type of the object. Always `text`.
     public var type: String = "text"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "text"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// Configuration for text generated by the agent.
-public struct TextParam: Codable, Hashable, Sendable {
+public struct TextParam: OpenAIModel {
     /// The output format. Omission uses ordinary text (`{"type": "text"}`).
     public var format: TextFormatParam?
     /// The amount of text the model should produce. Defaults to `medium`, matching Responses.
@@ -174,14 +207,21 @@ public struct TextParam: Codable, Hashable, Sendable {
         self.verbosity = verbosity
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case format
-        case verbosity
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.format = try container.decodeIfPresent(TextFormatParam.self, forKey: "format")
+        self.verbosity = try container.decodeIfPresent(VerbosityParam.self, forKey: "verbosity")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.format, forKey: "format")
+        try container.encodeIfPresent(self.verbosity, forKey: "verbosity")
     }
 }
 
 /// The text configuration used by an agent.
-public struct TextResource: Codable, Hashable, Sendable {
+public struct TextResource: OpenAIModel {
     /// The effective output format. Defaults to ordinary text.
     public var format: TextFormatResource
     /// The amount of text produced by the agent. Defaults to `medium`.
@@ -192,9 +232,16 @@ public struct TextResource: Codable, Hashable, Sendable {
         self.verbosity = verbosity
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case format
-        case verbosity
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.format = try container.decode(TextFormatResource.self, forKey: "format")
+        self.verbosity = try container.decode(VerbosityResource.self, forKey: "verbosity")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.format, forKey: "format")
+        try container.encode(self.verbosity, forKey: "verbosity")
     }
 }
 
@@ -213,7 +260,7 @@ public struct TextResource: Codable, Hashable, Sendable {
 /// is preferred for models that support it.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum TextResponseFormatConfiguration: Codable, Hashable, Sendable {
+public indirect enum TextResponseFormatConfiguration: OpenAIModel {
     /// `type`: `text`
     case text(ResponseFormatText)
     /// `type`: `json_schema`
@@ -261,7 +308,7 @@ public indirect enum TextResponseFormatConfiguration: Codable, Hashable, Sendabl
 
 /// JSON Schema response format. Used to generate structured JSON responses.
 /// Learn more about [Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs).
-public struct TextResponseFormatJsonSchema: Codable, Hashable, Sendable {
+public struct TextResponseFormatJsonSchema: OpenAIModel {
     /// The type of response format being defined. Always `json_schema`.
     public var type: String = "json_schema"
     /// A description of what the response format is for, used by the model to
@@ -285,11 +332,21 @@ public struct TextResponseFormatJsonSchema: Codable, Hashable, Sendable {
         self.strict = strict
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case description
-        case name
-        case schema
-        case strict
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "json_schema"
+        self.description = try container.decodeIfPresent(String.self, forKey: "description")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.schema = try container.decode(ResponseFormatJsonSchemaSchema.self, forKey: "schema")
+        self.strict = try container.decodeIfPresent(Bool.self, forKey: "strict")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.description, forKey: "description")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.schema, forKey: "schema")
+        try container.encodeIfPresent(self.strict, forKey: "strict")
     }
 }

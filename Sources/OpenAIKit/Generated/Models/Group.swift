@@ -4,7 +4,7 @@
 import Foundation
 
 /// Confirmation payload returned after deleting a group.
-public struct GroupDeletedResource: Codable, Hashable, Sendable {
+public struct GroupDeletedResource: OpenAIModel {
     /// Always `group.deleted`.
     public var object: String = "group.deleted"
     /// Identifier of the deleted group.
@@ -17,15 +17,23 @@ public struct GroupDeletedResource: Codable, Hashable, Sendable {
         self.deleted = deleted
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case id
-        case deleted
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "group.deleted"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.deleted = try container.decode(Bool.self, forKey: "deleted")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.deleted, forKey: "deleted")
     }
 }
 
 /// Paginated list of organization groups.
-public struct GroupListResource: Codable, Hashable, Sendable {
+public struct GroupListResource: OpenAIModel {
     /// Always `list`.
     public var object: String = "list"
     /// Groups returned in the current page.
@@ -45,16 +53,25 @@ public struct GroupListResource: Codable, Hashable, Sendable {
         self.next = next
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case hasMore = "has_more"
-        case next
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([GroupResponse].self, forKey: "data")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+        self.next = try container.decodeIfPresent(String.self, forKey: "next")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encode(self.hasMore, forKey: "has_more")
+        try container.encodeIfPresent(self.next, forKey: "next")
     }
 }
 
 /// Details about a user returned from an organization group membership lookup.
-public struct GroupMemberUser: Codable, Hashable, Sendable {
+public struct GroupMemberUser: OpenAIModel {
     /// Identifier for the user.
     public var id: String
     /// Display name of the user.
@@ -84,13 +101,24 @@ public struct GroupMemberUser: Codable, Hashable, Sendable {
         self.isServiceAccount = isServiceAccount
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case name
-        case email
-        case picture
-        case isServiceAccount = "is_service_account"
-        case userType = "user_type"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.email = try container.decodeIfPresent(String.self, forKey: "email")
+        self.picture = try container.decodeIfPresent(String.self, forKey: "picture")
+        self.isServiceAccount = try container.decodeIfPresent(Bool.self, forKey: "is_service_account")
+        self.userType = try container.decode(GroupMemberUser.UserType.self, forKey: "user_type")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.name, forKey: "name")
+        try container.encodeIfPresent(self.email, forKey: "email")
+        try container.encodeIfPresent(self.picture, forKey: "picture")
+        try container.encodeIfPresent(self.isServiceAccount, forKey: "is_service_account")
+        try container.encode(self.userType, forKey: "user_type")
     }
 
     /// The type of user.
@@ -113,7 +141,7 @@ public struct GroupMemberUser: Codable, Hashable, Sendable {
 }
 
 /// Summary information about a group returned in role assignment responses.
-public struct GroupObject: Codable, Hashable, Sendable {
+public struct GroupObject: OpenAIModel {
     /// Always `group`.
     public var object: String = "group"
     /// Identifier for the group.
@@ -137,17 +165,27 @@ public struct GroupObject: Codable, Hashable, Sendable {
         self.scimManaged = scimManaged
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case id
-        case name
-        case createdAt = "created_at"
-        case scimManaged = "scim_managed"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "group"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.scimManaged = try container.decode(Bool.self, forKey: "scim_managed")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.scimManaged, forKey: "scim_managed")
     }
 }
 
 /// Response returned after updating a group.
-public struct GroupResourceWithSuccess: Codable, Hashable, Sendable {
+public struct GroupResourceWithSuccess: OpenAIModel {
     /// Identifier for the group.
     public var id: String
     /// Updated display name for the group.
@@ -169,16 +207,25 @@ public struct GroupResourceWithSuccess: Codable, Hashable, Sendable {
         self.isScimManaged = isScimManaged
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case name
-        case createdAt = "created_at"
-        case isScimManaged = "is_scim_managed"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.isScimManaged = try container.decode(Bool.self, forKey: "is_scim_managed")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.isScimManaged, forKey: "is_scim_managed")
     }
 }
 
 /// Details about an organization group.
-public struct GroupResponse: Codable, Hashable, Sendable {
+public struct GroupResponse: OpenAIModel {
     /// Identifier for the group.
     public var id: String
     /// Display name of the group.
@@ -204,12 +251,22 @@ public struct GroupResponse: Codable, Hashable, Sendable {
         self.groupType = groupType
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case name
-        case createdAt = "created_at"
-        case isScimManaged = "is_scim_managed"
-        case groupType = "group_type"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.isScimManaged = try container.decode(Bool.self, forKey: "is_scim_managed")
+        self.groupType = try container.decode(GroupResponse.GroupType.self, forKey: "group_type")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.isScimManaged, forKey: "is_scim_managed")
+        try container.encode(self.groupType, forKey: "group_type")
     }
 
     /// The type of the group.
@@ -232,7 +289,7 @@ public struct GroupResponse: Codable, Hashable, Sendable {
 }
 
 /// Role assignment linking a group to a role.
-public struct GroupRoleAssignment: Codable, Hashable, Sendable {
+public struct GroupRoleAssignment: OpenAIModel {
     /// Always `group.role`.
     public var object: String = "group.role"
     public var group: GroupObject
@@ -243,15 +300,23 @@ public struct GroupRoleAssignment: Codable, Hashable, Sendable {
         self.role = role
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case group
-        case role
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "group.role"
+        self.group = try container.decode(GroupObject.self, forKey: "group")
+        self.role = try container.decode(Role.self, forKey: "role")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.group, forKey: "group")
+        try container.encode(self.role, forKey: "role")
     }
 }
 
 /// Represents an individual user returned when inspecting group membership.
-public struct GroupUser: Codable, Hashable, Sendable {
+public struct GroupUser: OpenAIModel {
     /// The identifier, which can be referenced in API endpoints
     public var id: String
     /// The name of the user.
@@ -269,15 +334,23 @@ public struct GroupUser: Codable, Hashable, Sendable {
         self.email = email
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case name
-        case email
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.email = try container.decodeIfPresent(String.self, forKey: "email")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.name, forKey: "name")
+        try container.encodeIfPresent(self.email, forKey: "email")
     }
 }
 
 /// Confirmation payload returned after adding a user to a group.
-public struct GroupUserAssignment: Codable, Hashable, Sendable {
+public struct GroupUserAssignment: OpenAIModel {
     /// Always `group.user`.
     public var object: String = "group.user"
     /// Identifier of the user that was added.
@@ -290,15 +363,23 @@ public struct GroupUserAssignment: Codable, Hashable, Sendable {
         self.groupID = groupID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case userID = "user_id"
-        case groupID = "group_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "group.user"
+        self.userID = try container.decode(String.self, forKey: "user_id")
+        self.groupID = try container.decode(String.self, forKey: "group_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.userID, forKey: "user_id")
+        try container.encode(self.groupID, forKey: "group_id")
     }
 }
 
 /// Confirmation payload returned after removing a user from a group.
-public struct GroupUserDeletedResource: Codable, Hashable, Sendable {
+public struct GroupUserDeletedResource: OpenAIModel {
     /// Always `group.user.deleted`.
     public var object: String = "group.user.deleted"
     /// Whether the group membership was removed.
@@ -308,8 +389,15 @@ public struct GroupUserDeletedResource: Codable, Hashable, Sendable {
         self.deleted = deleted
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case deleted
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "group.user.deleted"
+        self.deleted = try container.decode(Bool.self, forKey: "deleted")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.deleted, forKey: "deleted")
     }
 }

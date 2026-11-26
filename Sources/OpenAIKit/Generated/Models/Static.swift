@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct StaticChunkingStrategy: Codable, Hashable, Sendable {
+public struct StaticChunkingStrategy: OpenAIModel {
     /// The maximum number of tokens in each chunk. The default value is `800`. The minimum value is `100` and the maximum value is `4096`.
     public var maxChunkSizeTokens: Int
     /// The number of tokens that overlap between chunks. The default value is `400`.
@@ -16,14 +16,21 @@ public struct StaticChunkingStrategy: Codable, Hashable, Sendable {
         self.chunkOverlapTokens = chunkOverlapTokens
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case maxChunkSizeTokens = "max_chunk_size_tokens"
-        case chunkOverlapTokens = "chunk_overlap_tokens"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.maxChunkSizeTokens = try container.decode(Int.self, forKey: "max_chunk_size_tokens")
+        self.chunkOverlapTokens = try container.decode(Int.self, forKey: "chunk_overlap_tokens")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.maxChunkSizeTokens, forKey: "max_chunk_size_tokens")
+        try container.encode(self.chunkOverlapTokens, forKey: "chunk_overlap_tokens")
     }
 }
 
 /// Customize your own chunking strategy by setting chunk size and chunk overlap.
-public struct StaticChunkingStrategyRequestParam: Codable, Hashable, Sendable {
+public struct StaticChunkingStrategyRequestParam: OpenAIModel {
     /// Always `static`.
     public var type: String = "static"
     public var `static`: StaticChunkingStrategy
@@ -32,13 +39,20 @@ public struct StaticChunkingStrategyRequestParam: Codable, Hashable, Sendable {
         self.static = `static`
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case `static`
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "static"
+        self.static = try container.decode(StaticChunkingStrategy.self, forKey: "static")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.static, forKey: "static")
     }
 }
 
-public struct StaticChunkingStrategyResponseParam: Codable, Hashable, Sendable {
+public struct StaticChunkingStrategyResponseParam: OpenAIModel {
     /// Always `static`.
     public var type: String = "static"
     public var `static`: StaticChunkingStrategy
@@ -47,8 +61,15 @@ public struct StaticChunkingStrategyResponseParam: Codable, Hashable, Sendable {
         self.static = `static`
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case `static`
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "static"
+        self.static = try container.decode(StaticChunkingStrategy.self, forKey: "static")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.static, forKey: "static")
     }
 }

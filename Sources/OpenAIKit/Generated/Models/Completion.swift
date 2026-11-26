@@ -4,7 +4,7 @@
 import Foundation
 
 /// Usage statistics for the completion request.
-public struct CompletionUsage: Codable, Hashable, Sendable {
+public struct CompletionUsage: OpenAIModel {
     /// Number of tokens in the generated completion.
     public var completionTokens: Int
     /// Number of tokens in the prompt.
@@ -30,16 +30,26 @@ public struct CompletionUsage: Codable, Hashable, Sendable {
         self.promptTokensDetails = promptTokensDetails
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case completionTokens = "completion_tokens"
-        case promptTokens = "prompt_tokens"
-        case totalTokens = "total_tokens"
-        case completionTokensDetails = "completion_tokens_details"
-        case promptTokensDetails = "prompt_tokens_details"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.completionTokens = try container.decode(Int.self, forKey: "completion_tokens")
+        self.promptTokens = try container.decode(Int.self, forKey: "prompt_tokens")
+        self.totalTokens = try container.decode(Int.self, forKey: "total_tokens")
+        self.completionTokensDetails = try container.decodeIfPresent(CompletionUsage.CompletionTokensDetails.self, forKey: "completion_tokens_details")
+        self.promptTokensDetails = try container.decodeIfPresent(CompletionUsage.PromptTokensDetails.self, forKey: "prompt_tokens_details")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.completionTokens, forKey: "completion_tokens")
+        try container.encode(self.promptTokens, forKey: "prompt_tokens")
+        try container.encode(self.totalTokens, forKey: "total_tokens")
+        try container.encodeIfPresent(self.completionTokensDetails, forKey: "completion_tokens_details")
+        try container.encodeIfPresent(self.promptTokensDetails, forKey: "prompt_tokens_details")
     }
 
     /// Breakdown of tokens used in a completion.
-    public struct CompletionTokensDetails: Codable, Hashable, Sendable {
+    public struct CompletionTokensDetails: OpenAIModel {
         /// When using Predicted Outputs, the number of tokens in the
         /// prediction that appeared in the completion.
         public var acceptedPredictionTokens: Int?
@@ -70,17 +80,27 @@ public struct CompletionUsage: Codable, Hashable, Sendable {
             self.rejectedPredictionTokens = rejectedPredictionTokens
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case acceptedPredictionTokens = "accepted_prediction_tokens"
-            case audioTokens = "audio_tokens"
-            case reasoningTokens = "reasoning_tokens"
-            case textTokens = "text_tokens"
-            case rejectedPredictionTokens = "rejected_prediction_tokens"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.acceptedPredictionTokens = try container.decodeIfPresent(Int.self, forKey: "accepted_prediction_tokens")
+            self.audioTokens = try container.decodeIfPresent(Int.self, forKey: "audio_tokens")
+            self.reasoningTokens = try container.decodeIfPresent(Int.self, forKey: "reasoning_tokens")
+            self.textTokens = try container.decodeIfPresent(Int.self, forKey: "text_tokens")
+            self.rejectedPredictionTokens = try container.decodeIfPresent(Int.self, forKey: "rejected_prediction_tokens")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.acceptedPredictionTokens, forKey: "accepted_prediction_tokens")
+            try container.encodeIfPresent(self.audioTokens, forKey: "audio_tokens")
+            try container.encodeIfPresent(self.reasoningTokens, forKey: "reasoning_tokens")
+            try container.encodeIfPresent(self.textTokens, forKey: "text_tokens")
+            try container.encodeIfPresent(self.rejectedPredictionTokens, forKey: "rejected_prediction_tokens")
         }
     }
 
     /// Breakdown of tokens used in the prompt.
-    public struct PromptTokensDetails: Codable, Hashable, Sendable {
+    public struct PromptTokensDetails: OpenAIModel {
         /// Audio input tokens present in the prompt.
         public var audioTokens: Int?
         /// Cached tokens present in the prompt.
@@ -106,12 +126,22 @@ public struct CompletionUsage: Codable, Hashable, Sendable {
             self.cacheWriteTokens = cacheWriteTokens
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case audioTokens = "audio_tokens"
-            case cachedTokens = "cached_tokens"
-            case textTokens = "text_tokens"
-            case imageTokens = "image_tokens"
-            case cacheWriteTokens = "cache_write_tokens"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.audioTokens = try container.decodeIfPresent(Int.self, forKey: "audio_tokens")
+            self.cachedTokens = try container.decodeIfPresent(Int.self, forKey: "cached_tokens")
+            self.textTokens = try container.decodeIfPresent(Int.self, forKey: "text_tokens")
+            self.imageTokens = try container.decodeIfPresent(Int.self, forKey: "image_tokens")
+            self.cacheWriteTokens = try container.decodeIfPresent(Int.self, forKey: "cache_write_tokens")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.audioTokens, forKey: "audio_tokens")
+            try container.encodeIfPresent(self.cachedTokens, forKey: "cached_tokens")
+            try container.encodeIfPresent(self.textTokens, forKey: "text_tokens")
+            try container.encodeIfPresent(self.imageTokens, forKey: "image_tokens")
+            try container.encodeIfPresent(self.cacheWriteTokens, forKey: "cache_write_tokens")
         }
     }
 }

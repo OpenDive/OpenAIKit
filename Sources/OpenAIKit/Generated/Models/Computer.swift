@@ -4,7 +4,7 @@
 import Foundation
 
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum ComputerAction: Codable, Hashable, Sendable {
+public indirect enum ComputerAction: OpenAIModel {
     /// `type`: `click`
     case click(ClickParam)
     /// `type`: `double_click`
@@ -97,7 +97,7 @@ public indirect enum ComputerAction: Codable, Hashable, Sendable {
 public typealias ComputerActionList = [ComputerAction]
 
 /// The output of a computer tool call.
-public struct ComputerCallOutputItemParam: Codable, Hashable, Sendable {
+public struct ComputerCallOutputItemParam: OpenAIModel {
     public var id: String?
     /// The ID of the computer tool call that produced the output.
     public var callID: String
@@ -121,13 +121,24 @@ public struct ComputerCallOutputItemParam: Codable, Hashable, Sendable {
         self.status = status
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case callID = "call_id"
-        case type
-        case output
-        case acknowledgedSafetyChecks = "acknowledged_safety_checks"
-        case status
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "computer_call_output"
+        self.output = try container.decode(ComputerScreenshotImage.self, forKey: "output")
+        self.acknowledgedSafetyChecks = try container.decodeIfPresent([ComputerCallSafetyCheckParam].self, forKey: "acknowledged_safety_checks")
+        self.status = try container.decodeIfPresent(FunctionCallItemStatus.self, forKey: "status")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.output, forKey: "output")
+        try container.encodeIfPresent(self.acknowledgedSafetyChecks, forKey: "acknowledged_safety_checks")
+        try container.encodeIfPresent(self.status, forKey: "status")
     }
 }
 
@@ -149,7 +160,7 @@ public struct ComputerCallOutputStatus: OpenAIStringEnum {
 }
 
 /// A pending safety check for the computer call.
-public struct ComputerCallSafetyCheckParam: Codable, Hashable, Sendable {
+public struct ComputerCallSafetyCheckParam: OpenAIModel {
     /// The ID of the pending safety check.
     public var id: String
     public var code: String?
@@ -165,10 +176,18 @@ public struct ComputerCallSafetyCheckParam: Codable, Hashable, Sendable {
         self.message = message
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case code
-        case message
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.code = try container.decodeIfPresent(String.self, forKey: "code")
+        self.message = try container.decodeIfPresent(String.self, forKey: "message")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encodeIfPresent(self.code, forKey: "code")
+        try container.encodeIfPresent(self.message, forKey: "message")
     }
 }
 
@@ -192,7 +211,7 @@ public struct ComputerEnvironment: OpenAIStringEnum {
 }
 
 /// A screenshot of a computer.
-public struct ComputerScreenshotContent: Codable, Hashable, Sendable {
+public struct ComputerScreenshotContent: OpenAIModel {
     /// Specifies the event type. For a computer screenshot, this property is always set to `computer_screenshot`.
     public var type: String = "computer_screenshot"
     public var imageURL: String?
@@ -213,17 +232,27 @@ public struct ComputerScreenshotContent: Codable, Hashable, Sendable {
         self.promptCacheBreakpoint = promptCacheBreakpoint
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case imageURL = "image_url"
-        case fileID = "file_id"
-        case detail
-        case promptCacheBreakpoint = "prompt_cache_breakpoint"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "computer_screenshot"
+        self.imageURL = try container.decodeIfPresent(String.self, forKey: "image_url")
+        self.fileID = try container.decodeIfPresent(String.self, forKey: "file_id")
+        self.detail = try container.decode(ImageDetail.self, forKey: "detail")
+        self.promptCacheBreakpoint = try container.decodeIfPresent(PromptCacheBreakpointConfig.self, forKey: "prompt_cache_breakpoint")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.imageURL, forKey: "image_url")
+        try container.encodeIfPresent(self.fileID, forKey: "file_id")
+        try container.encode(self.detail, forKey: "detail")
+        try container.encodeIfPresent(self.promptCacheBreakpoint, forKey: "prompt_cache_breakpoint")
     }
 }
 
 /// A computer screenshot image used with the computer use tool.
-public struct ComputerScreenshotImage: Codable, Hashable, Sendable {
+public struct ComputerScreenshotImage: OpenAIModel {
     /// Specifies the event type. For a computer screenshot, this property is
     /// always set to `computer_screenshot`.
     public var type: String = "computer_screenshot"
@@ -237,15 +266,23 @@ public struct ComputerScreenshotImage: Codable, Hashable, Sendable {
         self.fileID = fileID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case imageURL = "image_url"
-        case fileID = "file_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "computer_screenshot"
+        self.imageURL = try container.decodeIfPresent(String.self, forKey: "image_url")
+        self.fileID = try container.decodeIfPresent(String.self, forKey: "file_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.imageURL, forKey: "image_url")
+        try container.encodeIfPresent(self.fileID, forKey: "file_id")
     }
 }
 
 /// A browser screenshot emitted by the model during computer use.
-public struct ComputerScreenshotResource: Codable, Hashable, Sendable {
+public struct ComputerScreenshotResource: OpenAIModel {
     /// The content type. Always `computer_screenshot`.
     public var type: String = "computer_screenshot"
     /// The complete JPEG image as a base64 data URL.
@@ -255,28 +292,41 @@ public struct ComputerScreenshotResource: Codable, Hashable, Sendable {
         self.imageURL = imageURL
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case imageURL = "image_url"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "computer_screenshot"
+        self.imageURL = try container.decode(String.self, forKey: "image_url")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.imageURL, forKey: "image_url")
     }
 }
 
 /// A tool that controls a virtual computer. Learn more about the [computer tool](https://developers.openai.com/api/docs/guides/tools-computer-use).
-public struct ComputerTool: Codable, Hashable, Sendable {
+public struct ComputerTool: OpenAIModel {
     /// The type of the computer tool. Always `computer`.
     public var type: String = "computer"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "computer"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// A tool call to a computer use tool. See the
 /// [computer use guide](https://developers.openai.com/api/docs/guides/tools-computer-use) for more information.
-public struct ComputerToolCall: Codable, Hashable, Sendable {
+public struct ComputerToolCall: OpenAIModel {
     /// The type of the computer call. Always `computer_call`.
     public var type: String = "computer_call"
     /// The unique ID of the computer call.
@@ -307,14 +357,26 @@ public struct ComputerToolCall: Codable, Hashable, Sendable {
         self.actions = actions
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case callID = "call_id"
-        case action
-        case actions
-        case pendingSafetyChecks = "pending_safety_checks"
-        case status
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "computer_call"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.action = try container.decodeIfPresent(ComputerAction.self, forKey: "action")
+        self.actions = try container.decodeIfPresent(ComputerActionList.self, forKey: "actions")
+        self.pendingSafetyChecks = try container.decode([ComputerCallSafetyCheckParam].self, forKey: "pending_safety_checks")
+        self.status = try container.decode(ComputerToolCall.Status.self, forKey: "status")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encodeIfPresent(self.action, forKey: "action")
+        try container.encodeIfPresent(self.actions, forKey: "actions")
+        try container.encode(self.pendingSafetyChecks, forKey: "pending_safety_checks")
+        try container.encode(self.status, forKey: "status")
     }
 
     /// The status of the item. One of `in_progress`, `completed`, or
@@ -339,7 +401,7 @@ public struct ComputerToolCall: Codable, Hashable, Sendable {
 }
 
 /// The output of a computer tool call.
-public struct ComputerToolCallOutput: Codable, Hashable, Sendable {
+public struct ComputerToolCallOutput: OpenAIModel {
     /// The type of the computer tool call output. Always `computer_call_output`.
     public var type: String = "computer_call_output"
     /// The ID of the computer tool call output.
@@ -368,13 +430,24 @@ public struct ComputerToolCallOutput: Codable, Hashable, Sendable {
         self.status = status
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case callID = "call_id"
-        case acknowledgedSafetyChecks = "acknowledged_safety_checks"
-        case output
-        case status
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "computer_call_output"
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.acknowledgedSafetyChecks = try container.decodeIfPresent([ComputerCallSafetyCheckParam].self, forKey: "acknowledged_safety_checks")
+        self.output = try container.decode(ComputerScreenshotImage.self, forKey: "output")
+        self.status = try container.decodeIfPresent(ComputerToolCallOutput.Status.self, forKey: "status")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encodeIfPresent(self.acknowledgedSafetyChecks, forKey: "acknowledged_safety_checks")
+        try container.encode(self.output, forKey: "output")
+        try container.encodeIfPresent(self.status, forKey: "status")
     }
 
     /// The status of the message input. One of `in_progress`, `completed`, or
@@ -398,7 +471,7 @@ public struct ComputerToolCallOutput: Codable, Hashable, Sendable {
     }
 }
 
-public struct ComputerToolCallOutputResource: Codable, Hashable, Sendable {
+public struct ComputerToolCallOutputResource: OpenAIModel {
     /// The type of the computer tool call output. Always `computer_call_output`.
     public var type: String = "computer_call_output"
     /// The ID of the computer tool call output.
@@ -431,19 +504,31 @@ public struct ComputerToolCallOutputResource: Codable, Hashable, Sendable {
         self.createdBy = createdBy
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case callID = "call_id"
-        case acknowledgedSafetyChecks = "acknowledged_safety_checks"
-        case output
-        case status
-        case createdBy = "created_by"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "computer_call_output"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.acknowledgedSafetyChecks = try container.decodeIfPresent([ComputerCallSafetyCheckParam].self, forKey: "acknowledged_safety_checks")
+        self.output = try container.decode(ComputerScreenshotImage.self, forKey: "output")
+        self.status = try container.decode(ComputerCallOutputStatus.self, forKey: "status")
+        self.createdBy = try container.decodeIfPresent(String.self, forKey: "created_by")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encodeIfPresent(self.acknowledgedSafetyChecks, forKey: "acknowledged_safety_checks")
+        try container.encode(self.output, forKey: "output")
+        try container.encode(self.status, forKey: "status")
+        try container.encodeIfPresent(self.createdBy, forKey: "created_by")
     }
 }
 
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum ComputerUseApprovalRequestKindResource: Codable, Hashable, Sendable {
+public indirect enum ComputerUseApprovalRequestKindResource: OpenAIModel {
     /// `type`: `browser_authentication`
     case browserAuthentication(ComputerUseApprovalRequestKindResourceBrowserAuthentication)
     /// `type`: `browser_origin_access`
@@ -483,7 +568,7 @@ public indirect enum ComputerUseApprovalRequestKindResource: Codable, Hashable, 
 }
 
 /// A registered form awaiting the application's response.
-public struct ComputerUseApprovalRequestKindResourceBrowserAuthentication: Codable, Hashable, Sendable {
+public struct ComputerUseApprovalRequestKindResourceBrowserAuthentication: OpenAIModel {
     /// The type of the object. Always `browser_authentication`.
     public var type: String = "browser_authentication"
     /// Why the agent needs the user to sign in.
@@ -507,17 +592,27 @@ public struct ComputerUseApprovalRequestKindResourceBrowserAuthentication: Codab
         self.credentialOrigin = credentialOrigin
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case reason
-        case credentialOrigin = "credential_origin"
-        case fields
-        case options
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "browser_authentication"
+        self.reason = try container.decodeIfPresent(String.self, forKey: "reason")
+        self.credentialOrigin = try container.decodeIfPresent(String.self, forKey: "credential_origin")
+        self.fields = try container.decode([BrowserAuthenticationFieldResource].self, forKey: "fields")
+        self.options = try container.decode([BrowserAuthenticationOptionResource].self, forKey: "options")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.reason, forKey: "reason")
+        try container.encodeIfPresent(self.credentialOrigin, forKey: "credential_origin")
+        try container.encode(self.fields, forKey: "fields")
+        try container.encode(self.options, forKey: "options")
     }
 }
 
 /// A browser origin awaiting the application's approval decision.
-public struct ComputerUseApprovalRequestKindResourceBrowserOriginAccess: Codable, Hashable, Sendable {
+public struct ComputerUseApprovalRequestKindResourceBrowserOriginAccess: OpenAIModel {
     /// The type of the object. Always `browser_origin_access`.
     public var type: String = "browser_origin_access"
     /// The browser's explanation for this request, or null when unavailable.
@@ -530,15 +625,23 @@ public struct ComputerUseApprovalRequestKindResourceBrowserOriginAccess: Codable
         self.reason = reason
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case reason
-        case origin
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "browser_origin_access"
+        self.reason = try container.decodeIfPresent(String.self, forKey: "reason")
+        self.origin = try container.decode(String.self, forKey: "origin")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.reason, forKey: "reason")
+        try container.encode(self.origin, forKey: "origin")
     }
 }
 
 /// A credential-free record of an admitted response, not proof of completion.
-public struct ComputerUseApprovalRequestResultItemResource: Codable, Hashable, Sendable {
+public struct ComputerUseApprovalRequestResultItemResource: OpenAIModel {
     /// The stable history item ID.
     public var id: String
     public var type: String = "computer_use_approval_request_result"
@@ -561,17 +664,27 @@ public struct ComputerUseApprovalRequestResultItemResource: Codable, Hashable, S
         self.response = response
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case type
-        case turnID = "turn_id"
-        case requestID = "request_id"
-        case response
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "computer_use_approval_request_result"
+        self.turnID = try container.decode(String.self, forKey: "turn_id")
+        self.requestID = try container.decode(String.self, forKey: "request_id")
+        self.response = try container.decode(ComputerUseApprovalResponseKindResource.self, forKey: "response")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.turnID, forKey: "turn_id")
+        try container.encode(self.requestID, forKey: "request_id")
+        try container.encode(self.response, forKey: "response")
     }
 }
 
 /// Decoding picks the case from the `action` field. Values this version does not know decode as `.unknown`.
-public indirect enum ComputerUseApprovalResponseKindResource: Codable, Hashable, Sendable {
+public indirect enum ComputerUseApprovalResponseKindResource: OpenAIModel {
     /// `action`: `submit`
     case submit(ComputerUseApprovalResponseKindResourceBrowserAuthenticationSubmitResource)
     /// `action`: `cancel`
@@ -610,20 +723,27 @@ public indirect enum ComputerUseApprovalResponseKindResource: Codable, Hashable,
     }
 }
 
-public struct ComputerUseApprovalResponseKindResourceBrowserAuthenticationCancelResource: Codable, Hashable, Sendable {
+public struct ComputerUseApprovalResponseKindResourceBrowserAuthenticationCancelResource: OpenAIModel {
     public var type: String = "browser_authentication"
     public var action: String = "cancel"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case action
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "browser_authentication"
+        self.action = try container.decodeIfPresent(String.self, forKey: "action") ?? "cancel"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.action, forKey: "action")
     }
 }
 
-public struct ComputerUseApprovalResponseKindResourceBrowserAuthenticationSubmitResource: Codable, Hashable, Sendable {
+public struct ComputerUseApprovalResponseKindResourceBrowserAuthenticationSubmitResource: OpenAIModel {
     public var type: String = "browser_authentication"
     public var action: String = "submit"
     /// The chosen sign-in method, or null when no options were offered.
@@ -633,15 +753,23 @@ public struct ComputerUseApprovalResponseKindResourceBrowserAuthenticationSubmit
         self.selectedOption = selectedOption
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case action
-        case selectedOption = "selected_option"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "browser_authentication"
+        self.action = try container.decodeIfPresent(String.self, forKey: "action") ?? "submit"
+        self.selectedOption = try container.decodeIfPresent(String.self, forKey: "selected_option")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.action, forKey: "action")
+        try container.encodeIfPresent(self.selectedOption, forKey: "selected_option")
     }
 }
 
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum ComputerUseApprovalResponseParam: Codable, Hashable, Sendable {
+public indirect enum ComputerUseApprovalResponseParam: OpenAIModel {
     /// `type`: `browser_authentication`
     case browserAuthentication(ComputerUseApprovalResponseParamBrowserAuthentication)
     /// `type`: `browser_origin_access`
@@ -681,7 +809,7 @@ public indirect enum ComputerUseApprovalResponseParam: Codable, Hashable, Sendab
 }
 
 /// Decoding picks the case from the `action` field. Values this version does not know decode as `.unknown`.
-public indirect enum ComputerUseApprovalResponseParamBrowserAuthentication: Codable, Hashable, Sendable {
+public indirect enum ComputerUseApprovalResponseParamBrowserAuthentication: OpenAIModel {
     /// `action`: `submit`
     case submit(ComputerUseApprovalResponseParamBrowserAuthenticationSubmitParam)
     /// `action`: `cancel`
@@ -720,20 +848,27 @@ public indirect enum ComputerUseApprovalResponseParamBrowserAuthentication: Coda
     }
 }
 
-public struct ComputerUseApprovalResponseParamBrowserAuthenticationCancelParam: Codable, Hashable, Sendable {
+public struct ComputerUseApprovalResponseParamBrowserAuthenticationCancelParam: OpenAIModel {
     public var type: String = "browser_authentication"
     public var action: String = "cancel"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case action
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "browser_authentication"
+        self.action = try container.decodeIfPresent(String.self, forKey: "action") ?? "cancel"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.action, forKey: "action")
     }
 }
 
-public struct ComputerUseApprovalResponseParamBrowserAuthenticationSubmitParam: Codable, Hashable, Sendable {
+public struct ComputerUseApprovalResponseParamBrowserAuthenticationSubmitParam: OpenAIModel {
     public var type: String = "browser_authentication"
     public var action: String = "submit"
     /// Values for up to six active fields in the required action. The submitted field-value mapping and selected option must fit within 120 KiB of JSON.
@@ -746,15 +881,24 @@ public struct ComputerUseApprovalResponseParamBrowserAuthenticationSubmitParam: 
         self.selectedOption = selectedOption
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case action
-        case fields
-        case selectedOption = "selected_option"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "browser_authentication"
+        self.action = try container.decodeIfPresent(String.self, forKey: "action") ?? "submit"
+        self.fields = try container.decode([BrowserAuthenticationFieldValueParam].self, forKey: "fields")
+        self.selectedOption = try container.decodeIfPresent(String.self, forKey: "selected_option")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.action, forKey: "action")
+        try container.encode(self.fields, forKey: "fields")
+        try container.encodeIfPresent(self.selectedOption, forKey: "selected_option")
     }
 }
 
-public struct ComputerUseApprovalResponseParamBrowserOriginAccessParam: Codable, Hashable, Sendable {
+public struct ComputerUseApprovalResponseParamBrowserOriginAccessParam: OpenAIModel {
     public var type: String = "browser_origin_access"
     /// Whether to allow, deny, or cancel the requested origin access.
     public var decision: BrowserOriginAccessDecisionParam
@@ -763,14 +907,21 @@ public struct ComputerUseApprovalResponseParamBrowserOriginAccessParam: Codable,
         self.decision = decision
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case decision
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "browser_origin_access"
+        self.decision = try container.decode(BrowserOriginAccessDecisionParam.self, forKey: "decision")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.decision, forKey: "decision")
     }
 }
 
 /// One execution of the platform-provided computer-use capability.
-public struct ComputerUseCallItemResource: Codable, Hashable, Sendable {
+public struct ComputerUseCallItemResource: OpenAIModel {
     /// The item type. Always `computer_use_call`.
     public var type: String = "computer_use_call"
     /// The ID of the activity item.
@@ -798,18 +949,29 @@ public struct ComputerUseCallItemResource: Codable, Hashable, Sendable {
         self.output = output
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case turnID = "turn_id"
-        case title
-        case status
-        case output
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "computer_use_call"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.turnID = try container.decode(String.self, forKey: "turn_id")
+        self.title = try container.decodeIfPresent(String.self, forKey: "title")
+        self.status = try container.decode(FunctionCallStatusResource.self, forKey: "status")
+        self.output = try container.decodeIfPresent(ComputerScreenshotResource.self, forKey: "output")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.turnID, forKey: "turn_id")
+        try container.encodeIfPresent(self.title, forKey: "title")
+        try container.encode(self.status, forKey: "status")
+        try container.encodeIfPresent(self.output, forKey: "output")
     }
 }
 
 /// A tool that controls a virtual computer. Learn more about the [computer tool](https://developers.openai.com/api/docs/guides/tools-computer-use).
-public struct ComputerUsePreviewTool: Codable, Hashable, Sendable {
+public struct ComputerUsePreviewTool: OpenAIModel {
     /// The type of the computer use tool. Always `computer_use_preview`.
     public var type: String = "computer_use_preview"
     /// The type of computer environment to control.
@@ -829,10 +991,19 @@ public struct ComputerUsePreviewTool: Codable, Hashable, Sendable {
         self.displayHeight = displayHeight
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case environment
-        case displayWidth = "display_width"
-        case displayHeight = "display_height"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "computer_use_preview"
+        self.environment = try container.decode(ComputerEnvironment.self, forKey: "environment")
+        self.displayWidth = try container.decode(Int.self, forKey: "display_width")
+        self.displayHeight = try container.decode(Int.self, forKey: "display_height")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.environment, forKey: "environment")
+        try container.encode(self.displayWidth, forKey: "display_width")
+        try container.encode(self.displayHeight, forKey: "display_height")
     }
 }

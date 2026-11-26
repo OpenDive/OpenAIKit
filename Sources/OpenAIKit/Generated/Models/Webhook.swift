@@ -4,7 +4,7 @@
 import Foundation
 
 /// Sent when an agent environment expires and can no longer resume from a snapshot.
-public struct WebhookAgentEnvironmentExpired: Codable, Hashable, Sendable {
+public struct WebhookAgentEnvironmentExpired: OpenAIModel {
     /// The unique ID of the event.
     public var id: String
     /// The object type. Always `event`.
@@ -25,17 +25,27 @@ public struct WebhookAgentEnvironmentExpired: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
-        case type
-        case data
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "event"
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.environment.expired"
+        self.data = try container.decode(AgentEnvironmentEvent.self, forKey: "data")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.data, forKey: "data")
     }
 }
 
 /// Sent when setup fails for a prewarmed OpenAI-hosted environment before it is attached to a session.
-public struct WebhookAgentEnvironmentFailed: Codable, Hashable, Sendable {
+public struct WebhookAgentEnvironmentFailed: OpenAIModel {
     /// The unique ID of the event.
     public var id: String
     /// The object type. Always `event`.
@@ -56,17 +66,27 @@ public struct WebhookAgentEnvironmentFailed: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
-        case type
-        case data
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "event"
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.environment.failed"
+        self.data = try container.decode(AgentEnvironmentEvent.self, forKey: "data")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.data, forKey: "data")
     }
 }
 
 /// Sent when a prewarmed OpenAI-hosted environment finishes setup before being attached to a session.
-public struct WebhookAgentEnvironmentReady: Codable, Hashable, Sendable {
+public struct WebhookAgentEnvironmentReady: OpenAIModel {
     /// The unique ID of the event.
     public var id: String
     /// The object type. Always `event`.
@@ -87,17 +107,27 @@ public struct WebhookAgentEnvironmentReady: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
-        case type
-        case data
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "event"
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.environment.ready"
+        self.data = try container.decode(AgentEnvironmentEvent.self, forKey: "data")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.data, forKey: "data")
     }
 }
 
 /// Sent when an agent environment is suspended and can resume from a snapshot.
-public struct WebhookAgentEnvironmentSuspended: Codable, Hashable, Sendable {
+public struct WebhookAgentEnvironmentSuspended: OpenAIModel {
     /// The unique ID of the event.
     public var id: String
     /// The object type. Always `event`.
@@ -118,17 +148,27 @@ public struct WebhookAgentEnvironmentSuspended: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
-        case type
-        case data
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "event"
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.environment.suspended"
+        self.data = try container.decode(AgentEnvironmentEvent.self, forKey: "data")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.data, forKey: "data")
     }
 }
 
 /// Sent when an agent session requires an action. Retrieve the session for action details.
-public struct WebhookAgentSessionActionRequired: Codable, Hashable, Sendable {
+public struct WebhookAgentSessionActionRequired: OpenAIModel {
     /// The unique ID of the event.
     public var id: String
     /// The object type. Always `event`.
@@ -149,17 +189,27 @@ public struct WebhookAgentSessionActionRequired: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
-        case type
-        case data
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "event"
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.action_required"
+        self.data = try container.decode(AgentSessionActionRequiredPayloadResource.self, forKey: "data")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.data, forKey: "data")
     }
 }
 
 /// Sent when an agent session is created.
-public struct WebhookAgentSessionCreated: Codable, Hashable, Sendable {
+public struct WebhookAgentSessionCreated: OpenAIModel {
     /// The unique ID of the event.
     public var id: String
     /// The object type. Always `event`.
@@ -180,16 +230,26 @@ public struct WebhookAgentSessionCreated: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
-        case type
-        case data
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "event"
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.created"
+        self.data = try container.decode(AgentSessionCreatedPayloadResource.self, forKey: "data")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.data, forKey: "data")
     }
 }
 
-public struct WebhookAgentSessionEnvelope: Codable, Hashable, Sendable {
+public struct WebhookAgentSessionEnvelope: OpenAIModel {
     /// The unique ID of the event.
     public var id: String
     /// The object type. Always `event`.
@@ -202,15 +262,23 @@ public struct WebhookAgentSessionEnvelope: Codable, Hashable, Sendable {
         self.createdAt = createdAt
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "event"
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
     }
 }
 
 /// Sent when an agent session fails.
-public struct WebhookAgentSessionFailed: Codable, Hashable, Sendable {
+public struct WebhookAgentSessionFailed: OpenAIModel {
     /// The unique ID of the event.
     public var id: String
     /// The object type. Always `event`.
@@ -231,17 +299,27 @@ public struct WebhookAgentSessionFailed: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
-        case type
-        case data
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "event"
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.failed"
+        self.data = try container.decode(AgentSessionEnvironmentPayloadResource.self, forKey: "data")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.data, forKey: "data")
     }
 }
 
 /// Sent when an agent session becomes idle.
-public struct WebhookAgentSessionIdle: Codable, Hashable, Sendable {
+public struct WebhookAgentSessionIdle: OpenAIModel {
     /// The unique ID of the event.
     public var id: String
     /// The object type. Always `event`.
@@ -262,17 +340,27 @@ public struct WebhookAgentSessionIdle: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
-        case type
-        case data
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "event"
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.idle"
+        self.data = try container.decode(AgentSessionEnvironmentPayloadResource.self, forKey: "data")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.data, forKey: "data")
     }
 }
 
 /// Sent when an agent session enters the in-progress state.
-public struct WebhookAgentSessionInProgress: Codable, Hashable, Sendable {
+public struct WebhookAgentSessionInProgress: OpenAIModel {
     /// The unique ID of the event.
     public var id: String
     /// The object type. Always `event`.
@@ -293,17 +381,27 @@ public struct WebhookAgentSessionInProgress: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
-        case type
-        case data
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "event"
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.in_progress"
+        self.data = try container.decode(AgentSessionEnvironmentPayloadResource.self, forKey: "data")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.data, forKey: "data")
     }
 }
 
 /// Sent when a batch API request has been cancelled.
-public struct WebhookBatchCancelled: Codable, Hashable, Sendable {
+public struct WebhookBatchCancelled: OpenAIModel {
     /// The Unix timestamp (in seconds) of when the batch API request was cancelled.
     public var createdAt: Int
     /// The unique ID of the event.
@@ -325,16 +423,26 @@ public struct WebhookBatchCancelled: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case createdAt = "created_at"
-        case id
-        case data
-        case object
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.id = try container.decode(String.self, forKey: "id")
+        self.data = try container.decode(WebhookBatchCancelled.DataValue.self, forKey: "data")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "batch.cancelled"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.object, forKey: "object")
+        try container.encode(self.type, forKey: "type")
     }
 
     /// Event data payload.
-    public struct DataValue: Codable, Hashable, Sendable {
+    public struct DataValue: OpenAIModel {
         /// The unique ID of the batch API request.
         public var id: String
 
@@ -342,14 +450,20 @@ public struct WebhookBatchCancelled: Codable, Hashable, Sendable {
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decode(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.id, forKey: "id")
         }
     }
 }
 
 /// Sent when a batch API request has been completed.
-public struct WebhookBatchCompleted: Codable, Hashable, Sendable {
+public struct WebhookBatchCompleted: OpenAIModel {
     /// The Unix timestamp (in seconds) of when the batch API request was completed.
     public var createdAt: Int
     /// The unique ID of the event.
@@ -371,16 +485,26 @@ public struct WebhookBatchCompleted: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case createdAt = "created_at"
-        case id
-        case data
-        case object
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.id = try container.decode(String.self, forKey: "id")
+        self.data = try container.decode(WebhookBatchCompleted.DataValue.self, forKey: "data")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "batch.completed"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.object, forKey: "object")
+        try container.encode(self.type, forKey: "type")
     }
 
     /// Event data payload.
-    public struct DataValue: Codable, Hashable, Sendable {
+    public struct DataValue: OpenAIModel {
         /// The unique ID of the batch API request.
         public var id: String
 
@@ -388,14 +512,20 @@ public struct WebhookBatchCompleted: Codable, Hashable, Sendable {
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decode(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.id, forKey: "id")
         }
     }
 }
 
 /// Sent when a batch API request has expired.
-public struct WebhookBatchExpired: Codable, Hashable, Sendable {
+public struct WebhookBatchExpired: OpenAIModel {
     /// The Unix timestamp (in seconds) of when the batch API request expired.
     public var createdAt: Int
     /// The unique ID of the event.
@@ -417,16 +547,26 @@ public struct WebhookBatchExpired: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case createdAt = "created_at"
-        case id
-        case data
-        case object
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.id = try container.decode(String.self, forKey: "id")
+        self.data = try container.decode(WebhookBatchExpired.DataValue.self, forKey: "data")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "batch.expired"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.object, forKey: "object")
+        try container.encode(self.type, forKey: "type")
     }
 
     /// Event data payload.
-    public struct DataValue: Codable, Hashable, Sendable {
+    public struct DataValue: OpenAIModel {
         /// The unique ID of the batch API request.
         public var id: String
 
@@ -434,14 +574,20 @@ public struct WebhookBatchExpired: Codable, Hashable, Sendable {
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decode(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.id, forKey: "id")
         }
     }
 }
 
 /// Sent when a batch API request has failed.
-public struct WebhookBatchFailed: Codable, Hashable, Sendable {
+public struct WebhookBatchFailed: OpenAIModel {
     /// The Unix timestamp (in seconds) of when the batch API request failed.
     public var createdAt: Int
     /// The unique ID of the event.
@@ -463,16 +609,26 @@ public struct WebhookBatchFailed: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case createdAt = "created_at"
-        case id
-        case data
-        case object
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.id = try container.decode(String.self, forKey: "id")
+        self.data = try container.decode(WebhookBatchFailed.DataValue.self, forKey: "data")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "batch.failed"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.object, forKey: "object")
+        try container.encode(self.type, forKey: "type")
     }
 
     /// Event data payload.
-    public struct DataValue: Codable, Hashable, Sendable {
+    public struct DataValue: OpenAIModel {
         /// The unique ID of the batch API request.
         public var id: String
 
@@ -480,13 +636,19 @@ public struct WebhookBatchFailed: Codable, Hashable, Sendable {
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decode(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.id, forKey: "id")
         }
     }
 }
 
-public struct WebhookEndpointBody: Codable, Hashable, Sendable {
+public struct WebhookEndpointBody: OpenAIModel {
     /// The unique ID of the webhook endpoint.
     public var id: String
     /// The object type, which is always webhook_endpoint.
@@ -521,19 +683,32 @@ public struct WebhookEndpointBody: Codable, Hashable, Sendable {
         self.signingSecretHint = signingSecretHint
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
-        case updatedAt = "updated_at"
-        case name
-        case url
-        case eventTypes = "event_types"
-        case signingSecretHint = "signing_secret_hint"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "webhook_endpoint"
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.updatedAt = try container.decodeIfPresent(Int.self, forKey: "updated_at")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.url = try container.decode(String.self, forKey: "url")
+        self.eventTypes = try container.decode([String].self, forKey: "event_types")
+        self.signingSecretHint = try container.decodeIfPresent(String.self, forKey: "signing_secret_hint")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encodeIfPresent(self.updatedAt, forKey: "updated_at")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.url, forKey: "url")
+        try container.encode(self.eventTypes, forKey: "event_types")
+        try container.encodeIfPresent(self.signingSecretHint, forKey: "signing_secret_hint")
     }
 }
 
-public struct WebhookEndpointListResource: Codable, Hashable, Sendable {
+public struct WebhookEndpointListResource: OpenAIModel {
     /// The object type, which is always list.
     public var object: String = "list"
     /// The webhook endpoints in this page.
@@ -555,16 +730,26 @@ public struct WebhookEndpointListResource: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([WebhookEndpointBody].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
-public struct WebhookEndpointTestResultResource: Codable, Hashable, Sendable {
+public struct WebhookEndpointTestResultResource: OpenAIModel {
     /// The object type, which is always webhook_endpoint.test.
     public var object: String = "webhook_endpoint.test"
     /// The ID of the webhook endpoint that received the test.
@@ -588,16 +773,26 @@ public struct WebhookEndpointTestResultResource: Codable, Hashable, Sendable {
         self.success = success
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case webhookEndpointID = "webhook_endpoint_id"
-        case eventType = "event_type"
-        case statusCode = "status_code"
-        case success
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "webhook_endpoint.test"
+        self.webhookEndpointID = try container.decode(String.self, forKey: "webhook_endpoint_id")
+        self.eventType = try container.decode(String.self, forKey: "event_type")
+        self.statusCode = try container.decode(Int.self, forKey: "status_code")
+        self.success = try container.decode(Bool.self, forKey: "success")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.webhookEndpointID, forKey: "webhook_endpoint_id")
+        try container.encode(self.eventType, forKey: "event_type")
+        try container.encode(self.statusCode, forKey: "status_code")
+        try container.encode(self.success, forKey: "success")
     }
 }
 
-public struct WebhookEndpointWithSecretResource: Codable, Hashable, Sendable {
+public struct WebhookEndpointWithSecretResource: OpenAIModel {
     /// The unique ID of the webhook endpoint.
     public var id: String
     /// The object type, which is always webhook_endpoint.
@@ -636,21 +831,35 @@ public struct WebhookEndpointWithSecretResource: Codable, Hashable, Sendable {
         self.signingSecretHint = signingSecretHint
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
-        case updatedAt = "updated_at"
-        case name
-        case url
-        case eventTypes = "event_types"
-        case signingSecretHint = "signing_secret_hint"
-        case signingSecret = "signing_secret"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "webhook_endpoint"
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.updatedAt = try container.decodeIfPresent(Int.self, forKey: "updated_at")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.url = try container.decode(String.self, forKey: "url")
+        self.eventTypes = try container.decode([String].self, forKey: "event_types")
+        self.signingSecretHint = try container.decodeIfPresent(String.self, forKey: "signing_secret_hint")
+        self.signingSecret = try container.decode(String.self, forKey: "signing_secret")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encodeIfPresent(self.updatedAt, forKey: "updated_at")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.url, forKey: "url")
+        try container.encode(self.eventTypes, forKey: "event_types")
+        try container.encodeIfPresent(self.signingSecretHint, forKey: "signing_secret_hint")
+        try container.encode(self.signingSecret, forKey: "signing_secret")
     }
 }
 
 /// Sent when an eval run has been canceled.
-public struct WebhookEvalRunCanceled: Codable, Hashable, Sendable {
+public struct WebhookEvalRunCanceled: OpenAIModel {
     /// The Unix timestamp (in seconds) of when the eval run was canceled.
     public var createdAt: Int
     /// The unique ID of the event.
@@ -672,16 +881,26 @@ public struct WebhookEvalRunCanceled: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case createdAt = "created_at"
-        case id
-        case data
-        case object
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.id = try container.decode(String.self, forKey: "id")
+        self.data = try container.decode(WebhookEvalRunCanceled.DataValue.self, forKey: "data")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "eval.run.canceled"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.object, forKey: "object")
+        try container.encode(self.type, forKey: "type")
     }
 
     /// Event data payload.
-    public struct DataValue: Codable, Hashable, Sendable {
+    public struct DataValue: OpenAIModel {
         /// The unique ID of the eval run.
         public var id: String
 
@@ -689,14 +908,20 @@ public struct WebhookEvalRunCanceled: Codable, Hashable, Sendable {
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decode(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.id, forKey: "id")
         }
     }
 }
 
 /// Sent when an eval run has failed.
-public struct WebhookEvalRunFailed: Codable, Hashable, Sendable {
+public struct WebhookEvalRunFailed: OpenAIModel {
     /// The Unix timestamp (in seconds) of when the eval run failed.
     public var createdAt: Int
     /// The unique ID of the event.
@@ -718,16 +943,26 @@ public struct WebhookEvalRunFailed: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case createdAt = "created_at"
-        case id
-        case data
-        case object
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.id = try container.decode(String.self, forKey: "id")
+        self.data = try container.decode(WebhookEvalRunFailed.DataValue.self, forKey: "data")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "eval.run.failed"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.object, forKey: "object")
+        try container.encode(self.type, forKey: "type")
     }
 
     /// Event data payload.
-    public struct DataValue: Codable, Hashable, Sendable {
+    public struct DataValue: OpenAIModel {
         /// The unique ID of the eval run.
         public var id: String
 
@@ -735,14 +970,20 @@ public struct WebhookEvalRunFailed: Codable, Hashable, Sendable {
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decode(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.id, forKey: "id")
         }
     }
 }
 
 /// Sent when an eval run has succeeded.
-public struct WebhookEvalRunSucceeded: Codable, Hashable, Sendable {
+public struct WebhookEvalRunSucceeded: OpenAIModel {
     /// The Unix timestamp (in seconds) of when the eval run succeeded.
     public var createdAt: Int
     /// The unique ID of the event.
@@ -764,16 +1005,26 @@ public struct WebhookEvalRunSucceeded: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case createdAt = "created_at"
-        case id
-        case data
-        case object
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.id = try container.decode(String.self, forKey: "id")
+        self.data = try container.decode(WebhookEvalRunSucceeded.DataValue.self, forKey: "data")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "eval.run.succeeded"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.object, forKey: "object")
+        try container.encode(self.type, forKey: "type")
     }
 
     /// Event data payload.
-    public struct DataValue: Codable, Hashable, Sendable {
+    public struct DataValue: OpenAIModel {
         /// The unique ID of the eval run.
         public var id: String
 
@@ -781,8 +1032,14 @@ public struct WebhookEvalRunSucceeded: Codable, Hashable, Sendable {
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decode(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.id, forKey: "id")
         }
     }
 }
@@ -790,7 +1047,7 @@ public struct WebhookEvalRunSucceeded: Codable, Hashable, Sendable {
 /// Every event OpenAI can deliver to a webhook endpoint. Use `client.webhooks.unwrap(...)` to verify and decode one.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum WebhookEvent: Codable, Hashable, Sendable {
+public indirect enum WebhookEvent: OpenAIModel {
     /// `type`: `agent.environment.expired`
     case agentEnvironmentExpired(WebhookAgentEnvironmentExpired)
     /// `type`: `agent.environment.failed`
@@ -1032,7 +1289,7 @@ public indirect enum WebhookEvent: Codable, Hashable, Sendable {
     }
 }
 
-public struct WebhookEventTypeListResource: Codable, Hashable, Sendable {
+public struct WebhookEventTypeListResource: OpenAIModel {
     /// The object type, which is always list.
     public var object: String = "list"
     /// The webhook event types available to the authenticated project.
@@ -1042,14 +1299,21 @@ public struct WebhookEventTypeListResource: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([String].self, forKey: "data")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
     }
 }
 
 /// Sent when a fine-tuning job has been cancelled.
-public struct WebhookFineTuningJobCancelled: Codable, Hashable, Sendable {
+public struct WebhookFineTuningJobCancelled: OpenAIModel {
     /// The Unix timestamp (in seconds) of when the fine-tuning job was cancelled.
     public var createdAt: Int
     /// The unique ID of the event.
@@ -1071,16 +1335,26 @@ public struct WebhookFineTuningJobCancelled: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case createdAt = "created_at"
-        case id
-        case data
-        case object
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.id = try container.decode(String.self, forKey: "id")
+        self.data = try container.decode(WebhookFineTuningJobCancelled.DataValue.self, forKey: "data")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "fine_tuning.job.cancelled"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.object, forKey: "object")
+        try container.encode(self.type, forKey: "type")
     }
 
     /// Event data payload.
-    public struct DataValue: Codable, Hashable, Sendable {
+    public struct DataValue: OpenAIModel {
         /// The unique ID of the fine-tuning job.
         public var id: String
 
@@ -1088,14 +1362,20 @@ public struct WebhookFineTuningJobCancelled: Codable, Hashable, Sendable {
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decode(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.id, forKey: "id")
         }
     }
 }
 
 /// Sent when a fine-tuning job has failed.
-public struct WebhookFineTuningJobFailed: Codable, Hashable, Sendable {
+public struct WebhookFineTuningJobFailed: OpenAIModel {
     /// The Unix timestamp (in seconds) of when the fine-tuning job failed.
     public var createdAt: Int
     /// The unique ID of the event.
@@ -1117,16 +1397,26 @@ public struct WebhookFineTuningJobFailed: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case createdAt = "created_at"
-        case id
-        case data
-        case object
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.id = try container.decode(String.self, forKey: "id")
+        self.data = try container.decode(WebhookFineTuningJobFailed.DataValue.self, forKey: "data")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "fine_tuning.job.failed"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.object, forKey: "object")
+        try container.encode(self.type, forKey: "type")
     }
 
     /// Event data payload.
-    public struct DataValue: Codable, Hashable, Sendable {
+    public struct DataValue: OpenAIModel {
         /// The unique ID of the fine-tuning job.
         public var id: String
 
@@ -1134,14 +1424,20 @@ public struct WebhookFineTuningJobFailed: Codable, Hashable, Sendable {
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decode(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.id, forKey: "id")
         }
     }
 }
 
 /// Sent when a fine-tuning job has succeeded.
-public struct WebhookFineTuningJobSucceeded: Codable, Hashable, Sendable {
+public struct WebhookFineTuningJobSucceeded: OpenAIModel {
     /// The Unix timestamp (in seconds) of when the fine-tuning job succeeded.
     public var createdAt: Int
     /// The unique ID of the event.
@@ -1163,16 +1459,26 @@ public struct WebhookFineTuningJobSucceeded: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case createdAt = "created_at"
-        case id
-        case data
-        case object
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.id = try container.decode(String.self, forKey: "id")
+        self.data = try container.decode(WebhookFineTuningJobSucceeded.DataValue.self, forKey: "data")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "fine_tuning.job.succeeded"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.object, forKey: "object")
+        try container.encode(self.type, forKey: "type")
     }
 
     /// Event data payload.
-    public struct DataValue: Codable, Hashable, Sendable {
+    public struct DataValue: OpenAIModel {
         /// The unique ID of the fine-tuning job.
         public var id: String
 
@@ -1180,8 +1486,14 @@ public struct WebhookFineTuningJobSucceeded: Codable, Hashable, Sendable {
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decode(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.id, forKey: "id")
         }
     }
 }
@@ -1191,7 +1503,7 @@ public struct WebhookFineTuningJobSucceeded: Codable, Hashable, Sendable {
 /// Sent when an incoming API SIP session is available for Live acceptance. The
 /// same pending session can also emit `realtime.call.incoming`; the first
 /// successful Realtime or Live accept endpoint selects the runtime surface.
-public struct WebhookLiveCallIncoming: Codable, Hashable, Sendable {
+public struct WebhookLiveCallIncoming: OpenAIModel {
     /// The Unix timestamp (in seconds) of when the event was created.
     public var createdAt: Int
     /// The unique ID of the event.
@@ -1213,16 +1525,26 @@ public struct WebhookLiveCallIncoming: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case createdAt = "created_at"
-        case id
-        case data
-        case object
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.id = try container.decode(String.self, forKey: "id")
+        self.data = try container.decode(WebhookLiveCallIncoming.DataValue.self, forKey: "data")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "live.call.incoming"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.object, forKey: "object")
+        try container.encode(self.type, forKey: "type")
     }
 
     /// Event data payload.
-    public struct DataValue: Codable, Hashable, Sendable {
+    public struct DataValue: OpenAIModel {
         /// The `live_...` ID of the pending SIP session. Pass this value unchanged
         /// to Live call controls and sideband connections. The corresponding
         /// `realtime.call.incoming` event uses a separate `rtc_...` call ID.
@@ -1247,10 +1569,18 @@ public struct WebhookLiveCallIncoming: Codable, Hashable, Sendable {
             self.sipMediaSecurity = sipMediaSecurity
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case sessionID = "session_id"
-            case sipMediaSecurity = "sip_media_security"
-            case sipHeaders = "sip_headers"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.sessionID = try container.decode(String.self, forKey: "session_id")
+            self.sipMediaSecurity = try container.decodeIfPresent(WebhookLiveCallIncoming.DataValue.SIPMediaSecurity.self, forKey: "sip_media_security")
+            self.sipHeaders = try container.decode([WebhookLiveCallIncoming.DataValue.SIPHeader].self, forKey: "sip_headers")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.sessionID, forKey: "session_id")
+            try container.encodeIfPresent(self.sipMediaSecurity, forKey: "sip_media_security")
+            try container.encode(self.sipHeaders, forKey: "sip_headers")
         }
 
         /// Media protection selected on the SIP leg during SDP negotiation. `srtp`
@@ -1275,7 +1605,7 @@ public struct WebhookLiveCallIncoming: Codable, Hashable, Sendable {
         }
 
         /// A header from the SIP Invite.
-        public struct SIPHeader: Codable, Hashable, Sendable {
+        public struct SIPHeader: OpenAIModel {
             /// Name of the SIP Header.
             public var name: String
             /// Value of the SIP Header.
@@ -1286,16 +1616,23 @@ public struct WebhookLiveCallIncoming: Codable, Hashable, Sendable {
                 self.value = value
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case name
-                case value
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.name = try container.decode(String.self, forKey: "name")
+                self.value = try container.decode(String.self, forKey: "value")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encode(self.name, forKey: "name")
+                try container.encode(self.value, forKey: "value")
             }
         }
     }
 }
 
 /// Sent when a direct Live WebRTC session is created or an Instant Connect session activates. Use its session ID to attach a sideband observer.
-public struct WebhookLiveTransportConnected: Codable, Hashable, Sendable {
+public struct WebhookLiveTransportConnected: OpenAIModel {
     /// The webhook event ID.
     public var id: String
     public var object: String = "event"
@@ -1314,15 +1651,25 @@ public struct WebhookLiveTransportConnected: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
-        case type
-        case data
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "event"
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "live.transport.connected"
+        self.data = try container.decode(WebhookLiveTransportConnected.DataValue.self, forKey: "data")
     }
 
-    public struct DataValue: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.data, forKey: "data")
+    }
+
+    public struct DataValue: OpenAIModel {
         /// The session transport.
         public var type: String = "webrtc"
         /// The Live session ID to use with the sideband attach endpoint.
@@ -1332,9 +1679,16 @@ public struct WebhookLiveTransportConnected: Codable, Hashable, Sendable {
             self.sessionID = sessionID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case sessionID = "session_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "webrtc"
+            self.sessionID = try container.decode(String.self, forKey: "session_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.sessionID, forKey: "session_id")
         }
     }
 }
@@ -1342,7 +1696,7 @@ public struct WebhookLiveTransportConnected: Codable, Hashable, Sendable {
 /// Sent when an incoming API SIP session is available for Live acceptance. The
 /// same pending session can also emit `realtime.call.incoming`; the first
 /// successful Realtime or Live accept endpoint selects the runtime surface.
-public struct WebhookLiveTransportIncoming: Codable, Hashable, Sendable {
+public struct WebhookLiveTransportIncoming: OpenAIModel {
     /// The Unix timestamp (in seconds) of when the event was created.
     public var createdAt: Int
     /// The unique ID of the event.
@@ -1364,16 +1718,26 @@ public struct WebhookLiveTransportIncoming: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case createdAt = "created_at"
-        case id
-        case data
-        case object
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.id = try container.decode(String.self, forKey: "id")
+        self.data = try container.decode(WebhookLiveTransportIncoming.DataValue.self, forKey: "data")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "live.transport.incoming"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.object, forKey: "object")
+        try container.encode(self.type, forKey: "type")
     }
 
     /// Event data payload.
-    public struct DataValue: Codable, Hashable, Sendable {
+    public struct DataValue: OpenAIModel {
         /// The incoming transport type. Always `sip`.
         public var type: String = "sip"
         /// The `live_...` ID of the pending SIP session. Forward this value
@@ -1399,11 +1763,20 @@ public struct WebhookLiveTransportIncoming: Codable, Hashable, Sendable {
             self.sipMediaSecurity = sipMediaSecurity
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case sessionID = "session_id"
-            case sipMediaSecurity = "sip_media_security"
-            case sipHeaders = "sip_headers"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "sip"
+            self.sessionID = try container.decode(String.self, forKey: "session_id")
+            self.sipMediaSecurity = try container.decodeIfPresent(WebhookLiveTransportIncoming.DataValue.SIPMediaSecurity.self, forKey: "sip_media_security")
+            self.sipHeaders = try container.decode([WebhookLiveTransportIncoming.DataValue.SIPHeader].self, forKey: "sip_headers")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.sessionID, forKey: "session_id")
+            try container.encodeIfPresent(self.sipMediaSecurity, forKey: "sip_media_security")
+            try container.encode(self.sipHeaders, forKey: "sip_headers")
         }
 
         /// Media protection selected on the SIP leg during SDP negotiation. `srtp`
@@ -1428,7 +1801,7 @@ public struct WebhookLiveTransportIncoming: Codable, Hashable, Sendable {
         }
 
         /// A header from the SIP Invite.
-        public struct SIPHeader: Codable, Hashable, Sendable {
+        public struct SIPHeader: OpenAIModel {
             /// Name of the SIP Header.
             public var name: String
             /// Value of the SIP Header.
@@ -1439,9 +1812,16 @@ public struct WebhookLiveTransportIncoming: Codable, Hashable, Sendable {
                 self.value = value
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case name
-                case value
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.name = try container.decode(String.self, forKey: "name")
+                self.value = try container.decode(String.self, forKey: "value")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encode(self.name, forKey: "name")
+                try container.encode(self.value, forKey: "value")
             }
         }
     }
@@ -1450,7 +1830,7 @@ public struct WebhookLiveTransportIncoming: Codable, Hashable, Sendable {
 /// Sent when an incoming API SIP session is available for Realtime acceptance.
 /// The same pending session can also emit `live.transport.incoming`; the first
 /// successful Realtime or Live accept endpoint selects the runtime surface.
-public struct WebhookRealtimeCallIncoming: Codable, Hashable, Sendable {
+public struct WebhookRealtimeCallIncoming: OpenAIModel {
     /// The Unix timestamp (in seconds) of when the model response was completed.
     public var createdAt: Int
     /// The unique ID of the event.
@@ -1472,16 +1852,26 @@ public struct WebhookRealtimeCallIncoming: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case createdAt = "created_at"
-        case id
-        case data
-        case object
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.id = try container.decode(String.self, forKey: "id")
+        self.data = try container.decode(WebhookRealtimeCallIncoming.DataValue.self, forKey: "data")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "realtime.call.incoming"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.object, forKey: "object")
+        try container.encode(self.type, forKey: "type")
     }
 
     /// Event data payload.
-    public struct DataValue: Codable, Hashable, Sendable {
+    public struct DataValue: OpenAIModel {
         /// The ID of the pending SIP call. Pass this value unchanged when
         /// accepting or rejecting the call through the Realtime API. For the
         /// Live API, use the `session_id` from `live.transport.incoming` instead.
@@ -1506,10 +1896,18 @@ public struct WebhookRealtimeCallIncoming: Codable, Hashable, Sendable {
             self.sipMediaSecurity = sipMediaSecurity
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case callID = "call_id"
-            case sipMediaSecurity = "sip_media_security"
-            case sipHeaders = "sip_headers"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.callID = try container.decode(String.self, forKey: "call_id")
+            self.sipMediaSecurity = try container.decodeIfPresent(WebhookRealtimeCallIncoming.DataValue.SIPMediaSecurity.self, forKey: "sip_media_security")
+            self.sipHeaders = try container.decode([WebhookRealtimeCallIncoming.DataValue.SIPHeader].self, forKey: "sip_headers")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.callID, forKey: "call_id")
+            try container.encodeIfPresent(self.sipMediaSecurity, forKey: "sip_media_security")
+            try container.encode(self.sipHeaders, forKey: "sip_headers")
         }
 
         /// Media protection selected on the SIP leg during SDP negotiation. `srtp`
@@ -1534,7 +1932,7 @@ public struct WebhookRealtimeCallIncoming: Codable, Hashable, Sendable {
         }
 
         /// A header from the SIP Invite.
-        public struct SIPHeader: Codable, Hashable, Sendable {
+        public struct SIPHeader: OpenAIModel {
             /// Name of the SIP Header.
             public var name: String
             /// Value of the SIP Header.
@@ -1545,16 +1943,23 @@ public struct WebhookRealtimeCallIncoming: Codable, Hashable, Sendable {
                 self.value = value
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case name
-                case value
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.name = try container.decode(String.self, forKey: "name")
+                self.value = try container.decode(String.self, forKey: "value")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encode(self.name, forKey: "name")
+                try container.encode(self.value, forKey: "value")
             }
         }
     }
 }
 
 /// Sent when a background response has been cancelled.
-public struct WebhookResponseCancelled: Codable, Hashable, Sendable {
+public struct WebhookResponseCancelled: OpenAIModel {
     /// The Unix timestamp (in seconds) of when the model response was cancelled.
     public var createdAt: Int
     /// The unique ID of the event.
@@ -1576,16 +1981,26 @@ public struct WebhookResponseCancelled: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case createdAt = "created_at"
-        case id
-        case data
-        case object
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.id = try container.decode(String.self, forKey: "id")
+        self.data = try container.decode(WebhookResponseCancelled.DataValue.self, forKey: "data")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.cancelled"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.object, forKey: "object")
+        try container.encode(self.type, forKey: "type")
     }
 
     /// Event data payload.
-    public struct DataValue: Codable, Hashable, Sendable {
+    public struct DataValue: OpenAIModel {
         /// The unique ID of the model response.
         public var id: String
 
@@ -1593,14 +2008,20 @@ public struct WebhookResponseCancelled: Codable, Hashable, Sendable {
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decode(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.id, forKey: "id")
         }
     }
 }
 
 /// Sent when a background response has been completed.
-public struct WebhookResponseCompleted: Codable, Hashable, Sendable {
+public struct WebhookResponseCompleted: OpenAIModel {
     /// The Unix timestamp (in seconds) of when the model response was completed.
     public var createdAt: Int
     /// The unique ID of the event.
@@ -1622,16 +2043,26 @@ public struct WebhookResponseCompleted: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case createdAt = "created_at"
-        case id
-        case data
-        case object
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.id = try container.decode(String.self, forKey: "id")
+        self.data = try container.decode(WebhookResponseCompleted.DataValue.self, forKey: "data")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.completed"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.object, forKey: "object")
+        try container.encode(self.type, forKey: "type")
     }
 
     /// Event data payload.
-    public struct DataValue: Codable, Hashable, Sendable {
+    public struct DataValue: OpenAIModel {
         /// The unique ID of the model response.
         public var id: String
 
@@ -1639,14 +2070,20 @@ public struct WebhookResponseCompleted: Codable, Hashable, Sendable {
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decode(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.id, forKey: "id")
         }
     }
 }
 
 /// Sent when a background response has failed.
-public struct WebhookResponseFailed: Codable, Hashable, Sendable {
+public struct WebhookResponseFailed: OpenAIModel {
     /// The Unix timestamp (in seconds) of when the model response failed.
     public var createdAt: Int
     /// The unique ID of the event.
@@ -1668,16 +2105,26 @@ public struct WebhookResponseFailed: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case createdAt = "created_at"
-        case id
-        case data
-        case object
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.id = try container.decode(String.self, forKey: "id")
+        self.data = try container.decode(WebhookResponseFailed.DataValue.self, forKey: "data")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.failed"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.object, forKey: "object")
+        try container.encode(self.type, forKey: "type")
     }
 
     /// Event data payload.
-    public struct DataValue: Codable, Hashable, Sendable {
+    public struct DataValue: OpenAIModel {
         /// The unique ID of the model response.
         public var id: String
 
@@ -1685,14 +2132,20 @@ public struct WebhookResponseFailed: Codable, Hashable, Sendable {
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decode(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.id, forKey: "id")
         }
     }
 }
 
 /// Sent when a background response has been interrupted.
-public struct WebhookResponseIncomplete: Codable, Hashable, Sendable {
+public struct WebhookResponseIncomplete: OpenAIModel {
     /// The Unix timestamp (in seconds) of when the model response was interrupted.
     public var createdAt: Int
     /// The unique ID of the event.
@@ -1714,16 +2167,26 @@ public struct WebhookResponseIncomplete: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case createdAt = "created_at"
-        case id
-        case data
-        case object
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.id = try container.decode(String.self, forKey: "id")
+        self.data = try container.decode(WebhookResponseIncomplete.DataValue.self, forKey: "data")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.incomplete"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.object, forKey: "object")
+        try container.encode(self.type, forKey: "type")
     }
 
     /// Event data payload.
-    public struct DataValue: Codable, Hashable, Sendable {
+    public struct DataValue: OpenAIModel {
         /// The unique ID of the model response.
         public var id: String
 
@@ -1731,14 +2194,20 @@ public struct WebhookResponseIncomplete: Codable, Hashable, Sendable {
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decode(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.id, forKey: "id")
         }
     }
 }
 
 /// Sent when an approved safety alert is available for an API project.
-public struct WebhookSafetyAlertCreated: Codable, Hashable, Sendable {
+public struct WebhookSafetyAlertCreated: OpenAIModel {
     /// The unique ID of the webhook event.
     public var id: String
     /// Always `event`.
@@ -1759,15 +2228,25 @@ public struct WebhookSafetyAlertCreated: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
-        case type
-        case data
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "event"
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "safety.alert.created"
+        self.data = try container.decode(WebhookSafetyAlertCreated.DataValue.self, forKey: "data")
     }
 
-    public struct DataValue: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.data, forKey: "data")
+    }
+
+    public struct DataValue: OpenAIModel {
         /// The safety alert ID to pass to `GET /v1/safety/alerts/{id}`.
         public var id: String
 
@@ -1775,14 +2254,20 @@ public struct WebhookSafetyAlertCreated: Codable, Hashable, Sendable {
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decode(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.id, forKey: "id")
         }
     }
 }
 
 /// Sent when a deactivation is issued for a safety identifier in your organization.
-public struct WebhookSafetyDeactivationIssued: Codable, Hashable, Sendable {
+public struct WebhookSafetyDeactivationIssued: OpenAIModel {
     /// The unique ID of the webhook event.
     public var id: String
     /// Always `event`.
@@ -1803,15 +2288,25 @@ public struct WebhookSafetyDeactivationIssued: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
-        case type
-        case data
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "event"
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "safety.deactivation_issued"
+        self.data = try container.decode(WebhookSafetyDeactivationIssued.DataValue.self, forKey: "data")
     }
 
-    public struct DataValue: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.data, forKey: "data")
+    }
+
+    public struct DataValue: OpenAIModel {
         /// The safety case ID to pass to `GET /v1/safety/cases/{id}`.
         public var id: String
 
@@ -1819,14 +2314,20 @@ public struct WebhookSafetyDeactivationIssued: Codable, Hashable, Sendable {
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decode(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.id, forKey: "id")
         }
     }
 }
 
 /// Sent when an approved safety alert is available for an enterprise workspace.
-public struct WebhookSafetyOrgAlertCreated: Codable, Hashable, Sendable {
+public struct WebhookSafetyOrgAlertCreated: OpenAIModel {
     /// The unique ID of the webhook event.
     public var id: String
     /// Always `event`.
@@ -1847,15 +2348,25 @@ public struct WebhookSafetyOrgAlertCreated: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
-        case type
-        case data
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "event"
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "safety.org_alert.created"
+        self.data = try container.decode(WebhookSafetyOrgAlertCreated.DataValue.self, forKey: "data")
     }
 
-    public struct DataValue: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.data, forKey: "data")
+    }
+
+    public struct DataValue: OpenAIModel {
         /// The safety alert ID to pass to `GET /v1/safety/alerts/{id}`.
         public var id: String
 
@@ -1863,14 +2374,20 @@ public struct WebhookSafetyOrgAlertCreated: Codable, Hashable, Sendable {
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decode(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.id, forKey: "id")
         }
     }
 }
 
 /// Sent when a warning is issued for a safety identifier in your organization.
-public struct WebhookSafetyWarningIssued: Codable, Hashable, Sendable {
+public struct WebhookSafetyWarningIssued: OpenAIModel {
     /// The unique ID of the webhook event.
     public var id: String
     /// Always `event`.
@@ -1891,15 +2408,25 @@ public struct WebhookSafetyWarningIssued: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
-        case type
-        case data
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "event"
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "safety.warning_issued"
+        self.data = try container.decode(WebhookSafetyWarningIssued.DataValue.self, forKey: "data")
     }
 
-    public struct DataValue: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.data, forKey: "data")
+    }
+
+    public struct DataValue: OpenAIModel {
         /// The safety case ID to pass to `GET /v1/safety/cases/{id}`.
         public var id: String
 
@@ -1907,8 +2434,14 @@ public struct WebhookSafetyWarningIssued: Codable, Hashable, Sendable {
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decode(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.id, forKey: "id")
         }
     }
 }

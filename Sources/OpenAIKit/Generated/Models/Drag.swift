@@ -4,7 +4,7 @@
 import Foundation
 
 /// A drag action.
-public struct DragParam: Codable, Hashable, Sendable {
+public struct DragParam: OpenAIModel {
     /// Specifies the event type. For a drag action, this property is always set to `drag`.
     public var type: String = "drag"
     /// An array of coordinates representing the path of the drag action. Coordinates will appear as an array of objects, eg
@@ -22,15 +22,23 @@ public struct DragParam: Codable, Hashable, Sendable {
         self.keys = keys
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case path
-        case keys
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "drag"
+        self.path = try container.decode([CoordParam].self, forKey: "path")
+        self.keys = try container.decodeIfPresent([String].self, forKey: "keys")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.path, forKey: "path")
+        try container.encodeIfPresent(self.keys, forKey: "keys")
     }
 }
 
 /// An x/y coordinate pair, e.g. `{ x: 100, y: 200 }`.
-public struct DragPoint: Codable, Hashable, Sendable {
+public struct DragPoint: OpenAIModel {
     /// The x-coordinate.
     public var x: Int
     /// The y-coordinate.
@@ -41,8 +49,15 @@ public struct DragPoint: Codable, Hashable, Sendable {
         self.y = y
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case x
-        case y
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.x = try container.decode(Int.self, forKey: "x")
+        self.y = try container.decode(Int.self, forKey: "y")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.x, forKey: "x")
+        try container.encode(self.y, forKey: "y")
     }
 }

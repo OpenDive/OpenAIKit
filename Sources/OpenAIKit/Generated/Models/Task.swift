@@ -4,7 +4,7 @@
 import Foundation
 
 /// Collection of workflow tasks grouped together in the thread.
-public struct TaskGroupItem: Codable, Hashable, Sendable {
+public struct TaskGroupItem: OpenAIModel {
     /// Identifier of the thread item.
     public var id: String
     /// Type discriminator that is always `chatkit.thread_item`.
@@ -30,18 +30,29 @@ public struct TaskGroupItem: Codable, Hashable, Sendable {
         self.tasks = tasks
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
-        case threadID = "thread_id"
-        case type
-        case tasks
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "chatkit.thread_item"
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.threadID = try container.decode(String.self, forKey: "thread_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "chatkit.task_group"
+        self.tasks = try container.decode([TaskGroupTask].self, forKey: "tasks")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.threadID, forKey: "thread_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.tasks, forKey: "tasks")
     }
 }
 
 /// Task entry that appears within a TaskGroup.
-public struct TaskGroupTask: Codable, Hashable, Sendable {
+public struct TaskGroupTask: OpenAIModel {
     /// Subtype for the grouped task.
     public var type: TaskType
     public var heading: String?
@@ -57,15 +68,23 @@ public struct TaskGroupTask: Codable, Hashable, Sendable {
         self.summary = summary
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case heading
-        case summary
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decode(TaskType.self, forKey: "type")
+        self.heading = try container.decodeIfPresent(String.self, forKey: "heading")
+        self.summary = try container.decodeIfPresent(String.self, forKey: "summary")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.heading, forKey: "heading")
+        try container.encodeIfPresent(self.summary, forKey: "summary")
     }
 }
 
 /// Task emitted by the workflow to show progress and status updates.
-public struct TaskItem: Codable, Hashable, Sendable {
+public struct TaskItem: OpenAIModel {
     /// Identifier of the thread item.
     public var id: String
     /// Type discriminator that is always `chatkit.thread_item`.
@@ -97,15 +116,28 @@ public struct TaskItem: Codable, Hashable, Sendable {
         self.summary = summary
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
-        case threadID = "thread_id"
-        case type
-        case taskType = "task_type"
-        case heading
-        case summary
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "chatkit.thread_item"
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.threadID = try container.decode(String.self, forKey: "thread_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "chatkit.task"
+        self.taskType = try container.decode(TaskType.self, forKey: "task_type")
+        self.heading = try container.decodeIfPresent(String.self, forKey: "heading")
+        self.summary = try container.decodeIfPresent(String.self, forKey: "summary")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.threadID, forKey: "thread_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.taskType, forKey: "task_type")
+        try container.encodeIfPresent(self.heading, forKey: "heading")
+        try container.encodeIfPresent(self.summary, forKey: "summary")
     }
 }
 

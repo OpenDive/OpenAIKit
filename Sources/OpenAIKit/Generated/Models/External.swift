@@ -19,7 +19,7 @@ public struct ExternalKeyPurpose: OpenAIStringEnum {
     }
 }
 
-public struct ExternalKeyResource: Codable, Hashable, Sendable {
+public struct ExternalKeyResource: OpenAIModel {
     public var object: String
     public var id: String
     public var type: String
@@ -109,39 +109,72 @@ public struct ExternalKeyResource: Codable, Hashable, Sendable {
         self.keyVersion = keyVersion
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case id
-        case type
-        case purpose
-        case name
-        case apiProjectIDs = "api_project_ids"
-        case workspaceID = "workspace_id"
-        case createdAt = "created_at"
-        case roleArn = "role_arn"
-        case externalID = "external_id"
-        case kmsArn = "kms_arn"
-        case workloadIdentityProjectNumber = "workload_identity_project_number"
-        case workloadIdentityPoolID = "workload_identity_pool_id"
-        case workloadIdentityProviderID = "workload_identity_provider_id"
-        case audience
-        case kmsProjectID = "kms_project_id"
-        case kmsKeyRingName = "kms_key_ring_name"
-        case kmsKeyName = "kms_key_name"
-        case kmsKeyLocation = "kms_key_location"
-        case kmsKeyVersion = "kms_key_version"
-        case region
-        case vaultOcid = "vault_ocid"
-        case keyOcid = "key_ocid"
-        case keyVersionOcid = "key_version_ocid"
-        case tenantID = "tenant_id"
-        case vaultURI = "vault_uri"
-        case keyName = "key_name"
-        case keyVersion = "key_version"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decode(String.self, forKey: "object")
+        self.id = try container.decode(String.self, forKey: "id")
+        self.type = try container.decode(String.self, forKey: "type")
+        self.purpose = try container.decodeIfPresent(ExternalKeyPurpose.self, forKey: "purpose")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.apiProjectIDs = try container.decode([String].self, forKey: "api_project_ids")
+        self.workspaceID = try container.decode(String.self, forKey: "workspace_id")
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.roleArn = try container.decodeIfPresent(String.self, forKey: "role_arn")
+        self.externalID = try container.decodeIfPresent(String.self, forKey: "external_id")
+        self.kmsArn = try container.decodeIfPresent(String.self, forKey: "kms_arn")
+        self.workloadIdentityProjectNumber = try container.decodeIfPresent(String.self, forKey: "workload_identity_project_number")
+        self.workloadIdentityPoolID = try container.decodeIfPresent(String.self, forKey: "workload_identity_pool_id")
+        self.workloadIdentityProviderID = try container.decodeIfPresent(String.self, forKey: "workload_identity_provider_id")
+        self.audience = try container.decodeIfPresent(String.self, forKey: "audience")
+        self.kmsProjectID = try container.decodeIfPresent(String.self, forKey: "kms_project_id")
+        self.kmsKeyRingName = try container.decodeIfPresent(String.self, forKey: "kms_key_ring_name")
+        self.kmsKeyName = try container.decodeIfPresent(String.self, forKey: "kms_key_name")
+        self.kmsKeyLocation = try container.decodeIfPresent(String.self, forKey: "kms_key_location")
+        self.kmsKeyVersion = try container.decodeIfPresent(String.self, forKey: "kms_key_version")
+        self.region = try container.decodeIfPresent(String.self, forKey: "region")
+        self.vaultOcid = try container.decodeIfPresent(String.self, forKey: "vault_ocid")
+        self.keyOcid = try container.decodeIfPresent(String.self, forKey: "key_ocid")
+        self.keyVersionOcid = try container.decodeIfPresent(String.self, forKey: "key_version_ocid")
+        self.tenantID = try container.decodeIfPresent(String.self, forKey: "tenant_id")
+        self.vaultURI = try container.decodeIfPresent(String.self, forKey: "vault_uri")
+        self.keyName = try container.decodeIfPresent(String.self, forKey: "key_name")
+        self.keyVersion = try container.decodeIfPresent(String.self, forKey: "key_version")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.purpose, forKey: "purpose")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.apiProjectIDs, forKey: "api_project_ids")
+        try container.encode(self.workspaceID, forKey: "workspace_id")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encodeIfPresent(self.roleArn, forKey: "role_arn")
+        try container.encodeIfPresent(self.externalID, forKey: "external_id")
+        try container.encodeIfPresent(self.kmsArn, forKey: "kms_arn")
+        try container.encodeIfPresent(self.workloadIdentityProjectNumber, forKey: "workload_identity_project_number")
+        try container.encodeIfPresent(self.workloadIdentityPoolID, forKey: "workload_identity_pool_id")
+        try container.encodeIfPresent(self.workloadIdentityProviderID, forKey: "workload_identity_provider_id")
+        try container.encodeIfPresent(self.audience, forKey: "audience")
+        try container.encodeIfPresent(self.kmsProjectID, forKey: "kms_project_id")
+        try container.encodeIfPresent(self.kmsKeyRingName, forKey: "kms_key_ring_name")
+        try container.encodeIfPresent(self.kmsKeyName, forKey: "kms_key_name")
+        try container.encodeIfPresent(self.kmsKeyLocation, forKey: "kms_key_location")
+        try container.encodeIfPresent(self.kmsKeyVersion, forKey: "kms_key_version")
+        try container.encodeIfPresent(self.region, forKey: "region")
+        try container.encodeIfPresent(self.vaultOcid, forKey: "vault_ocid")
+        try container.encodeIfPresent(self.keyOcid, forKey: "key_ocid")
+        try container.encodeIfPresent(self.keyVersionOcid, forKey: "key_version_ocid")
+        try container.encodeIfPresent(self.tenantID, forKey: "tenant_id")
+        try container.encodeIfPresent(self.vaultURI, forKey: "vault_uri")
+        try container.encodeIfPresent(self.keyName, forKey: "key_name")
+        try container.encodeIfPresent(self.keyVersion, forKey: "key_version")
     }
 }
 
-public struct ExternalStorageDeletedResource: Codable, Hashable, Sendable {
+public struct ExternalStorageDeletedResource: OpenAIModel {
     public var object: String = "organization.external_storage.deleted"
     public var id: String
     public var deleted: Bool
@@ -151,14 +184,22 @@ public struct ExternalStorageDeletedResource: Codable, Hashable, Sendable {
         self.deleted = deleted
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case id
-        case deleted
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.external_storage.deleted"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.deleted = try container.decode(Bool.self, forKey: "deleted")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.deleted, forKey: "deleted")
     }
 }
 
-public struct ExternalStorageListResource: Codable, Hashable, Sendable {
+public struct ExternalStorageListResource: OpenAIModel {
     public var object: String = "list"
     public var data: [ExternalStorageResponse]
     public var firstID: String?
@@ -177,12 +218,22 @@ public struct ExternalStorageListResource: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([ExternalStorageResponse].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
@@ -202,7 +253,7 @@ public struct ExternalStorageOrder: OpenAIStringEnum {
     }
 }
 
-public struct ExternalStorageResponse: Codable, Hashable, Sendable {
+public struct ExternalStorageResponse: OpenAIModel {
     public var object: String = "organization.external_storage"
     public var id: String
     public var projectID: String
@@ -227,18 +278,30 @@ public struct ExternalStorageResponse: Codable, Hashable, Sendable {
         self.createdAt = createdAt
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case id
-        case projectID = "project_id"
-        case provider
-        case geography
-        case status
-        case createdAt = "created_at"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.external_storage"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.projectID = try container.decode(String.self, forKey: "project_id")
+        self.provider = try container.decode(ExternalStorageResponse.Provider.self, forKey: "provider")
+        self.geography = try container.decode(String.self, forKey: "geography")
+        self.status = try container.decode(ExternalStorageStatus.self, forKey: "status")
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.projectID, forKey: "project_id")
+        try container.encode(self.provider, forKey: "provider")
+        try container.encode(self.geography, forKey: "geography")
+        try container.encode(self.status, forKey: "status")
+        try container.encode(self.createdAt, forKey: "created_at")
     }
 
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Provider: Codable, Hashable, Sendable {
+    public indirect enum Provider: OpenAIModel {
         /// `type`: `aws`
         case aws(AwsExternalStorageProviderResponse)
         /// `type`: `azure`

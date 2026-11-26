@@ -5,7 +5,7 @@ import Foundation
 
 /// Configuration options for
 /// [reasoning models](https://developers.openai.com/api/docs/guides/reasoning).
-public struct Reasoning: Codable, Hashable, Sendable {
+public struct Reasoning: OpenAIModel {
     /// Controls the reasoning execution mode for the request.
     ///
     /// When returned on a response, this is the effective execution mode.
@@ -29,12 +29,22 @@ public struct Reasoning: Codable, Hashable, Sendable {
         self.generateSummary = generateSummary
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case mode
-        case effort
-        case summary
-        case context
-        case generateSummary = "generate_summary"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.mode = try container.decodeIfPresent(ReasoningModeEnum.self, forKey: "mode")
+        self.effort = try container.decodeIfPresent(ReasoningEffort.self, forKey: "effort")
+        self.summary = try container.decodeIfPresent(Reasoning.Summary.self, forKey: "summary")
+        self.context = try container.decodeIfPresent(Reasoning.Context.self, forKey: "context")
+        self.generateSummary = try container.decodeIfPresent(Reasoning.GenerateSummary.self, forKey: "generate_summary")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.mode, forKey: "mode")
+        try container.encodeIfPresent(self.effort, forKey: "effort")
+        try container.encodeIfPresent(self.summary, forKey: "summary")
+        try container.encodeIfPresent(self.context, forKey: "context")
+        try container.encodeIfPresent(self.generateSummary, forKey: "generate_summary")
     }
 
     /// A summary of the reasoning performed by the model. This can be
@@ -205,7 +215,7 @@ public struct ReasoningEffortResource: OpenAIStringEnum {
     }
 }
 
-public struct ReasoningInputTransformation: Codable, Hashable, Sendable {
+public struct ReasoningInputTransformation: OpenAIModel {
     public var type: String = "reasoning"
     /// The original reasoning item ID.
     public var id: String
@@ -217,11 +227,20 @@ public struct ReasoningInputTransformation: Codable, Hashable, Sendable {
         self.reason = reason
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case action
-        case reason
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "reasoning"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.action = try container.decodeIfPresent(String.self, forKey: "action") ?? "removed"
+        self.reason = try container.decode(InputRemovalReason.self, forKey: "reason")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.action, forKey: "action")
+        try container.encode(self.reason, forKey: "reason")
     }
 }
 
@@ -229,7 +248,7 @@ public struct ReasoningInputTransformation: Codable, Hashable, Sendable {
 /// a response. Be sure to include these items in your `input` to the Responses API
 /// for subsequent turns of a conversation if you are manually
 /// [managing context](https://developers.openai.com/api/docs/guides/conversation-state).
-public struct ReasoningItem: Codable, Hashable, Sendable {
+public struct ReasoningItem: OpenAIModel {
     /// The type of the object. Always `reasoning`.
     public var type: String = "reasoning"
     /// The unique identifier of the reasoning content.
@@ -257,13 +276,24 @@ public struct ReasoningItem: Codable, Hashable, Sendable {
         self.status = status
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case encryptedContent = "encrypted_content"
-        case summary
-        case content
-        case status
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "reasoning"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.encryptedContent = try container.decodeIfPresent(String.self, forKey: "encrypted_content")
+        self.summary = try container.decode([SummaryTextContent].self, forKey: "summary")
+        self.content = try container.decodeIfPresent([ReasoningTextContent].self, forKey: "content")
+        self.status = try container.decodeIfPresent(ReasoningItem.Status.self, forKey: "status")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encodeIfPresent(self.encryptedContent, forKey: "encrypted_content")
+        try container.encode(self.summary, forKey: "summary")
+        try container.encodeIfPresent(self.content, forKey: "content")
+        try container.encodeIfPresent(self.status, forKey: "status")
     }
 
     /// The status of the item. One of `in_progress`, `completed`, or
@@ -288,7 +318,7 @@ public struct ReasoningItem: Codable, Hashable, Sendable {
 }
 
 /// A reasoning item produced by the agent.
-public struct ReasoningItemResource: Codable, Hashable, Sendable {
+public struct ReasoningItemResource: OpenAIModel {
     /// The item type. Always `reasoning`.
     public var type: String = "reasoning"
     /// The ID of the reasoning item.
@@ -312,12 +342,22 @@ public struct ReasoningItemResource: Codable, Hashable, Sendable {
         self.status = status
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case turnID = "turn_id"
-        case summary
-        case status
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "reasoning"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.turnID = try container.decode(String.self, forKey: "turn_id")
+        self.summary = try container.decode([SummaryTextResource].self, forKey: "summary")
+        self.status = try container.decodeIfPresent(OutputItemStatusResource.self, forKey: "status")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.turnID, forKey: "turn_id")
+        try container.encode(self.summary, forKey: "summary")
+        try container.encodeIfPresent(self.status, forKey: "status")
     }
 }
 
@@ -338,7 +378,7 @@ public struct ReasoningModeEnum: OpenAIStringEnum {
 }
 
 /// Reasoning configuration for the agent.
-public struct ReasoningParam: Codable, Hashable, Sendable {
+public struct ReasoningParam: OpenAIModel {
     /// The amount of reasoning effort the model should use. Omission lets the model select it.
     public var effort: ReasoningEffortParam?
     /// Controls whether the response includes a reasoning summary.
@@ -349,14 +389,21 @@ public struct ReasoningParam: Codable, Hashable, Sendable {
         self.summary = summary
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case effort
-        case summary
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.effort = try container.decodeIfPresent(ReasoningEffortParam.self, forKey: "effort")
+        self.summary = try container.decodeIfPresent(ReasoningSummaryParam.self, forKey: "summary")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.effort, forKey: "effort")
+        try container.encodeIfPresent(self.summary, forKey: "summary")
     }
 }
 
 /// The reasoning configuration used by an agent.
-public struct ReasoningResource: Codable, Hashable, Sendable {
+public struct ReasoningResource: OpenAIModel {
     /// The requested reasoning effort, or `null` when the model selects its own default.
     public var effort: ReasoningEffortResource?
     /// The requested reasoning summary format, or `null` when summaries are disabled.
@@ -367,9 +414,16 @@ public struct ReasoningResource: Codable, Hashable, Sendable {
         self.summary = summary
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case effort
-        case summary
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.effort = try container.decodeIfPresent(ReasoningEffortResource.self, forKey: "effort")
+        self.summary = try container.decodeIfPresent(ReasoningSummaryResource.self, forKey: "summary")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.effort, forKey: "effort")
+        try container.encodeIfPresent(self.summary, forKey: "summary")
     }
 }
 
@@ -412,7 +466,7 @@ public struct ReasoningSummaryResource: OpenAIStringEnum {
 }
 
 /// Reasoning text from the model.
-public struct ReasoningTextContent: Codable, Hashable, Sendable {
+public struct ReasoningTextContent: OpenAIModel {
     /// The type of the reasoning text. Always `reasoning_text`.
     public var type: String = "reasoning_text"
     /// The reasoning text from the model.
@@ -422,8 +476,15 @@ public struct ReasoningTextContent: Codable, Hashable, Sendable {
         self.text = text
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case text
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "reasoning_text"
+        self.text = try container.decode(String.self, forKey: "text")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.text, forKey: "text")
     }
 }

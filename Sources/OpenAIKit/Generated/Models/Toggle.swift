@@ -3,14 +3,20 @@
 
 import Foundation
 
-public struct ToggleCertificatesRequest: Codable, Hashable, Sendable {
+public struct ToggleCertificatesRequest: OpenAIModel {
     public var certificateIDs: [String]
 
     public init(certificateIDs: [String]) {
         self.certificateIDs = certificateIDs
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case certificateIDs = "certificate_ids"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.certificateIDs = try container.decode([String].self, forKey: "certificate_ids")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.certificateIDs, forKey: "certificate_ids")
     }
 }

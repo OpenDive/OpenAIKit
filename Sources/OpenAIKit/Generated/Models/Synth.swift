@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct SynthIDProvenanceResult: Codable, Hashable, Sendable {
+public struct SynthIDProvenanceResult: OpenAIModel {
     /// The provenance signal type. Always `synthid`.
     public var type: String = "synthid"
     /// Whether a supported OpenAI SynthID watermark was detected.
@@ -22,10 +22,19 @@ public struct SynthIDProvenanceResult: Codable, Hashable, Sendable {
         self.generatedAt = generatedAt
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case outcome
-        case model
-        case generatedAt = "generated_at"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "synthid"
+        self.outcome = try container.decode(ProvenanceDetectionResultApi.self, forKey: "outcome")
+        self.model = try container.decodeIfPresent(String.self, forKey: "model")
+        self.generatedAt = try container.decodeIfPresent(String.self, forKey: "generated_at")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.outcome, forKey: "outcome")
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encodeIfPresent(self.generatedAt, forKey: "generated_at")
     }
 }

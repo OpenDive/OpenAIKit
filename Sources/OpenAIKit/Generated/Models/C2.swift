@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct C2PAProvenanceResult: Codable, Hashable, Sendable {
+public struct C2PAProvenanceResult: OpenAIModel {
     /// The provenance signal type. Always `c2pa`.
     public var type: String = "c2pa"
     /// Whether a supported OpenAI C2PA provenance signal was detected.
@@ -29,13 +29,24 @@ public struct C2PAProvenanceResult: Codable, Hashable, Sendable {
         self.generatedAt = generatedAt
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case outcome
-        case validationState = "validation_state"
-        case issuer
-        case model
-        case generatedAt = "generated_at"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "c2pa"
+        self.outcome = try container.decode(ProvenanceDetectionResultApi.self, forKey: "outcome")
+        self.validationState = try container.decode(C2PAValidationStateApi.self, forKey: "validation_state")
+        self.issuer = try container.decodeIfPresent(String.self, forKey: "issuer")
+        self.model = try container.decodeIfPresent(String.self, forKey: "model")
+        self.generatedAt = try container.decodeIfPresent(String.self, forKey: "generated_at")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.outcome, forKey: "outcome")
+        try container.encode(self.validationState, forKey: "validation_state")
+        try container.encodeIfPresent(self.issuer, forKey: "issuer")
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encodeIfPresent(self.generatedAt, forKey: "generated_at")
     }
 }
 

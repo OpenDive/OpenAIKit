@@ -4,7 +4,7 @@
 import Foundation
 
 /// Emitted when there is an additional text delta. This is also the first event emitted when the transcription starts. Only emitted when you [create a transcription](https://developers.openai.com/api/reference/resources/audio/subresources/transcriptions/methods/create) with the `Stream` parameter set to `true`.
-public struct TranscriptTextDeltaEvent: Codable, Hashable, Sendable {
+public struct TranscriptTextDeltaEvent: OpenAIModel {
     /// The type of the event. Always `transcript.text.delta`.
     public var type: String = "transcript.text.delta"
     /// The text delta that was additionally transcribed.
@@ -24,14 +24,23 @@ public struct TranscriptTextDeltaEvent: Codable, Hashable, Sendable {
         self.segmentID = segmentID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case delta
-        case logprobs
-        case segmentID = "segment_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "transcript.text.delta"
+        self.delta = try container.decode(String.self, forKey: "delta")
+        self.logprobs = try container.decodeIfPresent([TranscriptTextDeltaEvent.Logprob].self, forKey: "logprobs")
+        self.segmentID = try container.decodeIfPresent(String.self, forKey: "segment_id")
     }
 
-    public struct Logprob: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.delta, forKey: "delta")
+        try container.encodeIfPresent(self.logprobs, forKey: "logprobs")
+        try container.encodeIfPresent(self.segmentID, forKey: "segment_id")
+    }
+
+    public struct Logprob: OpenAIModel {
         /// The token that was used to generate the log probability.
         public var token: String?
         /// The log probability of the token.
@@ -49,16 +58,24 @@ public struct TranscriptTextDeltaEvent: Codable, Hashable, Sendable {
             self.bytes = bytes
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case token
-            case logprob
-            case bytes
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.token = try container.decodeIfPresent(String.self, forKey: "token")
+            self.logprob = try container.decodeIfPresent(Double.self, forKey: "logprob")
+            self.bytes = try container.decodeIfPresent([Int].self, forKey: "bytes")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.token, forKey: "token")
+            try container.encodeIfPresent(self.logprob, forKey: "logprob")
+            try container.encodeIfPresent(self.bytes, forKey: "bytes")
         }
     }
 }
 
 /// Emitted when the transcription is complete. Contains the complete transcription text. Only emitted when you [create a transcription](https://developers.openai.com/api/reference/resources/audio/subresources/transcriptions/methods/create) with the `Stream` parameter set to `true`.
-public struct TranscriptTextDoneEvent: Codable, Hashable, Sendable {
+public struct TranscriptTextDoneEvent: OpenAIModel {
     /// The type of the event. Always `transcript.text.done`.
     public var type: String = "transcript.text.done"
     /// The text that was transcribed.
@@ -81,15 +98,25 @@ public struct TranscriptTextDoneEvent: Codable, Hashable, Sendable {
         self.usage = usage
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case text
-        case languages
-        case logprobs
-        case usage
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "transcript.text.done"
+        self.text = try container.decode(String.self, forKey: "text")
+        self.languages = try container.decodeIfPresent([TranscriptionLanguage].self, forKey: "languages")
+        self.logprobs = try container.decodeIfPresent([TranscriptTextDoneEvent.Logprob].self, forKey: "logprobs")
+        self.usage = try container.decodeIfPresent(TranscriptTextUsageTokens.self, forKey: "usage")
     }
 
-    public struct Logprob: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.text, forKey: "text")
+        try container.encodeIfPresent(self.languages, forKey: "languages")
+        try container.encodeIfPresent(self.logprobs, forKey: "logprobs")
+        try container.encodeIfPresent(self.usage, forKey: "usage")
+    }
+
+    public struct Logprob: OpenAIModel {
         /// The token that was used to generate the log probability.
         public var token: String?
         /// The log probability of the token.
@@ -107,16 +134,24 @@ public struct TranscriptTextDoneEvent: Codable, Hashable, Sendable {
             self.bytes = bytes
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case token
-            case logprob
-            case bytes
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.token = try container.decodeIfPresent(String.self, forKey: "token")
+            self.logprob = try container.decodeIfPresent(Double.self, forKey: "logprob")
+            self.bytes = try container.decodeIfPresent([Int].self, forKey: "bytes")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.token, forKey: "token")
+            try container.encodeIfPresent(self.logprob, forKey: "logprob")
+            try container.encodeIfPresent(self.bytes, forKey: "bytes")
         }
     }
 }
 
 /// Emitted when a diarized transcription returns a completed segment with speaker information. Only emitted when you [create a transcription](https://developers.openai.com/api/reference/resources/audio/subresources/transcriptions/methods/create) with `stream` set to `true` and `response_format` set to `diarized_json`.
-public struct TranscriptTextSegmentEvent: Codable, Hashable, Sendable {
+public struct TranscriptTextSegmentEvent: OpenAIModel {
     /// The type of the event. Always `transcript.text.segment`.
     public var type: String = "transcript.text.segment"
     /// Unique identifier for the segment.
@@ -144,18 +179,29 @@ public struct TranscriptTextSegmentEvent: Codable, Hashable, Sendable {
         self.speaker = speaker
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case start
-        case end
-        case text
-        case speaker
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "transcript.text.segment"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.start = try container.decode(Double.self, forKey: "start")
+        self.end = try container.decode(Double.self, forKey: "end")
+        self.text = try container.decode(String.self, forKey: "text")
+        self.speaker = try container.decode(String.self, forKey: "speaker")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.start, forKey: "start")
+        try container.encode(self.end, forKey: "end")
+        try container.encode(self.text, forKey: "text")
+        try container.encode(self.speaker, forKey: "speaker")
     }
 }
 
 /// Usage statistics for models billed by audio input duration.
-public struct TranscriptTextUsageDuration: Codable, Hashable, Sendable {
+public struct TranscriptTextUsageDuration: OpenAIModel {
     /// The type of the usage object. Always `duration` for this variant.
     public var type: String = "duration"
     /// Duration of the input audio in seconds.
@@ -165,14 +211,21 @@ public struct TranscriptTextUsageDuration: Codable, Hashable, Sendable {
         self.seconds = seconds
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case seconds
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "duration"
+        self.seconds = try container.decode(Double.self, forKey: "seconds")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.seconds, forKey: "seconds")
     }
 }
 
 /// Usage statistics for models billed by token usage.
-public struct TranscriptTextUsageTokens: Codable, Hashable, Sendable {
+public struct TranscriptTextUsageTokens: OpenAIModel {
     /// The type of the usage object. Always `tokens` for this variant.
     public var type: String = "tokens"
     /// Number of input tokens billed for this request.
@@ -196,16 +249,26 @@ public struct TranscriptTextUsageTokens: Codable, Hashable, Sendable {
         self.inputTokenDetails = inputTokenDetails
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case inputTokens = "input_tokens"
-        case inputTokenDetails = "input_token_details"
-        case outputTokens = "output_tokens"
-        case totalTokens = "total_tokens"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "tokens"
+        self.inputTokens = try container.decode(Int.self, forKey: "input_tokens")
+        self.inputTokenDetails = try container.decodeIfPresent(TranscriptTextUsageTokens.InputTokenDetails.self, forKey: "input_token_details")
+        self.outputTokens = try container.decode(Int.self, forKey: "output_tokens")
+        self.totalTokens = try container.decode(Int.self, forKey: "total_tokens")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.inputTokens, forKey: "input_tokens")
+        try container.encodeIfPresent(self.inputTokenDetails, forKey: "input_token_details")
+        try container.encode(self.outputTokens, forKey: "output_tokens")
+        try container.encode(self.totalTokens, forKey: "total_tokens")
     }
 
     /// Details about the input tokens billed for this request.
-    public struct InputTokenDetails: Codable, Hashable, Sendable {
+    public struct InputTokenDetails: OpenAIModel {
         /// Number of text tokens billed for this request.
         public var textTokens: Int?
         /// Number of audio tokens billed for this request.
@@ -216,9 +279,16 @@ public struct TranscriptTextUsageTokens: Codable, Hashable, Sendable {
             self.audioTokens = audioTokens
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case textTokens = "text_tokens"
-            case audioTokens = "audio_tokens"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.textTokens = try container.decodeIfPresent(Int.self, forKey: "text_tokens")
+            self.audioTokens = try container.decodeIfPresent(Int.self, forKey: "audio_tokens")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.textTokens, forKey: "text_tokens")
+            try container.encodeIfPresent(self.audioTokens, forKey: "audio_tokens")
         }
     }
 }

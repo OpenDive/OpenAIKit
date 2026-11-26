@@ -4,7 +4,7 @@
 import Foundation
 
 /// Request payload for assigning a role to a group or user.
-public struct PublicAssignOrganizationGroupRoleBody: Codable, Hashable, Sendable {
+public struct PublicAssignOrganizationGroupRoleBody: OpenAIModel {
     /// Identifier of the role to assign.
     public var roleID: String
 
@@ -12,12 +12,18 @@ public struct PublicAssignOrganizationGroupRoleBody: Codable, Hashable, Sendable
         self.roleID = roleID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case roleID = "role_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.roleID = try container.decode(String.self, forKey: "role_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.roleID, forKey: "role_id")
     }
 }
 
-public struct PublicCreateEndpointBody: Codable, Hashable, Sendable {
+public struct PublicCreateEndpointBody: OpenAIModel {
     /// A human-readable name for the webhook endpoint.
     public var name: String
     /// The HTTPS URL that receives webhook deliveries.
@@ -35,15 +41,23 @@ public struct PublicCreateEndpointBody: Codable, Hashable, Sendable {
         self.eventTypes = eventTypes
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case name
-        case url
-        case eventTypes = "event_types"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.name = try container.decode(String.self, forKey: "name")
+        self.url = try container.decode(String.self, forKey: "url")
+        self.eventTypes = try container.decode([ProjectEventTypeEnum].self, forKey: "event_types")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.url, forKey: "url")
+        try container.encode(self.eventTypes, forKey: "event_types")
     }
 }
 
 /// Request payload for creating a custom role.
-public struct PublicCreateOrganizationRoleBody: Codable, Hashable, Sendable {
+public struct PublicCreateOrganizationRoleBody: OpenAIModel {
     /// Unique name for the role.
     public var roleName: String
     /// Permissions to grant to the role.
@@ -61,14 +75,22 @@ public struct PublicCreateOrganizationRoleBody: Codable, Hashable, Sendable {
         self.description = description
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case roleName = "role_name"
-        case permissions
-        case description
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.roleName = try container.decode(String.self, forKey: "role_name")
+        self.permissions = try container.decode([String].self, forKey: "permissions")
+        self.description = try container.decodeIfPresent(String.self, forKey: "description")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.roleName, forKey: "role_name")
+        try container.encode(self.permissions, forKey: "permissions")
+        try container.encodeIfPresent(self.description, forKey: "description")
     }
 }
 
-public struct PublicDecisionsUsageResponseResource: Codable, Hashable, Sendable {
+public struct PublicDecisionsUsageResponseResource: OpenAIModel {
     public var object: String = "page"
     public var hasMore: Bool
     public var nextPage: String?
@@ -84,16 +106,25 @@ public struct PublicDecisionsUsageResponseResource: Codable, Hashable, Sendable 
         self.nextPage = nextPage
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case hasMore = "has_more"
-        case nextPage = "next_page"
-        case data
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "page"
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+        self.nextPage = try container.decodeIfPresent(String.self, forKey: "next_page")
+        self.data = try container.decode([DecisionsUsageBucket].self, forKey: "data")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.hasMore, forKey: "has_more")
+        try container.encodeIfPresent(self.nextPage, forKey: "next_page")
+        try container.encode(self.data, forKey: "data")
     }
 }
 
 /// Safe metadata for a first-class execution environment.
-public struct PublicEnvironmentResource: Codable, Hashable, Sendable {
+public struct PublicEnvironmentResource: OpenAIModel {
     /// Whether the environment is hosted by OpenAI or by the application.
     public var type: EnvironmentTypeResource
     /// The ID of the environment.
@@ -125,14 +156,26 @@ public struct PublicEnvironmentResource: Codable, Hashable, Sendable {
         self.plugins = plugins
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case object
-        case status
-        case files
-        case skills
-        case plugins
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decode(EnvironmentTypeResource.self, forKey: "type")
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "agent.environment"
+        self.status = try container.decode(EnvironmentStatusResource.self, forKey: "status")
+        self.files = try container.decode([HostedEnvironmentFileResource].self, forKey: "files")
+        self.skills = try container.decode([HostedSkillResource].self, forKey: "skills")
+        self.plugins = try container.decode([HostedPluginResource].self, forKey: "plugins")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.status, forKey: "status")
+        try container.encode(self.files, forKey: "files")
+        try container.encode(self.skills, forKey: "skills")
+        try container.encode(self.plugins, forKey: "plugins")
     }
 }
 
@@ -166,7 +209,7 @@ public struct PublicProjectResidency: OpenAIStringEnum {
 }
 
 /// Paginated list of roles available on an organization or project.
-public struct PublicRoleListResource: Codable, Hashable, Sendable {
+public struct PublicRoleListResource: OpenAIModel {
     /// Always `list`.
     public var object: String = "list"
     /// Roles returned in the current page.
@@ -186,15 +229,24 @@ public struct PublicRoleListResource: Codable, Hashable, Sendable {
         self.next = next
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case hasMore = "has_more"
-        case next
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([Role].self, forKey: "data")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+        self.next = try container.decodeIfPresent(String.self, forKey: "next")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encode(self.hasMore, forKey: "has_more")
+        try container.encodeIfPresent(self.next, forKey: "next")
     }
 }
 
-public struct PublicRotateSecretBody: Codable, Hashable, Sendable {
+public struct PublicRotateSecretBody: OpenAIModel {
     /// Whether to keep the previous signing secret valid for 24 hours after rotation. Defaults to false, which invalidates the previous secret immediately.
     public var keepOldSecretActiveFor24Hours: Bool?
 
@@ -202,12 +254,18 @@ public struct PublicRotateSecretBody: Codable, Hashable, Sendable {
         self.keepOldSecretActiveFor24Hours = keepOldSecretActiveFor24Hours
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case keepOldSecretActiveFor24Hours = "keep_old_secret_active_for_24_hours"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.keepOldSecretActiveFor24Hours = try container.decodeIfPresent(Bool.self, forKey: "keep_old_secret_active_for_24_hours")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.keepOldSecretActiveFor24Hours, forKey: "keep_old_secret_active_for_24_hours")
     }
 }
 
-public struct PublicTestEndpointBody: Codable, Hashable, Sendable {
+public struct PublicTestEndpointBody: OpenAIModel {
     /// The event type to send as a sample delivery.
     public var eventType: ProjectEventTypeEnum
 
@@ -215,12 +273,18 @@ public struct PublicTestEndpointBody: Codable, Hashable, Sendable {
         self.eventType = eventType
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case eventType = "event_type"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventType = try container.decode(ProjectEventTypeEnum.self, forKey: "event_type")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventType, forKey: "event_type")
     }
 }
 
-public struct PublicUpdateEndpointBody: Codable, Hashable, Sendable {
+public struct PublicUpdateEndpointBody: OpenAIModel {
     /// A new human-readable name for the webhook endpoint.
     public var name: String?
     /// A new HTTPS URL that receives webhook deliveries.
@@ -238,15 +302,23 @@ public struct PublicUpdateEndpointBody: Codable, Hashable, Sendable {
         self.eventTypes = eventTypes
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case name
-        case url
-        case eventTypes = "event_types"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.url = try container.decodeIfPresent(String.self, forKey: "url")
+        self.eventTypes = try container.decodeIfPresent([ProjectEventTypeEnum].self, forKey: "event_types")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encodeIfPresent(self.url, forKey: "url")
+        try container.encodeIfPresent(self.eventTypes, forKey: "event_types")
     }
 }
 
 /// Request payload for updating an existing role.
-public struct PublicUpdateOrganizationRoleBody: Codable, Hashable, Sendable {
+public struct PublicUpdateOrganizationRoleBody: OpenAIModel {
     /// Updated set of permissions for the role.
     public var permissions: [String]?
     /// New description for the role.
@@ -264,9 +336,17 @@ public struct PublicUpdateOrganizationRoleBody: Codable, Hashable, Sendable {
         self.roleName = roleName
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case permissions
-        case description
-        case roleName = "role_name"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.permissions = try container.decodeIfPresent([String].self, forKey: "permissions")
+        self.description = try container.decodeIfPresent(String.self, forKey: "description")
+        self.roleName = try container.decodeIfPresent(String.self, forKey: "role_name")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.permissions, forKey: "permissions")
+        try container.encodeIfPresent(self.description, forKey: "description")
+        try container.encodeIfPresent(self.roleName, forKey: "role_name")
     }
 }

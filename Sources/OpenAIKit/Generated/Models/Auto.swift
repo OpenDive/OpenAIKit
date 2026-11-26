@@ -4,20 +4,26 @@
 import Foundation
 
 /// The default strategy. This strategy currently uses a `max_chunk_size_tokens` of `800` and `chunk_overlap_tokens` of `400`.
-public struct AutoChunkingStrategyRequestParam: Codable, Hashable, Sendable {
+public struct AutoChunkingStrategyRequestParam: OpenAIModel {
     /// Always `auto`.
     public var type: String = "auto"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "auto"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// Configuration for a code interpreter container. Optionally specify the IDs of the files to run the code on.
-public struct AutoCodeInterpreterToolParam: Codable, Hashable, Sendable {
+public struct AutoCodeInterpreterToolParam: OpenAIModel {
     /// Always `auto`.
     public var type: String = "auto"
     /// An optional list of uploaded files to make available to your code.
@@ -36,17 +42,26 @@ public struct AutoCodeInterpreterToolParam: Codable, Hashable, Sendable {
         self.networkPolicy = networkPolicy
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case fileIDs = "file_ids"
-        case memoryLimit = "memory_limit"
-        case networkPolicy = "network_policy"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "auto"
+        self.fileIDs = try container.decodeIfPresent([String].self, forKey: "file_ids")
+        self.memoryLimit = try container.decodeIfPresent(ContainerMemoryLimit.self, forKey: "memory_limit")
+        self.networkPolicy = try container.decodeIfPresent(AutoCodeInterpreterToolParam.NetworkPolicy.self, forKey: "network_policy")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.fileIDs, forKey: "file_ids")
+        try container.encodeIfPresent(self.memoryLimit, forKey: "memory_limit")
+        try container.encodeIfPresent(self.networkPolicy, forKey: "network_policy")
     }
 
     /// Network access policy for the container.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum NetworkPolicy: Codable, Hashable, Sendable {
+    public indirect enum NetworkPolicy: OpenAIModel {
         /// `type`: `disabled`
         case disabled(ContainerNetworkPolicyDisabledParam)
         /// `type`: `allowlist`

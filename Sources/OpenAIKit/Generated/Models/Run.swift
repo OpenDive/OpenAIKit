@@ -4,7 +4,7 @@
 import Foundation
 
 /// Usage statistics related to the run. This value will be `null` if the run is not in a terminal state (i.e. `in_progress`, `queued`, etc.).
-public struct RunCompletionUsage: Codable, Hashable, Sendable {
+public struct RunCompletionUsage: OpenAIModel {
     /// Number of completion tokens used over the course of the run.
     public var completionTokens: Int
     /// Number of prompt tokens used over the course of the run.
@@ -22,14 +22,22 @@ public struct RunCompletionUsage: Codable, Hashable, Sendable {
         self.totalTokens = totalTokens
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case completionTokens = "completion_tokens"
-        case promptTokens = "prompt_tokens"
-        case totalTokens = "total_tokens"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.completionTokens = try container.decode(Int.self, forKey: "completion_tokens")
+        self.promptTokens = try container.decode(Int.self, forKey: "prompt_tokens")
+        self.totalTokens = try container.decode(Int.self, forKey: "total_tokens")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.completionTokens, forKey: "completion_tokens")
+        try container.encode(self.promptTokens, forKey: "prompt_tokens")
+        try container.encode(self.totalTokens, forKey: "total_tokens")
     }
 }
 
-public struct RunGraderRequest: Codable, Hashable, Sendable {
+public struct RunGraderRequest: OpenAIModel {
     /// The grader used for the fine-tuning job.
     public var grader: RunGraderRequest.Grader
     /// The dataset item provided to the grader. This will be used to populate
@@ -51,16 +59,24 @@ public struct RunGraderRequest: Codable, Hashable, Sendable {
         self.item = item
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case grader
-        case item
-        case modelSample = "model_sample"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.grader = try container.decode(RunGraderRequest.Grader.self, forKey: "grader")
+        self.item = try container.decodeIfPresent(JSONObject.self, forKey: "item")
+        self.modelSample = try container.decode(String.self, forKey: "model_sample")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.grader, forKey: "grader")
+        try container.encodeIfPresent(self.item, forKey: "item")
+        try container.encode(self.modelSample, forKey: "model_sample")
     }
 
     /// The grader used for the fine-tuning job.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Grader: Codable, Hashable, Sendable {
+    public indirect enum Grader: OpenAIModel {
         /// `type`: `string_check`
         case stringCheck(GraderStringCheck)
         /// `type`: `text_similarity`
@@ -121,7 +137,7 @@ public struct RunGraderRequest: Codable, Hashable, Sendable {
     }
 }
 
-public struct RunGraderResponse: Codable, Hashable, Sendable {
+public struct RunGraderResponse: OpenAIModel {
     public var reward: Double
     public var metadata: RunGraderResponse.Metadata
     public var subRewards: JSONObject
@@ -139,14 +155,23 @@ public struct RunGraderResponse: Codable, Hashable, Sendable {
         self.modelGraderTokenUsagePerModel = modelGraderTokenUsagePerModel
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case reward
-        case metadata
-        case subRewards = "sub_rewards"
-        case modelGraderTokenUsagePerModel = "model_grader_token_usage_per_model"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.reward = try container.decode(Double.self, forKey: "reward")
+        self.metadata = try container.decode(RunGraderResponse.Metadata.self, forKey: "metadata")
+        self.subRewards = try container.decode(JSONObject.self, forKey: "sub_rewards")
+        self.modelGraderTokenUsagePerModel = try container.decode(JSONObject.self, forKey: "model_grader_token_usage_per_model")
     }
 
-    public struct Metadata: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.reward, forKey: "reward")
+        try container.encode(self.metadata, forKey: "metadata")
+        try container.encode(self.subRewards, forKey: "sub_rewards")
+        try container.encode(self.modelGraderTokenUsagePerModel, forKey: "model_grader_token_usage_per_model")
+    }
+
+    public struct Metadata: OpenAIModel {
         public var name: String
         public var type: String
         public var errors: RunGraderResponse.Metadata.Errors
@@ -173,17 +198,29 @@ public struct RunGraderResponse: Codable, Hashable, Sendable {
             self.sampledModelName = sampledModelName
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case name
-            case type
-            case errors
-            case executionTime = "execution_time"
-            case scores
-            case tokenUsage = "token_usage"
-            case sampledModelName = "sampled_model_name"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.name = try container.decode(String.self, forKey: "name")
+            self.type = try container.decode(String.self, forKey: "type")
+            self.errors = try container.decode(RunGraderResponse.Metadata.Errors.self, forKey: "errors")
+            self.executionTime = try container.decode(Double.self, forKey: "execution_time")
+            self.scores = try container.decode(JSONObject.self, forKey: "scores")
+            self.tokenUsage = try container.decodeIfPresent(RunGraderResponse.Metadata.TokenUsage.self, forKey: "token_usage")
+            self.sampledModelName = try container.decodeIfPresent(String.self, forKey: "sampled_model_name")
         }
 
-        public struct Errors: Codable, Hashable, Sendable {
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.name, forKey: "name")
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.errors, forKey: "errors")
+            try container.encode(self.executionTime, forKey: "execution_time")
+            try container.encode(self.scores, forKey: "scores")
+            try container.encodeIfPresent(self.tokenUsage, forKey: "token_usage")
+            try container.encodeIfPresent(self.sampledModelName, forKey: "sampled_model_name")
+        }
+
+        public struct Errors: OpenAIModel {
             public var formulaParseError: Bool
             public var sampleParseError: Bool
             public var truncatedObservationError: Bool
@@ -231,25 +268,44 @@ public struct RunGraderResponse: Codable, Hashable, Sendable {
                 self.modelGraderServerErrorDetails = modelGraderServerErrorDetails
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case formulaParseError = "formula_parse_error"
-                case sampleParseError = "sample_parse_error"
-                case truncatedObservationError = "truncated_observation_error"
-                case unresponsiveRewardError = "unresponsive_reward_error"
-                case invalidVariableError = "invalid_variable_error"
-                case otherError = "other_error"
-                case pythonGraderServerError = "python_grader_server_error"
-                case pythonGraderServerErrorType = "python_grader_server_error_type"
-                case pythonGraderRuntimeError = "python_grader_runtime_error"
-                case pythonGraderRuntimeErrorDetails = "python_grader_runtime_error_details"
-                case modelGraderServerError = "model_grader_server_error"
-                case modelGraderRefusalError = "model_grader_refusal_error"
-                case modelGraderParseError = "model_grader_parse_error"
-                case modelGraderServerErrorDetails = "model_grader_server_error_details"
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.formulaParseError = try container.decode(Bool.self, forKey: "formula_parse_error")
+                self.sampleParseError = try container.decode(Bool.self, forKey: "sample_parse_error")
+                self.truncatedObservationError = try container.decode(Bool.self, forKey: "truncated_observation_error")
+                self.unresponsiveRewardError = try container.decode(Bool.self, forKey: "unresponsive_reward_error")
+                self.invalidVariableError = try container.decode(Bool.self, forKey: "invalid_variable_error")
+                self.otherError = try container.decode(Bool.self, forKey: "other_error")
+                self.pythonGraderServerError = try container.decode(Bool.self, forKey: "python_grader_server_error")
+                self.pythonGraderServerErrorType = try container.decodeIfPresent(String.self, forKey: "python_grader_server_error_type")
+                self.pythonGraderRuntimeError = try container.decode(Bool.self, forKey: "python_grader_runtime_error")
+                self.pythonGraderRuntimeErrorDetails = try container.decodeIfPresent(String.self, forKey: "python_grader_runtime_error_details")
+                self.modelGraderServerError = try container.decode(Bool.self, forKey: "model_grader_server_error")
+                self.modelGraderRefusalError = try container.decode(Bool.self, forKey: "model_grader_refusal_error")
+                self.modelGraderParseError = try container.decode(Bool.self, forKey: "model_grader_parse_error")
+                self.modelGraderServerErrorDetails = try container.decodeIfPresent(String.self, forKey: "model_grader_server_error_details")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encode(self.formulaParseError, forKey: "formula_parse_error")
+                try container.encode(self.sampleParseError, forKey: "sample_parse_error")
+                try container.encode(self.truncatedObservationError, forKey: "truncated_observation_error")
+                try container.encode(self.unresponsiveRewardError, forKey: "unresponsive_reward_error")
+                try container.encode(self.invalidVariableError, forKey: "invalid_variable_error")
+                try container.encode(self.otherError, forKey: "other_error")
+                try container.encode(self.pythonGraderServerError, forKey: "python_grader_server_error")
+                try container.encodeIfPresent(self.pythonGraderServerErrorType, forKey: "python_grader_server_error_type")
+                try container.encode(self.pythonGraderRuntimeError, forKey: "python_grader_runtime_error")
+                try container.encodeIfPresent(self.pythonGraderRuntimeErrorDetails, forKey: "python_grader_runtime_error_details")
+                try container.encode(self.modelGraderServerError, forKey: "model_grader_server_error")
+                try container.encode(self.modelGraderRefusalError, forKey: "model_grader_refusal_error")
+                try container.encode(self.modelGraderParseError, forKey: "model_grader_parse_error")
+                try container.encodeIfPresent(self.modelGraderServerErrorDetails, forKey: "model_grader_server_error_details")
             }
         }
 
-        public struct TokenUsage: Codable, Hashable, Sendable {
+        public struct TokenUsage: OpenAIModel {
             public var promptTokens: Int
             public var totalTokens: Int
             public var completionTokens: Int?
@@ -267,18 +323,27 @@ public struct RunGraderResponse: Codable, Hashable, Sendable {
                 self.cachedTokens = cachedTokens
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case promptTokens = "prompt_tokens"
-                case totalTokens = "total_tokens"
-                case completionTokens = "completion_tokens"
-                case cachedTokens = "cached_tokens"
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.promptTokens = try container.decode(Int.self, forKey: "prompt_tokens")
+                self.totalTokens = try container.decode(Int.self, forKey: "total_tokens")
+                self.completionTokens = try container.decodeIfPresent(Int.self, forKey: "completion_tokens")
+                self.cachedTokens = try container.decodeIfPresent(Int.self, forKey: "cached_tokens")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encode(self.promptTokens, forKey: "prompt_tokens")
+                try container.encode(self.totalTokens, forKey: "total_tokens")
+                try container.encodeIfPresent(self.completionTokens, forKey: "completion_tokens")
+                try container.encodeIfPresent(self.cachedTokens, forKey: "cached_tokens")
             }
         }
     }
 }
 
 /// Represents an execution run on a [thread](https://developers.openai.com/api/docs/assistants/migration).
-public struct RunObject: Codable, Hashable, Sendable {
+public struct RunObject: OpenAIModel {
     /// The identifier, which can be referenced in API endpoints.
     public var id: String
     /// The object type, which is always `thread.run`.
@@ -384,34 +449,66 @@ public struct RunObject: Codable, Hashable, Sendable {
         self.responseFormat = responseFormat
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
-        case threadID = "thread_id"
-        case assistantID = "assistant_id"
-        case status
-        case requiredAction = "required_action"
-        case lastError = "last_error"
-        case expiresAt = "expires_at"
-        case startedAt = "started_at"
-        case cancelledAt = "cancelled_at"
-        case failedAt = "failed_at"
-        case completedAt = "completed_at"
-        case incompleteDetails = "incomplete_details"
-        case model
-        case instructions
-        case tools
-        case metadata
-        case usage
-        case temperature
-        case topP = "top_p"
-        case maxPromptTokens = "max_prompt_tokens"
-        case maxCompletionTokens = "max_completion_tokens"
-        case truncationStrategy = "truncation_strategy"
-        case toolChoice = "tool_choice"
-        case parallelToolCalls = "parallel_tool_calls"
-        case responseFormat = "response_format"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "thread.run"
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.threadID = try container.decode(String.self, forKey: "thread_id")
+        self.assistantID = try container.decode(String.self, forKey: "assistant_id")
+        self.status = try container.decode(RunObject.Status.self, forKey: "status")
+        self.requiredAction = try container.decodeIfPresent(RunObject.RequiredAction.self, forKey: "required_action")
+        self.lastError = try container.decodeIfPresent(RunObject.LastError.self, forKey: "last_error")
+        self.expiresAt = try container.decodeIfPresent(Int.self, forKey: "expires_at")
+        self.startedAt = try container.decodeIfPresent(Int.self, forKey: "started_at")
+        self.cancelledAt = try container.decodeIfPresent(Int.self, forKey: "cancelled_at")
+        self.failedAt = try container.decodeIfPresent(Int.self, forKey: "failed_at")
+        self.completedAt = try container.decodeIfPresent(Int.self, forKey: "completed_at")
+        self.incompleteDetails = try container.decodeIfPresent(RunObject.IncompleteDetails.self, forKey: "incomplete_details")
+        self.model = try container.decode(String.self, forKey: "model")
+        self.instructions = try container.decode(String.self, forKey: "instructions")
+        self.tools = try container.decode([RunObject.Tool].self, forKey: "tools")
+        self.metadata = try container.decodeIfPresent(Metadata.self, forKey: "metadata")
+        self.usage = try container.decodeIfPresent(RunCompletionUsage.self, forKey: "usage")
+        self.temperature = try container.decodeIfPresent(Double.self, forKey: "temperature")
+        self.topP = try container.decodeIfPresent(Double.self, forKey: "top_p")
+        self.maxPromptTokens = try container.decodeIfPresent(Int.self, forKey: "max_prompt_tokens")
+        self.maxCompletionTokens = try container.decodeIfPresent(Int.self, forKey: "max_completion_tokens")
+        self.truncationStrategy = try container.decodeIfPresent(TruncationObject.self, forKey: "truncation_strategy")
+        self.toolChoice = try container.decodeIfPresent(AssistantsApiToolChoiceOption.self, forKey: "tool_choice")
+        self.parallelToolCalls = try container.decode(ParallelToolCalls.self, forKey: "parallel_tool_calls")
+        self.responseFormat = try container.decodeIfPresent(AssistantsApiResponseFormatOption.self, forKey: "response_format")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.threadID, forKey: "thread_id")
+        try container.encode(self.assistantID, forKey: "assistant_id")
+        try container.encode(self.status, forKey: "status")
+        try container.encodeIfPresent(self.requiredAction, forKey: "required_action")
+        try container.encodeIfPresent(self.lastError, forKey: "last_error")
+        try container.encodeIfPresent(self.expiresAt, forKey: "expires_at")
+        try container.encodeIfPresent(self.startedAt, forKey: "started_at")
+        try container.encodeIfPresent(self.cancelledAt, forKey: "cancelled_at")
+        try container.encodeIfPresent(self.failedAt, forKey: "failed_at")
+        try container.encodeIfPresent(self.completedAt, forKey: "completed_at")
+        try container.encodeIfPresent(self.incompleteDetails, forKey: "incomplete_details")
+        try container.encode(self.model, forKey: "model")
+        try container.encode(self.instructions, forKey: "instructions")
+        try container.encode(self.tools, forKey: "tools")
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
+        try container.encodeIfPresent(self.usage, forKey: "usage")
+        try container.encodeIfPresent(self.temperature, forKey: "temperature")
+        try container.encodeIfPresent(self.topP, forKey: "top_p")
+        try container.encodeIfPresent(self.maxPromptTokens, forKey: "max_prompt_tokens")
+        try container.encodeIfPresent(self.maxCompletionTokens, forKey: "max_completion_tokens")
+        try container.encodeIfPresent(self.truncationStrategy, forKey: "truncation_strategy")
+        try container.encodeIfPresent(self.toolChoice, forKey: "tool_choice")
+        try container.encode(self.parallelToolCalls, forKey: "parallel_tool_calls")
+        try container.encodeIfPresent(self.responseFormat, forKey: "response_format")
     }
 
     /// The status of the run, which can be either `queued`, `in_progress`, `requires_action`, `cancelling`, `cancelled`, `failed`, `completed`, `incomplete`, or `expired`.
@@ -440,7 +537,7 @@ public struct RunObject: Codable, Hashable, Sendable {
     }
 
     /// Details on the action required to continue the run. Will be `null` if no action is required.
-    public struct RequiredAction: Codable, Hashable, Sendable {
+    public struct RequiredAction: OpenAIModel {
         /// For now, this is always `submit_tool_outputs`.
         public var type: String = "submit_tool_outputs"
         /// Details on the tool outputs needed for this run to continue.
@@ -450,13 +547,20 @@ public struct RunObject: Codable, Hashable, Sendable {
             self.submitToolOutputs = submitToolOutputs
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case submitToolOutputs = "submit_tool_outputs"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "submit_tool_outputs"
+            self.submitToolOutputs = try container.decode(RunObject.RequiredAction.SubmitToolOutputs.self, forKey: "submit_tool_outputs")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.submitToolOutputs, forKey: "submit_tool_outputs")
         }
 
         /// Details on the tool outputs needed for this run to continue.
-        public struct SubmitToolOutputs: Codable, Hashable, Sendable {
+        public struct SubmitToolOutputs: OpenAIModel {
             /// A list of the relevant tool calls.
             public var toolCalls: [RunToolCallObject]
 
@@ -464,14 +568,20 @@ public struct RunObject: Codable, Hashable, Sendable {
                 self.toolCalls = toolCalls
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case toolCalls = "tool_calls"
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.toolCalls = try container.decode([RunToolCallObject].self, forKey: "tool_calls")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encode(self.toolCalls, forKey: "tool_calls")
             }
         }
     }
 
     /// The last error associated with this run. Will be `null` if there are no errors.
-    public struct LastError: Codable, Hashable, Sendable {
+    public struct LastError: OpenAIModel {
         /// One of `server_error`, `rate_limit_exceeded`, or `invalid_prompt`.
         public var code: RunObject.LastError.Code
         /// A human-readable description of the error.
@@ -482,9 +592,16 @@ public struct RunObject: Codable, Hashable, Sendable {
             self.message = message
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case code
-            case message
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.code = try container.decode(RunObject.LastError.Code.self, forKey: "code")
+            self.message = try container.decode(String.self, forKey: "message")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.code, forKey: "code")
+            try container.encode(self.message, forKey: "message")
         }
 
         /// One of `server_error`, `rate_limit_exceeded`, or `invalid_prompt`.
@@ -508,7 +625,7 @@ public struct RunObject: Codable, Hashable, Sendable {
     }
 
     /// Details on why the run is incomplete. Will be `null` if the run is not incomplete.
-    public struct IncompleteDetails: Codable, Hashable, Sendable {
+    public struct IncompleteDetails: OpenAIModel {
         /// The reason why the run is incomplete. This will point to which specific token limit was reached over the course of the run.
         public var reason: RunObject.IncompleteDetails.Reason?
 
@@ -516,8 +633,14 @@ public struct RunObject: Codable, Hashable, Sendable {
             self.reason = reason
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case reason
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.reason = try container.decodeIfPresent(RunObject.IncompleteDetails.Reason.self, forKey: "reason")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.reason, forKey: "reason")
         }
 
         /// The reason why the run is incomplete. This will point to which specific token limit was reached over the course of the run.
@@ -540,7 +663,7 @@ public struct RunObject: Codable, Hashable, Sendable {
     }
 
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Tool: Codable, Hashable, Sendable {
+    public indirect enum Tool: OpenAIModel {
         /// `type`: `code_interpreter`
         case codeInterpreter(AssistantToolsCode)
         /// `type`: `file_search`
@@ -588,7 +711,7 @@ public struct RunObject: Codable, Hashable, Sendable {
 }
 
 /// Usage statistics related to the run step. This value will be `null` while the run step's status is `in_progress`.
-public struct RunStepCompletionUsage: Codable, Hashable, Sendable {
+public struct RunStepCompletionUsage: OpenAIModel {
     /// Number of completion tokens used over the course of the run step.
     public var completionTokens: Int
     /// Number of prompt tokens used over the course of the run step.
@@ -606,15 +729,23 @@ public struct RunStepCompletionUsage: Codable, Hashable, Sendable {
         self.totalTokens = totalTokens
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case completionTokens = "completion_tokens"
-        case promptTokens = "prompt_tokens"
-        case totalTokens = "total_tokens"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.completionTokens = try container.decode(Int.self, forKey: "completion_tokens")
+        self.promptTokens = try container.decode(Int.self, forKey: "prompt_tokens")
+        self.totalTokens = try container.decode(Int.self, forKey: "total_tokens")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.completionTokens, forKey: "completion_tokens")
+        try container.encode(self.promptTokens, forKey: "prompt_tokens")
+        try container.encode(self.totalTokens, forKey: "total_tokens")
     }
 }
 
 /// Represents a run step delta i.e. any changed fields on a run step during streaming.
-public struct RunStepDeltaObject: Codable, Hashable, Sendable {
+public struct RunStepDeltaObject: OpenAIModel {
     /// The identifier of the run step, which can be referenced in API endpoints.
     public var id: String
     /// The object type, which is always `thread.run.step.delta`.
@@ -627,14 +758,22 @@ public struct RunStepDeltaObject: Codable, Hashable, Sendable {
         self.delta = delta
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case delta
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "thread.run.step.delta"
+        self.delta = try container.decode(RunStepDeltaObject.Delta.self, forKey: "delta")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.delta, forKey: "delta")
     }
 
     /// The delta containing the fields that have changed on the run step.
-    public struct Delta: Codable, Hashable, Sendable {
+    public struct Delta: OpenAIModel {
         /// The details of the run step.
         public var stepDetails: RunStepDeltaObject.Delta.StepDetails?
 
@@ -642,14 +781,20 @@ public struct RunStepDeltaObject: Codable, Hashable, Sendable {
             self.stepDetails = stepDetails
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case stepDetails = "step_details"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.stepDetails = try container.decodeIfPresent(RunStepDeltaObject.Delta.StepDetails.self, forKey: "step_details")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.stepDetails, forKey: "step_details")
         }
 
         /// The details of the run step.
         ///
         /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-        public indirect enum StepDetails: Codable, Hashable, Sendable {
+        public indirect enum StepDetails: OpenAIModel {
             /// `type`: `message_creation`
             case messageCreation(RunStepDeltaStepDetailsMessageCreationObject)
             /// `type`: `tool_calls`
@@ -691,7 +836,7 @@ public struct RunStepDeltaObject: Codable, Hashable, Sendable {
 }
 
 /// Details of the message creation by the run step.
-public struct RunStepDeltaStepDetailsMessageCreationObject: Codable, Hashable, Sendable {
+public struct RunStepDeltaStepDetailsMessageCreationObject: OpenAIModel {
     /// Always `message_creation`.
     public var type: String = "message_creation"
     public var messageCreation: RunStepDeltaStepDetailsMessageCreationObject.MessageCreation?
@@ -700,12 +845,19 @@ public struct RunStepDeltaStepDetailsMessageCreationObject: Codable, Hashable, S
         self.messageCreation = messageCreation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case messageCreation = "message_creation"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "message_creation"
+        self.messageCreation = try container.decodeIfPresent(RunStepDeltaStepDetailsMessageCreationObject.MessageCreation.self, forKey: "message_creation")
     }
 
-    public struct MessageCreation: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.messageCreation, forKey: "message_creation")
+    }
+
+    public struct MessageCreation: OpenAIModel {
         /// The ID of the message that was created by this run step.
         public var messageID: String?
 
@@ -713,14 +865,20 @@ public struct RunStepDeltaStepDetailsMessageCreationObject: Codable, Hashable, S
             self.messageID = messageID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case messageID = "message_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.messageID = try container.decodeIfPresent(String.self, forKey: "message_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.messageID, forKey: "message_id")
         }
     }
 }
 
 /// Details of the Code Interpreter tool call the run step was involved in.
-public struct RunStepDeltaStepDetailsToolCallsCodeObject: Codable, Hashable, Sendable {
+public struct RunStepDeltaStepDetailsToolCallsCodeObject: OpenAIModel {
     /// The index of the tool call in the tool calls array.
     public var index: Int
     /// The ID of the tool call.
@@ -740,15 +898,24 @@ public struct RunStepDeltaStepDetailsToolCallsCodeObject: Codable, Hashable, Sen
         self.codeInterpreter = codeInterpreter
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case index
-        case id
-        case type
-        case codeInterpreter = "code_interpreter"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.index = try container.decode(Int.self, forKey: "index")
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "code_interpreter"
+        self.codeInterpreter = try container.decodeIfPresent(RunStepDeltaStepDetailsToolCallsCodeObject.CodeInterpreter.self, forKey: "code_interpreter")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.index, forKey: "index")
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.codeInterpreter, forKey: "code_interpreter")
     }
 
     /// The Code Interpreter tool call definition.
-    public struct CodeInterpreter: Codable, Hashable, Sendable {
+    public struct CodeInterpreter: OpenAIModel {
         /// The input to the Code Interpreter tool call.
         public var input: String?
         /// The outputs from the Code Interpreter tool call. Code Interpreter can output one or more items, including text (`logs`) or images (`image`). Each of these are represented by a different object type.
@@ -759,13 +926,20 @@ public struct RunStepDeltaStepDetailsToolCallsCodeObject: Codable, Hashable, Sen
             self.outputs = outputs
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case input
-            case outputs
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.input = try container.decodeIfPresent(String.self, forKey: "input")
+            self.outputs = try container.decodeIfPresent([RunStepDeltaStepDetailsToolCallsCodeObject.CodeInterpreter.Output].self, forKey: "outputs")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.input, forKey: "input")
+            try container.encodeIfPresent(self.outputs, forKey: "outputs")
         }
 
         /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-        public indirect enum Output: Codable, Hashable, Sendable {
+        public indirect enum Output: OpenAIModel {
             /// `type`: `logs`
             case logs(RunStepDeltaStepDetailsToolCallsCodeOutputLogsObject)
             /// `type`: `image`
@@ -806,7 +980,7 @@ public struct RunStepDeltaStepDetailsToolCallsCodeObject: Codable, Hashable, Sen
     }
 }
 
-public struct RunStepDeltaStepDetailsToolCallsCodeOutputImageObject: Codable, Hashable, Sendable {
+public struct RunStepDeltaStepDetailsToolCallsCodeOutputImageObject: OpenAIModel {
     /// The index of the output in the outputs array.
     public var index: Int
     /// Always `image`.
@@ -818,13 +992,21 @@ public struct RunStepDeltaStepDetailsToolCallsCodeOutputImageObject: Codable, Ha
         self.image = image
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case index
-        case type
-        case image
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.index = try container.decode(Int.self, forKey: "index")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "image"
+        self.image = try container.decodeIfPresent(RunStepDeltaStepDetailsToolCallsCodeOutputImageObject.ImageValue.self, forKey: "image")
     }
 
-    public struct ImageValue: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.index, forKey: "index")
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.image, forKey: "image")
+    }
+
+    public struct ImageValue: OpenAIModel {
         /// The [file](https://developers.openai.com/api/reference/resources/files) ID of the image.
         public var fileID: String?
 
@@ -832,14 +1014,20 @@ public struct RunStepDeltaStepDetailsToolCallsCodeOutputImageObject: Codable, Ha
             self.fileID = fileID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case fileID = "file_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.fileID = try container.decodeIfPresent(String.self, forKey: "file_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.fileID, forKey: "file_id")
         }
     }
 }
 
 /// Text output from the Code Interpreter tool call as part of a run step.
-public struct RunStepDeltaStepDetailsToolCallsCodeOutputLogsObject: Codable, Hashable, Sendable {
+public struct RunStepDeltaStepDetailsToolCallsCodeOutputLogsObject: OpenAIModel {
     /// The index of the output in the outputs array.
     public var index: Int
     /// Always `logs`.
@@ -852,14 +1040,22 @@ public struct RunStepDeltaStepDetailsToolCallsCodeOutputLogsObject: Codable, Has
         self.logs = logs
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case index
-        case type
-        case logs
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.index = try container.decode(Int.self, forKey: "index")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "logs"
+        self.logs = try container.decodeIfPresent(String.self, forKey: "logs")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.index, forKey: "index")
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.logs, forKey: "logs")
     }
 }
 
-public struct RunStepDeltaStepDetailsToolCallsFileSearchObject: Codable, Hashable, Sendable {
+public struct RunStepDeltaStepDetailsToolCallsFileSearchObject: OpenAIModel {
     /// The index of the tool call in the tool calls array.
     public var index: Int
     /// The ID of the tool call object.
@@ -879,15 +1075,24 @@ public struct RunStepDeltaStepDetailsToolCallsFileSearchObject: Codable, Hashabl
         self.id = id
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case index
-        case id
-        case type
-        case fileSearch = "file_search"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.index = try container.decode(Int.self, forKey: "index")
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "file_search"
+        self.fileSearch = try container.decode(JSONObject.self, forKey: "file_search")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.index, forKey: "index")
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.fileSearch, forKey: "file_search")
     }
 }
 
-public struct RunStepDeltaStepDetailsToolCallsFunctionObject: Codable, Hashable, Sendable {
+public struct RunStepDeltaStepDetailsToolCallsFunctionObject: OpenAIModel {
     /// The index of the tool call in the tool calls array.
     public var index: Int
     /// The ID of the tool call object.
@@ -907,15 +1112,24 @@ public struct RunStepDeltaStepDetailsToolCallsFunctionObject: Codable, Hashable,
         self.function = function
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case index
-        case id
-        case type
-        case function
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.index = try container.decode(Int.self, forKey: "index")
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "function"
+        self.function = try container.decodeIfPresent(RunStepDeltaStepDetailsToolCallsFunctionObject.Function.self, forKey: "function")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.index, forKey: "index")
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.function, forKey: "function")
     }
 
     /// The definition of the function that was called.
-    public struct Function: Codable, Hashable, Sendable {
+    public struct Function: OpenAIModel {
         /// The name of the function.
         public var name: String?
         /// The arguments passed to the function.
@@ -932,16 +1146,24 @@ public struct RunStepDeltaStepDetailsToolCallsFunctionObject: Codable, Hashable,
             self.output = output
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case name
-            case arguments
-            case output
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.name = try container.decodeIfPresent(String.self, forKey: "name")
+            self.arguments = try container.decodeIfPresent(String.self, forKey: "arguments")
+            self.output = try container.decodeIfPresent(String.self, forKey: "output")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.name, forKey: "name")
+            try container.encodeIfPresent(self.arguments, forKey: "arguments")
+            try container.encodeIfPresent(self.output, forKey: "output")
         }
     }
 }
 
 /// Details of the tool call.
-public struct RunStepDeltaStepDetailsToolCallsObject: Codable, Hashable, Sendable {
+public struct RunStepDeltaStepDetailsToolCallsObject: OpenAIModel {
     /// Always `tool_calls`.
     public var type: String = "tool_calls"
     /// An array of tool calls the run step was involved in. These can be associated with one of three types of tools: `code_interpreter`, `file_search`, or `function`.
@@ -951,13 +1173,20 @@ public struct RunStepDeltaStepDetailsToolCallsObject: Codable, Hashable, Sendabl
         self.toolCalls = toolCalls
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case toolCalls = "tool_calls"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "tool_calls"
+        self.toolCalls = try container.decodeIfPresent([RunStepDeltaStepDetailsToolCallsObject.ToolCall].self, forKey: "tool_calls")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.toolCalls, forKey: "tool_calls")
     }
 
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum ToolCall: Codable, Hashable, Sendable {
+    public indirect enum ToolCall: OpenAIModel {
         /// `type`: `code_interpreter`
         case codeInterpreter(RunStepDeltaStepDetailsToolCallsCodeObject)
         /// `type`: `file_search`
@@ -1005,7 +1234,7 @@ public struct RunStepDeltaStepDetailsToolCallsObject: Codable, Hashable, Sendabl
 }
 
 /// Details of the message creation by the run step.
-public struct RunStepDetailsMessageCreationObject: Codable, Hashable, Sendable {
+public struct RunStepDetailsMessageCreationObject: OpenAIModel {
     /// Always `message_creation`.
     public var type: String = "message_creation"
     public var messageCreation: RunStepDetailsMessageCreationObject.MessageCreation
@@ -1014,12 +1243,19 @@ public struct RunStepDetailsMessageCreationObject: Codable, Hashable, Sendable {
         self.messageCreation = messageCreation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case messageCreation = "message_creation"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "message_creation"
+        self.messageCreation = try container.decode(RunStepDetailsMessageCreationObject.MessageCreation.self, forKey: "message_creation")
     }
 
-    public struct MessageCreation: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.messageCreation, forKey: "message_creation")
+    }
+
+    public struct MessageCreation: OpenAIModel {
         /// The ID of the message that was created by this run step.
         public var messageID: String
 
@@ -1027,14 +1263,20 @@ public struct RunStepDetailsMessageCreationObject: Codable, Hashable, Sendable {
             self.messageID = messageID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case messageID = "message_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.messageID = try container.decode(String.self, forKey: "message_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.messageID, forKey: "message_id")
         }
     }
 }
 
 /// Details of the Code Interpreter tool call the run step was involved in.
-public struct RunStepDetailsToolCallsCodeObject: Codable, Hashable, Sendable {
+public struct RunStepDetailsToolCallsCodeObject: OpenAIModel {
     /// The ID of the tool call.
     public var id: String
     /// The type of tool call. This is always going to be `code_interpreter` for this type of tool call.
@@ -1047,14 +1289,22 @@ public struct RunStepDetailsToolCallsCodeObject: Codable, Hashable, Sendable {
         self.codeInterpreter = codeInterpreter
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case type
-        case codeInterpreter = "code_interpreter"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "code_interpreter"
+        self.codeInterpreter = try container.decode(RunStepDetailsToolCallsCodeObject.CodeInterpreter.self, forKey: "code_interpreter")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.codeInterpreter, forKey: "code_interpreter")
     }
 
     /// The Code Interpreter tool call definition.
-    public struct CodeInterpreter: Codable, Hashable, Sendable {
+    public struct CodeInterpreter: OpenAIModel {
         /// The input to the Code Interpreter tool call.
         public var input: String
         /// The outputs from the Code Interpreter tool call. Code Interpreter can output one or more items, including text (`logs`) or images (`image`). Each of these are represented by a different object type.
@@ -1065,13 +1315,20 @@ public struct RunStepDetailsToolCallsCodeObject: Codable, Hashable, Sendable {
             self.outputs = outputs
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case input
-            case outputs
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.input = try container.decode(String.self, forKey: "input")
+            self.outputs = try container.decode([RunStepDetailsToolCallsCodeObject.CodeInterpreter.Output].self, forKey: "outputs")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.input, forKey: "input")
+            try container.encode(self.outputs, forKey: "outputs")
         }
 
         /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-        public indirect enum Output: Codable, Hashable, Sendable {
+        public indirect enum Output: OpenAIModel {
             /// `type`: `logs`
             case logs(RunStepDetailsToolCallsCodeOutputLogsObject)
             /// `type`: `image`
@@ -1112,7 +1369,7 @@ public struct RunStepDetailsToolCallsCodeObject: Codable, Hashable, Sendable {
     }
 }
 
-public struct RunStepDetailsToolCallsCodeOutputImageObject: Codable, Hashable, Sendable {
+public struct RunStepDetailsToolCallsCodeOutputImageObject: OpenAIModel {
     /// Always `image`.
     public var type: String = "image"
     public var image: RunStepDetailsToolCallsCodeOutputImageObject.ImageValue
@@ -1121,12 +1378,19 @@ public struct RunStepDetailsToolCallsCodeOutputImageObject: Codable, Hashable, S
         self.image = image
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case image
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "image"
+        self.image = try container.decode(RunStepDetailsToolCallsCodeOutputImageObject.ImageValue.self, forKey: "image")
     }
 
-    public struct ImageValue: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.image, forKey: "image")
+    }
+
+    public struct ImageValue: OpenAIModel {
         /// The [file](https://developers.openai.com/api/reference/resources/files) ID of the image.
         public var fileID: String
 
@@ -1134,14 +1398,20 @@ public struct RunStepDetailsToolCallsCodeOutputImageObject: Codable, Hashable, S
             self.fileID = fileID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case fileID = "file_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.fileID = try container.decode(String.self, forKey: "file_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.fileID, forKey: "file_id")
         }
     }
 }
 
 /// Text output from the Code Interpreter tool call as part of a run step.
-public struct RunStepDetailsToolCallsCodeOutputLogsObject: Codable, Hashable, Sendable {
+public struct RunStepDetailsToolCallsCodeOutputLogsObject: OpenAIModel {
     /// Always `logs`.
     public var type: String = "logs"
     /// The text output from the Code Interpreter tool call.
@@ -1151,13 +1421,20 @@ public struct RunStepDetailsToolCallsCodeOutputLogsObject: Codable, Hashable, Se
         self.logs = logs
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case logs
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "logs"
+        self.logs = try container.decode(String.self, forKey: "logs")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.logs, forKey: "logs")
     }
 }
 
-public struct RunStepDetailsToolCallsFileSearchObject: Codable, Hashable, Sendable {
+public struct RunStepDetailsToolCallsFileSearchObject: OpenAIModel {
     /// The ID of the tool call object.
     public var id: String
     /// The type of tool call. This is always going to be `file_search` for this type of tool call.
@@ -1170,14 +1447,22 @@ public struct RunStepDetailsToolCallsFileSearchObject: Codable, Hashable, Sendab
         self.fileSearch = fileSearch
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case type
-        case fileSearch = "file_search"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "file_search"
+        self.fileSearch = try container.decode(RunStepDetailsToolCallsFileSearchObject.FileSearch.self, forKey: "file_search")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.fileSearch, forKey: "file_search")
     }
 
     /// For now, this is always going to be an empty object.
-    public struct FileSearch: Codable, Hashable, Sendable {
+    public struct FileSearch: OpenAIModel {
         public var rankingOptions: RunStepDetailsToolCallsFileSearchRankingOptionsObject?
         /// The results of the file search.
         public var results: [RunStepDetailsToolCallsFileSearchResultObject]?
@@ -1187,15 +1472,22 @@ public struct RunStepDetailsToolCallsFileSearchObject: Codable, Hashable, Sendab
             self.results = results
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case rankingOptions = "ranking_options"
-            case results
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.rankingOptions = try container.decodeIfPresent(RunStepDetailsToolCallsFileSearchRankingOptionsObject.self, forKey: "ranking_options")
+            self.results = try container.decodeIfPresent([RunStepDetailsToolCallsFileSearchResultObject].self, forKey: "results")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.rankingOptions, forKey: "ranking_options")
+            try container.encodeIfPresent(self.results, forKey: "results")
         }
     }
 }
 
 /// The ranking options for the file search.
-public struct RunStepDetailsToolCallsFileSearchRankingOptionsObject: Codable, Hashable, Sendable {
+public struct RunStepDetailsToolCallsFileSearchRankingOptionsObject: OpenAIModel {
     public var ranker: FileSearchRanker
     /// The score threshold for the file search. All values must be a floating point number between 0 and 1.
     public var scoreThreshold: Double
@@ -1205,14 +1497,21 @@ public struct RunStepDetailsToolCallsFileSearchRankingOptionsObject: Codable, Ha
         self.scoreThreshold = scoreThreshold
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case ranker
-        case scoreThreshold = "score_threshold"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.ranker = try container.decode(FileSearchRanker.self, forKey: "ranker")
+        self.scoreThreshold = try container.decode(Double.self, forKey: "score_threshold")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.ranker, forKey: "ranker")
+        try container.encode(self.scoreThreshold, forKey: "score_threshold")
     }
 }
 
 /// A result instance of the file search.
-public struct RunStepDetailsToolCallsFileSearchResultObject: Codable, Hashable, Sendable {
+public struct RunStepDetailsToolCallsFileSearchResultObject: OpenAIModel {
     /// The ID of the file that result was found in.
     public var fileID: String
     /// The name of the file that result was found in.
@@ -1234,14 +1533,23 @@ public struct RunStepDetailsToolCallsFileSearchResultObject: Codable, Hashable, 
         self.content = content
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case fileID = "file_id"
-        case fileName = "file_name"
-        case score
-        case content
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.fileID = try container.decode(String.self, forKey: "file_id")
+        self.fileName = try container.decode(String.self, forKey: "file_name")
+        self.score = try container.decode(Double.self, forKey: "score")
+        self.content = try container.decodeIfPresent([RunStepDetailsToolCallsFileSearchResultObject.ContentItem].self, forKey: "content")
     }
 
-    public struct ContentItem: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.fileID, forKey: "file_id")
+        try container.encode(self.fileName, forKey: "file_name")
+        try container.encode(self.score, forKey: "score")
+        try container.encodeIfPresent(self.content, forKey: "content")
+    }
+
+    public struct ContentItem: OpenAIModel {
         /// The type of the content.
         public var type: String? = "text"
         /// The text content of the file.
@@ -1251,14 +1559,21 @@ public struct RunStepDetailsToolCallsFileSearchResultObject: Codable, Hashable, 
             self.text = text
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case text
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type")
+            self.text = try container.decodeIfPresent(String.self, forKey: "text")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.type, forKey: "type")
+            try container.encodeIfPresent(self.text, forKey: "text")
         }
     }
 }
 
-public struct RunStepDetailsToolCallsFunctionObject: Codable, Hashable, Sendable {
+public struct RunStepDetailsToolCallsFunctionObject: OpenAIModel {
     /// The ID of the tool call object.
     public var id: String
     /// The type of tool call. This is always going to be `function` for this type of tool call.
@@ -1271,14 +1586,22 @@ public struct RunStepDetailsToolCallsFunctionObject: Codable, Hashable, Sendable
         self.function = function
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case type
-        case function
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "function"
+        self.function = try container.decode(RunStepDetailsToolCallsFunctionObject.Function.self, forKey: "function")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.function, forKey: "function")
     }
 
     /// The definition of the function that was called.
-    public struct Function: Codable, Hashable, Sendable {
+    public struct Function: OpenAIModel {
         /// The name of the function.
         public var name: String
         /// The arguments passed to the function.
@@ -1295,16 +1618,24 @@ public struct RunStepDetailsToolCallsFunctionObject: Codable, Hashable, Sendable
             self.output = output
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case name
-            case arguments
-            case output
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.name = try container.decode(String.self, forKey: "name")
+            self.arguments = try container.decode(String.self, forKey: "arguments")
+            self.output = try container.decodeIfPresent(String.self, forKey: "output")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.name, forKey: "name")
+            try container.encode(self.arguments, forKey: "arguments")
+            try container.encodeIfPresent(self.output, forKey: "output")
         }
     }
 }
 
 /// Details of the tool call.
-public struct RunStepDetailsToolCallsObject: Codable, Hashable, Sendable {
+public struct RunStepDetailsToolCallsObject: OpenAIModel {
     /// Always `tool_calls`.
     public var type: String = "tool_calls"
     /// An array of tool calls the run step was involved in. These can be associated with one of three types of tools: `code_interpreter`, `file_search`, or `function`.
@@ -1314,13 +1645,20 @@ public struct RunStepDetailsToolCallsObject: Codable, Hashable, Sendable {
         self.toolCalls = toolCalls
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case toolCalls = "tool_calls"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "tool_calls"
+        self.toolCalls = try container.decode([RunStepDetailsToolCallsObject.ToolCall].self, forKey: "tool_calls")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.toolCalls, forKey: "tool_calls")
     }
 
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum ToolCall: Codable, Hashable, Sendable {
+    public indirect enum ToolCall: OpenAIModel {
         /// `type`: `code_interpreter`
         case codeInterpreter(RunStepDetailsToolCallsCodeObject)
         /// `type`: `file_search`
@@ -1368,7 +1706,7 @@ public struct RunStepDetailsToolCallsObject: Codable, Hashable, Sendable {
 }
 
 /// Represents a step in execution of a run.
-public struct RunStepObject: Codable, Hashable, Sendable {
+public struct RunStepObject: OpenAIModel {
     /// The identifier of the run step, which can be referenced in API endpoints.
     public var id: String
     /// The object type, which is always `thread.run.step`.
@@ -1429,23 +1767,44 @@ public struct RunStepObject: Codable, Hashable, Sendable {
         self.usage = usage
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
-        case assistantID = "assistant_id"
-        case threadID = "thread_id"
-        case runID = "run_id"
-        case type
-        case status
-        case stepDetails = "step_details"
-        case lastError = "last_error"
-        case expiredAt = "expired_at"
-        case cancelledAt = "cancelled_at"
-        case failedAt = "failed_at"
-        case completedAt = "completed_at"
-        case metadata
-        case usage
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "thread.run.step"
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.assistantID = try container.decode(String.self, forKey: "assistant_id")
+        self.threadID = try container.decode(String.self, forKey: "thread_id")
+        self.runID = try container.decode(String.self, forKey: "run_id")
+        self.type = try container.decode(RunStepObject.Kind.self, forKey: "type")
+        self.status = try container.decode(RunStepObject.Status.self, forKey: "status")
+        self.stepDetails = try container.decode(RunStepObject.StepDetails.self, forKey: "step_details")
+        self.lastError = try container.decodeIfPresent(RunStepObject.LastError.self, forKey: "last_error")
+        self.expiredAt = try container.decodeIfPresent(Int.self, forKey: "expired_at")
+        self.cancelledAt = try container.decodeIfPresent(Int.self, forKey: "cancelled_at")
+        self.failedAt = try container.decodeIfPresent(Int.self, forKey: "failed_at")
+        self.completedAt = try container.decodeIfPresent(Int.self, forKey: "completed_at")
+        self.metadata = try container.decodeIfPresent(Metadata.self, forKey: "metadata")
+        self.usage = try container.decodeIfPresent(RunStepCompletionUsage.self, forKey: "usage")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.assistantID, forKey: "assistant_id")
+        try container.encode(self.threadID, forKey: "thread_id")
+        try container.encode(self.runID, forKey: "run_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.status, forKey: "status")
+        try container.encode(self.stepDetails, forKey: "step_details")
+        try container.encodeIfPresent(self.lastError, forKey: "last_error")
+        try container.encodeIfPresent(self.expiredAt, forKey: "expired_at")
+        try container.encodeIfPresent(self.cancelledAt, forKey: "cancelled_at")
+        try container.encodeIfPresent(self.failedAt, forKey: "failed_at")
+        try container.encodeIfPresent(self.completedAt, forKey: "completed_at")
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
+        try container.encodeIfPresent(self.usage, forKey: "usage")
     }
 
     /// The type of run step, which can be either `message_creation` or `tool_calls`.
@@ -1490,7 +1849,7 @@ public struct RunStepObject: Codable, Hashable, Sendable {
     /// The details of the run step.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum StepDetails: Codable, Hashable, Sendable {
+    public indirect enum StepDetails: OpenAIModel {
         /// `type`: `message_creation`
         case messageCreation(RunStepDetailsMessageCreationObject)
         /// `type`: `tool_calls`
@@ -1530,7 +1889,7 @@ public struct RunStepObject: Codable, Hashable, Sendable {
     }
 
     /// The last error associated with this run step. Will be `null` if there are no errors.
-    public struct LastError: Codable, Hashable, Sendable {
+    public struct LastError: OpenAIModel {
         /// One of `server_error` or `rate_limit_exceeded`.
         public var code: RunStepObject.LastError.Code
         /// A human-readable description of the error.
@@ -1541,9 +1900,16 @@ public struct RunStepObject: Codable, Hashable, Sendable {
             self.message = message
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case code
-            case message
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.code = try container.decode(RunStepObject.LastError.Code.self, forKey: "code")
+            self.message = try container.decode(String.self, forKey: "message")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.code, forKey: "code")
+            try container.encode(self.message, forKey: "message")
         }
 
         /// One of `server_error` or `rate_limit_exceeded`.
@@ -1567,7 +1933,7 @@ public struct RunStepObject: Codable, Hashable, Sendable {
 }
 
 /// Decoding picks the case from the `event` field. Values this version does not know decode as `.unknown`.
-public indirect enum RunStepStreamEvent: Codable, Hashable, Sendable {
+public indirect enum RunStepStreamEvent: OpenAIModel {
     /// Occurs when a [run step](https://developers.openai.com/api/docs/assistants/migration) is created.
     ///
     /// `event`: `thread.run.step.created`
@@ -1655,7 +2021,7 @@ public indirect enum RunStepStreamEvent: Codable, Hashable, Sendable {
     }
 
     /// Occurs when a [run step](https://developers.openai.com/api/docs/assistants/migration) is created.
-    public struct ThreadRunStepCreated: Codable, Hashable, Sendable {
+    public struct ThreadRunStepCreated: OpenAIModel {
         public var event: String = "thread.run.step.created"
         public var data: RunStepObject
 
@@ -1663,14 +2029,21 @@ public indirect enum RunStepStreamEvent: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case event
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.event = try container.decodeIfPresent(String.self, forKey: "event") ?? "thread.run.step.created"
+            self.data = try container.decode(RunStepObject.self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.event, forKey: "event")
+            try container.encode(self.data, forKey: "data")
         }
     }
 
     /// Occurs when a [run step](https://developers.openai.com/api/docs/assistants/migration) moves to an `in_progress` state.
-    public struct ThreadRunStepInProgress: Codable, Hashable, Sendable {
+    public struct ThreadRunStepInProgress: OpenAIModel {
         public var event: String = "thread.run.step.in_progress"
         public var data: RunStepObject
 
@@ -1678,14 +2051,21 @@ public indirect enum RunStepStreamEvent: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case event
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.event = try container.decodeIfPresent(String.self, forKey: "event") ?? "thread.run.step.in_progress"
+            self.data = try container.decode(RunStepObject.self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.event, forKey: "event")
+            try container.encode(self.data, forKey: "data")
         }
     }
 
     /// Occurs when parts of a [run step](https://developers.openai.com/api/docs/assistants/migration) are being streamed.
-    public struct ThreadRunStepDelta: Codable, Hashable, Sendable {
+    public struct ThreadRunStepDelta: OpenAIModel {
         public var event: String = "thread.run.step.delta"
         public var data: RunStepDeltaObject
 
@@ -1693,14 +2073,21 @@ public indirect enum RunStepStreamEvent: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case event
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.event = try container.decodeIfPresent(String.self, forKey: "event") ?? "thread.run.step.delta"
+            self.data = try container.decode(RunStepDeltaObject.self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.event, forKey: "event")
+            try container.encode(self.data, forKey: "data")
         }
     }
 
     /// Occurs when a [run step](https://developers.openai.com/api/docs/assistants/migration) is completed.
-    public struct ThreadRunStepCompleted: Codable, Hashable, Sendable {
+    public struct ThreadRunStepCompleted: OpenAIModel {
         public var event: String = "thread.run.step.completed"
         public var data: RunStepObject
 
@@ -1708,14 +2095,21 @@ public indirect enum RunStepStreamEvent: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case event
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.event = try container.decodeIfPresent(String.self, forKey: "event") ?? "thread.run.step.completed"
+            self.data = try container.decode(RunStepObject.self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.event, forKey: "event")
+            try container.encode(self.data, forKey: "data")
         }
     }
 
     /// Occurs when a [run step](https://developers.openai.com/api/docs/assistants/migration) fails.
-    public struct ThreadRunStepFailed: Codable, Hashable, Sendable {
+    public struct ThreadRunStepFailed: OpenAIModel {
         public var event: String = "thread.run.step.failed"
         public var data: RunStepObject
 
@@ -1723,14 +2117,21 @@ public indirect enum RunStepStreamEvent: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case event
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.event = try container.decodeIfPresent(String.self, forKey: "event") ?? "thread.run.step.failed"
+            self.data = try container.decode(RunStepObject.self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.event, forKey: "event")
+            try container.encode(self.data, forKey: "data")
         }
     }
 
     /// Occurs when a [run step](https://developers.openai.com/api/docs/assistants/migration) is cancelled.
-    public struct ThreadRunStepCancelled: Codable, Hashable, Sendable {
+    public struct ThreadRunStepCancelled: OpenAIModel {
         public var event: String = "thread.run.step.cancelled"
         public var data: RunStepObject
 
@@ -1738,14 +2139,21 @@ public indirect enum RunStepStreamEvent: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case event
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.event = try container.decodeIfPresent(String.self, forKey: "event") ?? "thread.run.step.cancelled"
+            self.data = try container.decode(RunStepObject.self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.event, forKey: "event")
+            try container.encode(self.data, forKey: "data")
         }
     }
 
     /// Occurs when a [run step](https://developers.openai.com/api/docs/assistants/migration) expires.
-    public struct ThreadRunStepExpired: Codable, Hashable, Sendable {
+    public struct ThreadRunStepExpired: OpenAIModel {
         public var event: String = "thread.run.step.expired"
         public var data: RunStepObject
 
@@ -1753,15 +2161,22 @@ public indirect enum RunStepStreamEvent: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case event
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.event = try container.decodeIfPresent(String.self, forKey: "event") ?? "thread.run.step.expired"
+            self.data = try container.decode(RunStepObject.self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.event, forKey: "event")
+            try container.encode(self.data, forKey: "data")
         }
     }
 }
 
 /// Decoding picks the case from the `event` field. Values this version does not know decode as `.unknown`.
-public indirect enum RunStreamEvent: Codable, Hashable, Sendable {
+public indirect enum RunStreamEvent: OpenAIModel {
     /// Occurs when a new [run](https://developers.openai.com/api/docs/assistants/migration) is created.
     ///
     /// `event`: `thread.run.created`
@@ -1876,7 +2291,7 @@ public indirect enum RunStreamEvent: Codable, Hashable, Sendable {
     }
 
     /// Occurs when a new [run](https://developers.openai.com/api/docs/assistants/migration) is created.
-    public struct ThreadRunCreated: Codable, Hashable, Sendable {
+    public struct ThreadRunCreated: OpenAIModel {
         public var event: String = "thread.run.created"
         public var data: RunObject
 
@@ -1884,14 +2299,21 @@ public indirect enum RunStreamEvent: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case event
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.event = try container.decodeIfPresent(String.self, forKey: "event") ?? "thread.run.created"
+            self.data = try container.decode(RunObject.self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.event, forKey: "event")
+            try container.encode(self.data, forKey: "data")
         }
     }
 
     /// Occurs when a [run](https://developers.openai.com/api/docs/assistants/migration) moves to a `queued` status.
-    public struct ThreadRunQueued: Codable, Hashable, Sendable {
+    public struct ThreadRunQueued: OpenAIModel {
         public var event: String = "thread.run.queued"
         public var data: RunObject
 
@@ -1899,14 +2321,21 @@ public indirect enum RunStreamEvent: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case event
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.event = try container.decodeIfPresent(String.self, forKey: "event") ?? "thread.run.queued"
+            self.data = try container.decode(RunObject.self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.event, forKey: "event")
+            try container.encode(self.data, forKey: "data")
         }
     }
 
     /// Occurs when a [run](https://developers.openai.com/api/docs/assistants/migration) moves to an `in_progress` status.
-    public struct ThreadRunInProgress: Codable, Hashable, Sendable {
+    public struct ThreadRunInProgress: OpenAIModel {
         public var event: String = "thread.run.in_progress"
         public var data: RunObject
 
@@ -1914,14 +2343,21 @@ public indirect enum RunStreamEvent: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case event
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.event = try container.decodeIfPresent(String.self, forKey: "event") ?? "thread.run.in_progress"
+            self.data = try container.decode(RunObject.self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.event, forKey: "event")
+            try container.encode(self.data, forKey: "data")
         }
     }
 
     /// Occurs when a [run](https://developers.openai.com/api/docs/assistants/migration) moves to a `requires_action` status.
-    public struct ThreadRunRequiresAction: Codable, Hashable, Sendable {
+    public struct ThreadRunRequiresAction: OpenAIModel {
         public var event: String = "thread.run.requires_action"
         public var data: RunObject
 
@@ -1929,14 +2365,21 @@ public indirect enum RunStreamEvent: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case event
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.event = try container.decodeIfPresent(String.self, forKey: "event") ?? "thread.run.requires_action"
+            self.data = try container.decode(RunObject.self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.event, forKey: "event")
+            try container.encode(self.data, forKey: "data")
         }
     }
 
     /// Occurs when a [run](https://developers.openai.com/api/docs/assistants/migration) is completed.
-    public struct ThreadRunCompleted: Codable, Hashable, Sendable {
+    public struct ThreadRunCompleted: OpenAIModel {
         public var event: String = "thread.run.completed"
         public var data: RunObject
 
@@ -1944,14 +2387,21 @@ public indirect enum RunStreamEvent: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case event
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.event = try container.decodeIfPresent(String.self, forKey: "event") ?? "thread.run.completed"
+            self.data = try container.decode(RunObject.self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.event, forKey: "event")
+            try container.encode(self.data, forKey: "data")
         }
     }
 
     /// Occurs when a [run](https://developers.openai.com/api/docs/assistants/migration) ends with status `incomplete`.
-    public struct ThreadRunIncomplete: Codable, Hashable, Sendable {
+    public struct ThreadRunIncomplete: OpenAIModel {
         public var event: String = "thread.run.incomplete"
         public var data: RunObject
 
@@ -1959,14 +2409,21 @@ public indirect enum RunStreamEvent: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case event
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.event = try container.decodeIfPresent(String.self, forKey: "event") ?? "thread.run.incomplete"
+            self.data = try container.decode(RunObject.self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.event, forKey: "event")
+            try container.encode(self.data, forKey: "data")
         }
     }
 
     /// Occurs when a [run](https://developers.openai.com/api/docs/assistants/migration) fails.
-    public struct ThreadRunFailed: Codable, Hashable, Sendable {
+    public struct ThreadRunFailed: OpenAIModel {
         public var event: String = "thread.run.failed"
         public var data: RunObject
 
@@ -1974,14 +2431,21 @@ public indirect enum RunStreamEvent: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case event
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.event = try container.decodeIfPresent(String.self, forKey: "event") ?? "thread.run.failed"
+            self.data = try container.decode(RunObject.self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.event, forKey: "event")
+            try container.encode(self.data, forKey: "data")
         }
     }
 
     /// Occurs when a [run](https://developers.openai.com/api/docs/assistants/migration) moves to a `cancelling` status.
-    public struct ThreadRunCancelling: Codable, Hashable, Sendable {
+    public struct ThreadRunCancelling: OpenAIModel {
         public var event: String = "thread.run.cancelling"
         public var data: RunObject
 
@@ -1989,14 +2453,21 @@ public indirect enum RunStreamEvent: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case event
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.event = try container.decodeIfPresent(String.self, forKey: "event") ?? "thread.run.cancelling"
+            self.data = try container.decode(RunObject.self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.event, forKey: "event")
+            try container.encode(self.data, forKey: "data")
         }
     }
 
     /// Occurs when a [run](https://developers.openai.com/api/docs/assistants/migration) is cancelled.
-    public struct ThreadRunCancelled: Codable, Hashable, Sendable {
+    public struct ThreadRunCancelled: OpenAIModel {
         public var event: String = "thread.run.cancelled"
         public var data: RunObject
 
@@ -2004,14 +2475,21 @@ public indirect enum RunStreamEvent: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case event
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.event = try container.decodeIfPresent(String.self, forKey: "event") ?? "thread.run.cancelled"
+            self.data = try container.decode(RunObject.self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.event, forKey: "event")
+            try container.encode(self.data, forKey: "data")
         }
     }
 
     /// Occurs when a [run](https://developers.openai.com/api/docs/assistants/migration) expires.
-    public struct ThreadRunExpired: Codable, Hashable, Sendable {
+    public struct ThreadRunExpired: OpenAIModel {
         public var event: String = "thread.run.expired"
         public var data: RunObject
 
@@ -2019,15 +2497,22 @@ public indirect enum RunStreamEvent: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case event
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.event = try container.decodeIfPresent(String.self, forKey: "event") ?? "thread.run.expired"
+            self.data = try container.decode(RunObject.self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.event, forKey: "event")
+            try container.encode(self.data, forKey: "data")
         }
     }
 }
 
 /// Tool call objects
-public struct RunToolCallObject: Codable, Hashable, Sendable {
+public struct RunToolCallObject: OpenAIModel {
     /// The ID of the tool call. This ID must be referenced when you submit the tool outputs in using the [Submit tool outputs to run](https://developers.openai.com/api/docs/assistants/migration) endpoint.
     public var id: String
     /// The type of tool call the output is required for. For now, this is always `function`.
@@ -2040,14 +2525,22 @@ public struct RunToolCallObject: Codable, Hashable, Sendable {
         self.function = function
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case type
-        case function
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "function"
+        self.function = try container.decode(RunToolCallObject.Function.self, forKey: "function")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.function, forKey: "function")
     }
 
     /// The function definition.
-    public struct Function: Codable, Hashable, Sendable {
+    public struct Function: OpenAIModel {
         /// The name of the function.
         public var name: String
         /// The arguments that the model expects you to pass to the function.
@@ -2058,9 +2551,16 @@ public struct RunToolCallObject: Codable, Hashable, Sendable {
             self.arguments = arguments
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case name
-            case arguments
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.name = try container.decode(String.self, forKey: "name")
+            self.arguments = try container.decode(String.self, forKey: "arguments")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.name, forKey: "name")
+            try container.encode(self.arguments, forKey: "arguments")
         }
     }
 }

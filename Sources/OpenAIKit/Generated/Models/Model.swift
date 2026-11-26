@@ -4,7 +4,7 @@
 import Foundation
 
 /// Describes an OpenAI model offering that can be used with the API.
-public struct Model: Codable, Hashable, Sendable {
+public struct Model: OpenAIModel {
     /// The model identifier, which can be referenced in the API endpoints.
     public var id: String
     /// The Unix timestamp (in seconds) when the model was created.
@@ -28,12 +28,22 @@ public struct Model: Codable, Hashable, Sendable {
         self.shutdownDate = shutdownDate
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case created
-        case object
-        case ownedBy = "owned_by"
-        case shutdownDate = "shutdown_date"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.created = try container.decode(Int.self, forKey: "created")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "model"
+        self.ownedBy = try container.decode(String.self, forKey: "owned_by")
+        self.shutdownDate = try container.decodeIfPresent(String.self, forKey: "shutdown_date")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.created, forKey: "created")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.ownedBy, forKey: "owned_by")
+        try container.encodeIfPresent(self.shutdownDate, forKey: "shutdown_date")
     }
 }
 
@@ -430,7 +440,7 @@ public struct ModelIdsShared: OpenAIStringEnum {
     }
 }
 
-public struct ModelResponseProperties: Codable, Hashable, Sendable {
+public struct ModelResponseProperties: OpenAIModel {
     public var metadata: Metadata?
     public var topLogprobs: Int?
     public var temperature: Double?
@@ -466,15 +476,28 @@ public struct ModelResponseProperties: Codable, Hashable, Sendable {
         self.promptCacheRetention = promptCacheRetention
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case metadata
-        case topLogprobs = "top_logprobs"
-        case temperature
-        case topP = "top_p"
-        case user
-        case safetyIdentifier = "safety_identifier"
-        case promptCacheKey = "prompt_cache_key"
-        case promptCacheRetention = "prompt_cache_retention"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.metadata = try container.decodeIfPresent(Metadata.self, forKey: "metadata")
+        self.topLogprobs = try container.decodeIfPresent(Int.self, forKey: "top_logprobs")
+        self.temperature = try container.decodeIfPresent(Double.self, forKey: "temperature")
+        self.topP = try container.decodeIfPresent(Double.self, forKey: "top_p")
+        self.user = try container.decodeIfPresent(String.self, forKey: "user")
+        self.safetyIdentifier = try container.decodeIfPresent(String.self, forKey: "safety_identifier")
+        self.promptCacheKey = try container.decodeIfPresent(String.self, forKey: "prompt_cache_key")
+        self.promptCacheRetention = try container.decodeIfPresent(ModelResponseProperties.PromptCacheRetention.self, forKey: "prompt_cache_retention")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
+        try container.encodeIfPresent(self.topLogprobs, forKey: "top_logprobs")
+        try container.encodeIfPresent(self.temperature, forKey: "temperature")
+        try container.encodeIfPresent(self.topP, forKey: "top_p")
+        try container.encodeIfPresent(self.user, forKey: "user")
+        try container.encodeIfPresent(self.safetyIdentifier, forKey: "safety_identifier")
+        try container.encodeIfPresent(self.promptCacheKey, forKey: "prompt_cache_key")
+        try container.encodeIfPresent(self.promptCacheRetention, forKey: "prompt_cache_retention")
     }
 
     /// Deprecated. Use `prompt_cache_options.ttl` instead.

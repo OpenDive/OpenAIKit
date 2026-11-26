@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct OciExternalKeyParams: Codable, Hashable, Sendable {
+public struct OciExternalKeyParams: OpenAIModel {
     /// A friendly name to identify this config
     public var name: String
     public var type: String = "oci"
@@ -33,18 +33,30 @@ public struct OciExternalKeyParams: Codable, Hashable, Sendable {
         self.keyVersionOcid = keyVersionOcid
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case name
-        case type
-        case region
-        case vaultOcid = "vault_ocid"
-        case keyOcid = "key_ocid"
-        case purpose
-        case keyVersionOcid = "key_version_ocid"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.name = try container.decode(String.self, forKey: "name")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "oci"
+        self.region = try container.decode(String.self, forKey: "region")
+        self.vaultOcid = try container.decode(String.self, forKey: "vault_ocid")
+        self.keyOcid = try container.decode(String.self, forKey: "key_ocid")
+        self.purpose = try container.decodeIfPresent(ExternalKeyPurpose.self, forKey: "purpose")
+        self.keyVersionOcid = try container.decodeIfPresent(String.self, forKey: "key_version_ocid")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.region, forKey: "region")
+        try container.encode(self.vaultOcid, forKey: "vault_ocid")
+        try container.encode(self.keyOcid, forKey: "key_ocid")
+        try container.encodeIfPresent(self.purpose, forKey: "purpose")
+        try container.encodeIfPresent(self.keyVersionOcid, forKey: "key_version_ocid")
     }
 }
 
-public struct OciExternalStorageProviderParams: Codable, Hashable, Sendable {
+public struct OciExternalStorageProviderParams: OpenAIModel {
     public var type: String = "oci"
     public var tenancyOcid: String
     public var region: String
@@ -60,15 +72,24 @@ public struct OciExternalStorageProviderParams: Codable, Hashable, Sendable {
         self.bucket = bucket
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case tenancyOcid = "tenancy_ocid"
-        case region
-        case bucket
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "oci"
+        self.tenancyOcid = try container.decode(String.self, forKey: "tenancy_ocid")
+        self.region = try container.decode(String.self, forKey: "region")
+        self.bucket = try container.decode(String.self, forKey: "bucket")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.tenancyOcid, forKey: "tenancy_ocid")
+        try container.encode(self.region, forKey: "region")
+        try container.encode(self.bucket, forKey: "bucket")
     }
 }
 
-public struct OciExternalStorageProviderResponse: Codable, Hashable, Sendable {
+public struct OciExternalStorageProviderResponse: OpenAIModel {
     public var type: String = "oci"
     public var tenancyOcid: String
     public var region: String
@@ -84,10 +105,19 @@ public struct OciExternalStorageProviderResponse: Codable, Hashable, Sendable {
         self.bucket = bucket
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case tenancyOcid = "tenancy_ocid"
-        case region
-        case bucket
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "oci"
+        self.tenancyOcid = try container.decode(String.self, forKey: "tenancy_ocid")
+        self.region = try container.decode(String.self, forKey: "region")
+        self.bucket = try container.decode(String.self, forKey: "bucket")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.tenancyOcid, forKey: "tenancy_ocid")
+        try container.encode(self.region, forKey: "region")
+        try container.encode(self.bucket, forKey: "bucket")
     }
 }

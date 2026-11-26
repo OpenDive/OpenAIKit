@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct MisalignmentErrorDetailsResource: Codable, Hashable, Sendable {
+public struct MisalignmentErrorDetailsResource: OpenAIModel {
     public var reviewTarget: String?
     /// An optional classification; clients must accept additional values.
     public var errorType: MisalignmentErrorType?
@@ -24,11 +24,20 @@ public struct MisalignmentErrorDetailsResource: Codable, Hashable, Sendable {
         self.steer = steer
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case reviewTarget = "review_target"
-        case errorType = "error_type"
-        case detailedExplanation = "detailed_explanation"
-        case steer
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.reviewTarget = try container.decodeIfPresent(String.self, forKey: "review_target")
+        self.errorType = try container.decodeIfPresent(MisalignmentErrorType.self, forKey: "error_type")
+        self.detailedExplanation = try container.decodeIfPresent(String.self, forKey: "detailed_explanation")
+        self.steer = try container.decodeIfPresent(MisalignmentSteer.self, forKey: "steer")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.reviewTarget, forKey: "review_target")
+        try container.encodeIfPresent(self.errorType, forKey: "error_type")
+        try container.encodeIfPresent(self.detailedExplanation, forKey: "detailed_explanation")
+        try container.encodeIfPresent(self.steer, forKey: "steer")
     }
 }
 
@@ -50,7 +59,7 @@ public struct MisalignmentErrorType: OpenAIStringEnum {
     }
 }
 
-public struct MisalignmentSteer: Codable, Hashable, Sendable {
+public struct MisalignmentSteer: OpenAIModel {
     /// The public continuation instruction.
     public var message: String
 
@@ -58,7 +67,13 @@ public struct MisalignmentSteer: Codable, Hashable, Sendable {
         self.message = message
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case message
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.message = try container.decode(String.self, forKey: "message")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.message, forKey: "message")
     }
 }

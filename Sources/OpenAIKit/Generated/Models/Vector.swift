@@ -4,7 +4,7 @@
 import Foundation
 
 /// The expiration policy for a vector store.
-public struct VectorStoreExpirationAfter: Codable, Hashable, Sendable {
+public struct VectorStoreExpirationAfter: OpenAIModel {
     /// Anchor timestamp after which the expiration policy applies. Supported anchors: `last_active_at`.
     public var anchor: String = "last_active_at"
     /// The number of days after the anchor time that the vector store will expire.
@@ -14,15 +14,22 @@ public struct VectorStoreExpirationAfter: Codable, Hashable, Sendable {
         self.days = days
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case anchor
-        case days
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.anchor = try container.decodeIfPresent(String.self, forKey: "anchor") ?? "last_active_at"
+        self.days = try container.decode(Int.self, forKey: "days")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.anchor, forKey: "anchor")
+        try container.encode(self.days, forKey: "days")
     }
 }
 
 public typealias VectorStoreFileAttributes = [String: VectorStoreFileAttributesValueItem]
 
-public indirect enum VectorStoreFileAttributesValueItem: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+public indirect enum VectorStoreFileAttributesValueItem: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
     case string(String)
     case number(Double)
     case bool(Bool)
@@ -66,7 +73,7 @@ public indirect enum VectorStoreFileAttributesValueItem: Codable, Hashable, Send
 }
 
 /// A batch of files attached to a vector store.
-public struct VectorStoreFileBatchObject: Codable, Hashable, Sendable {
+public struct VectorStoreFileBatchObject: OpenAIModel {
     /// The identifier, which can be referenced in API endpoints.
     public var id: String
     /// The object type, which is always `vector_store.file_batch`.
@@ -93,13 +100,24 @@ public struct VectorStoreFileBatchObject: Codable, Hashable, Sendable {
         self.fileCounts = fileCounts
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
-        case vectorStoreID = "vector_store_id"
-        case status
-        case fileCounts = "file_counts"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "vector_store.file_batch"
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.vectorStoreID = try container.decode(String.self, forKey: "vector_store_id")
+        self.status = try container.decode(VectorStoreFileBatchObject.Status.self, forKey: "status")
+        self.fileCounts = try container.decode(VectorStoreFileBatchObject.FileCounts.self, forKey: "file_counts")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.vectorStoreID, forKey: "vector_store_id")
+        try container.encode(self.status, forKey: "status")
+        try container.encode(self.fileCounts, forKey: "file_counts")
     }
 
     /// The status of the vector store files batch, which can be either `in_progress`, `completed`, `cancelled` or `failed`.
@@ -122,7 +140,7 @@ public struct VectorStoreFileBatchObject: Codable, Hashable, Sendable {
         }
     }
 
-    public struct FileCounts: Codable, Hashable, Sendable {
+    public struct FileCounts: OpenAIModel {
         /// The number of files that are currently being processed.
         public var inProgress: Int
         /// The number of files that have been processed.
@@ -148,18 +166,28 @@ public struct VectorStoreFileBatchObject: Codable, Hashable, Sendable {
             self.total = total
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case inProgress = "in_progress"
-            case completed
-            case failed
-            case cancelled
-            case total
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.inProgress = try container.decode(Int.self, forKey: "in_progress")
+            self.completed = try container.decode(Int.self, forKey: "completed")
+            self.failed = try container.decode(Int.self, forKey: "failed")
+            self.cancelled = try container.decode(Int.self, forKey: "cancelled")
+            self.total = try container.decode(Int.self, forKey: "total")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.inProgress, forKey: "in_progress")
+            try container.encode(self.completed, forKey: "completed")
+            try container.encode(self.failed, forKey: "failed")
+            try container.encode(self.cancelled, forKey: "cancelled")
+            try container.encode(self.total, forKey: "total")
         }
     }
 }
 
 /// Represents the parsed content of a vector store file.
-public struct VectorStoreFileContentResponse: Codable, Hashable, Sendable {
+public struct VectorStoreFileContentResponse: OpenAIModel {
     /// The object type, which is always `vector_store.file_content.page`
     public var object: String = "vector_store.file_content.page"
     /// Parsed content of the file.
@@ -178,14 +206,23 @@ public struct VectorStoreFileContentResponse: Codable, Hashable, Sendable {
         self.nextPage = nextPage
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case hasMore = "has_more"
-        case nextPage = "next_page"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "vector_store.file_content.page"
+        self.data = try container.decode([VectorStoreFileContentResponse.DataItem].self, forKey: "data")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+        self.nextPage = try container.decodeIfPresent(String.self, forKey: "next_page")
     }
 
-    public struct DataItem: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encode(self.hasMore, forKey: "has_more")
+        try container.encodeIfPresent(self.nextPage, forKey: "next_page")
+    }
+
+    public struct DataItem: OpenAIModel {
         /// The content type (currently only `"text"`)
         public var type: String?
         /// The text content
@@ -196,15 +233,22 @@ public struct VectorStoreFileContentResponse: Codable, Hashable, Sendable {
             self.text = text
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case text
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type")
+            self.text = try container.decodeIfPresent(String.self, forKey: "text")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.type, forKey: "type")
+            try container.encodeIfPresent(self.text, forKey: "text")
         }
     }
 }
 
 /// A list of files attached to a vector store.
-public struct VectorStoreFileObject: Codable, Hashable, Sendable {
+public struct VectorStoreFileObject: OpenAIModel {
     /// The identifier, which can be referenced in API endpoints.
     public var id: String
     /// The object type, which is always `vector_store.file`.
@@ -242,16 +286,30 @@ public struct VectorStoreFileObject: Codable, Hashable, Sendable {
         self.attributes = attributes
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case usageBytes = "usage_bytes"
-        case createdAt = "created_at"
-        case vectorStoreID = "vector_store_id"
-        case status
-        case lastError = "last_error"
-        case chunkingStrategy = "chunking_strategy"
-        case attributes
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "vector_store.file"
+        self.usageBytes = try container.decode(Int.self, forKey: "usage_bytes")
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.vectorStoreID = try container.decode(String.self, forKey: "vector_store_id")
+        self.status = try container.decode(VectorStoreFileObject.Status.self, forKey: "status")
+        self.lastError = try container.decodeIfPresent(VectorStoreFileObject.LastError.self, forKey: "last_error")
+        self.chunkingStrategy = try container.decodeIfPresent(VectorStoreFileObject.ChunkingStrategy.self, forKey: "chunking_strategy")
+        self.attributes = try container.decodeIfPresent(VectorStoreFileAttributes.self, forKey: "attributes")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.usageBytes, forKey: "usage_bytes")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.vectorStoreID, forKey: "vector_store_id")
+        try container.encode(self.status, forKey: "status")
+        try container.encodeIfPresent(self.lastError, forKey: "last_error")
+        try container.encodeIfPresent(self.chunkingStrategy, forKey: "chunking_strategy")
+        try container.encodeIfPresent(self.attributes, forKey: "attributes")
     }
 
     /// The status of the vector store file, which can be either `in_progress`, `completed`, `cancelled`, or `failed`. The status `completed` indicates that the vector store file is ready for use.
@@ -275,7 +333,7 @@ public struct VectorStoreFileObject: Codable, Hashable, Sendable {
     }
 
     /// The last error associated with this vector store file. Will be `null` if there are no errors.
-    public struct LastError: Codable, Hashable, Sendable {
+    public struct LastError: OpenAIModel {
         /// One of `server_error`, `unsupported_file`, or `invalid_file`.
         public var code: VectorStoreFileObject.LastError.Code
         /// A human-readable description of the error.
@@ -286,9 +344,16 @@ public struct VectorStoreFileObject: Codable, Hashable, Sendable {
             self.message = message
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case code
-            case message
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.code = try container.decode(VectorStoreFileObject.LastError.Code.self, forKey: "code")
+            self.message = try container.decode(String.self, forKey: "message")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.code, forKey: "code")
+            try container.encode(self.message, forKey: "message")
         }
 
         /// One of `server_error`, `unsupported_file`, or `invalid_file`.
@@ -314,7 +379,7 @@ public struct VectorStoreFileObject: Codable, Hashable, Sendable {
     /// The strategy used to chunk the file.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum ChunkingStrategy: Codable, Hashable, Sendable {
+    public indirect enum ChunkingStrategy: OpenAIModel {
         /// `type`: `static`
         case `static`(StaticChunkingStrategyResponseParam)
         /// `type`: `other`
@@ -355,7 +420,7 @@ public struct VectorStoreFileObject: Codable, Hashable, Sendable {
 }
 
 /// A vector store is a collection of processed files can be used by the `file_search` tool.
-public struct VectorStoreObject: Codable, Hashable, Sendable {
+public struct VectorStoreObject: OpenAIModel {
     /// The identifier, which can be referenced in API endpoints.
     public var id: String
     /// The object type, which is always `vector_store`.
@@ -398,21 +463,37 @@ public struct VectorStoreObject: Codable, Hashable, Sendable {
         self.metadata = metadata
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
-        case name
-        case usageBytes = "usage_bytes"
-        case fileCounts = "file_counts"
-        case status
-        case expiresAfter = "expires_after"
-        case expiresAt = "expires_at"
-        case lastActiveAt = "last_active_at"
-        case metadata
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "vector_store"
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.usageBytes = try container.decode(Int.self, forKey: "usage_bytes")
+        self.fileCounts = try container.decode(VectorStoreObject.FileCounts.self, forKey: "file_counts")
+        self.status = try container.decode(VectorStoreObject.Status.self, forKey: "status")
+        self.expiresAfter = try container.decodeIfPresent(VectorStoreExpirationAfter.self, forKey: "expires_after")
+        self.expiresAt = try container.decodeIfPresent(Int.self, forKey: "expires_at")
+        self.lastActiveAt = try container.decodeIfPresent(Int.self, forKey: "last_active_at")
+        self.metadata = try container.decodeIfPresent(Metadata.self, forKey: "metadata")
     }
 
-    public struct FileCounts: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.usageBytes, forKey: "usage_bytes")
+        try container.encode(self.fileCounts, forKey: "file_counts")
+        try container.encode(self.status, forKey: "status")
+        try container.encodeIfPresent(self.expiresAfter, forKey: "expires_after")
+        try container.encodeIfPresent(self.expiresAt, forKey: "expires_at")
+        try container.encodeIfPresent(self.lastActiveAt, forKey: "last_active_at")
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
+    }
+
+    public struct FileCounts: OpenAIModel {
         /// The number of files that are currently being processed.
         public var inProgress: Int
         /// The number of files that have been successfully processed.
@@ -438,12 +519,22 @@ public struct VectorStoreObject: Codable, Hashable, Sendable {
             self.total = total
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case inProgress = "in_progress"
-            case completed
-            case failed
-            case cancelled
-            case total
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.inProgress = try container.decode(Int.self, forKey: "in_progress")
+            self.completed = try container.decode(Int.self, forKey: "completed")
+            self.failed = try container.decode(Int.self, forKey: "failed")
+            self.cancelled = try container.decode(Int.self, forKey: "cancelled")
+            self.total = try container.decode(Int.self, forKey: "total")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.inProgress, forKey: "in_progress")
+            try container.encode(self.completed, forKey: "completed")
+            try container.encode(self.failed, forKey: "failed")
+            try container.encode(self.cancelled, forKey: "cancelled")
+            try container.encode(self.total, forKey: "total")
         }
     }
 
@@ -467,7 +558,7 @@ public struct VectorStoreObject: Codable, Hashable, Sendable {
     }
 }
 
-public struct VectorStoreSearchRequest: Codable, Hashable, Sendable {
+public struct VectorStoreSearchRequest: OpenAIModel {
     /// A query string for a search
     public var query: VectorStoreSearchRequest.Query
     /// Whether to rewrite the natural language query for vector search.
@@ -493,16 +584,26 @@ public struct VectorStoreSearchRequest: Codable, Hashable, Sendable {
         self.rankingOptions = rankingOptions
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case query
-        case rewriteQuery = "rewrite_query"
-        case maxNumResults = "max_num_results"
-        case filters
-        case rankingOptions = "ranking_options"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.query = try container.decode(VectorStoreSearchRequest.Query.self, forKey: "query")
+        self.rewriteQuery = try container.decodeIfPresent(Bool.self, forKey: "rewrite_query")
+        self.maxNumResults = try container.decodeIfPresent(Int.self, forKey: "max_num_results")
+        self.filters = try container.decodeIfPresent(VectorStoreSearchRequest.Filters.self, forKey: "filters")
+        self.rankingOptions = try container.decodeIfPresent(VectorStoreSearchRequest.RankingOptions.self, forKey: "ranking_options")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.query, forKey: "query")
+        try container.encodeIfPresent(self.rewriteQuery, forKey: "rewrite_query")
+        try container.encodeIfPresent(self.maxNumResults, forKey: "max_num_results")
+        try container.encodeIfPresent(self.filters, forKey: "filters")
+        try container.encodeIfPresent(self.rankingOptions, forKey: "ranking_options")
     }
 
     /// A query string for a search
-    public indirect enum Query: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum Query: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         case string(String)
         case strings([String])
         /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
@@ -539,7 +640,7 @@ public struct VectorStoreSearchRequest: Codable, Hashable, Sendable {
     }
 
     /// A filter to apply based on file attributes.
-    public indirect enum Filters: Codable, Hashable, Sendable {
+    public indirect enum Filters: OpenAIModel {
         case comparison(ComparisonFilter)
         case compound(CompoundFilter)
         /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
@@ -572,7 +673,7 @@ public struct VectorStoreSearchRequest: Codable, Hashable, Sendable {
     }
 
     /// Ranking options for search.
-    public struct RankingOptions: Codable, Hashable, Sendable {
+    public struct RankingOptions: OpenAIModel {
         /// Enable re-ranking; set to `none` to disable, which can help reduce latency.
         public var ranker: VectorStoreSearchRequest.RankingOptions.Ranker?
         public var scoreThreshold: Double?
@@ -582,9 +683,16 @@ public struct VectorStoreSearchRequest: Codable, Hashable, Sendable {
             self.scoreThreshold = scoreThreshold
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case ranker
-            case scoreThreshold = "score_threshold"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.ranker = try container.decodeIfPresent(VectorStoreSearchRequest.RankingOptions.Ranker.self, forKey: "ranker")
+            self.scoreThreshold = try container.decodeIfPresent(Double.self, forKey: "score_threshold")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.ranker, forKey: "ranker")
+            try container.encodeIfPresent(self.scoreThreshold, forKey: "score_threshold")
         }
 
         /// Enable re-ranking; set to `none` to disable, which can help reduce latency.
@@ -608,7 +716,7 @@ public struct VectorStoreSearchRequest: Codable, Hashable, Sendable {
     }
 }
 
-public struct VectorStoreSearchResultContentObject: Codable, Hashable, Sendable {
+public struct VectorStoreSearchResultContentObject: OpenAIModel {
     /// The type of content.
     public var type: String = "text"
     /// The text content returned from search.
@@ -618,13 +726,20 @@ public struct VectorStoreSearchResultContentObject: Codable, Hashable, Sendable 
         self.text = text
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case text
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "text"
+        self.text = try container.decode(String.self, forKey: "text")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.text, forKey: "text")
     }
 }
 
-public struct VectorStoreSearchResultItem: Codable, Hashable, Sendable {
+public struct VectorStoreSearchResultItem: OpenAIModel {
     /// The ID of the vector store file.
     public var fileID: String
     /// The name of the vector store file.
@@ -649,16 +764,26 @@ public struct VectorStoreSearchResultItem: Codable, Hashable, Sendable {
         self.attributes = attributes
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case fileID = "file_id"
-        case filename
-        case score
-        case attributes
-        case content
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.fileID = try container.decode(String.self, forKey: "file_id")
+        self.filename = try container.decode(String.self, forKey: "filename")
+        self.score = try container.decode(Double.self, forKey: "score")
+        self.attributes = try container.decodeIfPresent(VectorStoreFileAttributes.self, forKey: "attributes")
+        self.content = try container.decode([VectorStoreSearchResultContentObject].self, forKey: "content")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.fileID, forKey: "file_id")
+        try container.encode(self.filename, forKey: "filename")
+        try container.encode(self.score, forKey: "score")
+        try container.encodeIfPresent(self.attributes, forKey: "attributes")
+        try container.encode(self.content, forKey: "content")
     }
 }
 
-public struct VectorStoreSearchResultsPage: Codable, Hashable, Sendable {
+public struct VectorStoreSearchResultsPage: OpenAIModel {
     /// The object type, which is always `vector_store.search_results.page`
     public var object: String = "vector_store.search_results.page"
     public var searchQuery: [String]
@@ -680,11 +805,21 @@ public struct VectorStoreSearchResultsPage: Codable, Hashable, Sendable {
         self.nextPage = nextPage
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case searchQuery = "search_query"
-        case data
-        case hasMore = "has_more"
-        case nextPage = "next_page"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "vector_store.search_results.page"
+        self.searchQuery = try container.decode([String].self, forKey: "search_query")
+        self.data = try container.decode([VectorStoreSearchResultItem].self, forKey: "data")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+        self.nextPage = try container.decodeIfPresent(String.self, forKey: "next_page")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.searchQuery, forKey: "search_query")
+        try container.encode(self.data, forKey: "data")
+        try container.encode(self.hasMore, forKey: "has_more")
+        try container.encodeIfPresent(self.nextPage, forKey: "next_page")
     }
 }

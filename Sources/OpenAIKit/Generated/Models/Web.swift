@@ -4,7 +4,7 @@
 import Foundation
 
 /// Action type "find_in_page": Searches for a pattern within a loaded page.
-public struct WebSearchActionFind: Codable, Hashable, Sendable {
+public struct WebSearchActionFind: OpenAIModel {
     /// The action type.
     public var type: String = "find_in_page"
     /// The URL of the page searched for the pattern, when available.
@@ -17,15 +17,23 @@ public struct WebSearchActionFind: Codable, Hashable, Sendable {
         self.url = url
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case url
-        case pattern
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "find_in_page"
+        self.url = try container.decodeIfPresent(String.self, forKey: "url")
+        self.pattern = try container.decode(String.self, forKey: "pattern")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.url, forKey: "url")
+        try container.encode(self.pattern, forKey: "pattern")
     }
 }
 
 /// Action type "open_page" - Opens a specific URL from search results.
-public struct WebSearchActionOpenPage: Codable, Hashable, Sendable {
+public struct WebSearchActionOpenPage: OpenAIModel {
     /// The action type.
     public var type: String = "open_page"
     /// The URL opened by the model.
@@ -35,16 +43,23 @@ public struct WebSearchActionOpenPage: Codable, Hashable, Sendable {
         self.url = url
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case url
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "open_page"
+        self.url = try container.decodeIfPresent(String.self, forKey: "url")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.url, forKey: "url")
     }
 }
 
 /// An action performed by the web search tool.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum WebSearchActionResource: Codable, Hashable, Sendable {
+public indirect enum WebSearchActionResource: OpenAIModel {
     /// `type`: `search`
     case search(WebSearchActionResourceSearch)
     /// `type`: `open_page`
@@ -98,7 +113,7 @@ public indirect enum WebSearchActionResource: Codable, Hashable, Sendable {
 }
 
 /// Finds text within a web page.
-public struct WebSearchActionResourceFindInPage: Codable, Hashable, Sendable {
+public struct WebSearchActionResourceFindInPage: OpenAIModel {
     /// The type of the object. Always `find_in_page`.
     public var type: String = "find_in_page"
     /// The URL of the page that was searched.
@@ -111,15 +126,23 @@ public struct WebSearchActionResourceFindInPage: Codable, Hashable, Sendable {
         self.pattern = pattern
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case url
-        case pattern
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "find_in_page"
+        self.url = try container.decodeIfPresent(String.self, forKey: "url")
+        self.pattern = try container.decodeIfPresent(String.self, forKey: "pattern")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.url, forKey: "url")
+        try container.encodeIfPresent(self.pattern, forKey: "pattern")
     }
 }
 
 /// Opens a web page.
-public struct WebSearchActionResourceOpenPage: Codable, Hashable, Sendable {
+public struct WebSearchActionResourceOpenPage: OpenAIModel {
     /// The type of the object. Always `open_page`.
     public var type: String = "open_page"
     /// The URL of the page that was opened.
@@ -129,27 +152,40 @@ public struct WebSearchActionResourceOpenPage: Codable, Hashable, Sendable {
         self.url = url
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case url
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "open_page"
+        self.url = try container.decodeIfPresent(String.self, forKey: "url")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.url, forKey: "url")
     }
 }
 
 /// Another web search action.
-public struct WebSearchActionResourceOther: Codable, Hashable, Sendable {
+public struct WebSearchActionResourceOther: OpenAIModel {
     /// The type of the object. Always `other`.
     public var type: String = "other"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "other"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// A search query or group of search queries.
-public struct WebSearchActionResourceSearch: Codable, Hashable, Sendable {
+public struct WebSearchActionResourceSearch: OpenAIModel {
     /// The type of the object. Always `search`.
     public var type: String = "search"
     /// The search query, when a single query was used.
@@ -162,15 +198,23 @@ public struct WebSearchActionResourceSearch: Codable, Hashable, Sendable {
         self.queries = queries
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case query
-        case queries
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "search"
+        self.query = try container.decodeIfPresent(String.self, forKey: "query")
+        self.queries = try container.decodeIfPresent([String].self, forKey: "queries")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.query, forKey: "query")
+        try container.encodeIfPresent(self.queries, forKey: "queries")
     }
 }
 
 /// Action type "search" - Performs a web search query.
-public struct WebSearchActionSearch: Codable, Hashable, Sendable {
+public struct WebSearchActionSearch: OpenAIModel {
     /// The action type.
     public var type: String = "search"
     /// The search query.
@@ -192,15 +236,24 @@ public struct WebSearchActionSearch: Codable, Hashable, Sendable {
         self.sources = sources
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case query
-        case queries
-        case sources
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "search"
+        self.query = try container.decodeIfPresent(String.self, forKey: "query")
+        self.queries = try container.decodeIfPresent([String].self, forKey: "queries")
+        self.sources = try container.decodeIfPresent([WebSearchActionSearch.Source].self, forKey: "sources")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.query, forKey: "query")
+        try container.encodeIfPresent(self.queries, forKey: "queries")
+        try container.encodeIfPresent(self.sources, forKey: "sources")
     }
 
     /// A source used in the search.
-    public struct Source: Codable, Hashable, Sendable {
+    public struct Source: OpenAIModel {
         /// The type of source. Always `url`.
         public var type: String = "url"
         /// The URL of the source.
@@ -210,15 +263,22 @@ public struct WebSearchActionSearch: Codable, Hashable, Sendable {
             self.url = url
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case url
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "url"
+            self.url = try container.decode(String.self, forKey: "url")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.url, forKey: "url")
         }
     }
 }
 
 /// The approximate location of the user.
-public struct WebSearchApproximateLocation: Codable, Hashable, Sendable {
+public struct WebSearchApproximateLocation: OpenAIModel {
     /// The type of location approximation. Always `approximate`.
     public var type: String? = "approximate"
     public var country: String?
@@ -238,17 +298,27 @@ public struct WebSearchApproximateLocation: Codable, Hashable, Sendable {
         self.timezone = timezone
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case country
-        case region
-        case city
-        case timezone
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type")
+        self.country = try container.decodeIfPresent(String.self, forKey: "country")
+        self.region = try container.decodeIfPresent(String.self, forKey: "region")
+        self.city = try container.decodeIfPresent(String.self, forKey: "city")
+        self.timezone = try container.decodeIfPresent(String.self, forKey: "timezone")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.type, forKey: "type")
+        try container.encodeIfPresent(self.country, forKey: "country")
+        try container.encodeIfPresent(self.region, forKey: "region")
+        try container.encodeIfPresent(self.city, forKey: "city")
+        try container.encodeIfPresent(self.timezone, forKey: "timezone")
     }
 }
 
 /// A web search call produced by the agent.
-public struct WebSearchCallItemResource: Codable, Hashable, Sendable {
+public struct WebSearchCallItemResource: OpenAIModel {
     /// The item type. Always `web_search_call`.
     public var type: String = "web_search_call"
     /// The ID of the web search call.
@@ -272,12 +342,22 @@ public struct WebSearchCallItemResource: Codable, Hashable, Sendable {
         self.action = action
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case turnID = "turn_id"
-        case status
-        case action
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "web_search_call"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.turnID = try container.decode(String.self, forKey: "turn_id")
+        self.status = try container.decode(OutputItemStatusResource.self, forKey: "status")
+        self.action = try container.decodeIfPresent(WebSearchActionResource.self, forKey: "action")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.turnID, forKey: "turn_id")
+        try container.encode(self.status, forKey: "status")
+        try container.encodeIfPresent(self.action, forKey: "action")
     }
 }
 
@@ -359,7 +439,7 @@ public struct WebSearchContextSizeResource: OpenAIStringEnum {
 }
 
 /// Approximate location parameters for the search.
-public struct WebSearchLocation: Codable, Hashable, Sendable {
+public struct WebSearchLocation: OpenAIModel {
     /// The two-letter
     /// [ISO country code](https://en.wikipedia.org/wiki/ISO_3166-1) of the user,
     /// e.g. `US`.
@@ -384,16 +464,25 @@ public struct WebSearchLocation: Codable, Hashable, Sendable {
         self.timezone = timezone
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case country
-        case region
-        case city
-        case timezone
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.country = try container.decodeIfPresent(String.self, forKey: "country")
+        self.region = try container.decodeIfPresent(String.self, forKey: "region")
+        self.city = try container.decodeIfPresent(String.self, forKey: "city")
+        self.timezone = try container.decodeIfPresent(String.self, forKey: "timezone")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.country, forKey: "country")
+        try container.encodeIfPresent(self.region, forKey: "region")
+        try container.encodeIfPresent(self.city, forKey: "city")
+        try container.encodeIfPresent(self.timezone, forKey: "timezone")
     }
 }
 
 /// Approximate user location used to localize web search results.
-public struct WebSearchLocationParam: Codable, Hashable, Sendable {
+public struct WebSearchLocationParam: OpenAIModel {
     /// The two-letter ISO country code, such as `US`.
     public var country: String?
     /// The region or state name.
@@ -415,16 +504,25 @@ public struct WebSearchLocationParam: Codable, Hashable, Sendable {
         self.timezone = timezone
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case country
-        case region
-        case city
-        case timezone
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.country = try container.decodeIfPresent(String.self, forKey: "country")
+        self.region = try container.decodeIfPresent(String.self, forKey: "region")
+        self.city = try container.decodeIfPresent(String.self, forKey: "city")
+        self.timezone = try container.decodeIfPresent(String.self, forKey: "timezone")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.country, forKey: "country")
+        try container.encodeIfPresent(self.region, forKey: "region")
+        try container.encodeIfPresent(self.city, forKey: "city")
+        try container.encodeIfPresent(self.timezone, forKey: "timezone")
     }
 }
 
 /// Approximate user location used to localize web search results.
-public struct WebSearchLocationResource: Codable, Hashable, Sendable {
+public struct WebSearchLocationResource: OpenAIModel {
     /// The two-letter ISO country code, such as `US`.
     public var country: String?
     /// The region or state name.
@@ -446,11 +544,20 @@ public struct WebSearchLocationResource: Codable, Hashable, Sendable {
         self.timezone = timezone
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case country
-        case region
-        case city
-        case timezone
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.country = try container.decodeIfPresent(String.self, forKey: "country")
+        self.region = try container.decodeIfPresent(String.self, forKey: "region")
+        self.city = try container.decodeIfPresent(String.self, forKey: "city")
+        self.timezone = try container.decodeIfPresent(String.self, forKey: "timezone")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.country, forKey: "country")
+        try container.encodeIfPresent(self.region, forKey: "region")
+        try container.encodeIfPresent(self.city, forKey: "city")
+        try container.encodeIfPresent(self.timezone, forKey: "timezone")
     }
 }
 
@@ -493,7 +600,7 @@ public struct WebSearchModeResource: OpenAIStringEnum {
 }
 
 /// This tool searches the web for relevant results to use in a response. Learn more about the [web search tool](https://developers.openai.com/api/docs/guides/tools-web-search).
-public struct WebSearchPreviewTool: Codable, Hashable, Sendable {
+public struct WebSearchPreviewTool: OpenAIModel {
     /// The type of the web search tool. One of `web_search_preview` or `web_search_preview_2025_03_11`.
     public var type: WebSearchPreviewTool.Kind
     public var userLocation: ApproximateLocation?
@@ -513,11 +620,20 @@ public struct WebSearchPreviewTool: Codable, Hashable, Sendable {
         self.searchContentTypes = searchContentTypes
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case userLocation = "user_location"
-        case searchContextSize = "search_context_size"
-        case searchContentTypes = "search_content_types"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decode(WebSearchPreviewTool.Kind.self, forKey: "type")
+        self.userLocation = try container.decodeIfPresent(ApproximateLocation.self, forKey: "user_location")
+        self.searchContextSize = try container.decodeIfPresent(SearchContextSize.self, forKey: "search_context_size")
+        self.searchContentTypes = try container.decodeIfPresent([SearchContentType].self, forKey: "search_content_types")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.userLocation, forKey: "user_location")
+        try container.encodeIfPresent(self.searchContextSize, forKey: "search_context_size")
+        try container.encodeIfPresent(self.searchContentTypes, forKey: "search_content_types")
     }
 
     /// The type of the web search tool. One of `web_search_preview` or `web_search_preview_2025_03_11`.
@@ -541,7 +657,7 @@ public struct WebSearchPreviewTool: Codable, Hashable, Sendable {
 
 /// Search the Internet for sources related to the prompt. Learn more about the
 /// [web search tool](https://developers.openai.com/api/docs/guides/tools-web-search).
-public struct WebSearchTool: Codable, Hashable, Sendable {
+public struct WebSearchTool: OpenAIModel {
     /// The type of the web search tool. One of `web_search` or `web_search_2025_08_26`.
     public var type: WebSearchTool.Kind
     /// Allow live internet access for web search. Defaults to true when omitted. When false, the web search tool runs in offline/cache-only mode and will not fetch new external content.
@@ -568,12 +684,22 @@ public struct WebSearchTool: Codable, Hashable, Sendable {
         self.searchContextSize = searchContextSize
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case externalWebAccess = "external_web_access"
-        case filters
-        case userLocation = "user_location"
-        case searchContextSize = "search_context_size"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decode(WebSearchTool.Kind.self, forKey: "type")
+        self.externalWebAccess = try container.decodeIfPresent(Bool.self, forKey: "external_web_access")
+        self.filters = try container.decodeIfPresent(WebSearchTool.Filters.self, forKey: "filters")
+        self.userLocation = try container.decodeIfPresent(WebSearchApproximateLocation.self, forKey: "user_location")
+        self.searchContextSize = try container.decodeIfPresent(WebSearchTool.SearchContextSize.self, forKey: "search_context_size")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.externalWebAccess, forKey: "external_web_access")
+        try container.encodeIfPresent(self.filters, forKey: "filters")
+        try container.encodeIfPresent(self.userLocation, forKey: "user_location")
+        try container.encodeIfPresent(self.searchContextSize, forKey: "search_context_size")
     }
 
     /// The type of the web search tool. One of `web_search` or `web_search_2025_08_26`.
@@ -595,15 +721,21 @@ public struct WebSearchTool: Codable, Hashable, Sendable {
     }
 
     /// Filters for the search.
-    public struct Filters: Codable, Hashable, Sendable {
+    public struct Filters: OpenAIModel {
         public var allowedDomains: [String]?
 
         public init(allowedDomains: [String]? = nil) {
             self.allowedDomains = allowedDomains
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case allowedDomains = "allowed_domains"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.allowedDomains = try container.decodeIfPresent([String].self, forKey: "allowed_domains")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.allowedDomains, forKey: "allowed_domains")
         }
     }
 
@@ -629,7 +761,7 @@ public struct WebSearchTool: Codable, Hashable, Sendable {
 
 /// The results of a web search tool call. See the
 /// [web search guide](https://developers.openai.com/api/docs/guides/tools-web-search) for more information.
-public struct WebSearchToolCall: Codable, Hashable, Sendable {
+public struct WebSearchToolCall: OpenAIModel {
     /// The unique ID of the web search tool call.
     public var id: String
     /// The type of the web search tool call. Always `web_search_call`.
@@ -650,18 +782,27 @@ public struct WebSearchToolCall: Codable, Hashable, Sendable {
         self.action = action
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case type
-        case status
-        case action
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "web_search_call"
+        self.status = try container.decode(WebSearchCallStatus.self, forKey: "status")
+        self.action = try container.decodeIfPresent(WebSearchToolCall.Action.self, forKey: "action")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.status, forKey: "status")
+        try container.encodeIfPresent(self.action, forKey: "action")
     }
 
     /// An object describing the specific action taken in this web search call.
     /// Includes details on how the model used the web (search, open_page, find_in_page).
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Action: Codable, Hashable, Sendable {
+    public indirect enum Action: OpenAIModel {
         /// `type`: `search`
         case search(WebSearchActionSearch)
         /// `type`: `open_page`
@@ -709,7 +850,7 @@ public struct WebSearchToolCall: Codable, Hashable, Sendable {
 }
 
 /// Usage details for web search requests that ran while generating the response.
-public struct WebSearchUsage: Codable, Hashable, Sendable {
+public struct WebSearchUsage: OpenAIModel {
     /// The number of billable web search requests issued.
     public var numRequests: Int
 
@@ -717,7 +858,13 @@ public struct WebSearchUsage: Codable, Hashable, Sendable {
         self.numRequests = numRequests
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case numRequests = "num_requests"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.numRequests = try container.decode(Int.self, forKey: "num_requests")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.numRequests, forKey: "num_requests")
     }
 }

@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct AddUploadPartRequest: Codable, Hashable, Sendable {
+public struct AddUploadPartRequest: OpenAIModel {
     /// The chunk of bytes for this Part.
     public var data: FileUpload
 
@@ -11,7 +11,13 @@ public struct AddUploadPartRequest: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case data
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.data = try container.decode(FileUpload.self, forKey: "data")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.data, forKey: "data")
     }
 }

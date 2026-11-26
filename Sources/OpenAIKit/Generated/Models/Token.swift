@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct TokenCountsBody: Codable, Hashable, Sendable {
+public struct TokenCountsBody: OpenAIModel {
     public var model: String?
     public var input: TokenCountsBody.Input?
     public var previousResponseID: String?
@@ -51,23 +51,40 @@ public struct TokenCountsBody: Codable, Hashable, Sendable {
         self.parallelToolCalls = parallelToolCalls
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case model
-        case input
-        case previousResponseID = "previous_response_id"
-        case tools
-        case text
-        case reasoning
-        case truncation
-        case instructions
-        case personality
-        case conversation
-        case toolChoice = "tool_choice"
-        case parallelToolCalls = "parallel_tool_calls"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.model = try container.decodeIfPresent(String.self, forKey: "model")
+        self.input = try container.decodeIfPresent(TokenCountsBody.Input.self, forKey: "input")
+        self.previousResponseID = try container.decodeIfPresent(String.self, forKey: "previous_response_id")
+        self.tools = try container.decodeIfPresent([Tool].self, forKey: "tools")
+        self.text = try container.decodeIfPresent(ResponseTextParam.self, forKey: "text")
+        self.reasoning = try container.decodeIfPresent(Reasoning.self, forKey: "reasoning")
+        self.truncation = try container.decodeIfPresent(TruncationEnum.self, forKey: "truncation")
+        self.instructions = try container.decodeIfPresent(String.self, forKey: "instructions")
+        self.personality = try container.decodeIfPresent(PersonalityEnum.self, forKey: "personality")
+        self.conversation = try container.decodeIfPresent(ConversationParam.self, forKey: "conversation")
+        self.toolChoice = try container.decodeIfPresent(ToolChoiceParam.self, forKey: "tool_choice")
+        self.parallelToolCalls = try container.decodeIfPresent(Bool.self, forKey: "parallel_tool_calls")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encodeIfPresent(self.input, forKey: "input")
+        try container.encodeIfPresent(self.previousResponseID, forKey: "previous_response_id")
+        try container.encodeIfPresent(self.tools, forKey: "tools")
+        try container.encodeIfPresent(self.text, forKey: "text")
+        try container.encodeIfPresent(self.reasoning, forKey: "reasoning")
+        try container.encodeIfPresent(self.truncation, forKey: "truncation")
+        try container.encodeIfPresent(self.instructions, forKey: "instructions")
+        try container.encodeIfPresent(self.personality, forKey: "personality")
+        try container.encodeIfPresent(self.conversation, forKey: "conversation")
+        try container.encodeIfPresent(self.toolChoice, forKey: "tool_choice")
+        try container.encodeIfPresent(self.parallelToolCalls, forKey: "parallel_tool_calls")
     }
 
     /// Text, image, or file inputs to the model, used to generate a response
-    public indirect enum Input: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum Input: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         /// A text input to the model, equivalent to a text input with the `user` role.
         case string(String)
         /// A list of one or many input items to the model, containing different content types.
@@ -106,7 +123,7 @@ public struct TokenCountsBody: Codable, Hashable, Sendable {
     }
 }
 
-public struct TokenCountsResource: Codable, Hashable, Sendable {
+public struct TokenCountsResource: OpenAIModel {
     public var object: String = "response.input_tokens"
     public var inputTokens: Int
 
@@ -114,14 +131,21 @@ public struct TokenCountsResource: Codable, Hashable, Sendable {
         self.inputTokens = inputTokens
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case inputTokens = "input_tokens"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "response.input_tokens"
+        self.inputTokens = try container.decode(Int.self, forKey: "input_tokens")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.inputTokens, forKey: "input_tokens")
     }
 }
 
 /// Recorded token usage for a session or turn. Usage is best effort and may change.
-public struct TokenUsageResource: Codable, Hashable, Sendable {
+public struct TokenUsageResource: OpenAIModel {
     /// The number of input tokens used by the agent.
     public var inputTokens: Int64
     /// A breakdown of the agent's input token usage.
@@ -147,11 +171,21 @@ public struct TokenUsageResource: Codable, Hashable, Sendable {
         self.totalTokens = totalTokens
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case inputTokens = "input_tokens"
-        case inputTokensDetails = "input_tokens_details"
-        case outputTokens = "output_tokens"
-        case outputTokensDetails = "output_tokens_details"
-        case totalTokens = "total_tokens"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.inputTokens = try container.decode(Int64.self, forKey: "input_tokens")
+        self.inputTokensDetails = try container.decode(InputTokensDetailsResource2.self, forKey: "input_tokens_details")
+        self.outputTokens = try container.decode(Int64.self, forKey: "output_tokens")
+        self.outputTokensDetails = try container.decode(OutputTokensDetailsResource2.self, forKey: "output_tokens_details")
+        self.totalTokens = try container.decode(Int64.self, forKey: "total_tokens")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.inputTokens, forKey: "input_tokens")
+        try container.encode(self.inputTokensDetails, forKey: "input_tokens_details")
+        try container.encode(self.outputTokens, forKey: "output_tokens")
+        try container.encode(self.outputTokensDetails, forKey: "output_tokens_details")
+        try container.encode(self.totalTokens, forKey: "total_tokens")
     }
 }

@@ -4,7 +4,7 @@
 import Foundation
 
 /// Updates the default version pointer for a skill.
-public struct SetDefaultSkillVersionBody: Codable, Hashable, Sendable {
+public struct SetDefaultSkillVersionBody: OpenAIModel {
     /// The skill version number to set as default.
     public var defaultVersion: String
 
@@ -12,7 +12,13 @@ public struct SetDefaultSkillVersionBody: Codable, Hashable, Sendable {
         self.defaultVersion = defaultVersion
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case defaultVersion = "default_version"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.defaultVersion = try container.decode(String.self, forKey: "default_version")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.defaultVersion, forKey: "default_version")
     }
 }

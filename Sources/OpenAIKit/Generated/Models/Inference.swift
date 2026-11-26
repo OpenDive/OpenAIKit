@@ -4,7 +4,7 @@
 import Foundation
 
 /// Model and tool overrides applied when generating the assistant response.
-public struct InferenceOptions: Codable, Hashable, Sendable {
+public struct InferenceOptions: OpenAIModel {
     public var toolChoice: ToolChoice?
     public var model: String?
 
@@ -13,8 +13,15 @@ public struct InferenceOptions: Codable, Hashable, Sendable {
         self.toolChoice = toolChoice
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case toolChoice = "tool_choice"
-        case model
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.toolChoice = try container.decodeIfPresent(ToolChoice.self, forKey: "tool_choice")
+        self.model = try container.decodeIfPresent(String.self, forKey: "model")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.toolChoice, forKey: "tool_choice")
+        try container.encodeIfPresent(self.model, forKey: "model")
     }
 }

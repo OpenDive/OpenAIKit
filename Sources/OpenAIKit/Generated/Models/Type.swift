@@ -4,7 +4,7 @@
 import Foundation
 
 /// An action to type in text.
-public struct TypeParam: Codable, Hashable, Sendable {
+public struct TypeParam: OpenAIModel {
     /// Specifies the event type. For a type action, this property is always set to `type`.
     public var type: String = "type"
     /// The text to type.
@@ -14,8 +14,15 @@ public struct TypeParam: Codable, Hashable, Sendable {
         self.text = text
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case text
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "type"
+        self.text = try container.decode(String.self, forKey: "text")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.text, forKey: "text")
     }
 }

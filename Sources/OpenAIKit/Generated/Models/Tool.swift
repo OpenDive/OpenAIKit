@@ -6,7 +6,7 @@ import Foundation
 /// A tool that can be used to generate a response.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum Tool: Codable, Hashable, Sendable {
+public indirect enum Tool: OpenAIModel {
     /// `type`: `function`
     case function(FunctionTool)
     /// `type`: `file_search`
@@ -146,7 +146,7 @@ public indirect enum Tool: Codable, Hashable, Sendable {
 /// The execution context that produced this tool call.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum ToolCallCaller: Codable, Hashable, Sendable {
+public indirect enum ToolCallCaller: OpenAIModel {
     /// `type`: `direct`
     case direct(DirectToolCallCaller)
     /// `type`: `program`
@@ -188,7 +188,7 @@ public indirect enum ToolCallCaller: Codable, Hashable, Sendable {
 /// The execution context that produced this tool call.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum ToolCallCallerParam: Codable, Hashable, Sendable {
+public indirect enum ToolCallCallerParam: OpenAIModel {
     /// `type`: `direct`
     case direct(DirectToolCallCallerParam)
     /// `type`: `program`
@@ -228,7 +228,7 @@ public indirect enum ToolCallCallerParam: Codable, Hashable, Sendable {
 }
 
 /// Tool selection that the assistant should honor when executing the item.
-public struct ToolChoice: Codable, Hashable, Sendable {
+public struct ToolChoice: OpenAIModel {
     /// Identifier of the requested tool.
     public var id: String
 
@@ -236,13 +236,19 @@ public struct ToolChoice: Codable, Hashable, Sendable {
         self.id = id
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
     }
 }
 
 /// Constrains the tools available to the model to a pre-defined set.
-public struct ToolChoiceAllowed: Codable, Hashable, Sendable {
+public struct ToolChoiceAllowed: OpenAIModel {
     /// Allowed tool configuration type. Always `allowed_tools`.
     public var type: String = "allowed_tools"
     /// Constrains the tools available to the model to a pre-defined set.
@@ -269,10 +275,18 @@ public struct ToolChoiceAllowed: Codable, Hashable, Sendable {
         self.tools = tools
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case mode
-        case tools
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "allowed_tools"
+        self.mode = try container.decode(ToolChoiceAllowed.Mode.self, forKey: "mode")
+        self.tools = try container.decode([JSONObject].self, forKey: "tools")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.mode, forKey: "mode")
+        try container.encode(self.tools, forKey: "tools")
     }
 
     /// Constrains the tools available to the model to a pre-defined set.
@@ -300,7 +314,7 @@ public struct ToolChoiceAllowed: Codable, Hashable, Sendable {
 }
 
 /// Use this option to force the model to call a specific custom tool.
-public struct ToolChoiceCustom: Codable, Hashable, Sendable {
+public struct ToolChoiceCustom: OpenAIModel {
     /// For custom tool calling, the type is always `custom`.
     public var type: String = "custom"
     /// The name of the custom tool to call.
@@ -310,14 +324,21 @@ public struct ToolChoiceCustom: Codable, Hashable, Sendable {
         self.name = name
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "custom"
+        self.name = try container.decode(String.self, forKey: "name")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.name, forKey: "name")
     }
 }
 
 /// Use this option to force the model to call a specific function.
-public struct ToolChoiceFunction: Codable, Hashable, Sendable {
+public struct ToolChoiceFunction: OpenAIModel {
     /// For function calling, the type is always `function`.
     public var type: String = "function"
     /// The name of the function to call.
@@ -327,14 +348,21 @@ public struct ToolChoiceFunction: Codable, Hashable, Sendable {
         self.name = name
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "function"
+        self.name = try container.decode(String.self, forKey: "name")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.name, forKey: "name")
     }
 }
 
 /// Use this option to force the model to call a specific tool on a remote MCP server.
-public struct ToolChoiceMCP: Codable, Hashable, Sendable {
+public struct ToolChoiceMCP: OpenAIModel {
     /// For MCP tools, the type is always `mcp`.
     public var type: String = "mcp"
     /// The label of the MCP server to use.
@@ -346,10 +374,18 @@ public struct ToolChoiceMCP: Codable, Hashable, Sendable {
         self.name = name
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case serverLabel = "server_label"
-        case name
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "mcp"
+        self.serverLabel = try container.decode(String.self, forKey: "server_label")
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.serverLabel, forKey: "server_label")
+        try container.encodeIfPresent(self.name, forKey: "name")
     }
 }
 
@@ -382,7 +418,7 @@ public struct ToolChoiceOptions: OpenAIStringEnum {
 /// How the model should select which tool (or tools) to use when generating
 /// a response. See the `tools` parameter to see how to specify which tools
 /// the model can call.
-public indirect enum ToolChoiceParam: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+public indirect enum ToolChoiceParam: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
     case toolChoiceOptions(ToolChoiceOptions)
     case toolChoiceAllowed(ToolChoiceAllowed)
     case toolChoiceTypes(ToolChoiceTypes)
@@ -469,7 +505,7 @@ public indirect enum ToolChoiceParam: Codable, Hashable, Sendable, ExpressibleBy
 
 /// Indicates that the model should use a built-in tool to generate a response.
 /// [Learn more about built-in tools](https://developers.openai.com/api/docs/guides/tools).
-public struct ToolChoiceTypes: Codable, Hashable, Sendable {
+public struct ToolChoiceTypes: OpenAIModel {
     /// The type of hosted tool the model should to use. Learn more about
     /// [built-in tools](https://developers.openai.com/api/docs/guides/tools).
     ///
@@ -487,8 +523,14 @@ public struct ToolChoiceTypes: Codable, Hashable, Sendable {
         self.type = type
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decode(ToolChoiceTypes.Kind.self, forKey: "type")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 
     /// The type of hosted tool the model should to use. Learn more about
@@ -526,7 +568,7 @@ public struct ToolChoiceTypes: Codable, Hashable, Sendable {
     }
 }
 
-public struct ToolSearchCall: Codable, Hashable, Sendable {
+public struct ToolSearchCall: OpenAIModel {
     /// The type of the item. Always `tool_search_call`.
     public var type: String = "tool_search_call"
     /// The unique ID of the tool search call item.
@@ -557,18 +599,30 @@ public struct ToolSearchCall: Codable, Hashable, Sendable {
         self.createdBy = createdBy
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case callID = "call_id"
-        case execution
-        case arguments
-        case status
-        case createdBy = "created_by"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "tool_search_call"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.callID = try container.decodeIfPresent(String.self, forKey: "call_id")
+        self.execution = try container.decode(ToolSearchExecutionType.self, forKey: "execution")
+        self.arguments = try container.decode(JSONValue.self, forKey: "arguments")
+        self.status = try container.decode(FunctionCallStatus.self, forKey: "status")
+        self.createdBy = try container.decodeIfPresent(String.self, forKey: "created_by")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encodeIfPresent(self.callID, forKey: "call_id")
+        try container.encode(self.execution, forKey: "execution")
+        try container.encode(self.arguments, forKey: "arguments")
+        try container.encode(self.status, forKey: "status")
+        try container.encodeIfPresent(self.createdBy, forKey: "created_by")
     }
 }
 
-public struct ToolSearchCallItemParam: Codable, Hashable, Sendable {
+public struct ToolSearchCallItemParam: OpenAIModel {
     public var id: String?
     public var callID: String?
     /// The item type. Always `tool_search_call`.
@@ -593,13 +647,24 @@ public struct ToolSearchCallItemParam: Codable, Hashable, Sendable {
         self.status = status
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case callID = "call_id"
-        case type
-        case execution
-        case arguments
-        case status
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.callID = try container.decodeIfPresent(String.self, forKey: "call_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "tool_search_call"
+        self.execution = try container.decodeIfPresent(ToolSearchExecutionType.self, forKey: "execution")
+        self.arguments = try container.decode(EmptyModelParam.self, forKey: "arguments")
+        self.status = try container.decodeIfPresent(FunctionCallItemStatus.self, forKey: "status")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encodeIfPresent(self.callID, forKey: "call_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.execution, forKey: "execution")
+        try container.encode(self.arguments, forKey: "arguments")
+        try container.encodeIfPresent(self.status, forKey: "status")
     }
 }
 
@@ -619,7 +684,7 @@ public struct ToolSearchExecutionType: OpenAIStringEnum {
     }
 }
 
-public struct ToolSearchOutput: Codable, Hashable, Sendable {
+public struct ToolSearchOutput: OpenAIModel {
     /// The type of the item. Always `tool_search_output`.
     public var type: String = "tool_search_output"
     /// The unique ID of the tool search output item.
@@ -650,18 +715,30 @@ public struct ToolSearchOutput: Codable, Hashable, Sendable {
         self.createdBy = createdBy
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case callID = "call_id"
-        case execution
-        case tools
-        case status
-        case createdBy = "created_by"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "tool_search_output"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.callID = try container.decodeIfPresent(String.self, forKey: "call_id")
+        self.execution = try container.decode(ToolSearchExecutionType.self, forKey: "execution")
+        self.tools = try container.decode([Tool].self, forKey: "tools")
+        self.status = try container.decode(FunctionCallOutputStatusEnum.self, forKey: "status")
+        self.createdBy = try container.decodeIfPresent(String.self, forKey: "created_by")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encodeIfPresent(self.callID, forKey: "call_id")
+        try container.encode(self.execution, forKey: "execution")
+        try container.encode(self.tools, forKey: "tools")
+        try container.encode(self.status, forKey: "status")
+        try container.encodeIfPresent(self.createdBy, forKey: "created_by")
     }
 }
 
-public struct ToolSearchOutputFunctionToolParam: Codable, Hashable, Sendable {
+public struct ToolSearchOutputFunctionToolParam: OpenAIModel {
     /// The name of the loaded function tool.
     public var name: String
     public var description: String?
@@ -695,20 +772,34 @@ public struct ToolSearchOutputFunctionToolParam: Codable, Hashable, Sendable {
         self.allowedCallers = allowedCallers
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case name
-        case description
-        case parameters
-        case strict
-        case type
-        case `async`
-        case outputSchema = "output_schema"
-        case deferLoading = "defer_loading"
-        case allowedCallers = "allowed_callers"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.name = try container.decode(String.self, forKey: "name")
+        self.description = try container.decodeIfPresent(String.self, forKey: "description")
+        self.parameters = try container.decodeIfPresent(EmptyModelParam.self, forKey: "parameters")
+        self.strict = try container.decodeIfPresent(Bool.self, forKey: "strict")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "function"
+        self.async = try container.decodeIfPresent(Bool.self, forKey: "async")
+        self.outputSchema = try container.decodeIfPresent(JSONObject.self, forKey: "output_schema")
+        self.deferLoading = try container.decodeIfPresent(Bool.self, forKey: "defer_loading")
+        self.allowedCallers = try container.decodeIfPresent([CallableToolAllowedCaller].self, forKey: "allowed_callers")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.name, forKey: "name")
+        try container.encodeIfPresent(self.description, forKey: "description")
+        try container.encodeIfPresent(self.parameters, forKey: "parameters")
+        try container.encodeIfPresent(self.strict, forKey: "strict")
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.async, forKey: "async")
+        try container.encodeIfPresent(self.outputSchema, forKey: "output_schema")
+        try container.encodeIfPresent(self.deferLoading, forKey: "defer_loading")
+        try container.encodeIfPresent(self.allowedCallers, forKey: "allowed_callers")
     }
 }
 
-public struct ToolSearchOutputItemParam: Codable, Hashable, Sendable {
+public struct ToolSearchOutputItemParam: OpenAIModel {
     public var id: String?
     public var callID: String?
     /// The item type. Always `tool_search_output`.
@@ -733,18 +824,29 @@ public struct ToolSearchOutputItemParam: Codable, Hashable, Sendable {
         self.status = status
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case callID = "call_id"
-        case type
-        case execution
-        case tools
-        case status
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.callID = try container.decodeIfPresent(String.self, forKey: "call_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "tool_search_output"
+        self.execution = try container.decodeIfPresent(ToolSearchExecutionType.self, forKey: "execution")
+        self.tools = try container.decode([ToolSearchOutputTool].self, forKey: "tools")
+        self.status = try container.decodeIfPresent(FunctionCallItemStatus.self, forKey: "status")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encodeIfPresent(self.callID, forKey: "call_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.execution, forKey: "execution")
+        try container.encode(self.tools, forKey: "tools")
+        try container.encodeIfPresent(self.status, forKey: "status")
     }
 }
 
 /// Groups function/custom tools under a shared namespace.
-public struct ToolSearchOutputNamespaceToolParam: Codable, Hashable, Sendable {
+public struct ToolSearchOutputNamespaceToolParam: OpenAIModel {
     /// The type of the tool. Always `namespace`.
     public var type: String = "namespace"
     /// The namespace name used in tool calls (for example, `crm`).
@@ -764,17 +866,26 @@ public struct ToolSearchOutputNamespaceToolParam: Codable, Hashable, Sendable {
         self.tools = tools
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
-        case description
-        case tools
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "namespace"
+        self.name = try container.decode(String.self, forKey: "name")
+        self.description = try container.decode(String.self, forKey: "description")
+        self.tools = try container.decode([ToolSearchOutputNamespaceToolParam.Tool].self, forKey: "tools")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.description, forKey: "description")
+        try container.encode(self.tools, forKey: "tools")
     }
 
     /// A function or custom tool loaded into a namespace by tool search.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Tool: Codable, Hashable, Sendable {
+    public indirect enum Tool: OpenAIModel {
         /// `type`: `function`
         case function(ToolSearchOutputFunctionToolParam)
         /// `type`: `custom`
@@ -817,7 +928,7 @@ public struct ToolSearchOutputNamespaceToolParam: Codable, Hashable, Sendable {
 /// A tool definition returned by a tool search output.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum ToolSearchOutputTool: Codable, Hashable, Sendable {
+public indirect enum ToolSearchOutputTool: OpenAIModel {
     /// `type`: `function`
     case function(FunctionTool)
     /// `type`: `file_search`
@@ -955,7 +1066,7 @@ public indirect enum ToolSearchOutputTool: Codable, Hashable, Sendable {
 }
 
 /// Hosted or BYOT tool search configuration for deferred tools.
-public struct ToolSearchToolParam: Codable, Hashable, Sendable {
+public struct ToolSearchToolParam: OpenAIModel {
     /// The type of the tool. Always `tool_search`.
     public var type: String = "tool_search"
     /// Whether tool search is executed by the server or by the client.
@@ -973,10 +1084,19 @@ public struct ToolSearchToolParam: Codable, Hashable, Sendable {
         self.parameters = parameters
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case execution
-        case description
-        case parameters
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "tool_search"
+        self.execution = try container.decodeIfPresent(ToolSearchExecutionType.self, forKey: "execution")
+        self.description = try container.decodeIfPresent(String.self, forKey: "description")
+        self.parameters = try container.decodeIfPresent(EmptyModelParam.self, forKey: "parameters")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.execution, forKey: "execution")
+        try container.encodeIfPresent(self.description, forKey: "description")
+        try container.encodeIfPresent(self.parameters, forKey: "parameters")
     }
 }

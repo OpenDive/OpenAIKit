@@ -4,7 +4,7 @@
 import Foundation
 
 /// Record of a client side tool invocation initiated by the assistant.
-public struct ClientToolCallItem: Codable, Hashable, Sendable {
+public struct ClientToolCallItem: OpenAIModel {
     /// Identifier of the thread item.
     public var id: String
     /// Type discriminator that is always `chatkit.thread_item`.
@@ -45,17 +45,32 @@ public struct ClientToolCallItem: Codable, Hashable, Sendable {
         self.output = output
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
-        case threadID = "thread_id"
-        case type
-        case status
-        case callID = "call_id"
-        case name
-        case arguments
-        case output
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "chatkit.thread_item"
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.threadID = try container.decode(String.self, forKey: "thread_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "chatkit.client_tool_call"
+        self.status = try container.decode(ClientToolCallStatus.self, forKey: "status")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.arguments = try container.decode(String.self, forKey: "arguments")
+        self.output = try container.decodeIfPresent(String.self, forKey: "output")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.threadID, forKey: "thread_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.status, forKey: "status")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.arguments, forKey: "arguments")
+        try container.encodeIfPresent(self.output, forKey: "output")
     }
 }
 

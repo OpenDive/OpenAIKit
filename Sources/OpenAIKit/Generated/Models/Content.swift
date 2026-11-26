@@ -4,7 +4,7 @@
 import Foundation
 
 /// Multi-modal input and output contents.
-public indirect enum Content: Codable, Hashable, Sendable {
+public indirect enum Content: OpenAIModel {
     case input(InputContent)
     case output(OutputContent)
     /// A value this version of OpenAIKit does not recognize, kept as raw JSON.

@@ -19,7 +19,7 @@ public struct DecisionsUsageApiSource: OpenAIStringEnum {
     }
 }
 
-public struct DecisionsUsageBucket: Codable, Hashable, Sendable {
+public struct DecisionsUsageBucket: OpenAIModel {
     public var object: String = "bucket"
     public var startTime: Int
     public var endTime: Int
@@ -35,11 +35,20 @@ public struct DecisionsUsageBucket: Codable, Hashable, Sendable {
         self.results = results
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case startTime = "start_time"
-        case endTime = "end_time"
-        case results
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "bucket"
+        self.startTime = try container.decode(Int.self, forKey: "start_time")
+        self.endTime = try container.decode(Int.self, forKey: "end_time")
+        self.results = try container.decode([DecisionsUsageResult].self, forKey: "results")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.startTime, forKey: "start_time")
+        try container.encode(self.endTime, forKey: "end_time")
+        try container.encode(self.results, forKey: "results")
     }
 }
 
@@ -60,7 +69,7 @@ public struct DecisionsUsageBucketWidth: OpenAIStringEnum {
     }
 }
 
-public struct DecisionsUsageErrorDetails: Codable, Hashable, Sendable {
+public struct DecisionsUsageErrorDetails: OpenAIModel {
     public var code: String?
     public var message: String
     public var param: String?
@@ -78,23 +87,38 @@ public struct DecisionsUsageErrorDetails: Codable, Hashable, Sendable {
         self.param = param
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case code
-        case message
-        case param
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.code = try container.decodeIfPresent(String.self, forKey: "code")
+        self.message = try container.decode(String.self, forKey: "message")
+        self.param = try container.decodeIfPresent(String.self, forKey: "param")
+        self.type = try container.decode(String.self, forKey: "type")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.code, forKey: "code")
+        try container.encode(self.message, forKey: "message")
+        try container.encodeIfPresent(self.param, forKey: "param")
+        try container.encode(self.type, forKey: "type")
     }
 }
 
-public struct DecisionsUsageErrorResponse: Codable, Hashable, Sendable {
+public struct DecisionsUsageErrorResponse: OpenAIModel {
     public var error: DecisionsUsageErrorDetails
 
     public init(error: DecisionsUsageErrorDetails) {
         self.error = error
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case error
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.error = try container.decode(DecisionsUsageErrorDetails.self, forKey: "error")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.error, forKey: "error")
     }
 }
 
@@ -119,7 +143,7 @@ public struct DecisionsUsageGroupBy: OpenAIStringEnum {
     }
 }
 
-public struct DecisionsUsagePermissionErrorResponse: Codable, Hashable, Sendable {
+public struct DecisionsUsagePermissionErrorResponse: OpenAIModel {
     /// Details about the permission error.
     public var error: DecisionsUsagePermissionErrorResponse.ErrorValue
 
@@ -127,12 +151,18 @@ public struct DecisionsUsagePermissionErrorResponse: Codable, Hashable, Sendable
         self.error = error
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case error
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.error = try container.decode(DecisionsUsagePermissionErrorResponse.ErrorValue.self, forKey: "error")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.error, forKey: "error")
     }
 
     /// Details about the permission error.
-    public indirect enum ErrorValue: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum ErrorValue: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         case decisionsUsageErrorDetails(DecisionsUsageErrorDetails)
         /// An explanation of the missing API permissions.
         case string(String)
@@ -171,7 +201,7 @@ public struct DecisionsUsagePermissionErrorResponse: Codable, Hashable, Sendable
 }
 
 /// The aggregated Decisions API usage details of the specific time bucket.
-public struct DecisionsUsageResult: Codable, Hashable, Sendable {
+public struct DecisionsUsageResult: OpenAIModel {
     public var apiSource: DecisionsUsageApiSource?
     public var object: String = "organization.usage.decisions.result"
     /// The aggregated number of input tokens used, including cached and cache-write tokens. This includes text, audio, and image tokens. For customers subscribed to Scale Tier, this includes Scale Tier tokens.
@@ -253,31 +283,61 @@ public struct DecisionsUsageResult: Codable, Hashable, Sendable {
         self.serviceTier = serviceTier
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case apiSource = "api_source"
-        case object
-        case inputTokens = "input_tokens"
-        case inputCachedTokens = "input_cached_tokens"
-        case inputCacheWriteTokens = "input_cache_write_tokens"
-        case inputCacheWrite30mTokens = "input_cache_write_30m_tokens"
-        case inputCacheWrite12hTokens = "input_cache_write_12h_tokens"
-        case inputUncachedTokens = "input_uncached_tokens"
-        case outputTokens = "output_tokens"
-        case inputTextTokens = "input_text_tokens"
-        case outputTextTokens = "output_text_tokens"
-        case inputCachedTextTokens = "input_cached_text_tokens"
-        case inputAudioTokens = "input_audio_tokens"
-        case inputCachedAudioTokens = "input_cached_audio_tokens"
-        case outputAudioTokens = "output_audio_tokens"
-        case inputImageTokens = "input_image_tokens"
-        case inputCachedImageTokens = "input_cached_image_tokens"
-        case outputImageTokens = "output_image_tokens"
-        case numModelRequests = "num_model_requests"
-        case projectID = "project_id"
-        case userID = "user_id"
-        case apiKeyID = "api_key_id"
-        case model
-        case batch
-        case serviceTier = "service_tier"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.apiSource = try container.decodeIfPresent(DecisionsUsageApiSource.self, forKey: "api_source")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.usage.decisions.result"
+        self.inputTokens = try container.decode(Int.self, forKey: "input_tokens")
+        self.inputCachedTokens = try container.decodeIfPresent(Int.self, forKey: "input_cached_tokens")
+        self.inputCacheWriteTokens = try container.decodeIfPresent(Int.self, forKey: "input_cache_write_tokens")
+        self.inputCacheWrite30mTokens = try container.decodeIfPresent(Int.self, forKey: "input_cache_write_30m_tokens")
+        self.inputCacheWrite12hTokens = try container.decodeIfPresent(Int.self, forKey: "input_cache_write_12h_tokens")
+        self.inputUncachedTokens = try container.decodeIfPresent(Int.self, forKey: "input_uncached_tokens")
+        self.outputTokens = try container.decode(Int.self, forKey: "output_tokens")
+        self.inputTextTokens = try container.decodeIfPresent(Int.self, forKey: "input_text_tokens")
+        self.outputTextTokens = try container.decodeIfPresent(Int.self, forKey: "output_text_tokens")
+        self.inputCachedTextTokens = try container.decodeIfPresent(Int.self, forKey: "input_cached_text_tokens")
+        self.inputAudioTokens = try container.decodeIfPresent(Int.self, forKey: "input_audio_tokens")
+        self.inputCachedAudioTokens = try container.decodeIfPresent(Int.self, forKey: "input_cached_audio_tokens")
+        self.outputAudioTokens = try container.decodeIfPresent(Int.self, forKey: "output_audio_tokens")
+        self.inputImageTokens = try container.decodeIfPresent(Int.self, forKey: "input_image_tokens")
+        self.inputCachedImageTokens = try container.decodeIfPresent(Int.self, forKey: "input_cached_image_tokens")
+        self.outputImageTokens = try container.decodeIfPresent(Int.self, forKey: "output_image_tokens")
+        self.numModelRequests = try container.decode(Int.self, forKey: "num_model_requests")
+        self.projectID = try container.decodeIfPresent(String.self, forKey: "project_id")
+        self.userID = try container.decodeIfPresent(String.self, forKey: "user_id")
+        self.apiKeyID = try container.decodeIfPresent(String.self, forKey: "api_key_id")
+        self.model = try container.decodeIfPresent(String.self, forKey: "model")
+        self.batch = try container.decodeIfPresent(Bool.self, forKey: "batch")
+        self.serviceTier = try container.decodeIfPresent(String.self, forKey: "service_tier")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.apiSource, forKey: "api_source")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.inputTokens, forKey: "input_tokens")
+        try container.encodeIfPresent(self.inputCachedTokens, forKey: "input_cached_tokens")
+        try container.encodeIfPresent(self.inputCacheWriteTokens, forKey: "input_cache_write_tokens")
+        try container.encodeIfPresent(self.inputCacheWrite30mTokens, forKey: "input_cache_write_30m_tokens")
+        try container.encodeIfPresent(self.inputCacheWrite12hTokens, forKey: "input_cache_write_12h_tokens")
+        try container.encodeIfPresent(self.inputUncachedTokens, forKey: "input_uncached_tokens")
+        try container.encode(self.outputTokens, forKey: "output_tokens")
+        try container.encodeIfPresent(self.inputTextTokens, forKey: "input_text_tokens")
+        try container.encodeIfPresent(self.outputTextTokens, forKey: "output_text_tokens")
+        try container.encodeIfPresent(self.inputCachedTextTokens, forKey: "input_cached_text_tokens")
+        try container.encodeIfPresent(self.inputAudioTokens, forKey: "input_audio_tokens")
+        try container.encodeIfPresent(self.inputCachedAudioTokens, forKey: "input_cached_audio_tokens")
+        try container.encodeIfPresent(self.outputAudioTokens, forKey: "output_audio_tokens")
+        try container.encodeIfPresent(self.inputImageTokens, forKey: "input_image_tokens")
+        try container.encodeIfPresent(self.inputCachedImageTokens, forKey: "input_cached_image_tokens")
+        try container.encodeIfPresent(self.outputImageTokens, forKey: "output_image_tokens")
+        try container.encode(self.numModelRequests, forKey: "num_model_requests")
+        try container.encodeIfPresent(self.projectID, forKey: "project_id")
+        try container.encodeIfPresent(self.userID, forKey: "user_id")
+        try container.encodeIfPresent(self.apiKeyID, forKey: "api_key_id")
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encodeIfPresent(self.batch, forKey: "batch")
+        try container.encodeIfPresent(self.serviceTier, forKey: "service_tier")
     }
 }

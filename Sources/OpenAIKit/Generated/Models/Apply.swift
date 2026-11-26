@@ -72,7 +72,7 @@ public struct ApplyPatchCallStatusParam: OpenAIStringEnum {
 }
 
 /// Instruction describing how to create a file via the apply_patch tool.
-public struct ApplyPatchCreateFileOperation: Codable, Hashable, Sendable {
+public struct ApplyPatchCreateFileOperation: OpenAIModel {
     /// Create a new file with the provided diff.
     public var type: String = "create_file"
     /// Path of the file to create.
@@ -85,15 +85,23 @@ public struct ApplyPatchCreateFileOperation: Codable, Hashable, Sendable {
         self.diff = diff
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case path
-        case diff
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "create_file"
+        self.path = try container.decode(String.self, forKey: "path")
+        self.diff = try container.decode(String.self, forKey: "diff")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.path, forKey: "path")
+        try container.encode(self.diff, forKey: "diff")
     }
 }
 
 /// Instruction for creating a new file via the apply_patch tool.
-public struct ApplyPatchCreateFileOperationParam: Codable, Hashable, Sendable {
+public struct ApplyPatchCreateFileOperationParam: OpenAIModel {
     /// The operation type. Always `create_file`.
     public var type: String = "create_file"
     /// Path of the file to create relative to the workspace root.
@@ -106,15 +114,23 @@ public struct ApplyPatchCreateFileOperationParam: Codable, Hashable, Sendable {
         self.diff = diff
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case path
-        case diff
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "create_file"
+        self.path = try container.decode(String.self, forKey: "path")
+        self.diff = try container.decode(String.self, forKey: "diff")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.path, forKey: "path")
+        try container.encode(self.diff, forKey: "diff")
     }
 }
 
 /// Instruction describing how to delete a file via the apply_patch tool.
-public struct ApplyPatchDeleteFileOperation: Codable, Hashable, Sendable {
+public struct ApplyPatchDeleteFileOperation: OpenAIModel {
     /// Delete the specified file.
     public var type: String = "delete_file"
     /// Path of the file to delete.
@@ -124,14 +140,21 @@ public struct ApplyPatchDeleteFileOperation: Codable, Hashable, Sendable {
         self.path = path
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case path
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "delete_file"
+        self.path = try container.decode(String.self, forKey: "path")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.path, forKey: "path")
     }
 }
 
 /// Instruction for deleting an existing file via the apply_patch tool.
-public struct ApplyPatchDeleteFileOperationParam: Codable, Hashable, Sendable {
+public struct ApplyPatchDeleteFileOperationParam: OpenAIModel {
     /// The operation type. Always `delete_file`.
     public var type: String = "delete_file"
     /// Path of the file to delete relative to the workspace root.
@@ -141,16 +164,23 @@ public struct ApplyPatchDeleteFileOperationParam: Codable, Hashable, Sendable {
         self.path = path
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case path
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "delete_file"
+        self.path = try container.decode(String.self, forKey: "path")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.path, forKey: "path")
     }
 }
 
 /// One of the create_file, delete_file, or update_file operations supplied to the apply_patch tool.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum ApplyPatchOperationParam: Codable, Hashable, Sendable {
+public indirect enum ApplyPatchOperationParam: OpenAIModel {
     /// `type`: `create_file`
     case createFile(ApplyPatchCreateFileOperationParam)
     /// `type`: `delete_file`
@@ -197,7 +227,7 @@ public indirect enum ApplyPatchOperationParam: Codable, Hashable, Sendable {
 }
 
 /// A tool call that applies file diffs by creating, deleting, or updating files.
-public struct ApplyPatchToolCall: Codable, Hashable, Sendable {
+public struct ApplyPatchToolCall: OpenAIModel {
     /// The type of the item. Always `apply_patch_call`.
     public var type: String = "apply_patch_call"
     /// The unique ID of the apply patch tool call. Populated when this item is returned via API.
@@ -228,20 +258,32 @@ public struct ApplyPatchToolCall: Codable, Hashable, Sendable {
         self.createdBy = createdBy
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case callID = "call_id"
-        case caller
-        case status
-        case operation
-        case createdBy = "created_by"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "apply_patch_call"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.caller = try container.decodeIfPresent(ToolCallCaller.self, forKey: "caller")
+        self.status = try container.decode(ApplyPatchCallStatus.self, forKey: "status")
+        self.operation = try container.decode(ApplyPatchToolCall.OperationValue.self, forKey: "operation")
+        self.createdBy = try container.decodeIfPresent(String.self, forKey: "created_by")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encodeIfPresent(self.caller, forKey: "caller")
+        try container.encode(self.status, forKey: "status")
+        try container.encode(self.operation, forKey: "operation")
+        try container.encodeIfPresent(self.createdBy, forKey: "created_by")
     }
 
     /// One of the create_file, delete_file, or update_file operations applied via apply_patch.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum OperationValue: Codable, Hashable, Sendable {
+    public indirect enum OperationValue: OpenAIModel {
         /// `type`: `create_file`
         case createFile(ApplyPatchCreateFileOperation)
         /// `type`: `delete_file`
@@ -289,7 +331,7 @@ public struct ApplyPatchToolCall: Codable, Hashable, Sendable {
 }
 
 /// A tool call representing a request to create, delete, or update files using diff patches.
-public struct ApplyPatchToolCallItemParam: Codable, Hashable, Sendable {
+public struct ApplyPatchToolCallItemParam: OpenAIModel {
     /// The type of the item. Always `apply_patch_call`.
     public var type: String = "apply_patch_call"
     public var id: String?
@@ -315,18 +357,29 @@ public struct ApplyPatchToolCallItemParam: Codable, Hashable, Sendable {
         self.caller = caller
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case callID = "call_id"
-        case caller
-        case status
-        case operation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "apply_patch_call"
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.caller = try container.decodeIfPresent(ToolCallCallerParam.self, forKey: "caller")
+        self.status = try container.decode(ApplyPatchCallStatusParam.self, forKey: "status")
+        self.operation = try container.decode(ApplyPatchOperationParam.self, forKey: "operation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encodeIfPresent(self.caller, forKey: "caller")
+        try container.encode(self.status, forKey: "status")
+        try container.encode(self.operation, forKey: "operation")
     }
 }
 
 /// The output emitted by an apply patch tool call.
-public struct ApplyPatchToolCallOutput: Codable, Hashable, Sendable {
+public struct ApplyPatchToolCallOutput: OpenAIModel {
     /// The type of the item. Always `apply_patch_call_output`.
     public var type: String = "apply_patch_call_output"
     /// The unique ID of the apply patch tool call output. Populated when this item is returned via API.
@@ -356,19 +409,31 @@ public struct ApplyPatchToolCallOutput: Codable, Hashable, Sendable {
         self.createdBy = createdBy
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case callID = "call_id"
-        case caller
-        case status
-        case output
-        case createdBy = "created_by"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "apply_patch_call_output"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.caller = try container.decodeIfPresent(ToolCallCaller.self, forKey: "caller")
+        self.status = try container.decode(ApplyPatchCallOutputStatus.self, forKey: "status")
+        self.output = try container.decodeIfPresent(String.self, forKey: "output")
+        self.createdBy = try container.decodeIfPresent(String.self, forKey: "created_by")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encodeIfPresent(self.caller, forKey: "caller")
+        try container.encode(self.status, forKey: "status")
+        try container.encodeIfPresent(self.output, forKey: "output")
+        try container.encodeIfPresent(self.createdBy, forKey: "created_by")
     }
 }
 
 /// The streamed output emitted by an apply patch tool call.
-public struct ApplyPatchToolCallOutputItemParam: Codable, Hashable, Sendable {
+public struct ApplyPatchToolCallOutputItemParam: OpenAIModel {
     /// The type of the item. Always `apply_patch_call_output`.
     public var type: String = "apply_patch_call_output"
     public var id: String?
@@ -393,18 +458,29 @@ public struct ApplyPatchToolCallOutputItemParam: Codable, Hashable, Sendable {
         self.output = output
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case callID = "call_id"
-        case caller
-        case status
-        case output
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "apply_patch_call_output"
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.caller = try container.decodeIfPresent(ToolCallCallerParam.self, forKey: "caller")
+        self.status = try container.decode(ApplyPatchCallOutputStatusParam.self, forKey: "status")
+        self.output = try container.decodeIfPresent(String.self, forKey: "output")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encodeIfPresent(self.caller, forKey: "caller")
+        try container.encode(self.status, forKey: "status")
+        try container.encodeIfPresent(self.output, forKey: "output")
     }
 }
 
 /// Allows the assistant to create, delete, or update files using unified diffs.
-public struct ApplyPatchToolParam: Codable, Hashable, Sendable {
+public struct ApplyPatchToolParam: OpenAIModel {
     /// The type of the tool. Always `apply_patch`.
     public var type: String = "apply_patch"
     public var allowedCallers: [CallableToolAllowedCaller]?
@@ -413,14 +489,21 @@ public struct ApplyPatchToolParam: Codable, Hashable, Sendable {
         self.allowedCallers = allowedCallers
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case allowedCallers = "allowed_callers"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "apply_patch"
+        self.allowedCallers = try container.decodeIfPresent([CallableToolAllowedCaller].self, forKey: "allowed_callers")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.allowedCallers, forKey: "allowed_callers")
     }
 }
 
 /// Instruction describing how to update a file via the apply_patch tool.
-public struct ApplyPatchUpdateFileOperation: Codable, Hashable, Sendable {
+public struct ApplyPatchUpdateFileOperation: OpenAIModel {
     /// Update an existing file with the provided diff.
     public var type: String = "update_file"
     /// Path of the file to update.
@@ -433,15 +516,23 @@ public struct ApplyPatchUpdateFileOperation: Codable, Hashable, Sendable {
         self.diff = diff
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case path
-        case diff
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "update_file"
+        self.path = try container.decode(String.self, forKey: "path")
+        self.diff = try container.decode(String.self, forKey: "diff")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.path, forKey: "path")
+        try container.encode(self.diff, forKey: "diff")
     }
 }
 
 /// Instruction for updating an existing file via the apply_patch tool.
-public struct ApplyPatchUpdateFileOperationParam: Codable, Hashable, Sendable {
+public struct ApplyPatchUpdateFileOperationParam: OpenAIModel {
     /// The operation type. Always `update_file`.
     public var type: String = "update_file"
     /// Path of the file to update relative to the workspace root.
@@ -454,9 +545,17 @@ public struct ApplyPatchUpdateFileOperationParam: Codable, Hashable, Sendable {
         self.diff = diff
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case path
-        case diff
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "update_file"
+        self.path = try container.decode(String.self, forKey: "path")
+        self.diff = try container.decode(String.self, forKey: "diff")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.path, forKey: "path")
+        try container.encode(self.diff, forKey: "diff")
     }
 }

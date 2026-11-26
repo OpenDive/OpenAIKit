@@ -5,7 +5,7 @@ import Foundation
 
 /// Reference to a prompt template and its variables.
 /// [Learn more](https://developers.openai.com/api/docs/guides/text?api-mode=responses#version-prompts-in-code).
-public struct Prompt: Codable, Hashable, Sendable {
+public struct Prompt: OpenAIModel {
     /// The unique identifier of the prompt template to use.
     public var id: String
     public var version: String?
@@ -21,15 +21,23 @@ public struct Prompt: Codable, Hashable, Sendable {
         self.variables = variables
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case version
-        case variables
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.version = try container.decodeIfPresent(String.self, forKey: "version")
+        self.variables = try container.decodeIfPresent(ResponsePromptVariables.self, forKey: "variables")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encodeIfPresent(self.version, forKey: "version")
+        try container.encodeIfPresent(self.variables, forKey: "variables")
     }
 }
 
 /// Marks the exact end of a reusable prompt prefix. When `ttl` is omitted, the breakpoint inherits the request's `prompt_cache_options.ttl`; the boundary is not rounded to a token block.
-public struct PromptCacheBreakpointConfig: Codable, Hashable, Sendable {
+public struct PromptCacheBreakpointConfig: OpenAIModel {
     /// The breakpoint mode. Always `explicit`.
     public var mode: String = "explicit"
     /// The minimum lifetime of this cache breakpoint. Defaults to the request TTL.
@@ -39,9 +47,16 @@ public struct PromptCacheBreakpointConfig: Codable, Hashable, Sendable {
         self.ttl = ttl
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case mode
-        case ttl
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.mode = try container.decodeIfPresent(String.self, forKey: "mode") ?? "explicit"
+        self.ttl = try container.decodeIfPresent(PromptCacheBreakpointConfig.Ttl.self, forKey: "ttl")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.mode, forKey: "mode")
+        try container.encodeIfPresent(self.ttl, forKey: "ttl")
     }
 
     /// The minimum lifetime of this cache breakpoint. Defaults to the request TTL.
@@ -64,7 +79,7 @@ public struct PromptCacheBreakpointConfig: Codable, Hashable, Sendable {
 }
 
 /// Marks the exact end of a reusable prompt prefix. When `ttl` is omitted, the breakpoint inherits the request's `prompt_cache_options.ttl`; the boundary is not rounded to a token block.
-public struct PromptCacheBreakpointParam: Codable, Hashable, Sendable {
+public struct PromptCacheBreakpointParam: OpenAIModel {
     /// The breakpoint mode. Always `explicit`.
     public var mode: String = "explicit"
     /// The minimum lifetime of this cache breakpoint. Defaults to the request TTL.
@@ -74,9 +89,16 @@ public struct PromptCacheBreakpointParam: Codable, Hashable, Sendable {
         self.ttl = ttl
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case mode
-        case ttl
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.mode = try container.decodeIfPresent(String.self, forKey: "mode") ?? "explicit"
+        self.ttl = try container.decodeIfPresent(PromptCacheBreakpointParam.Ttl.self, forKey: "ttl")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.mode, forKey: "mode")
+        try container.encodeIfPresent(self.ttl, forKey: "ttl")
     }
 
     /// The minimum lifetime of this cache breakpoint. Defaults to the request TTL.
@@ -98,21 +120,27 @@ public struct PromptCacheBreakpointParam: Codable, Hashable, Sendable {
     }
 }
 
-public struct PromptCacheComparisonResponseNotFoundDiagnosticsBody: Codable, Hashable, Sendable {
+public struct PromptCacheComparisonResponseNotFoundDiagnosticsBody: OpenAIModel {
     public var type: String = "comparison_response_not_found"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "comparison_response_not_found"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// Prompt cache diagnostics requested for this response.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum PromptCacheDiagnostics: Codable, Hashable, Sendable {
+public indirect enum PromptCacheDiagnostics: OpenAIModel {
     /// `type`: `cache_miss`
     case cacheMiss(PromptCacheMissDiagnosticsBody)
     /// `type`: `cache_hit`
@@ -165,18 +193,24 @@ public indirect enum PromptCacheDiagnostics: Codable, Hashable, Sendable {
     }
 }
 
-public struct PromptCacheHitDiagnosticsBody: Codable, Hashable, Sendable {
+public struct PromptCacheHitDiagnosticsBody: OpenAIModel {
     public var type: String = "cache_hit"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "cache_hit"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
-public struct PromptCacheMissDiagnosticsBody: Codable, Hashable, Sendable {
+public struct PromptCacheMissDiagnosticsBody: OpenAIModel {
     public var type: String = "cache_miss"
     /// The reason prompt cache reuse did not occur.
     public var reason: CacheMissReasonTypeEnum
@@ -195,11 +229,20 @@ public struct PromptCacheMissDiagnosticsBody: Codable, Hashable, Sendable {
         self.comparisonReusableTokens = comparisonReusableTokens
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case reason
-        case cacheMissedTokens = "cache_missed_tokens"
-        case comparisonReusableTokens = "comparison_reusable_tokens"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "cache_miss"
+        self.reason = try container.decode(CacheMissReasonTypeEnum.self, forKey: "reason")
+        self.cacheMissedTokens = try container.decode(Int.self, forKey: "cache_missed_tokens")
+        self.comparisonReusableTokens = try container.decodeIfPresent(Int.self, forKey: "comparison_reusable_tokens")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.reason, forKey: "reason")
+        try container.encode(self.cacheMissedTokens, forKey: "cache_missed_tokens")
+        try container.encodeIfPresent(self.comparisonReusableTokens, forKey: "comparison_reusable_tokens")
     }
 }
 
@@ -220,7 +263,7 @@ public struct PromptCacheModeEnum: OpenAIStringEnum {
 }
 
 /// The prompt-caching options that were applied to the response. Supported for `gpt-5.6` and later models.
-public struct PromptCacheOptions: Codable, Hashable, Sendable {
+public struct PromptCacheOptions: OpenAIModel {
     /// The minimum lifetime applied to each cache breakpoint.
     public var ttl: PromptCacheOptions.Ttl
     /// Whether implicit prompt-cache breakpoints were enabled.
@@ -237,10 +280,18 @@ public struct PromptCacheOptions: Codable, Hashable, Sendable {
         self.comparisonResponseID = comparisonResponseID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case ttl
-        case mode
-        case comparisonResponseID = "comparison_response_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.ttl = try container.decode(PromptCacheOptions.Ttl.self, forKey: "ttl")
+        self.mode = try container.decode(PromptCacheModeEnum.self, forKey: "mode")
+        self.comparisonResponseID = try container.decodeIfPresent(String.self, forKey: "comparison_response_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.ttl, forKey: "ttl")
+        try container.encode(self.mode, forKey: "mode")
+        try container.encodeIfPresent(self.comparisonResponseID, forKey: "comparison_response_id")
     }
 
     /// The minimum lifetime applied to each cache breakpoint.
@@ -263,7 +314,7 @@ public struct PromptCacheOptions: Codable, Hashable, Sendable {
 }
 
 /// Options for prompt caching. Supported for `gpt-5.6` and later models. By default, OpenAI automatically chooses one implicit cache breakpoint. You can add explicit breakpoints to content blocks with `prompt_cache_breakpoint`. Each request can write up to four breakpoints. For cache matching, OpenAI considers up to the latest 80 breakpoints in the conversation, without a content-block lookback limit. Set `mode` to `explicit` to disable the implicit breakpoint. The `ttl` defaults to `30m`. Supported lifetimes depend on the API. See the [prompt caching guide](https://developers.openai.com/api/docs/guides/prompt-caching) for current details.
-public struct PromptCacheOptionsParam: Codable, Hashable, Sendable {
+public struct PromptCacheOptionsParam: OpenAIModel {
     /// The minimum lifetime applied to every implicit and explicit cache breakpoint written by the request. Defaults to `30m`, which is currently the only supported value. The backend may retain cache entries for longer.
     public var ttl: PromptCacheTTLEnum?
     /// Controls whether OpenAI automatically creates an implicit cache breakpoint. Defaults to `implicit`. With `implicit`, OpenAI creates one implicit breakpoint and writes up to the latest three explicit breakpoints in the request. With `explicit`, OpenAI does not create an implicit breakpoint and writes up to the latest four explicit breakpoints. If there are no explicit breakpoints, the request does not use prompt caching.
@@ -274,13 +325,20 @@ public struct PromptCacheOptionsParam: Codable, Hashable, Sendable {
         self.mode = mode
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case ttl
-        case mode
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.ttl = try container.decodeIfPresent(PromptCacheTTLEnum.self, forKey: "ttl")
+        self.mode = try container.decodeIfPresent(PromptCacheModeEnum.self, forKey: "mode")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.ttl, forKey: "ttl")
+        try container.encodeIfPresent(self.mode, forKey: "mode")
     }
 }
 
-public struct PromptCacheOptionsParam2: Codable, Hashable, Sendable {
+public struct PromptCacheOptionsParam2: OpenAIModel {
     /// Minimum lifetime for new prompt cache entries. Defaults to 30 minutes.
     public var ttl: PromptCacheTtlParam?
 
@@ -288,20 +346,32 @@ public struct PromptCacheOptionsParam2: Codable, Hashable, Sendable {
         self.ttl = ttl
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case ttl
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.ttl = try container.decodeIfPresent(PromptCacheTtlParam.self, forKey: "ttl")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.ttl, forKey: "ttl")
     }
 }
 
-public struct PromptCacheOptionsResource: Codable, Hashable, Sendable {
+public struct PromptCacheOptionsResource: OpenAIModel {
     public var ttl: PromptCacheTtlResource
 
     public init(ttl: PromptCacheTtlResource) {
         self.ttl = ttl
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case ttl
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.ttl = try container.decode(PromptCacheTtlResource.self, forKey: "ttl")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.ttl, forKey: "ttl")
     }
 }
 
@@ -357,13 +427,19 @@ public struct PromptCacheTtlResource: OpenAIStringEnum {
     }
 }
 
-public struct PromptCacheUnavailableDiagnosticsBody: Codable, Hashable, Sendable {
+public struct PromptCacheUnavailableDiagnosticsBody: OpenAIModel {
     public var type: String = "unavailable"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "unavailable"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }

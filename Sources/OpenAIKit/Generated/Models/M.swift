@@ -4,7 +4,7 @@
 import Foundation
 
 /// A request for human approval of a tool invocation.
-public struct MCPApprovalRequest: Codable, Hashable, Sendable {
+public struct MCPApprovalRequest: OpenAIModel {
     /// The type of the item. Always `mcp_approval_request`.
     public var type: String = "mcp_approval_request"
     /// The unique ID of the approval request.
@@ -28,17 +28,27 @@ public struct MCPApprovalRequest: Codable, Hashable, Sendable {
         self.arguments = arguments
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case serverLabel = "server_label"
-        case name
-        case arguments
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "mcp_approval_request"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.serverLabel = try container.decode(String.self, forKey: "server_label")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.arguments = try container.decode(String.self, forKey: "arguments")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.serverLabel, forKey: "server_label")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.arguments, forKey: "arguments")
     }
 }
 
 /// A response to an MCP approval request.
-public struct MCPApprovalResponse: Codable, Hashable, Sendable {
+public struct MCPApprovalResponse: OpenAIModel {
     /// The type of the item. Always `mcp_approval_response`.
     public var type: String = "mcp_approval_response"
     public var id: String?
@@ -60,17 +70,27 @@ public struct MCPApprovalResponse: Codable, Hashable, Sendable {
         self.reason = reason
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case approvalRequestID = "approval_request_id"
-        case approve
-        case reason
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "mcp_approval_response"
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.approvalRequestID = try container.decode(String.self, forKey: "approval_request_id")
+        self.approve = try container.decode(Bool.self, forKey: "approve")
+        self.reason = try container.decodeIfPresent(String.self, forKey: "reason")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encode(self.approvalRequestID, forKey: "approval_request_id")
+        try container.encode(self.approve, forKey: "approve")
+        try container.encodeIfPresent(self.reason, forKey: "reason")
     }
 }
 
 /// A response to an MCP approval request.
-public struct MCPApprovalResponseResource: Codable, Hashable, Sendable {
+public struct MCPApprovalResponseResource: OpenAIModel {
     /// The type of the item. Always `mcp_approval_response`.
     public var type: String = "mcp_approval_response"
     /// The unique ID of the approval response
@@ -93,17 +113,27 @@ public struct MCPApprovalResponseResource: Codable, Hashable, Sendable {
         self.reason = reason
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case approvalRequestID = "approval_request_id"
-        case approve
-        case reason
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "mcp_approval_response"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.approvalRequestID = try container.decode(String.self, forKey: "approval_request_id")
+        self.approve = try container.decode(Bool.self, forKey: "approve")
+        self.reason = try container.decodeIfPresent(String.self, forKey: "reason")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.approvalRequestID, forKey: "approval_request_id")
+        try container.encode(self.approve, forKey: "approve")
+        try container.encodeIfPresent(self.reason, forKey: "reason")
     }
 }
 
 /// A list of tools available on an MCP server.
-public struct MCPListTools: Codable, Hashable, Sendable {
+public struct MCPListTools: OpenAIModel {
     /// The type of the item. Always `mcp_list_tools`.
     public var type: String = "mcp_list_tools"
     /// The unique ID of the list.
@@ -126,17 +156,27 @@ public struct MCPListTools: Codable, Hashable, Sendable {
         self.error = error
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case serverLabel = "server_label"
-        case tools
-        case error
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "mcp_list_tools"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.serverLabel = try container.decode(String.self, forKey: "server_label")
+        self.tools = try container.decode([MCPListToolsTool].self, forKey: "tools")
+        self.error = try container.decodeIfPresent(String.self, forKey: "error")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.serverLabel, forKey: "server_label")
+        try container.encode(self.tools, forKey: "tools")
+        try container.encodeIfPresent(self.error, forKey: "error")
     }
 }
 
 /// A tool available on an MCP server.
-public struct MCPListToolsTool: Codable, Hashable, Sendable {
+public struct MCPListToolsTool: OpenAIModel {
     /// The name of the tool.
     public var name: String
     public var description: String?
@@ -156,15 +196,24 @@ public struct MCPListToolsTool: Codable, Hashable, Sendable {
         self.annotations = annotations
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case name
-        case description
-        case inputSchema = "input_schema"
-        case annotations
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.name = try container.decode(String.self, forKey: "name")
+        self.description = try container.decodeIfPresent(String.self, forKey: "description")
+        self.inputSchema = try container.decode(JSONObject.self, forKey: "input_schema")
+        self.annotations = try container.decodeIfPresent(JSONObject.self, forKey: "annotations")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.name, forKey: "name")
+        try container.encodeIfPresent(self.description, forKey: "description")
+        try container.encode(self.inputSchema, forKey: "input_schema")
+        try container.encodeIfPresent(self.annotations, forKey: "annotations")
     }
 }
 
-public struct MCPProtocolError: Codable, Hashable, Sendable {
+public struct MCPProtocolError: OpenAIModel {
     public var type: String = "mcp_protocol_error"
     public var code: Int
     public var message: String
@@ -174,16 +223,24 @@ public struct MCPProtocolError: Codable, Hashable, Sendable {
         self.message = message
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case code
-        case message
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "mcp_protocol_error"
+        self.code = try container.decode(Int.self, forKey: "code")
+        self.message = try container.decode(String.self, forKey: "message")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.code, forKey: "code")
+        try container.encode(self.message, forKey: "message")
     }
 }
 
 /// Give the model access to additional tools via remote Model Context Protocol
 /// (MCP) servers. [Learn more about MCP](https://developers.openai.com/api/docs/guides/tools-connectors-mcp).
-public struct MCPTool: Codable, Hashable, Sendable {
+public struct MCPTool: OpenAIModel {
     /// The type of the MCP tool. Always `mcp`.
     public var type: String = "mcp"
     /// A label for this MCP server, used to identify it in tool calls.
@@ -254,19 +311,36 @@ public struct MCPTool: Codable, Hashable, Sendable {
         self.deferLoading = deferLoading
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case serverLabel = "server_label"
-        case serverURL = "server_url"
-        case connectorID = "connector_id"
-        case tunnelID = "tunnel_id"
-        case authorization
-        case serverDescription = "server_description"
-        case headers
-        case allowedTools = "allowed_tools"
-        case allowedCallers = "allowed_callers"
-        case requireApproval = "require_approval"
-        case deferLoading = "defer_loading"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "mcp"
+        self.serverLabel = try container.decode(String.self, forKey: "server_label")
+        self.serverURL = try container.decodeIfPresent(String.self, forKey: "server_url")
+        self.connectorID = try container.decodeIfPresent(MCPTool.ConnectorID.self, forKey: "connector_id")
+        self.tunnelID = try container.decodeIfPresent(String.self, forKey: "tunnel_id")
+        self.authorization = try container.decodeIfPresent(String.self, forKey: "authorization")
+        self.serverDescription = try container.decodeIfPresent(String.self, forKey: "server_description")
+        self.headers = try container.decodeIfPresent([String: String].self, forKey: "headers")
+        self.allowedTools = try container.decodeIfPresent(MCPTool.AllowedTools.self, forKey: "allowed_tools")
+        self.allowedCallers = try container.decodeIfPresent([CallableToolAllowedCaller].self, forKey: "allowed_callers")
+        self.requireApproval = try container.decodeIfPresent(MCPTool.RequireApproval.self, forKey: "require_approval")
+        self.deferLoading = try container.decodeIfPresent(Bool.self, forKey: "defer_loading")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.serverLabel, forKey: "server_label")
+        try container.encodeIfPresent(self.serverURL, forKey: "server_url")
+        try container.encodeIfPresent(self.connectorID, forKey: "connector_id")
+        try container.encodeIfPresent(self.tunnelID, forKey: "tunnel_id")
+        try container.encodeIfPresent(self.authorization, forKey: "authorization")
+        try container.encodeIfPresent(self.serverDescription, forKey: "server_description")
+        try container.encodeIfPresent(self.headers, forKey: "headers")
+        try container.encodeIfPresent(self.allowedTools, forKey: "allowed_tools")
+        try container.encodeIfPresent(self.allowedCallers, forKey: "allowed_callers")
+        try container.encodeIfPresent(self.requireApproval, forKey: "require_approval")
+        try container.encodeIfPresent(self.deferLoading, forKey: "defer_loading")
     }
 
     /// Identifier for service connectors, like those available in ChatGPT. One of
@@ -311,7 +385,7 @@ public struct MCPTool: Codable, Hashable, Sendable {
     }
 
     /// List of allowed tool names or a filter object.
-    public indirect enum AllowedTools: Codable, Hashable, Sendable {
+    public indirect enum AllowedTools: OpenAIModel {
         /// A string array of allowed tool names
         case strings([String])
         case mCPToolFilter(MCPToolFilter)
@@ -345,7 +419,7 @@ public struct MCPTool: Codable, Hashable, Sendable {
     }
 
     /// Specify which of the MCP server's tools require approval.
-    public indirect enum RequireApproval: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum RequireApproval: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         /// Specify which of the MCP server's tools require approval. Can be
         /// `always`, `never`, or a filter object associated with tools
         /// that require approval.
@@ -389,7 +463,7 @@ public struct MCPTool: Codable, Hashable, Sendable {
         /// Specify which of the MCP server's tools require approval. Can be
         /// `always`, `never`, or a filter object associated with tools
         /// that require approval.
-        public struct MCPToolApprovalFilter: Codable, Hashable, Sendable {
+        public struct MCPToolApprovalFilter: OpenAIModel {
             public var always: MCPToolFilter?
             public var never: MCPToolFilter?
 
@@ -398,9 +472,16 @@ public struct MCPTool: Codable, Hashable, Sendable {
                 self.never = never
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case always
-                case never
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.always = try container.decodeIfPresent(MCPToolFilter.self, forKey: "always")
+                self.never = try container.decodeIfPresent(MCPToolFilter.self, forKey: "never")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.always, forKey: "always")
+                try container.encodeIfPresent(self.never, forKey: "never")
             }
         }
 
@@ -427,7 +508,7 @@ public struct MCPTool: Codable, Hashable, Sendable {
 }
 
 /// An invocation of a tool on an MCP server.
-public struct MCPToolCall: Codable, Hashable, Sendable {
+public struct MCPToolCall: OpenAIModel {
     /// The type of the item. Always `mcp_call`.
     public var type: String = "mcp_call"
     /// The unique ID of the tool call.
@@ -465,21 +546,35 @@ public struct MCPToolCall: Codable, Hashable, Sendable {
         self.approvalRequestID = approvalRequestID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case serverLabel = "server_label"
-        case name
-        case arguments
-        case output
-        case error
-        case status
-        case approvalRequestID = "approval_request_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "mcp_call"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.serverLabel = try container.decode(String.self, forKey: "server_label")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.arguments = try container.decode(String.self, forKey: "arguments")
+        self.output = try container.decodeIfPresent(String.self, forKey: "output")
+        self.error = try container.decodeIfPresent(MCPToolCallError.self, forKey: "error")
+        self.status = try container.decodeIfPresent(MCPToolCallStatus.self, forKey: "status")
+        self.approvalRequestID = try container.decodeIfPresent(String.self, forKey: "approval_request_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.serverLabel, forKey: "server_label")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.arguments, forKey: "arguments")
+        try container.encodeIfPresent(self.output, forKey: "output")
+        try container.encodeIfPresent(self.error, forKey: "error")
+        try container.encodeIfPresent(self.status, forKey: "status")
+        try container.encodeIfPresent(self.approvalRequestID, forKey: "approval_request_id")
     }
 }
 
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum MCPToolCallError: Codable, Hashable, Sendable {
+public indirect enum MCPToolCallError: OpenAIModel {
     /// `type`: `mcp_protocol_error`
     case mcpProtocolError(MCPProtocolError)
     /// `type`: `mcp_tool_execution_error`
@@ -544,7 +639,7 @@ public struct MCPToolCallStatus: OpenAIStringEnum {
     }
 }
 
-public struct MCPToolExecutionError: Codable, Hashable, Sendable {
+public struct MCPToolExecutionError: OpenAIModel {
     public var type: String = "mcp_tool_execution_error"
     public var content: JSONValue
 
@@ -552,14 +647,21 @@ public struct MCPToolExecutionError: Codable, Hashable, Sendable {
         self.content = content
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case content
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "mcp_tool_execution_error"
+        self.content = try container.decode(JSONValue.self, forKey: "content")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.content, forKey: "content")
     }
 }
 
 /// A filter object to specify which tools are allowed.
-public struct MCPToolFilter: Codable, Hashable, Sendable {
+public struct MCPToolFilter: OpenAIModel {
     /// List of allowed tool names.
     public var toolNames: [String]?
     /// Indicates whether or not a tool modifies data or is read-only. If an
@@ -572,8 +674,15 @@ public struct MCPToolFilter: Codable, Hashable, Sendable {
         self.readOnly = readOnly
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case toolNames = "tool_names"
-        case readOnly = "read_only"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.toolNames = try container.decodeIfPresent([String].self, forKey: "tool_names")
+        self.readOnly = try container.decodeIfPresent(Bool.self, forKey: "read_only")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.toolNames, forKey: "tool_names")
+        try container.encodeIfPresent(self.readOnly, forKey: "read_only")
     }
 }

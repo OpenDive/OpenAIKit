@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct ApproximateLocation: Codable, Hashable, Sendable {
+public struct ApproximateLocation: OpenAIModel {
     /// The type of location approximation. Always `approximate`.
     public var type: String = "approximate"
     public var country: String?
@@ -23,11 +23,21 @@ public struct ApproximateLocation: Codable, Hashable, Sendable {
         self.timezone = timezone
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case country
-        case region
-        case city
-        case timezone
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "approximate"
+        self.country = try container.decodeIfPresent(String.self, forKey: "country")
+        self.region = try container.decodeIfPresent(String.self, forKey: "region")
+        self.city = try container.decodeIfPresent(String.self, forKey: "city")
+        self.timezone = try container.decodeIfPresent(String.self, forKey: "timezone")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.country, forKey: "country")
+        try container.encodeIfPresent(self.region, forKey: "region")
+        try container.encodeIfPresent(self.city, forKey: "city")
+        try container.encodeIfPresent(self.timezone, forKey: "timezone")
     }
 }

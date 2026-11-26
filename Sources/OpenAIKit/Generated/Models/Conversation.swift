@@ -6,7 +6,7 @@ import Foundation
 /// A single item within a conversation. The set of possible types are the same as the `output` type of a [Response object](https://developers.openai.com/api/reference/resources/responses#%28resource%29%20responses%20%3E%20%28model%29%20response%20%3E%20%28schema%29%20%3E%20%28property%29%20output).
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum ConversationItem: Codable, Hashable, Sendable {
+public indirect enum ConversationItem: OpenAIModel {
     /// `type`: `message`
     case message(Message)
     /// `type`: `function_call`
@@ -235,7 +235,7 @@ public indirect enum ConversationItem: Codable, Hashable, Sendable {
 }
 
 /// A list of Conversation items.
-public struct ConversationItemList: Codable, Hashable, Sendable {
+public struct ConversationItemList: OpenAIModel {
     /// The type of object returned, must be `list`.
     public var object: String = "list"
     /// A list of conversation items.
@@ -259,18 +259,28 @@ public struct ConversationItemList: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case hasMore = "has_more"
-        case firstID = "first_id"
-        case lastID = "last_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([ConversationItem].self, forKey: "data")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encode(self.hasMore, forKey: "has_more")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
     }
 }
 
 /// The conversation that this response belongs to. Items from this conversation are prepended to `input_items` for this response request.
 /// Input items and output items from this response are automatically added to this conversation after this response completes.
-public indirect enum ConversationParam: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+public indirect enum ConversationParam: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
     /// The unique ID of the conversation.
     case conversationID(String)
     case conversationParam2(ConversationParam2)
@@ -308,7 +318,7 @@ public indirect enum ConversationParam: Codable, Hashable, Sendable, Expressible
 }
 
 /// The conversation that this response belongs to.
-public struct ConversationParam2: Codable, Hashable, Sendable {
+public struct ConversationParam2: OpenAIModel {
     /// The unique ID of the conversation.
     public var id: String
 
@@ -316,12 +326,18 @@ public struct ConversationParam2: Codable, Hashable, Sendable {
         self.id = id
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
     }
 }
 
-public struct ConversationResource: Codable, Hashable, Sendable {
+public struct ConversationResource: OpenAIModel {
     /// The unique ID of the conversation.
     public var id: String
     /// The object type, which is always `conversation`.
@@ -342,10 +358,19 @@ public struct ConversationResource: Codable, Hashable, Sendable {
         self.createdAt = createdAt
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case metadata
-        case createdAt = "created_at"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "conversation"
+        self.metadata = try container.decode([String: String].self, forKey: "metadata")
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.metadata, forKey: "metadata")
+        try container.encode(self.createdAt, forKey: "created_at")
     }
 }

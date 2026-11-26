@@ -4,7 +4,7 @@
 import Foundation
 
 /// Indicates that a thread has been closed.
-public struct ClosedStatus: Codable, Hashable, Sendable {
+public struct ClosedStatus: OpenAIModel {
     /// Status discriminator that is always `closed`.
     public var type: String = "closed"
     public var reason: String?
@@ -13,8 +13,15 @@ public struct ClosedStatus: Codable, Hashable, Sendable {
         self.reason = reason
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case reason
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "closed"
+        self.reason = try container.decodeIfPresent(String.self, forKey: "reason")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.reason, forKey: "reason")
     }
 }

@@ -1241,7 +1241,7 @@ class Emitter:
         i1 = indent + "    "
         i2 = i1 + "    "
         out = doc_comment(decl.doc, indent)
-        out += f"{indent}public struct {decl.name}: Codable, Hashable, Sendable {{\n"
+        out += f"{indent}public struct {decl.name}: OpenAIModel {{\n"
         for prop in decl.props:
             extra = ["- Note: Deprecated by OpenAI."] if prop.deprecated else None
             out += doc_comment(prop.doc, i1, extra)
@@ -1267,16 +1267,42 @@ class Emitter:
         for prop in settable:
             out += f"{i2}self.{prop.swift_name.strip('`')} = {ident(prop.swift_name)}\n"
         out += f"{i1}}}\n"
-        if decl.props:
-            out += f"\n{i1}private enum CodingKeys: String, CodingKey {{\n"
-            for prop in decl.props:
-                if prop.swift_name == prop.json_name:
-                    out += f"{i2}case {ident(prop.swift_name)}\n"
-                else:
-                    out += f"{i2}case {ident(prop.swift_name)} = {swift_string(prop.json_name)}\n"
-            out += f"{i1}}}\n"
+        out += self.render_coding(decl, i1)
         for child in decl.nested:
             out += "\n" + self.render(child, i1)
+        out += f"{indent}}}\n"
+        return out
+
+    def render_coding(self, decl: Struct, indent: str) -> str:
+        """Explicit Codable with string keys: no `CodingKeys` enum per type, which saves megabytes."""
+        i2 = indent + "    "
+        out = f"\n{indent}public init(from decoder: any Decoder) throws {{\n"
+        if decl.props:
+            out += f"{i2}let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)\n"
+        else:
+            out += f"{i2}_ = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)\n"
+        for prop in decl.props:
+            name = prop.swift_name.strip("`")
+            key = swift_string(prop.json_name)
+            type_text = self.prop_type(prop)
+            base = type_text[:-1] if type_text.endswith("?") else type_text
+            if prop.const is not None and not type_text.endswith("?"):
+                out += f"{i2}self.{name} = try container.decodeIfPresent(String.self, forKey: {key}) ?? {swift_string(prop.const)}\n"
+            elif type_text.endswith("?"):
+                out += f"{i2}self.{name} = try container.decodeIfPresent({base}.self, forKey: {key})\n"
+            else:
+                out += f"{i2}self.{name} = try container.decode({base}.self, forKey: {key})\n"
+        out += f"{indent}}}\n\n"
+        out += f"{indent}public func encode(to encoder: any Encoder) throws {{\n"
+        if decl.props:
+            out += f"{i2}var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)\n"
+        else:
+            out += f"{i2}_ = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)\n"
+        for prop in decl.props:
+            name = prop.swift_name.strip("`")
+            key = swift_string(prop.json_name)
+            method = "encodeIfPresent" if self.prop_type(prop).endswith("?") else "encode"
+            out += f"{i2}try container.{method}(self.{name}, forKey: {key})\n"
         out += f"{indent}}}\n"
         return out
 
@@ -1304,7 +1330,7 @@ class Emitter:
         i1 = indent + "    "
         i2 = i1 + "    "
         i3 = i2 + "    "
-        protocols = "Codable, Hashable, Sendable"
+        protocols = "OpenAIModel"
         literal = decl.string_literal_case
         if literal is not None:
             protocols += ", ExpressibleByStringLiteral, ExpressibleByStringInterpolation"

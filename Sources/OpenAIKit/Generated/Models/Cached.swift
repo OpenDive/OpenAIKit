@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct CachedUsageDetails: Codable, Hashable, Sendable {
+public struct CachedUsageDetails: OpenAIModel {
     public var cachedTextTokens: Int
     public var cachedImageTokens: Int
 
@@ -12,8 +12,15 @@ public struct CachedUsageDetails: Codable, Hashable, Sendable {
         self.cachedImageTokens = cachedImageTokens
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case cachedTextTokens = "cached_text_tokens"
-        case cachedImageTokens = "cached_image_tokens"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.cachedTextTokens = try container.decode(Int.self, forKey: "cached_text_tokens")
+        self.cachedImageTokens = try container.decode(Int.self, forKey: "cached_image_tokens")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.cachedTextTokens, forKey: "cached_text_tokens")
+        try container.encode(self.cachedImageTokens, forKey: "cached_image_tokens")
     }
 }

@@ -6,7 +6,7 @@ import Foundation
 /// An annotation that applies to a span of output text.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum Annotation: Codable, Hashable, Sendable {
+public indirect enum Annotation: OpenAIModel {
     /// `type`: `file_citation`
     case fileCitation(FileCitationBody)
     /// `type`: `url_citation`

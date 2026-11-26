@@ -4,7 +4,7 @@
 import Foundation
 
 /// Updates to an MCP credential's existing OAuth refresh configuration.
-public struct RotateMcpOauthRefreshParam: Codable, Hashable, Sendable {
+public struct RotateMcpOauthRefreshParam: OpenAIModel {
     /// The replacement refresh token. Omit or pass `null` to keep the stored token. This secret is never returned in resources.
     public var refreshToken: String?
     /// Replacement space-separated OAuth scopes for refresh requests. Omit to keep the scopes, or pass `null` to stop sending a scope parameter.
@@ -22,17 +22,25 @@ public struct RotateMcpOauthRefreshParam: Codable, Hashable, Sendable {
         self.tokenEndpointAuth = tokenEndpointAuth
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case refreshToken = "refresh_token"
-        case scope
-        case tokenEndpointAuth = "token_endpoint_auth"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.refreshToken = try container.decodeIfPresent(String.self, forKey: "refresh_token")
+        self.scope = try container.decodeIfPresent(String.self, forKey: "scope")
+        self.tokenEndpointAuth = try container.decodeIfPresent(RotateMcpOauthTokenEndpointAuthParam.self, forKey: "token_endpoint_auth")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.refreshToken, forKey: "refresh_token")
+        try container.encodeIfPresent(self.scope, forKey: "scope")
+        try container.encodeIfPresent(self.tokenEndpointAuth, forKey: "token_endpoint_auth")
     }
 }
 
 /// Client-secret updates that preserve the credential's OAuth authentication method.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum RotateMcpOauthTokenEndpointAuthParam: Codable, Hashable, Sendable {
+public indirect enum RotateMcpOauthTokenEndpointAuthParam: OpenAIModel {
     /// `type`: `client_secret_basic`
     case clientSecretBasic(RotateMcpOauthTokenEndpointAuthParamClientSecretBasic)
     /// `type`: `client_secret_post`
@@ -72,7 +80,7 @@ public indirect enum RotateMcpOauthTokenEndpointAuthParam: Codable, Hashable, Se
 }
 
 /// Updates credentials sent using HTTP Basic authentication.
-public struct RotateMcpOauthTokenEndpointAuthParamClientSecretBasic: Codable, Hashable, Sendable {
+public struct RotateMcpOauthTokenEndpointAuthParamClientSecretBasic: OpenAIModel {
     /// The type of the object. Always `client_secret_basic`.
     public var type: String = "client_secret_basic"
     /// The replacement OAuth client secret. Omit or pass `null` to keep the stored secret. This secret is never returned in resources.
@@ -82,14 +90,21 @@ public struct RotateMcpOauthTokenEndpointAuthParamClientSecretBasic: Codable, Ha
         self.clientSecret = clientSecret
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case clientSecret = "client_secret"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "client_secret_basic"
+        self.clientSecret = try container.decodeIfPresent(String.self, forKey: "client_secret")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.clientSecret, forKey: "client_secret")
     }
 }
 
 /// Updates credentials sent in the token request body.
-public struct RotateMcpOauthTokenEndpointAuthParamClientSecretPost: Codable, Hashable, Sendable {
+public struct RotateMcpOauthTokenEndpointAuthParamClientSecretPost: OpenAIModel {
     /// The type of the object. Always `client_secret_post`.
     public var type: String = "client_secret_post"
     /// The replacement OAuth client secret. Omit or pass `null` to keep the stored secret. This secret is never returned in resources.
@@ -99,16 +114,23 @@ public struct RotateMcpOauthTokenEndpointAuthParamClientSecretPost: Codable, Has
         self.clientSecret = clientSecret
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case clientSecret = "client_secret"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "client_secret_post"
+        self.clientSecret = try container.decodeIfPresent(String.self, forKey: "client_secret")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.clientSecret, forKey: "client_secret")
     }
 }
 
 /// Updates to a vault credential without changing its authentication method or destination configuration.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum RotateVaultCredentialAuthParam: Codable, Hashable, Sendable {
+public indirect enum RotateVaultCredentialAuthParam: OpenAIModel {
     /// `type`: `mcp_oauth`
     case mcpOauth(RotateVaultCredentialAuthParamMcpOauth)
     /// `type`: `static_bearer`
@@ -155,7 +177,7 @@ public indirect enum RotateVaultCredentialAuthParam: Codable, Hashable, Sendable
 }
 
 /// Replace the secret for an OpenAI-hosted environment credential. The environment variable name and networking configuration remain unchanged.
-public struct RotateVaultCredentialAuthParamEnvironmentVariable: Codable, Hashable, Sendable {
+public struct RotateVaultCredentialAuthParamEnvironmentVariable: OpenAIModel {
     /// The type of the object. Always `environment_variable`.
     public var type: String = "environment_variable"
     /// The write-only replacement secret. Never returned in credential resources or supplied directly to sandbox code. Must be nonempty and must not contain carriage returns, newlines, or NUL bytes.
@@ -165,14 +187,21 @@ public struct RotateVaultCredentialAuthParamEnvironmentVariable: Codable, Hashab
         self.secretValue = secretValue
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case secretValue = "secret_value"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "environment_variable"
+        self.secretValue = try container.decode(String.self, forKey: "secret_value")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.secretValue, forKey: "secret_value")
     }
 }
 
 /// Rotate an OAuth credential for an HTTPS MCP destination.
-public struct RotateVaultCredentialAuthParamMcpOauth: Codable, Hashable, Sendable {
+public struct RotateVaultCredentialAuthParamMcpOauth: OpenAIModel {
     /// The type of the object. Always `mcp_oauth`.
     public var type: String = "mcp_oauth"
     /// A write-only replacement OAuth access token.
@@ -192,16 +221,25 @@ public struct RotateVaultCredentialAuthParamMcpOauth: Codable, Hashable, Sendabl
         self.refresh = refresh
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case accessToken = "access_token"
-        case expiresAt = "expires_at"
-        case refresh
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "mcp_oauth"
+        self.accessToken = try container.decodeIfPresent(String.self, forKey: "access_token")
+        self.expiresAt = try container.decodeIfPresent(String.self, forKey: "expires_at")
+        self.refresh = try container.decodeIfPresent(RotateMcpOauthRefreshParam.self, forKey: "refresh")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.accessToken, forKey: "access_token")
+        try container.encodeIfPresent(self.expiresAt, forKey: "expires_at")
+        try container.encodeIfPresent(self.refresh, forKey: "refresh")
     }
 }
 
 /// Replace the bearer token for the credential's MCP server.
-public struct RotateVaultCredentialAuthParamStaticBearer: Codable, Hashable, Sendable {
+public struct RotateVaultCredentialAuthParamStaticBearer: OpenAIModel {
     /// The type of the object. Always `static_bearer`.
     public var type: String = "static_bearer"
     /// The replacement bearer token. This secret is never returned in credential resources.
@@ -211,14 +249,21 @@ public struct RotateVaultCredentialAuthParamStaticBearer: Codable, Hashable, Sen
         self.token = token
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case token
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "static_bearer"
+        self.token = try container.decode(String.self, forKey: "token")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.token, forKey: "token")
     }
 }
 
 /// Metadata, secret, expiry, and OAuth refresh scope updates for an existing vault credential. Supply at least one of `auth` or `metadata`.
-public struct RotateVaultCredentialParams: Codable, Hashable, Sendable {
+public struct RotateVaultCredentialParams: OpenAIModel {
     /// Replacement values for the credential's existing authentication method.
     public var auth: RotateVaultCredentialAuthParam?
     /// Replaces all metadata. Omit to preserve it, or pass {} to clear it. Up to 16 string key-value pairs, with keys up to 64 and values up to 512 characters.
@@ -229,8 +274,15 @@ public struct RotateVaultCredentialParams: Codable, Hashable, Sendable {
         self.metadata = metadata
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case auth
-        case metadata
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.auth = try container.decodeIfPresent(RotateVaultCredentialAuthParam.self, forKey: "auth")
+        self.metadata = try container.decodeIfPresent([String: String].self, forKey: "metadata")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.auth, forKey: "auth")
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
     }
 }

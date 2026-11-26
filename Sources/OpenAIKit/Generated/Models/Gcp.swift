@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct GcpExternalKeyParams: Codable, Hashable, Sendable {
+public struct GcpExternalKeyParams: OpenAIModel {
     /// A friendly name to identify this config
     public var name: String
     public var type: String = "gcp"
@@ -53,23 +53,40 @@ public struct GcpExternalKeyParams: Codable, Hashable, Sendable {
         self.kmsKeyVersion = kmsKeyVersion
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case name
-        case type
-        case workloadIdentityProjectNumber = "workload_identity_project_number"
-        case workloadIdentityPoolID = "workload_identity_pool_id"
-        case workloadIdentityProviderID = "workload_identity_provider_id"
-        case kmsProjectID = "kms_project_id"
-        case kmsKeyRingName = "kms_key_ring_name"
-        case kmsKeyName = "kms_key_name"
-        case kmsKeyLocation = "kms_key_location"
-        case audience
-        case purpose
-        case kmsKeyVersion = "kms_key_version"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.name = try container.decode(String.self, forKey: "name")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "gcp"
+        self.workloadIdentityProjectNumber = try container.decode(String.self, forKey: "workload_identity_project_number")
+        self.workloadIdentityPoolID = try container.decode(String.self, forKey: "workload_identity_pool_id")
+        self.workloadIdentityProviderID = try container.decode(String.self, forKey: "workload_identity_provider_id")
+        self.kmsProjectID = try container.decode(String.self, forKey: "kms_project_id")
+        self.kmsKeyRingName = try container.decode(String.self, forKey: "kms_key_ring_name")
+        self.kmsKeyName = try container.decode(String.self, forKey: "kms_key_name")
+        self.kmsKeyLocation = try container.decode(String.self, forKey: "kms_key_location")
+        self.audience = try container.decode(String.self, forKey: "audience")
+        self.purpose = try container.decodeIfPresent(ExternalKeyPurpose.self, forKey: "purpose")
+        self.kmsKeyVersion = try container.decodeIfPresent(String.self, forKey: "kms_key_version")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.workloadIdentityProjectNumber, forKey: "workload_identity_project_number")
+        try container.encode(self.workloadIdentityPoolID, forKey: "workload_identity_pool_id")
+        try container.encode(self.workloadIdentityProviderID, forKey: "workload_identity_provider_id")
+        try container.encode(self.kmsProjectID, forKey: "kms_project_id")
+        try container.encode(self.kmsKeyRingName, forKey: "kms_key_ring_name")
+        try container.encode(self.kmsKeyName, forKey: "kms_key_name")
+        try container.encode(self.kmsKeyLocation, forKey: "kms_key_location")
+        try container.encode(self.audience, forKey: "audience")
+        try container.encodeIfPresent(self.purpose, forKey: "purpose")
+        try container.encodeIfPresent(self.kmsKeyVersion, forKey: "kms_key_version")
     }
 }
 
-public struct GcpExternalStorageProviderParams: Codable, Hashable, Sendable {
+public struct GcpExternalStorageProviderParams: OpenAIModel {
     public var type: String = "gcp"
     public var bucket: String
     public var workloadIdentityProjectNumber: String
@@ -88,16 +105,26 @@ public struct GcpExternalStorageProviderParams: Codable, Hashable, Sendable {
         self.workloadIdentityProviderID = workloadIdentityProviderID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case bucket
-        case workloadIdentityProjectNumber = "workload_identity_project_number"
-        case workloadIdentityPoolID = "workload_identity_pool_id"
-        case workloadIdentityProviderID = "workload_identity_provider_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "gcp"
+        self.bucket = try container.decode(String.self, forKey: "bucket")
+        self.workloadIdentityProjectNumber = try container.decode(String.self, forKey: "workload_identity_project_number")
+        self.workloadIdentityPoolID = try container.decode(String.self, forKey: "workload_identity_pool_id")
+        self.workloadIdentityProviderID = try container.decode(String.self, forKey: "workload_identity_provider_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.bucket, forKey: "bucket")
+        try container.encode(self.workloadIdentityProjectNumber, forKey: "workload_identity_project_number")
+        try container.encode(self.workloadIdentityPoolID, forKey: "workload_identity_pool_id")
+        try container.encode(self.workloadIdentityProviderID, forKey: "workload_identity_provider_id")
     }
 }
 
-public struct GcpExternalStorageProviderResponse: Codable, Hashable, Sendable {
+public struct GcpExternalStorageProviderResponse: OpenAIModel {
     public var type: String = "gcp"
     public var bucket: String
     public var workloadIdentityProjectNumber: String
@@ -122,13 +149,25 @@ public struct GcpExternalStorageProviderResponse: Codable, Hashable, Sendable {
         self.audience = audience
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case bucket
-        case workloadIdentityProjectNumber = "workload_identity_project_number"
-        case workloadIdentityPoolID = "workload_identity_pool_id"
-        case workloadIdentityProviderID = "workload_identity_provider_id"
-        case region
-        case audience
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "gcp"
+        self.bucket = try container.decode(String.self, forKey: "bucket")
+        self.workloadIdentityProjectNumber = try container.decode(String.self, forKey: "workload_identity_project_number")
+        self.workloadIdentityPoolID = try container.decode(String.self, forKey: "workload_identity_pool_id")
+        self.workloadIdentityProviderID = try container.decode(String.self, forKey: "workload_identity_provider_id")
+        self.region = try container.decode(String.self, forKey: "region")
+        self.audience = try container.decode(String.self, forKey: "audience")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.bucket, forKey: "bucket")
+        try container.encode(self.workloadIdentityProjectNumber, forKey: "workload_identity_project_number")
+        try container.encode(self.workloadIdentityPoolID, forKey: "workload_identity_pool_id")
+        try container.encode(self.workloadIdentityProviderID, forKey: "workload_identity_provider_id")
+        try container.encode(self.region, forKey: "region")
+        try container.encode(self.audience, forKey: "audience")
     }
 }

@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct AwsExternalKeyParams: Codable, Hashable, Sendable {
+public struct AwsExternalKeyParams: OpenAIModel {
     /// A friendly name to identify this config
     public var name: String
     public var type: String = "aws"
@@ -29,17 +29,28 @@ public struct AwsExternalKeyParams: Codable, Hashable, Sendable {
         self.purpose = purpose
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case name
-        case type
-        case roleArn = "role_arn"
-        case kmsArn = "kms_arn"
-        case externalID = "external_id"
-        case purpose
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.name = try container.decode(String.self, forKey: "name")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "aws"
+        self.roleArn = try container.decode(String.self, forKey: "role_arn")
+        self.kmsArn = try container.decode(String.self, forKey: "kms_arn")
+        self.externalID = try container.decode(String.self, forKey: "external_id")
+        self.purpose = try container.decodeIfPresent(ExternalKeyPurpose.self, forKey: "purpose")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.roleArn, forKey: "role_arn")
+        try container.encode(self.kmsArn, forKey: "kms_arn")
+        try container.encode(self.externalID, forKey: "external_id")
+        try container.encodeIfPresent(self.purpose, forKey: "purpose")
     }
 }
 
-public struct AwsExternalStorageProviderParams: Codable, Hashable, Sendable {
+public struct AwsExternalStorageProviderParams: OpenAIModel {
     public var type: String = "aws"
     public var bucket: String
     public var roleArn: String
@@ -49,14 +60,22 @@ public struct AwsExternalStorageProviderParams: Codable, Hashable, Sendable {
         self.roleArn = roleArn
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case bucket
-        case roleArn = "role_arn"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "aws"
+        self.bucket = try container.decode(String.self, forKey: "bucket")
+        self.roleArn = try container.decode(String.self, forKey: "role_arn")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.bucket, forKey: "bucket")
+        try container.encode(self.roleArn, forKey: "role_arn")
     }
 }
 
-public struct AwsExternalStorageProviderResponse: Codable, Hashable, Sendable {
+public struct AwsExternalStorageProviderResponse: OpenAIModel {
     public var type: String = "aws"
     public var accountID: String
     public var region: String
@@ -78,12 +97,23 @@ public struct AwsExternalStorageProviderResponse: Codable, Hashable, Sendable {
         self.externalID = externalID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case accountID = "account_id"
-        case region
-        case bucket
-        case roleArn = "role_arn"
-        case externalID = "external_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "aws"
+        self.accountID = try container.decode(String.self, forKey: "account_id")
+        self.region = try container.decode(String.self, forKey: "region")
+        self.bucket = try container.decode(String.self, forKey: "bucket")
+        self.roleArn = try container.decode(String.self, forKey: "role_arn")
+        self.externalID = try container.decode(String.self, forKey: "external_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.accountID, forKey: "account_id")
+        try container.encode(self.region, forKey: "region")
+        try container.encode(self.bucket, forKey: "bucket")
+        try container.encode(self.roleArn, forKey: "role_arn")
+        try container.encode(self.externalID, forKey: "external_id")
     }
 }

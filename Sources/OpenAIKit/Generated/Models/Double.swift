@@ -4,7 +4,7 @@
 import Foundation
 
 /// A double click action.
-public struct DoubleClickAction: Codable, Hashable, Sendable {
+public struct DoubleClickAction: OpenAIModel {
     /// Specifies the event type. For a double click action, this property is always set to `double_click`.
     public var type: String = "double_click"
     /// The x-coordinate where the double click occurred.
@@ -23,10 +23,19 @@ public struct DoubleClickAction: Codable, Hashable, Sendable {
         self.keys = keys
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case x
-        case y
-        case keys
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "double_click"
+        self.x = try container.decode(Int.self, forKey: "x")
+        self.y = try container.decode(Int.self, forKey: "y")
+        self.keys = try container.decodeIfPresent([String].self, forKey: "keys")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.x, forKey: "x")
+        try container.encode(self.y, forKey: "y")
+        try container.encodeIfPresent(self.keys, forKey: "keys")
     }
 }

@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct CSAMCategoryAppliedInputTypes: Codable, Hashable, Sendable {
+public struct CSAMCategoryAppliedInputTypes: OpenAIModel {
     public var likelyCsam: [String]
     public var likelyCsamGenAi: [String]
 
@@ -12,13 +12,20 @@ public struct CSAMCategoryAppliedInputTypes: Codable, Hashable, Sendable {
         self.likelyCsamGenAi = likelyCsamGenAi
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case likelyCsam = "likely-csam"
-        case likelyCsamGenAi = "likely-csam/gen-ai"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.likelyCsam = try container.decode([String].self, forKey: "likely-csam")
+        self.likelyCsamGenAi = try container.decode([String].self, forKey: "likely-csam/gen-ai")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.likelyCsam, forKey: "likely-csam")
+        try container.encode(self.likelyCsamGenAi, forKey: "likely-csam/gen-ai")
     }
 }
 
-public struct CSAMCategoryFlags: Codable, Hashable, Sendable {
+public struct CSAMCategoryFlags: OpenAIModel {
     public var likelyCsam: Bool
     public var likelyCsamGenAi: Bool
 
@@ -27,13 +34,20 @@ public struct CSAMCategoryFlags: Codable, Hashable, Sendable {
         self.likelyCsamGenAi = likelyCsamGenAi
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case likelyCsam = "likely-csam"
-        case likelyCsamGenAi = "likely-csam/gen-ai"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.likelyCsam = try container.decode(Bool.self, forKey: "likely-csam")
+        self.likelyCsamGenAi = try container.decode(Bool.self, forKey: "likely-csam/gen-ai")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.likelyCsam, forKey: "likely-csam")
+        try container.encode(self.likelyCsamGenAi, forKey: "likely-csam/gen-ai")
     }
 }
 
-public struct CSAMCategoryScores: Codable, Hashable, Sendable {
+public struct CSAMCategoryScores: OpenAIModel {
     public var likelyCsam: Double
     public var likelyCsamGenAi: Double
 
@@ -42,13 +56,20 @@ public struct CSAMCategoryScores: Codable, Hashable, Sendable {
         self.likelyCsamGenAi = likelyCsamGenAi
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case likelyCsam = "likely-csam"
-        case likelyCsamGenAi = "likely-csam/gen-ai"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.likelyCsam = try container.decode(Double.self, forKey: "likely-csam")
+        self.likelyCsamGenAi = try container.decode(Double.self, forKey: "likely-csam/gen-ai")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.likelyCsam, forKey: "likely-csam")
+        try container.encode(self.likelyCsamGenAi, forKey: "likely-csam/gen-ai")
     }
 }
 
-public struct CSAMModerationResult: Codable, Hashable, Sendable {
+public struct CSAMModerationResult: OpenAIModel {
     /// Whether either CSAM category was flagged.
     public var flagged: Bool
     /// Whether the image was flagged in each category.
@@ -70,10 +91,19 @@ public struct CSAMModerationResult: Codable, Hashable, Sendable {
         self.categoryAppliedInputTypes = categoryAppliedInputTypes
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case flagged
-        case categories
-        case categoryScores = "category_scores"
-        case categoryAppliedInputTypes = "category_applied_input_types"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.flagged = try container.decode(Bool.self, forKey: "flagged")
+        self.categories = try container.decode(CSAMCategoryFlags.self, forKey: "categories")
+        self.categoryScores = try container.decode(CSAMCategoryScores.self, forKey: "category_scores")
+        self.categoryAppliedInputTypes = try container.decode(CSAMCategoryAppliedInputTypes.self, forKey: "category_applied_input_types")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.flagged, forKey: "flagged")
+        try container.encode(self.categories, forKey: "categories")
+        try container.encode(self.categoryScores, forKey: "category_scores")
+        try container.encode(self.categoryAppliedInputTypes, forKey: "category_applied_input_types")
     }
 }

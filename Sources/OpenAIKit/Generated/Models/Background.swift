@@ -21,7 +21,7 @@ public struct BackgroundCompletionWindowEnum: OpenAIStringEnum {
 }
 
 /// Options for background execution.
-public struct BackgroundOptionsParam: Codable, Hashable, Sendable {
+public struct BackgroundOptionsParam: OpenAIModel {
     /// The completion window for background execution. Defaults to `soonest`; `2h` and `8h` select discounted background execution.
     public var completionWindow: BackgroundCompletionWindowEnum?
     /// A customer-provided opaque identifier used to prioritize related background requests. It does not add prior history to the input.
@@ -32,8 +32,15 @@ public struct BackgroundOptionsParam: Codable, Hashable, Sendable {
         self.continuationID = continuationID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case completionWindow = "completion_window"
-        case continuationID = "continuation_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.completionWindow = try container.decodeIfPresent(BackgroundCompletionWindowEnum.self, forKey: "completion_window")
+        self.continuationID = try container.decodeIfPresent(String.self, forKey: "continuation_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.completionWindow, forKey: "completion_window")
+        try container.encodeIfPresent(self.continuationID, forKey: "continuation_id")
     }
 }

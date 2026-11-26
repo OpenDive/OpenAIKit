@@ -319,7 +319,7 @@ public struct AdminOrganizationAuditLogsResource: Sendable {
         }
     }
 
-    public struct ListEffectiveAt: Codable, Hashable, Sendable {
+    public struct ListEffectiveAt: OpenAIModel {
         /// Return only events whose `effective_at` (Unix seconds) is greater than this value.
         public var gt: Int?
         /// Return only events whose `effective_at` (Unix seconds) is greater than or equal to this value.
@@ -341,11 +341,20 @@ public struct AdminOrganizationAuditLogsResource: Sendable {
             self.lte = lte
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case gt
-            case gte
-            case lt
-            case lte
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.gt = try container.decodeIfPresent(Int.self, forKey: "gt")
+            self.gte = try container.decodeIfPresent(Int.self, forKey: "gte")
+            self.lt = try container.decodeIfPresent(Int.self, forKey: "lt")
+            self.lte = try container.decodeIfPresent(Int.self, forKey: "lte")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.gt, forKey: "gt")
+            try container.encodeIfPresent(self.gte, forKey: "gte")
+            try container.encodeIfPresent(self.lt, forKey: "lt")
+            try container.encodeIfPresent(self.lte, forKey: "lte")
         }
     }
 }

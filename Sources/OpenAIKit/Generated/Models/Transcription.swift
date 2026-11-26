@@ -7,7 +7,7 @@ import Foundation
 /// server first normalizes loudness and then uses voice activity detection (VAD) to
 /// choose boundaries. `server_vad` object can be provided to tweak VAD detection
 /// parameters manually. If unset, the audio is transcribed as a single block.
-public indirect enum TranscriptionChunkingStrategy: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+public indirect enum TranscriptionChunkingStrategy: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
     /// Automatically set chunking parameters based on the audio. Must be set to `"auto"`.
     case string(String)
     case vadConfig(VadConfig)
@@ -45,7 +45,7 @@ public indirect enum TranscriptionChunkingStrategy: Codable, Hashable, Sendable,
 }
 
 /// A segment of diarized transcript text with speaker metadata.
-public struct TranscriptionDiarizedSegment: Codable, Hashable, Sendable {
+public struct TranscriptionDiarizedSegment: OpenAIModel {
     /// The type of the segment. Always `transcript.text.segment`.
     public var type: String = "transcript.text.segment"
     /// Unique identifier for the segment.
@@ -73,20 +73,31 @@ public struct TranscriptionDiarizedSegment: Codable, Hashable, Sendable {
         self.speaker = speaker
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case start
-        case end
-        case text
-        case speaker
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "transcript.text.segment"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.start = try container.decode(Double.self, forKey: "start")
+        self.end = try container.decode(Double.self, forKey: "end")
+        self.text = try container.decode(String.self, forKey: "text")
+        self.speaker = try container.decode(String.self, forKey: "speaker")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.start, forKey: "start")
+        try container.encode(self.end, forKey: "end")
+        try container.encode(self.text, forKey: "text")
+        try container.encode(self.speaker, forKey: "speaker")
     }
 }
 
 public typealias TranscriptionInclude = String
 
 /// A language detected in transcribed audio.
-public struct TranscriptionLanguage: Codable, Hashable, Sendable {
+public struct TranscriptionLanguage: OpenAIModel {
     /// The code of a language detected in the audio.
     public var code: String
 
@@ -94,12 +105,18 @@ public struct TranscriptionLanguage: Codable, Hashable, Sendable {
         self.code = code
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case code
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.code = try container.decode(String.self, forKey: "code")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.code, forKey: "code")
     }
 }
 
-public struct TranscriptionSegment: Codable, Hashable, Sendable {
+public struct TranscriptionSegment: OpenAIModel {
     /// Unique identifier of the segment.
     public var id: Int
     /// Seek offset of the segment.
@@ -145,21 +162,36 @@ public struct TranscriptionSegment: Codable, Hashable, Sendable {
         self.noSpeechProb = noSpeechProb
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case seek
-        case start
-        case end
-        case text
-        case tokens
-        case temperature
-        case avgLogprob = "avg_logprob"
-        case compressionRatio = "compression_ratio"
-        case noSpeechProb = "no_speech_prob"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(Int.self, forKey: "id")
+        self.seek = try container.decode(Int.self, forKey: "seek")
+        self.start = try container.decode(Double.self, forKey: "start")
+        self.end = try container.decode(Double.self, forKey: "end")
+        self.text = try container.decode(String.self, forKey: "text")
+        self.tokens = try container.decode([Int].self, forKey: "tokens")
+        self.temperature = try container.decode(Double.self, forKey: "temperature")
+        self.avgLogprob = try container.decode(Double.self, forKey: "avg_logprob")
+        self.compressionRatio = try container.decode(Double.self, forKey: "compression_ratio")
+        self.noSpeechProb = try container.decode(Double.self, forKey: "no_speech_prob")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.seek, forKey: "seek")
+        try container.encode(self.start, forKey: "start")
+        try container.encode(self.end, forKey: "end")
+        try container.encode(self.text, forKey: "text")
+        try container.encode(self.tokens, forKey: "tokens")
+        try container.encode(self.temperature, forKey: "temperature")
+        try container.encode(self.avgLogprob, forKey: "avg_logprob")
+        try container.encode(self.compressionRatio, forKey: "compression_ratio")
+        try container.encode(self.noSpeechProb, forKey: "no_speech_prob")
     }
 }
 
-public struct TranscriptionWord: Codable, Hashable, Sendable {
+public struct TranscriptionWord: OpenAIModel {
     /// The text content of the word.
     public var word: String
     /// Start time of the word in seconds.
@@ -177,9 +209,17 @@ public struct TranscriptionWord: Codable, Hashable, Sendable {
         self.end = end
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case word
-        case start
-        case end
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.word = try container.decode(String.self, forKey: "word")
+        self.start = try container.decode(Double.self, forKey: "start")
+        self.end = try container.decode(Double.self, forKey: "end")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.word, forKey: "word")
+        try container.encode(self.start, forKey: "start")
+        try container.encode(self.end, forKey: "end")
     }
 }

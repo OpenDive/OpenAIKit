@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct ModifyAssistantRequest: Codable, Hashable, Sendable {
+public struct ModifyAssistantRequest: OpenAIModel {
     /// ID of the model to use. You can use the [List models](https://developers.openai.com/api/reference/resources/models/methods/list) API to see all of your available models, or see our [Model overview](https://developers.openai.com/api/docs/models) for descriptions of them.
     public var model: AssistantSupportedModels?
     public var reasoningEffort: ReasoningEffort?
@@ -44,22 +44,38 @@ public struct ModifyAssistantRequest: Codable, Hashable, Sendable {
         self.responseFormat = responseFormat
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case model
-        case reasoningEffort = "reasoning_effort"
-        case name
-        case description
-        case instructions
-        case tools
-        case toolResources = "tool_resources"
-        case metadata
-        case temperature
-        case topP = "top_p"
-        case responseFormat = "response_format"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.model = try container.decodeIfPresent(AssistantSupportedModels.self, forKey: "model")
+        self.reasoningEffort = try container.decodeIfPresent(ReasoningEffort.self, forKey: "reasoning_effort")
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.description = try container.decodeIfPresent(String.self, forKey: "description")
+        self.instructions = try container.decodeIfPresent(String.self, forKey: "instructions")
+        self.tools = try container.decodeIfPresent([ModifyAssistantRequest.Tool].self, forKey: "tools")
+        self.toolResources = try container.decodeIfPresent(ModifyAssistantRequest.ToolResources.self, forKey: "tool_resources")
+        self.metadata = try container.decodeIfPresent(Metadata.self, forKey: "metadata")
+        self.temperature = try container.decodeIfPresent(Double.self, forKey: "temperature")
+        self.topP = try container.decodeIfPresent(Double.self, forKey: "top_p")
+        self.responseFormat = try container.decodeIfPresent(AssistantsApiResponseFormatOption.self, forKey: "response_format")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encodeIfPresent(self.reasoningEffort, forKey: "reasoning_effort")
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encodeIfPresent(self.description, forKey: "description")
+        try container.encodeIfPresent(self.instructions, forKey: "instructions")
+        try container.encodeIfPresent(self.tools, forKey: "tools")
+        try container.encodeIfPresent(self.toolResources, forKey: "tool_resources")
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
+        try container.encodeIfPresent(self.temperature, forKey: "temperature")
+        try container.encodeIfPresent(self.topP, forKey: "top_p")
+        try container.encodeIfPresent(self.responseFormat, forKey: "response_format")
     }
 
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Tool: Codable, Hashable, Sendable {
+    public indirect enum Tool: OpenAIModel {
         /// `type`: `code_interpreter`
         case codeInterpreter(AssistantToolsCode)
         /// `type`: `file_search`
@@ -106,7 +122,7 @@ public struct ModifyAssistantRequest: Codable, Hashable, Sendable {
     }
 
     /// A set of resources that are used by the assistant's tools. The resources are specific to the type of tool. For example, the `code_interpreter` tool requires a list of file IDs, while the `file_search` tool requires a list of vector store IDs.
-    public struct ToolResources: Codable, Hashable, Sendable {
+    public struct ToolResources: OpenAIModel {
         public var codeInterpreter: ModifyAssistantRequest.ToolResources.CodeInterpreter?
         public var fileSearch: ModifyAssistantRequest.ToolResources.FileSearch?
 
@@ -115,12 +131,19 @@ public struct ModifyAssistantRequest: Codable, Hashable, Sendable {
             self.fileSearch = fileSearch
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case codeInterpreter = "code_interpreter"
-            case fileSearch = "file_search"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.codeInterpreter = try container.decodeIfPresent(ModifyAssistantRequest.ToolResources.CodeInterpreter.self, forKey: "code_interpreter")
+            self.fileSearch = try container.decodeIfPresent(ModifyAssistantRequest.ToolResources.FileSearch.self, forKey: "file_search")
         }
 
-        public struct CodeInterpreter: Codable, Hashable, Sendable {
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.codeInterpreter, forKey: "code_interpreter")
+            try container.encodeIfPresent(self.fileSearch, forKey: "file_search")
+        }
+
+        public struct CodeInterpreter: OpenAIModel {
             /// Overrides the list of [file](https://developers.openai.com/api/reference/resources/files) IDs made available to the `code_interpreter` tool. There can be a maximum of 20 files associated with the tool.
             public var fileIDs: [String]?
 
@@ -128,12 +151,18 @@ public struct ModifyAssistantRequest: Codable, Hashable, Sendable {
                 self.fileIDs = fileIDs
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case fileIDs = "file_ids"
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.fileIDs = try container.decodeIfPresent([String].self, forKey: "file_ids")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.fileIDs, forKey: "file_ids")
             }
         }
 
-        public struct FileSearch: Codable, Hashable, Sendable {
+        public struct FileSearch: OpenAIModel {
             /// Overrides the [vector store](https://developers.openai.com/api/reference/resources/vector_stores) attached to this assistant. There can be a maximum of 1 vector store attached to the assistant.
             public var vectorStoreIDs: [String]?
 
@@ -141,14 +170,20 @@ public struct ModifyAssistantRequest: Codable, Hashable, Sendable {
                 self.vectorStoreIDs = vectorStoreIDs
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case vectorStoreIDs = "vector_store_ids"
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.vectorStoreIDs = try container.decodeIfPresent([String].self, forKey: "vector_store_ids")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.vectorStoreIDs, forKey: "vector_store_ids")
             }
         }
     }
 }
 
-public struct ModifyCertificateRequest: Codable, Hashable, Sendable {
+public struct ModifyCertificateRequest: OpenAIModel {
     /// The updated name for the certificate
     public var name: String?
 
@@ -156,36 +191,54 @@ public struct ModifyCertificateRequest: Codable, Hashable, Sendable {
         self.name = name
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case name
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.name, forKey: "name")
     }
 }
 
-public struct ModifyMessageRequest: Codable, Hashable, Sendable {
+public struct ModifyMessageRequest: OpenAIModel {
     public var metadata: Metadata?
 
     public init(metadata: Metadata? = nil) {
         self.metadata = metadata
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case metadata
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.metadata = try container.decodeIfPresent(Metadata.self, forKey: "metadata")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
     }
 }
 
-public struct ModifyRunRequest: Codable, Hashable, Sendable {
+public struct ModifyRunRequest: OpenAIModel {
     public var metadata: Metadata?
 
     public init(metadata: Metadata? = nil) {
         self.metadata = metadata
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case metadata
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.metadata = try container.decodeIfPresent(Metadata.self, forKey: "metadata")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
     }
 }
 
-public struct ModifyThreadRequest: Codable, Hashable, Sendable {
+public struct ModifyThreadRequest: OpenAIModel {
     public var toolResources: ModifyThreadRequest.ToolResources?
     public var metadata: Metadata?
 
@@ -194,13 +247,20 @@ public struct ModifyThreadRequest: Codable, Hashable, Sendable {
         self.metadata = metadata
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case toolResources = "tool_resources"
-        case metadata
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.toolResources = try container.decodeIfPresent(ModifyThreadRequest.ToolResources.self, forKey: "tool_resources")
+        self.metadata = try container.decodeIfPresent(Metadata.self, forKey: "metadata")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.toolResources, forKey: "tool_resources")
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
     }
 
     /// A set of resources that are made available to the assistant's tools in this thread. The resources are specific to the type of tool. For example, the `code_interpreter` tool requires a list of file IDs, while the `file_search` tool requires a list of vector store IDs.
-    public struct ToolResources: Codable, Hashable, Sendable {
+    public struct ToolResources: OpenAIModel {
         public var codeInterpreter: ModifyThreadRequest.ToolResources.CodeInterpreter?
         public var fileSearch: ModifyThreadRequest.ToolResources.FileSearch?
 
@@ -209,12 +269,19 @@ public struct ModifyThreadRequest: Codable, Hashable, Sendable {
             self.fileSearch = fileSearch
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case codeInterpreter = "code_interpreter"
-            case fileSearch = "file_search"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.codeInterpreter = try container.decodeIfPresent(ModifyThreadRequest.ToolResources.CodeInterpreter.self, forKey: "code_interpreter")
+            self.fileSearch = try container.decodeIfPresent(ModifyThreadRequest.ToolResources.FileSearch.self, forKey: "file_search")
         }
 
-        public struct CodeInterpreter: Codable, Hashable, Sendable {
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.codeInterpreter, forKey: "code_interpreter")
+            try container.encodeIfPresent(self.fileSearch, forKey: "file_search")
+        }
+
+        public struct CodeInterpreter: OpenAIModel {
             /// A list of [file](https://developers.openai.com/api/reference/resources/files) IDs made available to the `code_interpreter` tool. There can be a maximum of 20 files associated with the tool.
             public var fileIDs: [String]?
 
@@ -222,12 +289,18 @@ public struct ModifyThreadRequest: Codable, Hashable, Sendable {
                 self.fileIDs = fileIDs
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case fileIDs = "file_ids"
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.fileIDs = try container.decodeIfPresent([String].self, forKey: "file_ids")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.fileIDs, forKey: "file_ids")
             }
         }
 
-        public struct FileSearch: Codable, Hashable, Sendable {
+        public struct FileSearch: OpenAIModel {
             /// The [vector store](https://developers.openai.com/api/reference/resources/vector_stores) attached to this thread. There can be a maximum of 1 vector store attached to the thread.
             public var vectorStoreIDs: [String]?
 
@@ -235,8 +308,14 @@ public struct ModifyThreadRequest: Codable, Hashable, Sendable {
                 self.vectorStoreIDs = vectorStoreIDs
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case vectorStoreIDs = "vector_store_ids"
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.vectorStoreIDs = try container.decodeIfPresent([String].self, forKey: "vector_store_ids")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.vectorStoreIDs, forKey: "vector_store_ids")
             }
         }
     }

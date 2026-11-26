@@ -4,7 +4,7 @@
 import Foundation
 
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum Provider: Codable, Hashable, Sendable {
+public indirect enum Provider: OpenAIModel {
     /// `type`: `aws`
     case aws(AwsExternalStorageProviderResponse)
     /// `type`: `azure`

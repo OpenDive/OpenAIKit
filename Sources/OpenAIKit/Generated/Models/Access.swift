@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct AccessProgramsBody: Codable, Hashable, Sendable {
+public struct AccessProgramsBody: OpenAIModel {
     /// The effective Cyber access program used for this response.
     public var cyber: CyberAccessProgramEnum
 
@@ -11,13 +11,19 @@ public struct AccessProgramsBody: Codable, Hashable, Sendable {
         self.cyber = cyber
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case cyber
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.cyber = try container.decode(CyberAccessProgramEnum.self, forKey: "cyber")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.cyber, forKey: "cyber")
     }
 }
 
 /// Domain-specific access programs to use for this request.
-public struct AccessProgramsParam: Codable, Hashable, Sendable {
+public struct AccessProgramsParam: OpenAIModel {
     /// The Cyber access program to use for this request. Supported values are `standard`, `daybreak_blue`, and `daybreak_red`. If omitted, the API resolves the program from the model's Cyber tier and your organization and project access, subject to model-specific eligibility restrictions. By default, models without a Cyber tier use Standard. Blue-tier models use Daybreak Blue when authorized; otherwise they fall back to Standard unless the model requires Daybreak access. Red-tier models use Daybreak Red and require authorization. Requests that require unavailable Daybreak access return 403. An implicit Standard fallback is represented by null in the response's access_programs field, rather than an explicit Standard selection.
     public var cyber: CyberAccessProgramEnum?
 
@@ -25,7 +31,13 @@ public struct AccessProgramsParam: Codable, Hashable, Sendable {
         self.cyber = cyber
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case cyber
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.cyber = try container.decodeIfPresent(CyberAccessProgramEnum.self, forKey: "cyber")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.cyber, forKey: "cyber")
     }
 }

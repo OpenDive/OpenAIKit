@@ -7,7 +7,7 @@ import Foundation
 ///
 /// Up to 4 sequences where the API will stop generating further tokens. The
 /// returned text will not contain the stop sequence.
-public indirect enum StopConfiguration: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+public indirect enum StopConfiguration: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
     case string(String)
     case strings([String])
     /// A value this version of OpenAIKit does not recognize, kept as raw JSON.

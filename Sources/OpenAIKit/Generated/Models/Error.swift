@@ -4,7 +4,7 @@
 import Foundation
 
 /// Details about an API error.
-public struct ErrorBodyResource: Codable, Hashable, Sendable {
+public struct ErrorBodyResource: OpenAIModel {
     /// The error type.
     public var type: String
     /// A machine-readable error code.
@@ -26,16 +26,25 @@ public struct ErrorBodyResource: Codable, Hashable, Sendable {
         self.param = param
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case code
-        case message
-        case param
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decode(String.self, forKey: "type")
+        self.code = try container.decode(String.self, forKey: "code")
+        self.message = try container.decode(String.self, forKey: "message")
+        self.param = try container.decodeIfPresent(String.self, forKey: "param")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.code, forKey: "code")
+        try container.encode(self.message, forKey: "message")
+        try container.encodeIfPresent(self.param, forKey: "param")
     }
 }
 
 /// Occurs when an [error](https://developers.openai.com/api/docs/guides/error-codes#api-errors) occurs. This can happen due to an internal server error or a timeout.
-public struct ErrorEvent: Codable, Hashable, Sendable {
+public struct ErrorEvent: OpenAIModel {
     public var event: String = "error"
     public var data: ErrorObject
 
@@ -43,13 +52,20 @@ public struct ErrorEvent: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case event
-        case data
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.event = try container.decodeIfPresent(String.self, forKey: "event") ?? "error"
+        self.data = try container.decode(ErrorObject.self, forKey: "data")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.event, forKey: "event")
+        try container.encode(self.data, forKey: "data")
     }
 }
 
-public struct ErrorObject: Codable, Hashable, Sendable {
+public struct ErrorObject: OpenAIModel {
     public var code: String?
     public var message: String
     public var param: String?
@@ -70,17 +86,27 @@ public struct ErrorObject: Codable, Hashable, Sendable {
         self.misalignment = misalignment
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case code
-        case message
-        case param
-        case type
-        case misalignment
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.code = try container.decodeIfPresent(String.self, forKey: "code")
+        self.message = try container.decode(String.self, forKey: "message")
+        self.param = try container.decodeIfPresent(String.self, forKey: "param")
+        self.type = try container.decode(String.self, forKey: "type")
+        self.misalignment = try container.decodeIfPresent(MisalignmentErrorDetailsResource.self, forKey: "misalignment")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.code, forKey: "code")
+        try container.encode(self.message, forKey: "message")
+        try container.encodeIfPresent(self.param, forKey: "param")
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.misalignment, forKey: "misalignment")
     }
 }
 
 /// An error payload that was emitted for a streaming error event.
-public struct ErrorPayload: Codable, Hashable, Sendable {
+public struct ErrorPayload: OpenAIModel {
     /// The error type that was emitted.
     public var type: String
     public var code: String?
@@ -107,30 +133,47 @@ public struct ErrorPayload: Codable, Hashable, Sendable {
         self.misalignment = misalignment
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case code
-        case message
-        case param
-        case headers
-        case misalignment
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decode(String.self, forKey: "type")
+        self.code = try container.decodeIfPresent(String.self, forKey: "code")
+        self.message = try container.decode(String.self, forKey: "message")
+        self.param = try container.decodeIfPresent(String.self, forKey: "param")
+        self.headers = try container.decodeIfPresent([String: String].self, forKey: "headers")
+        self.misalignment = try container.decodeIfPresent(MisalignmentErrorDetailsResource.self, forKey: "misalignment")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.code, forKey: "code")
+        try container.encode(self.message, forKey: "message")
+        try container.encodeIfPresent(self.param, forKey: "param")
+        try container.encodeIfPresent(self.headers, forKey: "headers")
+        try container.encodeIfPresent(self.misalignment, forKey: "misalignment")
     }
 }
 
-public struct ErrorResponse: Codable, Hashable, Sendable {
+public struct ErrorResponse: OpenAIModel {
     public var error: ErrorObject
 
     public init(error: ErrorObject) {
         self.error = error
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case error
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.error = try container.decode(ErrorObject.self, forKey: "error")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.error, forKey: "error")
     }
 }
 
 /// An API error response.
-public struct ErrorResponse2: Codable, Hashable, Sendable {
+public struct ErrorResponse2: OpenAIModel {
     /// The error returned by the API.
     public var error: ErrorBodyResource
 
@@ -138,7 +181,13 @@ public struct ErrorResponse2: Codable, Hashable, Sendable {
         self.error = error
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case error
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.error = try container.decode(ErrorBodyResource.self, forKey: "error")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.error, forKey: "error")
     }
 }

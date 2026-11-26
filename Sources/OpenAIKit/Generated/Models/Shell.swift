@@ -4,7 +4,7 @@
 import Foundation
 
 /// A delta of stdout/stderr emitted while a shell call was running.
-public struct ShellCallOutputDelta: Codable, Hashable, Sendable {
+public struct ShellCallOutputDelta: OpenAIModel {
     /// The stdout delta that was emitted.
     public var stdout: String?
     /// The stderr delta that was emitted.
@@ -15,8 +15,15 @@ public struct ShellCallOutputDelta: Codable, Hashable, Sendable {
         self.stderr = stderr
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case stdout
-        case stderr
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.stdout = try container.decodeIfPresent(String.self, forKey: "stdout")
+        self.stderr = try container.decodeIfPresent(String.self, forKey: "stderr")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.stdout, forKey: "stdout")
+        try container.encodeIfPresent(self.stderr, forKey: "stderr")
     }
 }

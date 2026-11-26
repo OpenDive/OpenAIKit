@@ -7,7 +7,7 @@ import Foundation
 public typealias SubagentObjectResource = String
 
 /// A subagent created within a session.
-public struct SubagentResource: Codable, Hashable, Sendable {
+public struct SubagentResource: OpenAIModel {
     /// The ID of the subagent.
     public var id: String
     /// The object type. Always `agent.session.subagent`.
@@ -49,16 +49,30 @@ public struct SubagentResource: Codable, Hashable, Sendable {
         self.closedAt = closedAt
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case sessionID = "session_id"
-        case name
-        case instructions
-        case parentAgentID = "parent_agent_id"
-        case status
-        case openedAt = "opened_at"
-        case closedAt = "closed_at"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decode(SubagentObjectResource.self, forKey: "object")
+        self.sessionID = try container.decode(String.self, forKey: "session_id")
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.instructions = try container.decodeIfPresent([AgentContentResource].self, forKey: "instructions")
+        self.parentAgentID = try container.decode(String.self, forKey: "parent_agent_id")
+        self.status = try container.decode(SubagentStatusResource.self, forKey: "status")
+        self.openedAt = try container.decode(Int64.self, forKey: "opened_at")
+        self.closedAt = try container.decodeIfPresent(Int64.self, forKey: "closed_at")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.sessionID, forKey: "session_id")
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encodeIfPresent(self.instructions, forKey: "instructions")
+        try container.encode(self.parentAgentID, forKey: "parent_agent_id")
+        try container.encode(self.status, forKey: "status")
+        try container.encode(self.openedAt, forKey: "opened_at")
+        try container.encodeIfPresent(self.closedAt, forKey: "closed_at")
     }
 }
 

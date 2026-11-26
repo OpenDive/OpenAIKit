@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct SkillListResource: Codable, Hashable, Sendable {
+public struct SkillListResource: OpenAIModel {
     /// The type of object returned, must be `list`.
     public var object: String = "list"
     /// A list of items
@@ -25,16 +25,26 @@ public struct SkillListResource: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([SkillResource].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
-public struct SkillReferenceParam: Codable, Hashable, Sendable {
+public struct SkillReferenceParam: OpenAIModel {
     /// References a skill created with the /v1/skills endpoint.
     public var type: String = "skill_reference"
     /// The ID of the referenced skill.
@@ -47,14 +57,22 @@ public struct SkillReferenceParam: Codable, Hashable, Sendable {
         self.version = version
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case skillID = "skill_id"
-        case version
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "skill_reference"
+        self.skillID = try container.decode(String.self, forKey: "skill_id")
+        self.version = try container.decodeIfPresent(String.self, forKey: "version")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.skillID, forKey: "skill_id")
+        try container.encodeIfPresent(self.version, forKey: "version")
     }
 }
 
-public struct SkillResource: Codable, Hashable, Sendable {
+public struct SkillResource: OpenAIModel {
     /// Unique identifier for the skill.
     public var id: String
     /// The object type, which is `skill`.
@@ -86,18 +104,30 @@ public struct SkillResource: Codable, Hashable, Sendable {
         self.latestVersion = latestVersion
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case name
-        case description
-        case createdAt = "created_at"
-        case defaultVersion = "default_version"
-        case latestVersion = "latest_version"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "skill"
+        self.name = try container.decode(String.self, forKey: "name")
+        self.description = try container.decode(String.self, forKey: "description")
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.defaultVersion = try container.decode(String.self, forKey: "default_version")
+        self.latestVersion = try container.decode(String.self, forKey: "latest_version")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.description, forKey: "description")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.defaultVersion, forKey: "default_version")
+        try container.encode(self.latestVersion, forKey: "latest_version")
     }
 }
 
-public struct SkillVersionListResource: Codable, Hashable, Sendable {
+public struct SkillVersionListResource: OpenAIModel {
     /// The type of object returned, must be `list`.
     public var object: String = "list"
     /// A list of items
@@ -119,16 +149,26 @@ public struct SkillVersionListResource: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([SkillVersionResource].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
-public struct SkillVersionResource: Codable, Hashable, Sendable {
+public struct SkillVersionResource: OpenAIModel {
     /// The object type, which is `skill.version`.
     public var object: String = "skill.version"
     /// Unique identifier for the skill version.
@@ -160,13 +200,25 @@ public struct SkillVersionResource: Codable, Hashable, Sendable {
         self.description = description
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case id
-        case skillID = "skill_id"
-        case version
-        case createdAt = "created_at"
-        case name
-        case description
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "skill.version"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.skillID = try container.decode(String.self, forKey: "skill_id")
+        self.version = try container.decode(String.self, forKey: "version")
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.description = try container.decode(String.self, forKey: "description")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.skillID, forKey: "skill_id")
+        try container.encode(self.version, forKey: "version")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.description, forKey: "description")
     }
 }

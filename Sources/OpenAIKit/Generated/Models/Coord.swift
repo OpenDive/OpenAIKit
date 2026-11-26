@@ -4,7 +4,7 @@
 import Foundation
 
 /// An x/y coordinate pair, e.g. `{ x: 100, y: 200 }`.
-public struct CoordParam: Codable, Hashable, Sendable {
+public struct CoordParam: OpenAIModel {
     /// The x-coordinate.
     public var x: Int
     /// The y-coordinate.
@@ -15,8 +15,15 @@ public struct CoordParam: Codable, Hashable, Sendable {
         self.y = y
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case x
-        case y
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.x = try container.decode(Int.self, forKey: "x")
+        self.y = try container.decode(Int.self, forKey: "y")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.x, forKey: "x")
+        try container.encode(self.y, forKey: "y")
     }
 }

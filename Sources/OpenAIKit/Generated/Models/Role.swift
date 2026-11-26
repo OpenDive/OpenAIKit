@@ -4,7 +4,7 @@
 import Foundation
 
 /// Details about a role that can be assigned through the public Roles API.
-public struct Role: Codable, Hashable, Sendable {
+public struct Role: OpenAIModel {
     /// Always `role`.
     public var object: String = "role"
     /// Identifier for the role.
@@ -36,19 +36,31 @@ public struct Role: Codable, Hashable, Sendable {
         self.description = description
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case id
-        case name
-        case description
-        case permissions
-        case resourceType = "resource_type"
-        case predefinedRole = "predefined_role"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "role"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.description = try container.decodeIfPresent(String.self, forKey: "description")
+        self.permissions = try container.decode([String].self, forKey: "permissions")
+        self.resourceType = try container.decode(String.self, forKey: "resource_type")
+        self.predefinedRole = try container.decode(Bool.self, forKey: "predefined_role")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.name, forKey: "name")
+        try container.encodeIfPresent(self.description, forKey: "description")
+        try container.encode(self.permissions, forKey: "permissions")
+        try container.encode(self.resourceType, forKey: "resource_type")
+        try container.encode(self.predefinedRole, forKey: "predefined_role")
     }
 }
 
 /// Confirmation payload returned after deleting a role.
-public struct RoleDeletedResource: Codable, Hashable, Sendable {
+public struct RoleDeletedResource: OpenAIModel {
     /// Always `role.deleted`.
     public var object: String = "role.deleted"
     /// Identifier of the deleted role.
@@ -61,15 +73,23 @@ public struct RoleDeletedResource: Codable, Hashable, Sendable {
         self.deleted = deleted
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case id
-        case deleted
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "role.deleted"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.deleted = try container.decode(Bool.self, forKey: "deleted")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.deleted, forKey: "deleted")
     }
 }
 
 /// Paginated list of roles assigned to a principal.
-public struct RoleListResource: Codable, Hashable, Sendable {
+public struct RoleListResource: OpenAIModel {
     /// Always `list`.
     public var object: String = "list"
     /// Role assignments returned in the current page.
@@ -89,10 +109,19 @@ public struct RoleListResource: Codable, Hashable, Sendable {
         self.next = next
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case hasMore = "has_more"
-        case next
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([AssignedRoleDetails].self, forKey: "data")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+        self.next = try container.decodeIfPresent(String.self, forKey: "next")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encode(self.hasMore, forKey: "has_more")
+        try container.encodeIfPresent(self.next, forKey: "next")
     }
 }

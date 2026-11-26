@@ -4,7 +4,7 @@
 import Foundation
 
 /// A confidential setup command executed before the hosted agent starts.
-public struct SetupCommandParam: Codable, Hashable, Sendable {
+public struct SetupCommandParam: OpenAIModel {
     /// The shell command to execute.
     public var command: String
     /// The absolute working directory. Defaults to `/workspace`.
@@ -15,8 +15,15 @@ public struct SetupCommandParam: Codable, Hashable, Sendable {
         self.cwd = cwd
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case command
-        case cwd
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.command = try container.decode(String.self, forKey: "command")
+        self.cwd = try container.decodeIfPresent(String.self, forKey: "cwd")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.command, forKey: "command")
+        try container.encodeIfPresent(self.cwd, forKey: "cwd")
     }
 }

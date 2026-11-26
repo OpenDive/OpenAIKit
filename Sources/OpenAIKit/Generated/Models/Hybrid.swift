@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct HybridSearchOptions: Codable, Hashable, Sendable {
+public struct HybridSearchOptions: OpenAIModel {
     /// The weight of the embedding in the reciprocal ranking fusion.
     public var embeddingWeight: Double
     /// The weight of the text in the reciprocal ranking fusion.
@@ -14,8 +14,15 @@ public struct HybridSearchOptions: Codable, Hashable, Sendable {
         self.textWeight = textWeight
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case embeddingWeight = "embedding_weight"
-        case textWeight = "text_weight"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.embeddingWeight = try container.decode(Double.self, forKey: "embedding_weight")
+        self.textWeight = try container.decode(Double.self, forKey: "text_weight")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.embeddingWeight, forKey: "embedding_weight")
+        try container.encode(self.textWeight, forKey: "text_weight")
     }
 }

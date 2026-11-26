@@ -25,7 +25,7 @@ public struct AudioResponseFormat: OpenAIStringEnum {
     }
 }
 
-public struct AudioTranscription: Codable, Hashable, Sendable {
+public struct AudioTranscription: OpenAIModel {
     /// The model to use for transcription. Current options are `whisper-1`, `gpt-transcribe`, `gpt-live-transcribe`, `gpt-4o-mini-transcribe`, `gpt-4o-mini-transcribe-2025-12-15`, `gpt-4o-transcribe`, `gpt-4o-transcribe-diarize`, and `gpt-realtime-whisper`. Use `gpt-4o-transcribe-diarize` when you need diarization with speaker labels.
     public var model: AudioTranscription.Model?
     /// The language of the input audio. Supplying the input language in
@@ -63,13 +63,24 @@ public struct AudioTranscription: Codable, Hashable, Sendable {
         self.delay = delay
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case model
-        case language
-        case languages
-        case keywords
-        case prompt
-        case delay
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.model = try container.decodeIfPresent(AudioTranscription.Model.self, forKey: "model")
+        self.language = try container.decodeIfPresent(String.self, forKey: "language")
+        self.languages = try container.decodeIfPresent([String].self, forKey: "languages")
+        self.keywords = try container.decodeIfPresent([String].self, forKey: "keywords")
+        self.prompt = try container.decodeIfPresent(String.self, forKey: "prompt")
+        self.delay = try container.decodeIfPresent(AudioTranscription.Delay.self, forKey: "delay")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encodeIfPresent(self.language, forKey: "language")
+        try container.encodeIfPresent(self.languages, forKey: "languages")
+        try container.encodeIfPresent(self.keywords, forKey: "keywords")
+        try container.encodeIfPresent(self.prompt, forKey: "prompt")
+        try container.encodeIfPresent(self.delay, forKey: "delay")
     }
 
     /// The model to use for transcription. Current options are `whisper-1`, `gpt-transcribe`, `gpt-live-transcribe`, `gpt-4o-mini-transcribe`, `gpt-4o-mini-transcribe-2025-12-15`, `gpt-4o-transcribe`, `gpt-4o-transcribe-diarize`, and `gpt-realtime-whisper`. Use `gpt-4o-transcribe-diarize` when you need diarization with speaker labels.
@@ -120,7 +131,7 @@ public struct AudioTranscription: Codable, Hashable, Sendable {
     }
 }
 
-public struct AudioTranscriptionResponse: Codable, Hashable, Sendable {
+public struct AudioTranscriptionResponse: OpenAIModel {
     /// The model used for transcription. Current options are `whisper-1`, `gpt-transcribe`, `gpt-live-transcribe`, `gpt-4o-mini-transcribe`, `gpt-4o-mini-transcribe-2025-12-15`, `gpt-4o-transcribe`, `gpt-4o-transcribe-diarize`, and `gpt-realtime-whisper`.
     public var model: AudioTranscriptionResponse.Model?
     /// The language of the input audio.
@@ -146,12 +157,22 @@ public struct AudioTranscriptionResponse: Codable, Hashable, Sendable {
         self.keywords = keywords
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case model
-        case language
-        case languages
-        case keywords
-        case prompt
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.model = try container.decodeIfPresent(AudioTranscriptionResponse.Model.self, forKey: "model")
+        self.language = try container.decodeIfPresent(String.self, forKey: "language")
+        self.languages = try container.decodeIfPresent([String].self, forKey: "languages")
+        self.keywords = try container.decodeIfPresent([String].self, forKey: "keywords")
+        self.prompt = try container.decodeIfPresent(String.self, forKey: "prompt")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encodeIfPresent(self.language, forKey: "language")
+        try container.encodeIfPresent(self.languages, forKey: "languages")
+        try container.encodeIfPresent(self.keywords, forKey: "keywords")
+        try container.encodeIfPresent(self.prompt, forKey: "prompt")
     }
 
     /// The model used for transcription. Current options are `whisper-1`, `gpt-transcribe`, `gpt-live-transcribe`, `gpt-4o-mini-transcribe`, `gpt-4o-mini-transcribe-2025-12-15`, `gpt-4o-transcribe`, `gpt-4o-transcribe-diarize`, and `gpt-realtime-whisper`.

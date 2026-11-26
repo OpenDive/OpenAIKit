@@ -4,7 +4,7 @@
 import Foundation
 
 /// Emitted for each chunk of audio data generated during speech synthesis.
-public struct SpeechAudioDeltaEvent: Codable, Hashable, Sendable {
+public struct SpeechAudioDeltaEvent: OpenAIModel {
     /// The type of the event. Always `speech.audio.delta`.
     public var type: String = "speech.audio.delta"
     /// A chunk of Base64-encoded audio data.
@@ -14,14 +14,21 @@ public struct SpeechAudioDeltaEvent: Codable, Hashable, Sendable {
         self.audio = audio
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case audio
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "speech.audio.delta"
+        self.audio = try container.decode(String.self, forKey: "audio")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.audio, forKey: "audio")
     }
 }
 
 /// Emitted when the speech synthesis is complete and all audio has been streamed.
-public struct SpeechAudioDoneEvent: Codable, Hashable, Sendable {
+public struct SpeechAudioDoneEvent: OpenAIModel {
     /// The type of the event. Always `speech.audio.done`.
     public var type: String = "speech.audio.done"
     /// Token usage statistics for the request.
@@ -31,13 +38,20 @@ public struct SpeechAudioDoneEvent: Codable, Hashable, Sendable {
         self.usage = usage
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case usage
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "speech.audio.done"
+        self.usage = try container.decode(SpeechAudioDoneEvent.Usage.self, forKey: "usage")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.usage, forKey: "usage")
     }
 
     /// Token usage statistics for the request.
-    public struct Usage: Codable, Hashable, Sendable {
+    public struct Usage: OpenAIModel {
         /// Number of input tokens in the prompt.
         public var inputTokens: Int
         /// Number of output tokens generated.
@@ -55,10 +69,18 @@ public struct SpeechAudioDoneEvent: Codable, Hashable, Sendable {
             self.totalTokens = totalTokens
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case inputTokens = "input_tokens"
-            case outputTokens = "output_tokens"
-            case totalTokens = "total_tokens"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.inputTokens = try container.decode(Int.self, forKey: "input_tokens")
+            self.outputTokens = try container.decode(Int.self, forKey: "output_tokens")
+            self.totalTokens = try container.decode(Int.self, forKey: "total_tokens")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.inputTokens, forKey: "input_tokens")
+            try container.encode(self.outputTokens, forKey: "output_tokens")
+            try container.encode(self.totalTokens, forKey: "total_tokens")
         }
     }
 }

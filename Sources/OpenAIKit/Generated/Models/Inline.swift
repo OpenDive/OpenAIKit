@@ -7,7 +7,7 @@ import Foundation
 public typealias InlineCapabilitySourceParam = InlineCapabilitySourceParamBase64
 
 /// Provides ZIP bytes encoded with standard base64.
-public struct InlineCapabilitySourceParamBase64: Codable, Hashable, Sendable {
+public struct InlineCapabilitySourceParamBase64: OpenAIModel {
     /// The type of the object. Always `base64`.
     public var type: String = "base64"
     /// The archive media type, always `application/zip`.
@@ -19,14 +19,22 @@ public struct InlineCapabilitySourceParamBase64: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case mediaType = "media_type"
-        case data
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "base64"
+        self.mediaType = try container.decodeIfPresent(String.self, forKey: "media_type") ?? "application/zip"
+        self.data = try container.decode(String.self, forKey: "data")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.mediaType, forKey: "media_type")
+        try container.encode(self.data, forKey: "data")
     }
 }
 
-public struct InlineSkillParam: Codable, Hashable, Sendable {
+public struct InlineSkillParam: OpenAIModel {
     /// Defines an inline skill for this request.
     public var type: String = "inline"
     /// The name of the skill.
@@ -46,16 +54,25 @@ public struct InlineSkillParam: Codable, Hashable, Sendable {
         self.source = source
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
-        case description
-        case source
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "inline"
+        self.name = try container.decode(String.self, forKey: "name")
+        self.description = try container.decode(String.self, forKey: "description")
+        self.source = try container.decode(InlineSkillSourceParam.self, forKey: "source")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.description, forKey: "description")
+        try container.encode(self.source, forKey: "source")
     }
 }
 
 /// Inline skill payload
-public struct InlineSkillSourceParam: Codable, Hashable, Sendable {
+public struct InlineSkillSourceParam: OpenAIModel {
     /// The type of the inline skill source. Must be `base64`.
     public var type: String = "base64"
     /// The media type of the inline skill payload. Must be `application/zip`.
@@ -67,9 +84,17 @@ public struct InlineSkillSourceParam: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case mediaType = "media_type"
-        case data
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "base64"
+        self.mediaType = try container.decodeIfPresent(String.self, forKey: "media_type") ?? "application/zip"
+        self.data = try container.decode(String.self, forKey: "data")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.mediaType, forKey: "media_type")
+        try container.encode(self.data, forKey: "data")
     }
 }

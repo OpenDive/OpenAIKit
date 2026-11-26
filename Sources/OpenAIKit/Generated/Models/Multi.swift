@@ -4,7 +4,7 @@
 import Foundation
 
 /// Explicit configuration for creating and coordinating subagents.
-public struct MultiAgentConfigCurrentParam: Codable, Hashable, Sendable {
+public struct MultiAgentConfigCurrentParam: OpenAIModel {
     /// Whether subagent tools are enabled.
     public var enabled: Bool
     /// Maximum number of subagents that may run concurrently. Defaults to 6.
@@ -15,14 +15,21 @@ public struct MultiAgentConfigCurrentParam: Codable, Hashable, Sendable {
         self.maxConcurrentSubagents = maxConcurrentSubagents
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case enabled
-        case maxConcurrentSubagents = "max_concurrent_subagents"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.enabled = try container.decode(Bool.self, forKey: "enabled")
+        self.maxConcurrentSubagents = try container.decodeIfPresent(Int64.self, forKey: "max_concurrent_subagents")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.enabled, forKey: "enabled")
+        try container.encodeIfPresent(self.maxConcurrentSubagents, forKey: "max_concurrent_subagents")
     }
 }
 
 /// The resolved configuration for creating and coordinating subagents.
-public struct MultiAgentConfigResource: Codable, Hashable, Sendable {
+public struct MultiAgentConfigResource: OpenAIModel {
     /// Whether subagent tools are enabled. Defaults to false.
     public var enabled: Bool
     /// Maximum number of subagents that may run concurrently, or null when disabled. Defaults to 6 when enabled.
@@ -33,8 +40,15 @@ public struct MultiAgentConfigResource: Codable, Hashable, Sendable {
         self.maxConcurrentSubagents = maxConcurrentSubagents
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case enabled
-        case maxConcurrentSubagents = "max_concurrent_subagents"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.enabled = try container.decode(Bool.self, forKey: "enabled")
+        self.maxConcurrentSubagents = try container.decodeIfPresent(Int64.self, forKey: "max_concurrent_subagents")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.enabled, forKey: "enabled")
+        try container.encodeIfPresent(self.maxConcurrentSubagents, forKey: "max_concurrent_subagents")
     }
 }

@@ -4,7 +4,7 @@
 import Foundation
 
 /// A summary text from the model.
-public struct SummaryTextContent: Codable, Hashable, Sendable {
+public struct SummaryTextContent: OpenAIModel {
     /// The type of the object. Always `summary_text`.
     public var type: String = "summary_text"
     /// A summary of the reasoning output from the model so far.
@@ -14,14 +14,21 @@ public struct SummaryTextContent: Codable, Hashable, Sendable {
         self.text = text
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case text
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "summary_text"
+        self.text = try container.decode(String.self, forKey: "text")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.text, forKey: "text")
     }
 }
 
 /// A reasoning summary content part.
-public struct SummaryTextResource: Codable, Hashable, Sendable {
+public struct SummaryTextResource: OpenAIModel {
     /// The content type. Always `summary_text`.
     public var type: String = "summary_text"
     /// The reasoning summary text.
@@ -31,8 +38,15 @@ public struct SummaryTextResource: Codable, Hashable, Sendable {
         self.text = text
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case text
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "summary_text"
+        self.text = try container.decode(String.self, forKey: "text")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.text, forKey: "text")
     }
 }

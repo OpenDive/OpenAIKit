@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct HTTPError: Codable, Hashable, Sendable {
+public struct HTTPError: OpenAIModel {
     public var type: String = "http_error"
     public var code: Int
     public var message: String
@@ -13,9 +13,17 @@ public struct HTTPError: Codable, Hashable, Sendable {
         self.message = message
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case code
-        case message
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "http_error"
+        self.code = try container.decode(Int.self, forKey: "code")
+        self.message = try container.decode(String.self, forKey: "message")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.code, forKey: "code")
+        try container.encode(self.message, forKey: "message")
     }
 }

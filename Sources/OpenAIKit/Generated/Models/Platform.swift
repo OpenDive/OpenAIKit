@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct PlatformFederationRule: Codable, Hashable, Sendable {
+public struct PlatformFederationRule: OpenAIModel {
     public var object: String = "organization.workload_identity_federation_rule"
     public var id: String
     public var workloadIdentityProviderID: String
@@ -43,22 +43,39 @@ public struct PlatformFederationRule: Codable, Hashable, Sendable {
         self.description = description
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case id
-        case workloadIdentityProviderID = "workload_identity_provider_id"
-        case projectID = "project_id"
-        case serviceAccountID = "service_account_id"
-        case name
-        case description
-        case attributeMatchers = "attribute_matchers"
-        case permissions
-        case enabled
-        case createdAt = "created_at"
-        case updatedAt = "updated_at"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.workload_identity_federation_rule"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.workloadIdentityProviderID = try container.decode(String.self, forKey: "workload_identity_provider_id")
+        self.projectID = try container.decode(String.self, forKey: "project_id")
+        self.serviceAccountID = try container.decode(String.self, forKey: "service_account_id")
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.description = try container.decodeIfPresent(String.self, forKey: "description")
+        self.attributeMatchers = try container.decode([String: PlatformFederationRule.AttributeMatcher].self, forKey: "attribute_matchers")
+        self.permissions = try container.decode(PlatformFederationRule.Permissions.self, forKey: "permissions")
+        self.enabled = try container.decode(Bool.self, forKey: "enabled")
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.updatedAt = try container.decode(Int.self, forKey: "updated_at")
     }
 
-    public indirect enum AttributeMatcher: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.workloadIdentityProviderID, forKey: "workload_identity_provider_id")
+        try container.encode(self.projectID, forKey: "project_id")
+        try container.encode(self.serviceAccountID, forKey: "service_account_id")
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encodeIfPresent(self.description, forKey: "description")
+        try container.encode(self.attributeMatchers, forKey: "attribute_matchers")
+        try container.encode(self.permissions, forKey: "permissions")
+        try container.encode(self.enabled, forKey: "enabled")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.updatedAt, forKey: "updated_at")
+    }
+
+    public indirect enum AttributeMatcher: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         case string(String)
         case bool(Bool)
         case integer(Int)
@@ -109,7 +126,7 @@ public struct PlatformFederationRule: Codable, Hashable, Sendable {
     }
 
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Permissions: Codable, Hashable, Sendable {
+    public indirect enum Permissions: OpenAIModel {
         /// `type`: `service_account_default`
         case serviceAccountDefault(DefaultPermissions)
         /// `type`: `restricted`
@@ -149,7 +166,7 @@ public struct PlatformFederationRule: Codable, Hashable, Sendable {
     }
 }
 
-public struct PlatformFederationRuleDeletedResource: Codable, Hashable, Sendable {
+public struct PlatformFederationRuleDeletedResource: OpenAIModel {
     public var object: String = "organization.workload_identity_federation_rule.deleted"
     public var id: String
     public var deleted: Bool
@@ -159,14 +176,22 @@ public struct PlatformFederationRuleDeletedResource: Codable, Hashable, Sendable
         self.deleted = deleted
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case id
-        case deleted
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.workload_identity_federation_rule.deleted"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.deleted = try container.decode(Bool.self, forKey: "deleted")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.deleted, forKey: "deleted")
     }
 }
 
-public struct PlatformFederationRuleListResource: Codable, Hashable, Sendable {
+public struct PlatformFederationRuleListResource: OpenAIModel {
     public var object: String = "list"
     public var data: [PlatformFederationRule]
     public var firstID: String?
@@ -185,16 +210,26 @@ public struct PlatformFederationRuleListResource: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([PlatformFederationRule].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
-public struct PlatformProvider: Codable, Hashable, Sendable {
+public struct PlatformProvider: OpenAIModel {
     public var object: String = "organization.workload_identity_provider"
     public var id: String
     public var type: String = "oidc"
@@ -232,23 +267,40 @@ public struct PlatformProvider: Codable, Hashable, Sendable {
         self.description = description
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case id
-        case type
-        case name
-        case issuer
-        case audience
-        case verification
-        case description
-        case attributeTransformations = "attribute_transformations"
-        case enabled
-        case createdAt = "created_at"
-        case updatedAt = "updated_at"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.workload_identity_provider"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "oidc"
+        self.name = try container.decode(String.self, forKey: "name")
+        self.issuer = try container.decode(String.self, forKey: "issuer")
+        self.audience = try container.decode(String.self, forKey: "audience")
+        self.verification = try container.decode(PlatformProvider.Verification.self, forKey: "verification")
+        self.description = try container.decodeIfPresent(String.self, forKey: "description")
+        self.attributeTransformations = try container.decode([Transformation].self, forKey: "attribute_transformations")
+        self.enabled = try container.decode(Bool.self, forKey: "enabled")
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.updatedAt = try container.decode(Int.self, forKey: "updated_at")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.issuer, forKey: "issuer")
+        try container.encode(self.audience, forKey: "audience")
+        try container.encode(self.verification, forKey: "verification")
+        try container.encodeIfPresent(self.description, forKey: "description")
+        try container.encode(self.attributeTransformations, forKey: "attribute_transformations")
+        try container.encode(self.enabled, forKey: "enabled")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.updatedAt, forKey: "updated_at")
     }
 
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Verification: Codable, Hashable, Sendable {
+    public indirect enum Verification: OpenAIModel {
         /// `type`: `discovery`
         case discovery(DiscoveryVerification)
         /// `type`: `uploaded_jwks`
@@ -288,7 +340,7 @@ public struct PlatformProvider: Codable, Hashable, Sendable {
     }
 }
 
-public struct PlatformProviderDeletedResource: Codable, Hashable, Sendable {
+public struct PlatformProviderDeletedResource: OpenAIModel {
     public var object: String = "organization.workload_identity_provider.deleted"
     public var id: String
     public var deleted: Bool
@@ -298,14 +350,22 @@ public struct PlatformProviderDeletedResource: Codable, Hashable, Sendable {
         self.deleted = deleted
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case id
-        case deleted
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.workload_identity_provider.deleted"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.deleted = try container.decode(Bool.self, forKey: "deleted")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.deleted, forKey: "deleted")
     }
 }
 
-public struct PlatformProviderListResource: Codable, Hashable, Sendable {
+public struct PlatformProviderListResource: OpenAIModel {
     public var object: String = "list"
     public var data: [PlatformProvider]
     public var firstID: String?
@@ -324,11 +384,21 @@ public struct PlatformProviderListResource: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([PlatformProvider].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }

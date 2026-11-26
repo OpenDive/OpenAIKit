@@ -19,7 +19,7 @@ public struct ResolvedImageContextCompressionEnum: OpenAIStringEnum {
     }
 }
 
-public struct ResolvedImageOptions: Codable, Hashable, Sendable {
+public struct ResolvedImageOptions: OpenAIModel {
     /// Effective image context optimization policy.
     public var contextCompression: ResolvedImageContextCompressionEnum
 
@@ -27,7 +27,13 @@ public struct ResolvedImageOptions: Codable, Hashable, Sendable {
         self.contextCompression = contextCompression
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case contextCompression = "context_compression"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.contextCompression = try container.decode(ResolvedImageContextCompressionEnum.self, forKey: "context_compression")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.contextCompression, forKey: "context_compression")
     }
 }

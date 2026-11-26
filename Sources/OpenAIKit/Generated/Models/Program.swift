@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct Program: Codable, Hashable, Sendable {
+public struct Program: OpenAIModel {
     /// The type of the item. Always `program`.
     public var type: String = "program"
     /// The unique ID of the program item.
@@ -27,16 +27,26 @@ public struct Program: Codable, Hashable, Sendable {
         self.fingerprint = fingerprint
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case callID = "call_id"
-        case code
-        case fingerprint
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "program"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.code = try container.decode(String.self, forKey: "code")
+        self.fingerprint = try container.decode(String.self, forKey: "fingerprint")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encode(self.code, forKey: "code")
+        try container.encode(self.fingerprint, forKey: "fingerprint")
     }
 }
 
-public struct ProgramItemParam: Codable, Hashable, Sendable {
+public struct ProgramItemParam: OpenAIModel {
     /// The unique ID of this program item.
     public var id: String
     /// The item type. Always `program`.
@@ -60,16 +70,26 @@ public struct ProgramItemParam: Codable, Hashable, Sendable {
         self.fingerprint = fingerprint
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case type
-        case callID = "call_id"
-        case code
-        case fingerprint
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "program"
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.code = try container.decode(String.self, forKey: "code")
+        self.fingerprint = try container.decode(String.self, forKey: "fingerprint")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encode(self.code, forKey: "code")
+        try container.encode(self.fingerprint, forKey: "fingerprint")
     }
 }
 
-public struct ProgramOutput: Codable, Hashable, Sendable {
+public struct ProgramOutput: OpenAIModel {
     /// The type of the item. Always `program_output`.
     public var type: String = "program_output"
     /// The unique ID of the program output item.
@@ -93,16 +113,26 @@ public struct ProgramOutput: Codable, Hashable, Sendable {
         self.status = status
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case callID = "call_id"
-        case result
-        case status
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "program_output"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.result = try container.decode(String.self, forKey: "result")
+        self.status = try container.decode(ProgramOutputStatus.self, forKey: "status")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encode(self.result, forKey: "result")
+        try container.encode(self.status, forKey: "status")
     }
 }
 
-public struct ProgramOutputItemParam: Codable, Hashable, Sendable {
+public struct ProgramOutputItemParam: OpenAIModel {
     /// The unique ID of this program output item.
     public var id: String
     /// The item type. Always `program_output`.
@@ -126,12 +156,22 @@ public struct ProgramOutputItemParam: Codable, Hashable, Sendable {
         self.status = status
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case type
-        case callID = "call_id"
-        case result
-        case status
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "program_output"
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.result = try container.decode(String.self, forKey: "result")
+        self.status = try container.decode(ProgramOutputItemStatus.self, forKey: "status")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encode(self.result, forKey: "result")
+        try container.encode(self.status, forKey: "status")
     }
 }
 
@@ -167,7 +207,7 @@ public struct ProgramOutputStatus: OpenAIStringEnum {
     }
 }
 
-public struct ProgramToolCallCaller: Codable, Hashable, Sendable {
+public struct ProgramToolCallCaller: OpenAIModel {
     public var type: String = "program"
     /// The call ID of the program item that produced this tool call.
     public var callerID: String
@@ -176,13 +216,20 @@ public struct ProgramToolCallCaller: Codable, Hashable, Sendable {
         self.callerID = callerID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case callerID = "caller_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "program"
+        self.callerID = try container.decode(String.self, forKey: "caller_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.callerID, forKey: "caller_id")
     }
 }
 
-public struct ProgramToolCallCallerParam: Codable, Hashable, Sendable {
+public struct ProgramToolCallCallerParam: OpenAIModel {
     /// The caller type. Always `program`.
     public var type: String = "program"
     /// The call ID of the program item that produced this tool call.
@@ -192,8 +239,15 @@ public struct ProgramToolCallCallerParam: Codable, Hashable, Sendable {
         self.callerID = callerID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case callerID = "caller_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "program"
+        self.callerID = try container.decode(String.self, forKey: "caller_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.callerID, forKey: "caller_id")
     }
 }

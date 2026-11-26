@@ -4,7 +4,7 @@
 import Foundation
 
 /// Experimental settings to update. Omitted settings keep their current values.
-public struct ExperimentalConfigOverridesParam: Codable, Hashable, Sendable {
+public struct ExperimentalConfigOverridesParam: OpenAIModel {
     /// Whether to give the model periodic current-time reminders. Omit to keep the current setting.
     public var timeAwareness: Bool?
 
@@ -12,13 +12,19 @@ public struct ExperimentalConfigOverridesParam: Codable, Hashable, Sendable {
         self.timeAwareness = timeAwareness
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case timeAwareness = "time_awareness"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.timeAwareness = try container.decodeIfPresent(Bool.self, forKey: "time_awareness")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.timeAwareness, forKey: "time_awareness")
     }
 }
 
 /// Experimental agent settings. These features may change.
-public struct ExperimentalConfigParam: Codable, Hashable, Sendable {
+public struct ExperimentalConfigParam: OpenAIModel {
     /// Whether to give the model periodic current-time reminders. Defaults to false.
     public var timeAwareness: Bool?
 
@@ -26,13 +32,19 @@ public struct ExperimentalConfigParam: Codable, Hashable, Sendable {
         self.timeAwareness = timeAwareness
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case timeAwareness = "time_awareness"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.timeAwareness = try container.decodeIfPresent(Bool.self, forKey: "time_awareness")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.timeAwareness, forKey: "time_awareness")
     }
 }
 
 /// The effective experimental settings for an agent.
-public struct ExperimentalConfigResource: Codable, Hashable, Sendable {
+public struct ExperimentalConfigResource: OpenAIModel {
     /// Whether the model receives periodic current-time reminders.
     public var timeAwareness: Bool
 
@@ -40,7 +52,13 @@ public struct ExperimentalConfigResource: Codable, Hashable, Sendable {
         self.timeAwareness = timeAwareness
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case timeAwareness = "time_awareness"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.timeAwareness = try container.decode(Bool.self, forKey: "time_awareness")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.timeAwareness, forKey: "time_awareness")
     }
 }

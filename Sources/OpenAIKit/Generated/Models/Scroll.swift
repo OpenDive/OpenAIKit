@@ -4,7 +4,7 @@
 import Foundation
 
 /// A scroll action.
-public struct ScrollParam: Codable, Hashable, Sendable {
+public struct ScrollParam: OpenAIModel {
     /// Specifies the event type. For a scroll action, this property is always set to `scroll`.
     public var type: String = "scroll"
     /// The x-coordinate where the scroll occurred.
@@ -31,12 +31,23 @@ public struct ScrollParam: Codable, Hashable, Sendable {
         self.keys = keys
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case x
-        case y
-        case scrollX = "scroll_x"
-        case scrollY = "scroll_y"
-        case keys
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "scroll"
+        self.x = try container.decode(Int.self, forKey: "x")
+        self.y = try container.decode(Int.self, forKey: "y")
+        self.scrollX = try container.decode(Int.self, forKey: "scroll_x")
+        self.scrollY = try container.decode(Int.self, forKey: "scroll_y")
+        self.keys = try container.decodeIfPresent([String].self, forKey: "keys")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.x, forKey: "x")
+        try container.encode(self.y, forKey: "y")
+        try container.encode(self.scrollX, forKey: "scroll_x")
+        try container.encode(self.scrollY, forKey: "scroll_y")
+        try container.encodeIfPresent(self.keys, forKey: "keys")
     }
 }

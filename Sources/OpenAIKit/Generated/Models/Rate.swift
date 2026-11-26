@@ -4,7 +4,7 @@
 import Foundation
 
 /// Controls request rate limits for the session.
-public struct RateLimitsParam: Codable, Hashable, Sendable {
+public struct RateLimitsParam: OpenAIModel {
     /// Maximum number of requests allowed per minute for the session. Defaults to 10.
     public var maxRequestsPer1Minute: Int?
 
@@ -12,7 +12,13 @@ public struct RateLimitsParam: Codable, Hashable, Sendable {
         self.maxRequestsPer1Minute = maxRequestsPer1Minute
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case maxRequestsPer1Minute = "max_requests_per_1_minute"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.maxRequestsPer1Minute = try container.decodeIfPresent(Int.self, forKey: "max_requests_per_1_minute")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.maxRequestsPer1Minute, forKey: "max_requests_per_1_minute")
     }
 }

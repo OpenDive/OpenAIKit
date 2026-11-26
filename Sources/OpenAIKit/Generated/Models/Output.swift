@@ -4,7 +4,7 @@
 import Foundation
 
 /// An audio output from the model.
-public struct OutputAudio: Codable, Hashable, Sendable {
+public struct OutputAudio: OpenAIModel {
     /// The type of the output audio. Always `output_audio`.
     public var type: String = "output_audio"
     /// Base64-encoded audio data from the model.
@@ -17,15 +17,23 @@ public struct OutputAudio: Codable, Hashable, Sendable {
         self.transcript = transcript
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case data
-        case transcript
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "output_audio"
+        self.data = try container.decode(String.self, forKey: "data")
+        self.transcript = try container.decode(String.self, forKey: "transcript")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.data, forKey: "data")
+        try container.encode(self.transcript, forKey: "transcript")
     }
 }
 
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum OutputContent: Codable, Hashable, Sendable {
+public indirect enum OutputContent: OpenAIModel {
     /// `type`: `output_text`
     case outputText(OutputTextContent)
     /// `type`: `refusal`
@@ -72,7 +80,7 @@ public indirect enum OutputContent: Codable, Hashable, Sendable {
 }
 
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum OutputItem: Codable, Hashable, Sendable {
+public indirect enum OutputItem: OpenAIModel {
     /// `type`: `message`
     case message(OutputMessage)
     /// `type`: `file_search_call`
@@ -313,7 +321,7 @@ public struct OutputItemStatusResource: OpenAIStringEnum {
 }
 
 /// An output message from the model.
-public struct OutputMessage: Codable, Hashable, Sendable {
+public struct OutputMessage: OpenAIModel {
     /// The unique ID of the output message.
     public var id: String
     /// The type of the output message. Always `message`.
@@ -339,13 +347,24 @@ public struct OutputMessage: Codable, Hashable, Sendable {
         self.phase = phase
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case type
-        case role
-        case content
-        case phase
-        case status
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "message"
+        self.role = try container.decodeIfPresent(String.self, forKey: "role") ?? "assistant"
+        self.content = try container.decode([OutputMessageContent].self, forKey: "content")
+        self.phase = try container.decodeIfPresent(MessagePhase.self, forKey: "phase")
+        self.status = try container.decode(OutputMessage.Status.self, forKey: "status")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.role, forKey: "role")
+        try container.encode(self.content, forKey: "content")
+        try container.encodeIfPresent(self.phase, forKey: "phase")
+        try container.encode(self.status, forKey: "status")
     }
 
     /// The status of the message input. One of `in_progress`, `completed`, or
@@ -370,7 +389,7 @@ public struct OutputMessage: Codable, Hashable, Sendable {
 }
 
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum OutputMessageContent: Codable, Hashable, Sendable {
+public indirect enum OutputMessageContent: OpenAIModel {
     /// `type`: `output_text`
     case outputText(OutputTextContent)
     /// `type`: `refusal`
@@ -410,7 +429,7 @@ public indirect enum OutputMessageContent: Codable, Hashable, Sendable {
 }
 
 /// A text output from the model.
-public struct OutputTextContent: Codable, Hashable, Sendable {
+public struct OutputTextContent: OpenAIModel {
     /// The type of the output text. Always `output_text`.
     public var type: String = "output_text"
     /// The text output from the model.
@@ -429,16 +448,25 @@ public struct OutputTextContent: Codable, Hashable, Sendable {
         self.logprobs = logprobs
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case text
-        case annotations
-        case logprobs
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "output_text"
+        self.text = try container.decode(String.self, forKey: "text")
+        self.annotations = try container.decode([Annotation].self, forKey: "annotations")
+        self.logprobs = try container.decode([LogProb].self, forKey: "logprobs")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.text, forKey: "text")
+        try container.encode(self.annotations, forKey: "annotations")
+        try container.encode(self.logprobs, forKey: "logprobs")
     }
 }
 
 /// A text content part produced by the agent.
-public struct OutputTextResource: Codable, Hashable, Sendable {
+public struct OutputTextResource: OpenAIModel {
     /// The content type. Always `output_text`.
     public var type: String = "output_text"
     /// The text produced by the agent.
@@ -448,26 +476,39 @@ public struct OutputTextResource: Codable, Hashable, Sendable {
         self.text = text
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case text
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "output_text"
+        self.text = try container.decode(String.self, forKey: "text")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.text, forKey: "text")
     }
 }
 
-public struct OutputTokensDetailsResource: Codable, Hashable, Sendable {
+public struct OutputTokensDetailsResource: OpenAIModel {
     public var reasoningTokens: Int64
 
     public init(reasoningTokens: Int64) {
         self.reasoningTokens = reasoningTokens
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case reasoningTokens = "reasoning_tokens"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.reasoningTokens = try container.decode(Int64.self, forKey: "reasoning_tokens")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.reasoningTokens, forKey: "reasoning_tokens")
     }
 }
 
 /// A breakdown of output token usage for a session or turn.
-public struct OutputTokensDetailsResource2: Codable, Hashable, Sendable {
+public struct OutputTokensDetailsResource2: OpenAIModel {
     /// The number of output tokens used for reasoning.
     public var reasoningTokens: Int64
 
@@ -475,7 +516,13 @@ public struct OutputTokensDetailsResource2: Codable, Hashable, Sendable {
         self.reasoningTokens = reasoningTokens
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case reasoningTokens = "reasoning_tokens"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.reasoningTokens = try container.decode(Int64.self, forKey: "reasoning_tokens")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.reasoningTokens, forKey: "reasoning_tokens")
     }
 }

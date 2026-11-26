@@ -4,7 +4,7 @@
 import Foundation
 
 /// Combine multiple filters using `and` or `or`.
-public struct CompoundFilter: Codable, Hashable, Sendable {
+public struct CompoundFilter: OpenAIModel {
     /// Type of operation: `and` or `or`.
     public var type: CompoundFilter.Kind
     /// Array of filters to combine. Items can be `ComparisonFilter` or `CompoundFilter`.
@@ -15,9 +15,16 @@ public struct CompoundFilter: Codable, Hashable, Sendable {
         self.filters = filters
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case filters
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decode(CompoundFilter.Kind.self, forKey: "type")
+        self.filters = try container.decode([CompoundFilter.Filter].self, forKey: "filters")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.filters, forKey: "filters")
     }
 
     /// Type of operation: `and` or `or`.
@@ -39,7 +46,7 @@ public struct CompoundFilter: Codable, Hashable, Sendable {
     }
 
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Filter: Codable, Hashable, Sendable {
+    public indirect enum Filter: OpenAIModel {
         case comparison(ComparisonFilter)
         case compound(CompoundFilter)
         /// A value this version of OpenAIKit does not recognize, kept as raw JSON.

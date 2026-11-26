@@ -6,7 +6,7 @@ import Foundation
 /// The authentication configuration of a vault credential, excluding secrets.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum VaultCredentialAuthResource: Codable, Hashable, Sendable {
+public indirect enum VaultCredentialAuthResource: OpenAIModel {
     /// `type`: `mcp_oauth`
     case mcpOauth(VaultCredentialAuthResourceMcpOauth)
     /// `type`: `static_bearer`
@@ -53,7 +53,7 @@ public indirect enum VaultCredentialAuthResource: Codable, Hashable, Sendable {
 }
 
 /// Metadata for an HTTP credential used only in OpenAI-hosted environments. Sandbox code receives a placeholder. The proxy substitutes the secret for allowed HTTPS destinations on ports 443 and 8443. The real secret is not available to sandbox code for local computation and is never returned in this resource.
-public struct VaultCredentialAuthResourceEnvironmentVariable: Codable, Hashable, Sendable {
+public struct VaultCredentialAuthResourceEnvironmentVariable: OpenAIModel {
     /// The type of the object. Always `environment_variable`.
     public var type: String = "environment_variable"
     /// The environment variable name that receives the placeholder in the sandbox.
@@ -66,15 +66,23 @@ public struct VaultCredentialAuthResourceEnvironmentVariable: Codable, Hashable,
         self.networking = networking
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case secretName = "secret_name"
-        case networking
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "environment_variable"
+        self.secretName = try container.decode(String.self, forKey: "secret_name")
+        self.networking = try container.decode(VaultCredentialNetworkingResource.self, forKey: "networking")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.secretName, forKey: "secret_name")
+        try container.encode(self.networking, forKey: "networking")
     }
 }
 
 /// Public metadata for an OAuth credential; tokens and client secrets are never returned.
-public struct VaultCredentialAuthResourceMcpOauth: Codable, Hashable, Sendable {
+public struct VaultCredentialAuthResourceMcpOauth: OpenAIModel {
     /// The type of the object. Always `mcp_oauth`.
     public var type: String = "mcp_oauth"
     /// The HTTPS MCP server URL authorized by this credential.
@@ -94,16 +102,25 @@ public struct VaultCredentialAuthResourceMcpOauth: Codable, Hashable, Sendable {
         self.refresh = refresh
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case mcpServerURL = "mcp_server_url"
-        case expiresAt = "expires_at"
-        case refresh
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "mcp_oauth"
+        self.mcpServerURL = try container.decode(String.self, forKey: "mcp_server_url")
+        self.expiresAt = try container.decodeIfPresent(String.self, forKey: "expires_at")
+        self.refresh = try container.decodeIfPresent(McpOauthRefreshResource.self, forKey: "refresh")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.mcpServerURL, forKey: "mcp_server_url")
+        try container.encodeIfPresent(self.expiresAt, forKey: "expires_at")
+        try container.encodeIfPresent(self.refresh, forKey: "refresh")
     }
 }
 
 /// Metadata for a bearer-token credential, without automatic OAuth refresh.
-public struct VaultCredentialAuthResourceStaticBearer: Codable, Hashable, Sendable {
+public struct VaultCredentialAuthResourceStaticBearer: OpenAIModel {
     /// The type of the object. Always `static_bearer`.
     public var type: String = "static_bearer"
     /// The HTTPS MCP server URL authorized by this credential.
@@ -113,14 +130,21 @@ public struct VaultCredentialAuthResourceStaticBearer: Codable, Hashable, Sendab
         self.mcpServerURL = mcpServerURL
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case mcpServerURL = "mcp_server_url"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "static_bearer"
+        self.mcpServerURL = try container.decode(String.self, forKey: "mcp_server_url")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.mcpServerURL, forKey: "mcp_server_url")
     }
 }
 
 /// A page of Agents API resources, with IDs for retrieving additional pages.
-public struct VaultCredentialListResource: Codable, Hashable, Sendable {
+public struct VaultCredentialListResource: OpenAIModel {
     /// The object type, which is always `list`.
     public var object: String = "list"
     /// The resources returned in this page, in the requested sort order.
@@ -144,19 +168,29 @@ public struct VaultCredentialListResource: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([VaultCredentialResource].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
 /// Destination permissions for an environment-variable credential. These do not grant network access to the environment.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum VaultCredentialNetworkingParam: Codable, Hashable, Sendable {
+public indirect enum VaultCredentialNetworkingParam: OpenAIModel {
     /// `type`: `unrestricted`
     case unrestricted(VaultCredentialNetworkingParamUnrestricted)
     /// `type`: `limited`
@@ -196,7 +230,7 @@ public indirect enum VaultCredentialNetworkingParam: Codable, Hashable, Sendable
 }
 
 /// Allows substitution only for the listed hosts. The environment network policy must also allow these hosts.
-public struct VaultCredentialNetworkingParamLimited: Codable, Hashable, Sendable {
+public struct VaultCredentialNetworkingParamLimited: OpenAIModel {
     /// The type of the object. Always `limited`.
     public var type: String = "limited"
     /// The 1 to 16 distinct allowed hostnames or IPv4 addresses, normalized to lowercase. Entries contain no scheme, path, port, or wildcard. IPv6 addresses are not supported.
@@ -206,29 +240,42 @@ public struct VaultCredentialNetworkingParamLimited: Codable, Hashable, Sendable
         self.allowedHosts = allowedHosts
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case allowedHosts = "allowed_hosts"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "limited"
+        self.allowedHosts = try container.decode([String].self, forKey: "allowed_hosts")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.allowedHosts, forKey: "allowed_hosts")
     }
 }
 
 /// Allows substitution for destinations permitted by the environment network policy. Requires `environment.network.access` to be `restricted`, with explicit `allowed_domains`.
-public struct VaultCredentialNetworkingParamUnrestricted: Codable, Hashable, Sendable {
+public struct VaultCredentialNetworkingParamUnrestricted: OpenAIModel {
     /// The type of the object. Always `unrestricted`.
     public var type: String = "unrestricted"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "unrestricted"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// Destination permissions for an environment-variable credential. These do not grant network access to the environment.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum VaultCredentialNetworkingResource: Codable, Hashable, Sendable {
+public indirect enum VaultCredentialNetworkingResource: OpenAIModel {
     /// `type`: `unrestricted`
     case unrestricted(VaultCredentialNetworkingResourceUnrestricted)
     /// `type`: `limited`
@@ -268,7 +315,7 @@ public indirect enum VaultCredentialNetworkingResource: Codable, Hashable, Senda
 }
 
 /// Allows substitution only for the listed hosts. The environment network policy must also allow these hosts.
-public struct VaultCredentialNetworkingResourceLimited: Codable, Hashable, Sendable {
+public struct VaultCredentialNetworkingResourceLimited: OpenAIModel {
     /// The type of the object. Always `limited`.
     public var type: String = "limited"
     /// The 1 to 16 distinct allowed hostnames or IPv4 addresses, normalized to lowercase. Entries contain no scheme, path, port, or wildcard. IPv6 addresses are not supported.
@@ -278,27 +325,40 @@ public struct VaultCredentialNetworkingResourceLimited: Codable, Hashable, Senda
         self.allowedHosts = allowedHosts
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case allowedHosts = "allowed_hosts"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "limited"
+        self.allowedHosts = try container.decode([String].self, forKey: "allowed_hosts")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.allowedHosts, forKey: "allowed_hosts")
     }
 }
 
 /// Allows substitution for destinations permitted by the environment network policy. Requires `environment.network.access` to be `restricted`, with explicit `allowed_domains`.
-public struct VaultCredentialNetworkingResourceUnrestricted: Codable, Hashable, Sendable {
+public struct VaultCredentialNetworkingResourceUnrestricted: OpenAIModel {
     /// The type of the object. Always `unrestricted`.
     public var type: String = "unrestricted"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "unrestricted"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// Metadata for a stored credential. Secret values are never returned.
-public struct VaultCredentialResource: Codable, Hashable, Sendable {
+public struct VaultCredentialResource: OpenAIModel {
     /// The ID of the credential.
     public var id: String
     /// The object type. Always `vault.credential`.
@@ -334,20 +394,33 @@ public struct VaultCredentialResource: Codable, Hashable, Sendable {
         self.updatedAt = updatedAt
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case vaultID = "vault_id"
-        case name
-        case auth
-        case metadata
-        case createdAt = "created_at"
-        case updatedAt = "updated_at"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "vault.credential"
+        self.vaultID = try container.decode(String.self, forKey: "vault_id")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.auth = try container.decode(VaultCredentialAuthResource.self, forKey: "auth")
+        self.metadata = try container.decode([String: String].self, forKey: "metadata")
+        self.createdAt = try container.decode(Int64.self, forKey: "created_at")
+        self.updatedAt = try container.decode(Int64.self, forKey: "updated_at")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.vaultID, forKey: "vault_id")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.auth, forKey: "auth")
+        try container.encode(self.metadata, forKey: "metadata")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.updatedAt, forKey: "updated_at")
     }
 }
 
 /// A page of Agents API resources, with IDs for retrieving additional pages.
-public struct VaultListResource: Codable, Hashable, Sendable {
+public struct VaultListResource: OpenAIModel {
     /// The object type, which is always `list`.
     public var object: String = "list"
     /// The resources returned in this page, in the requested sort order.
@@ -371,17 +444,27 @@ public struct VaultListResource: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([VaultResource].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
 /// A collection of credentials for MCP servers and OpenAI-hosted environments.
-public struct VaultResource: Codable, Hashable, Sendable {
+public struct VaultResource: OpenAIModel {
     /// The ID of the vault.
     public var id: String
     /// The object type. Always `vault`.
@@ -405,17 +488,27 @@ public struct VaultResource: Codable, Hashable, Sendable {
         self.name = name
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case name
-        case metadata
-        case createdAt = "created_at"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "vault"
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.metadata = try container.decode([String: String].self, forKey: "metadata")
+        self.createdAt = try container.decode(Int64.self, forKey: "created_at")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encode(self.metadata, forKey: "metadata")
+        try container.encode(self.createdAt, forKey: "created_at")
     }
 }
 
 /// One or more lifecycle statuses to include when listing vaults or credentials.
-public indirect enum VaultStatusFilterParam: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+public indirect enum VaultStatusFilterParam: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
     case vaultStatusParam(VaultStatusParam)
     case array([VaultStatusParam])
     /// A value this version of OpenAIKit does not recognize, kept as raw JSON.

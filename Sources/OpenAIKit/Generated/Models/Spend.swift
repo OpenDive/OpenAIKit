@@ -4,7 +4,7 @@
 import Foundation
 
 /// Email notification settings for a spend alert.
-public struct SpendAlertNotificationChannel: Codable, Hashable, Sendable {
+public struct SpendAlertNotificationChannel: OpenAIModel {
     /// The notification channel type. Currently only `email` is supported.
     public var type: String = "email"
     /// Email addresses that receive the spend alert notification.
@@ -17,10 +17,18 @@ public struct SpendAlertNotificationChannel: Codable, Hashable, Sendable {
         self.subjectPrefix = subjectPrefix
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case recipients
-        case subjectPrefix = "subject_prefix"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "email"
+        self.recipients = try container.decode([String].self, forKey: "recipients")
+        self.subjectPrefix = try container.decodeIfPresent(String.self, forKey: "subject_prefix")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.recipients, forKey: "recipients")
+        try container.encodeIfPresent(self.subjectPrefix, forKey: "subject_prefix")
     }
 }
 
@@ -40,7 +48,7 @@ public struct SpendLimitCurrency: OpenAIStringEnum {
 }
 
 /// Configure email notifications when the spend limit is reached. Leave this out to keep the current settings, or send null to reset to owner-only notifications.
-public struct SpendLimitEmailNotificationChannelParams: Codable, Hashable, Sendable {
+public struct SpendLimitEmailNotificationChannelParams: OpenAIModel {
     public var type: String = "email"
     /// Additional email recipients. Omit to keep them unchanged; send [] to clear them.
     public var recipients: [String]?
@@ -51,15 +59,23 @@ public struct SpendLimitEmailNotificationChannelParams: Codable, Hashable, Senda
         self.subjectPrefix = subjectPrefix
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case recipients
-        case subjectPrefix = "subject_prefix"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "email"
+        self.recipients = try container.decodeIfPresent([String].self, forKey: "recipients")
+        self.subjectPrefix = try container.decodeIfPresent(String.self, forKey: "subject_prefix")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.recipients, forKey: "recipients")
+        try container.encodeIfPresent(self.subjectPrefix, forKey: "subject_prefix")
     }
 }
 
 /// The current enforcement state of a hard spend limit.
-public struct SpendLimitEnforcement: Codable, Hashable, Sendable {
+public struct SpendLimitEnforcement: OpenAIModel {
     /// Whether the hard spend limit is currently enforcing.
     public var status: SpendLimitEnforcementStatus
 
@@ -67,8 +83,14 @@ public struct SpendLimitEnforcement: Codable, Hashable, Sendable {
         self.status = status
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case status
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.status = try container.decode(SpendLimitEnforcementStatus.self, forKey: "status")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.status, forKey: "status")
     }
 }
 

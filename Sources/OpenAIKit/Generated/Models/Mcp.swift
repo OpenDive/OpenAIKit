@@ -23,7 +23,7 @@ public struct McpApprovalDecisionParam: OpenAIStringEnum {
 /// Information for presenting an MCP approval.
 public typealias McpApprovalRequestResource = McpApprovalRequestResourceMcpToolCall
 
-public struct McpApprovalRequestResourceMcpToolCall: Codable, Hashable, Sendable {
+public struct McpApprovalRequestResourceMcpToolCall: OpenAIModel {
     /// The type of the object. Always `mcp_tool_call`.
     public var type: String = "mcp_tool_call"
     public var serverLabel: String
@@ -45,19 +45,29 @@ public struct McpApprovalRequestResourceMcpToolCall: Codable, Hashable, Sendable
         self.arguments = arguments
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case serverLabel = "server_label"
-        case name
-        case arguments
-        case message
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "mcp_tool_call"
+        self.serverLabel = try container.decode(String.self, forKey: "server_label")
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.arguments = try container.decodeIfPresent(JSONValue.self, forKey: "arguments")
+        self.message = try container.decode(String.self, forKey: "message")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.serverLabel, forKey: "server_label")
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encodeIfPresent(self.arguments, forKey: "arguments")
+        try container.encode(self.message, forKey: "message")
     }
 }
 
 /// The user's decision for a pending MCP tool call.
 public typealias McpApprovalResponseParam = McpApprovalResponseParamMcpToolCall
 
-public struct McpApprovalResponseParamMcpToolCall: Codable, Hashable, Sendable {
+public struct McpApprovalResponseParamMcpToolCall: OpenAIModel {
     /// The type of the object. Always `mcp_tool_call`.
     public var type: String = "mcp_tool_call"
     /// Cancel dismisses this request without cancelling the session or turn.
@@ -67,14 +77,21 @@ public struct McpApprovalResponseParamMcpToolCall: Codable, Hashable, Sendable {
         self.decision = decision
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case decision
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "mcp_tool_call"
+        self.decision = try container.decode(McpApprovalDecisionParam.self, forKey: "decision")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.decision, forKey: "decision")
     }
 }
 
 /// A call to a tool on an MCP server.
-public struct McpCallItemResource: Codable, Hashable, Sendable {
+public struct McpCallItemResource: OpenAIModel {
     /// The item type. Always `mcp_call`.
     public var type: String = "mcp_call"
     /// The ID of the MCP call item.
@@ -114,16 +131,30 @@ public struct McpCallItemResource: Codable, Hashable, Sendable {
         self.error = error
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case turnID = "turn_id"
-        case serverLabel = "server_label"
-        case name
-        case arguments
-        case status
-        case output
-        case error
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "mcp_call"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.turnID = try container.decode(String.self, forKey: "turn_id")
+        self.serverLabel = try container.decode(String.self, forKey: "server_label")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.arguments = try container.decode(JSONValue.self, forKey: "arguments")
+        self.status = try container.decode(FunctionCallStatusResource.self, forKey: "status")
+        self.output = try container.decodeIfPresent(JSONValue.self, forKey: "output")
+        self.error = try container.decodeIfPresent(JSONValue.self, forKey: "error")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.turnID, forKey: "turn_id")
+        try container.encode(self.serverLabel, forKey: "server_label")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.arguments, forKey: "arguments")
+        try container.encode(self.status, forKey: "status")
+        try container.encodeIfPresent(self.output, forKey: "output")
+        try container.encodeIfPresent(self.error, forKey: "error")
     }
 }
 
@@ -164,7 +195,7 @@ public struct McpConnectionOriginResource: OpenAIStringEnum {
 }
 
 /// Configuration used to refresh an MCP OAuth access token, excluding secret values.
-public struct McpOauthRefreshResource: Codable, Hashable, Sendable {
+public struct McpOauthRefreshResource: OpenAIModel {
     /// The HTTPS OAuth token endpoint used for refresh.
     public var tokenEndpoint: String
     /// The OAuth client ID used when requesting a new access token.
@@ -190,19 +221,29 @@ public struct McpOauthRefreshResource: Codable, Hashable, Sendable {
         self.scope = scope
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case tokenEndpoint = "token_endpoint"
-        case clientID = "client_id"
-        case resource
-        case scope
-        case tokenEndpointAuth = "token_endpoint_auth"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.tokenEndpoint = try container.decode(String.self, forKey: "token_endpoint")
+        self.clientID = try container.decode(String.self, forKey: "client_id")
+        self.resource = try container.decodeIfPresent(String.self, forKey: "resource")
+        self.scope = try container.decodeIfPresent(String.self, forKey: "scope")
+        self.tokenEndpointAuth = try container.decode(McpOauthTokenEndpointAuthResource.self, forKey: "token_endpoint_auth")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.tokenEndpoint, forKey: "token_endpoint")
+        try container.encode(self.clientID, forKey: "client_id")
+        try container.encodeIfPresent(self.resource, forKey: "resource")
+        try container.encodeIfPresent(self.scope, forKey: "scope")
+        try container.encode(self.tokenEndpointAuth, forKey: "token_endpoint_auth")
     }
 }
 
 /// The client authentication method used for OAuth token refresh.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum McpOauthTokenEndpointAuthResource: Codable, Hashable, Sendable {
+public indirect enum McpOauthTokenEndpointAuthResource: OpenAIModel {
     /// `type`: `none`
     case noneValue(McpOauthTokenEndpointAuthResourceNone)
     /// `type`: `client_secret_basic`
@@ -249,48 +290,66 @@ public indirect enum McpOauthTokenEndpointAuthResource: Codable, Hashable, Senda
 }
 
 /// Sends the client ID and secret using HTTP Basic authentication.
-public struct McpOauthTokenEndpointAuthResourceClientSecretBasic: Codable, Hashable, Sendable {
+public struct McpOauthTokenEndpointAuthResourceClientSecretBasic: OpenAIModel {
     /// The type of the object. Always `client_secret_basic`.
     public var type: String = "client_secret_basic"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "client_secret_basic"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// Sends the client ID and secret in the token request body.
-public struct McpOauthTokenEndpointAuthResourceClientSecretPost: Codable, Hashable, Sendable {
+public struct McpOauthTokenEndpointAuthResourceClientSecretPost: OpenAIModel {
     /// The type of the object. Always `client_secret_post`.
     public var type: String = "client_secret_post"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "client_secret_post"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// Sends the client ID without a client secret.
-public struct McpOauthTokenEndpointAuthResourceNone: Codable, Hashable, Sendable {
+public struct McpOauthTokenEndpointAuthResourceNone: OpenAIModel {
     /// The type of the object. Always `none`.
     public var type: String = "none"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "none"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// The transport used to connect to an MCP server.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum McpTransportConfigParam: Codable, Hashable, Sendable {
+public indirect enum McpTransportConfigParam: OpenAIModel {
     /// `type`: `http`
     case http(McpTransportConfigParamHttp)
     /// `type`: `stdio`
@@ -330,7 +389,7 @@ public indirect enum McpTransportConfigParam: Codable, Hashable, Sendable {
 }
 
 /// Connects to an MCP server over HTTP.
-public struct McpTransportConfigParamHttp: Codable, Hashable, Sendable {
+public struct McpTransportConfigParamHttp: OpenAIModel {
     /// The type of the object. Always `http`.
     public var type: String = "http"
     /// The URL of the MCP server.
@@ -350,16 +409,25 @@ public struct McpTransportConfigParamHttp: Codable, Hashable, Sendable {
         self.headers = headers
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case serverURL = "server_url"
-        case authorization
-        case headers
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "http"
+        self.serverURL = try container.decode(String.self, forKey: "server_url")
+        self.authorization = try container.decodeIfPresent(String.self, forKey: "authorization")
+        self.headers = try container.decodeIfPresent([String: String].self, forKey: "headers")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.serverURL, forKey: "server_url")
+        try container.encodeIfPresent(self.authorization, forKey: "authorization")
+        try container.encodeIfPresent(self.headers, forKey: "headers")
     }
 }
 
 /// Starts an MCP server as a local process.
-public struct McpTransportConfigParamStdio: Codable, Hashable, Sendable {
+public struct McpTransportConfigParamStdio: OpenAIModel {
     /// The type of the object. Always `stdio`.
     public var type: String = "stdio"
     /// The command used to start the MCP server.
@@ -387,20 +455,31 @@ public struct McpTransportConfigParamStdio: Codable, Hashable, Sendable {
         self.envVars = envVars
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case command
-        case args
-        case cwd
-        case env
-        case envVars = "env_vars"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "stdio"
+        self.command = try container.decode(String.self, forKey: "command")
+        self.args = try container.decodeIfPresent([String].self, forKey: "args")
+        self.cwd = try container.decode(String.self, forKey: "cwd")
+        self.env = try container.decodeIfPresent([String: String].self, forKey: "env")
+        self.envVars = try container.decodeIfPresent([String].self, forKey: "env_vars")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.command, forKey: "command")
+        try container.encodeIfPresent(self.args, forKey: "args")
+        try container.encode(self.cwd, forKey: "cwd")
+        try container.encodeIfPresent(self.env, forKey: "env")
+        try container.encodeIfPresent(self.envVars, forKey: "env_vars")
     }
 }
 
 /// The transport used to connect to an MCP server.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum McpTransportResource: Codable, Hashable, Sendable {
+public indirect enum McpTransportResource: OpenAIModel {
     /// `type`: `http`
     case http(McpTransportResourceHttp)
     /// `type`: `stdio`
@@ -440,7 +519,7 @@ public indirect enum McpTransportResource: Codable, Hashable, Sendable {
 }
 
 /// Connects to an MCP server over HTTP.
-public struct McpTransportResourceHttp: Codable, Hashable, Sendable {
+public struct McpTransportResourceHttp: OpenAIModel {
     /// The type of the object. Always `http`.
     public var type: String = "http"
     /// The URL of the MCP server.
@@ -450,14 +529,21 @@ public struct McpTransportResourceHttp: Codable, Hashable, Sendable {
         self.serverURL = serverURL
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case serverURL = "server_url"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "http"
+        self.serverURL = try container.decode(String.self, forKey: "server_url")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.serverURL, forKey: "server_url")
     }
 }
 
 /// Starts an MCP server as a local process.
-public struct McpTransportResourceStdio: Codable, Hashable, Sendable {
+public struct McpTransportResourceStdio: OpenAIModel {
     /// The type of the object. Always `stdio`.
     public var type: String = "stdio"
     /// The command used to start the MCP server.
@@ -481,11 +567,21 @@ public struct McpTransportResourceStdio: Codable, Hashable, Sendable {
         self.envVars = envVars
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case command
-        case args
-        case cwd
-        case envVars = "env_vars"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "stdio"
+        self.command = try container.decode(String.self, forKey: "command")
+        self.args = try container.decode([String].self, forKey: "args")
+        self.cwd = try container.decode(String.self, forKey: "cwd")
+        self.envVars = try container.decode([String].self, forKey: "env_vars")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.command, forKey: "command")
+        try container.encode(self.args, forKey: "args")
+        try container.encode(self.cwd, forKey: "cwd")
+        try container.encode(self.envVars, forKey: "env_vars")
     }
 }

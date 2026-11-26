@@ -4,7 +4,7 @@
 import Foundation
 
 /// Attachment metadata included on thread items.
-public struct Attachment: Codable, Hashable, Sendable {
+public struct Attachment: OpenAIModel {
     /// Attachment discriminator.
     public var type: AttachmentType
     /// Identifier for the attachment.
@@ -29,12 +29,22 @@ public struct Attachment: Codable, Hashable, Sendable {
         self.previewURL = previewURL
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case name
-        case mimeType = "mime_type"
-        case previewURL = "preview_url"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decode(AttachmentType.self, forKey: "type")
+        self.id = try container.decode(String.self, forKey: "id")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.mimeType = try container.decode(String.self, forKey: "mime_type")
+        self.previewURL = try container.decodeIfPresent(String.self, forKey: "preview_url")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.mimeType, forKey: "mime_type")
+        try container.encodeIfPresent(self.previewURL, forKey: "preview_url")
     }
 }
 

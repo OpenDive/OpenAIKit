@@ -6,7 +6,7 @@ import Foundation
 /// A completed question always includes its name, including null when unnamed.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum AnswerResource: Codable, Hashable, Sendable {
+public indirect enum AnswerResource: OpenAIModel {
     /// `type`: `predicate`
     case predicate(AnswerResourcePredicate)
     /// `type`: `choice`
@@ -59,7 +59,7 @@ public indirect enum AnswerResource: Codable, Hashable, Sendable {
     }
 }
 
-public struct AnswerResourceChoice: Codable, Hashable, Sendable {
+public struct AnswerResourceChoice: OpenAIModel {
     /// The type of the object. Always `choice`.
     public var type: String = "choice"
     public var name: String?
@@ -79,16 +79,26 @@ public struct AnswerResourceChoice: Codable, Hashable, Sendable {
         self.name = name
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
-        case choice
-        case probabilities
-        case confidence
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "choice"
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.choice = try container.decode(ChoiceValueResource.self, forKey: "choice")
+        self.probabilities = try container.decode([ChoiceProbabilityResource].self, forKey: "probabilities")
+        self.confidence = try container.decode(Double.self, forKey: "confidence")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encode(self.choice, forKey: "choice")
+        try container.encode(self.probabilities, forKey: "probabilities")
+        try container.encode(self.confidence, forKey: "confidence")
     }
 }
 
-public struct AnswerResourcePredicate: Codable, Hashable, Sendable {
+public struct AnswerResourcePredicate: OpenAIModel {
     /// The type of the object. Always `predicate`.
     public var type: String = "predicate"
     public var name: String?
@@ -99,15 +109,23 @@ public struct AnswerResourcePredicate: Codable, Hashable, Sendable {
         self.name = name
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
-        case probability
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "predicate"
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.probability = try container.decode(Double.self, forKey: "probability")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encode(self.probability, forKey: "probability")
     }
 }
 
 /// The model declined to answer this question. Other questions in the same request can still receive answers.
-public struct AnswerResourceRefusal: Codable, Hashable, Sendable {
+public struct AnswerResourceRefusal: OpenAIModel {
     /// The type of the object. Always `refusal`.
     public var type: String = "refusal"
     public var name: String?
@@ -116,13 +134,20 @@ public struct AnswerResourceRefusal: Codable, Hashable, Sendable {
         self.name = name
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "refusal"
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.name, forKey: "name")
     }
 }
 
-public struct AnswerResourceScore: Codable, Hashable, Sendable {
+public struct AnswerResourceScore: OpenAIModel {
     /// The type of the object. Always `score`.
     public var type: String = "score"
     public var name: String?
@@ -142,11 +167,21 @@ public struct AnswerResourceScore: Codable, Hashable, Sendable {
         self.name = name
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
-        case score
-        case probabilities
-        case confidence
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "score"
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.score = try container.decode(Double.self, forKey: "score")
+        self.probabilities = try container.decode([ScoreProbabilityResource].self, forKey: "probabilities")
+        self.confidence = try container.decode(Double.self, forKey: "confidence")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encode(self.score, forKey: "score")
+        try container.encode(self.probabilities, forKey: "probabilities")
+        try container.encode(self.confidence, forKey: "confidence")
     }
 }

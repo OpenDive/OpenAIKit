@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct AdditionalTools: Codable, Hashable, Sendable {
+public struct AdditionalTools: OpenAIModel {
     /// The type of the item. Always `additional_tools`.
     public var type: String = "additional_tools"
     /// The unique ID of the additional tools item.
@@ -23,15 +23,24 @@ public struct AdditionalTools: Codable, Hashable, Sendable {
         self.tools = tools
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case role
-        case tools
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "additional_tools"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.role = try container.decode(MessageRole.self, forKey: "role")
+        self.tools = try container.decode([Tool].self, forKey: "tools")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.role, forKey: "role")
+        try container.encode(self.tools, forKey: "tools")
     }
 }
 
-public struct AdditionalToolsItemParam: Codable, Hashable, Sendable {
+public struct AdditionalToolsItemParam: OpenAIModel {
     public var id: String?
     /// The item type. Always `additional_tools`.
     public var type: String = "additional_tools"
@@ -45,10 +54,19 @@ public struct AdditionalToolsItemParam: Codable, Hashable, Sendable {
         self.id = id
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case type
-        case role
-        case tools
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "additional_tools"
+        self.role = try container.decodeIfPresent(String.self, forKey: "role") ?? "developer"
+        self.tools = try container.decode([Tool].self, forKey: "tools")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.role, forKey: "role")
+        try container.encode(self.tools, forKey: "tools")
     }
 }

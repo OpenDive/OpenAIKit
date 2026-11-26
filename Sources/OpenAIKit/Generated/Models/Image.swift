@@ -74,7 +74,7 @@ public struct ImageDetailParam: OpenAIStringEnum {
 }
 
 /// Emitted when image editing has completed and the final image is available.
-public struct ImageEditCompletedEvent: Codable, Hashable, Sendable {
+public struct ImageEditCompletedEvent: OpenAIModel {
     /// The effective safety identifier used for safety monitoring and abuse detection. This is the non-empty `safety_identifier` from the request, or the deprecated `user` value when `safety_identifier` is omitted, null, or empty.
     public var safetyIdentifier: String?
     /// The type of the event. Always `image_edit.completed`.
@@ -113,16 +113,30 @@ public struct ImageEditCompletedEvent: Codable, Hashable, Sendable {
         self.outputFormat = outputFormat
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case safetyIdentifier = "safety_identifier"
-        case type
-        case b64JSON = "b64_json"
-        case createdAt = "created_at"
-        case size
-        case quality
-        case background
-        case outputFormat = "output_format"
-        case usage
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.safetyIdentifier = try container.decodeIfPresent(String.self, forKey: "safety_identifier")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "image_edit.completed"
+        self.b64JSON = try container.decode(String.self, forKey: "b64_json")
+        self.createdAt = try container.decodeIfPresent(Int.self, forKey: "created_at")
+        self.size = try container.decodeIfPresent(ImageEditCompletedEvent.Size.self, forKey: "size")
+        self.quality = try container.decodeIfPresent(ImageEditCompletedEvent.Quality.self, forKey: "quality")
+        self.background = try container.decodeIfPresent(ImageEditCompletedEvent.Background.self, forKey: "background")
+        self.outputFormat = try container.decodeIfPresent(ImageEditCompletedEvent.OutputFormat.self, forKey: "output_format")
+        self.usage = try container.decode(ImagesUsage.self, forKey: "usage")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.safetyIdentifier, forKey: "safety_identifier")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.b64JSON, forKey: "b64_json")
+        try container.encodeIfPresent(self.createdAt, forKey: "created_at")
+        try container.encodeIfPresent(self.size, forKey: "size")
+        try container.encodeIfPresent(self.quality, forKey: "quality")
+        try container.encodeIfPresent(self.background, forKey: "background")
+        try container.encodeIfPresent(self.outputFormat, forKey: "output_format")
+        try container.encode(self.usage, forKey: "usage")
     }
 
     /// The image dimensions as a `WIDTHxHEIGHT` string, for example `1536x864`.
@@ -207,7 +221,7 @@ public struct ImageEditCompletedEvent: Codable, Hashable, Sendable {
 }
 
 /// Emitted when a partial image is available during image editing streaming.
-public struct ImageEditPartialImageEvent: Codable, Hashable, Sendable {
+public struct ImageEditPartialImageEvent: OpenAIModel {
     /// The type of the event. Always `image_edit.partial_image`.
     public var type: String = "image_edit.partial_image"
     /// Base64-encoded partial image data, suitable for rendering as an image.
@@ -243,15 +257,28 @@ public struct ImageEditPartialImageEvent: Codable, Hashable, Sendable {
         self.outputFormat = outputFormat
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case b64JSON = "b64_json"
-        case createdAt = "created_at"
-        case size
-        case quality
-        case background
-        case outputFormat = "output_format"
-        case partialImageIndex = "partial_image_index"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "image_edit.partial_image"
+        self.b64JSON = try container.decode(String.self, forKey: "b64_json")
+        self.createdAt = try container.decodeIfPresent(Int.self, forKey: "created_at")
+        self.size = try container.decodeIfPresent(ImageEditPartialImageEvent.Size.self, forKey: "size")
+        self.quality = try container.decodeIfPresent(ImageEditPartialImageEvent.Quality.self, forKey: "quality")
+        self.background = try container.decodeIfPresent(ImageEditPartialImageEvent.Background.self, forKey: "background")
+        self.outputFormat = try container.decodeIfPresent(ImageEditPartialImageEvent.OutputFormat.self, forKey: "output_format")
+        self.partialImageIndex = try container.decode(Int.self, forKey: "partial_image_index")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.b64JSON, forKey: "b64_json")
+        try container.encodeIfPresent(self.createdAt, forKey: "created_at")
+        try container.encodeIfPresent(self.size, forKey: "size")
+        try container.encodeIfPresent(self.quality, forKey: "quality")
+        try container.encodeIfPresent(self.background, forKey: "background")
+        try container.encodeIfPresent(self.outputFormat, forKey: "output_format")
+        try container.encode(self.partialImageIndex, forKey: "partial_image_index")
     }
 
     /// The image dimensions as a `WIDTHxHEIGHT` string, for example `1536x864`.
@@ -336,7 +363,7 @@ public struct ImageEditPartialImageEvent: Codable, Hashable, Sendable {
 }
 
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum ImageEditStreamEvent: Codable, Hashable, Sendable {
+public indirect enum ImageEditStreamEvent: OpenAIModel {
     /// `type`: `image_edit.partial_image`
     case imageEditPartialImage(ImageEditPartialImageEvent)
     /// `type`: `image_edit.completed`
@@ -393,7 +420,7 @@ public struct ImageGenActionEnum: OpenAIStringEnum {
 }
 
 /// Emitted when image generation has completed and the final image is available.
-public struct ImageGenCompletedEvent: Codable, Hashable, Sendable {
+public struct ImageGenCompletedEvent: OpenAIModel {
     /// The effective safety identifier used for safety monitoring and abuse detection. This is the non-empty `safety_identifier` from the request, or the deprecated `user` value when `safety_identifier` is omitted, null, or empty.
     public var safetyIdentifier: String?
     /// The type of the event. Always `image_generation.completed`.
@@ -432,16 +459,30 @@ public struct ImageGenCompletedEvent: Codable, Hashable, Sendable {
         self.outputFormat = outputFormat
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case safetyIdentifier = "safety_identifier"
-        case type
-        case b64JSON = "b64_json"
-        case createdAt = "created_at"
-        case size
-        case quality
-        case background
-        case outputFormat = "output_format"
-        case usage
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.safetyIdentifier = try container.decodeIfPresent(String.self, forKey: "safety_identifier")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "image_generation.completed"
+        self.b64JSON = try container.decode(String.self, forKey: "b64_json")
+        self.createdAt = try container.decodeIfPresent(Int.self, forKey: "created_at")
+        self.size = try container.decodeIfPresent(ImageGenCompletedEvent.Size.self, forKey: "size")
+        self.quality = try container.decodeIfPresent(ImageGenCompletedEvent.Quality.self, forKey: "quality")
+        self.background = try container.decodeIfPresent(ImageGenCompletedEvent.Background.self, forKey: "background")
+        self.outputFormat = try container.decodeIfPresent(ImageGenCompletedEvent.OutputFormat.self, forKey: "output_format")
+        self.usage = try container.decode(ImagesUsage.self, forKey: "usage")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.safetyIdentifier, forKey: "safety_identifier")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.b64JSON, forKey: "b64_json")
+        try container.encodeIfPresent(self.createdAt, forKey: "created_at")
+        try container.encodeIfPresent(self.size, forKey: "size")
+        try container.encodeIfPresent(self.quality, forKey: "quality")
+        try container.encodeIfPresent(self.background, forKey: "background")
+        try container.encodeIfPresent(self.outputFormat, forKey: "output_format")
+        try container.encode(self.usage, forKey: "usage")
     }
 
     /// The image dimensions as a `WIDTHxHEIGHT` string, for example `1536x864`.
@@ -526,7 +567,7 @@ public struct ImageGenCompletedEvent: Codable, Hashable, Sendable {
 }
 
 /// The input tokens detailed information for the image generation.
-public struct ImageGenInputUsageDetails: Codable, Hashable, Sendable {
+public struct ImageGenInputUsageDetails: OpenAIModel {
     /// The number of text tokens in the input prompt.
     public var textTokens: Int
     /// The number of image tokens in the input prompt.
@@ -537,14 +578,21 @@ public struct ImageGenInputUsageDetails: Codable, Hashable, Sendable {
         self.imageTokens = imageTokens
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case textTokens = "text_tokens"
-        case imageTokens = "image_tokens"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.textTokens = try container.decode(Int.self, forKey: "text_tokens")
+        self.imageTokens = try container.decode(Int.self, forKey: "image_tokens")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.textTokens, forKey: "text_tokens")
+        try container.encode(self.imageTokens, forKey: "image_tokens")
     }
 }
 
 /// The output token details for the image generation.
-public struct ImageGenOutputTokensDetails: Codable, Hashable, Sendable {
+public struct ImageGenOutputTokensDetails: OpenAIModel {
     /// The number of image output tokens generated by the model.
     public var imageTokens: Int
     /// The number of text output tokens generated by the model.
@@ -555,14 +603,21 @@ public struct ImageGenOutputTokensDetails: Codable, Hashable, Sendable {
         self.textTokens = textTokens
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case imageTokens = "image_tokens"
-        case textTokens = "text_tokens"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.imageTokens = try container.decode(Int.self, forKey: "image_tokens")
+        self.textTokens = try container.decode(Int.self, forKey: "text_tokens")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.imageTokens, forKey: "image_tokens")
+        try container.encode(self.textTokens, forKey: "text_tokens")
     }
 }
 
 /// Emitted when a partial image is available during image generation streaming.
-public struct ImageGenPartialImageEvent: Codable, Hashable, Sendable {
+public struct ImageGenPartialImageEvent: OpenAIModel {
     /// The type of the event. Always `image_generation.partial_image`.
     public var type: String = "image_generation.partial_image"
     /// Base64-encoded partial image data, suitable for rendering as an image.
@@ -598,15 +653,28 @@ public struct ImageGenPartialImageEvent: Codable, Hashable, Sendable {
         self.outputFormat = outputFormat
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case b64JSON = "b64_json"
-        case createdAt = "created_at"
-        case size
-        case quality
-        case background
-        case outputFormat = "output_format"
-        case partialImageIndex = "partial_image_index"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "image_generation.partial_image"
+        self.b64JSON = try container.decode(String.self, forKey: "b64_json")
+        self.createdAt = try container.decodeIfPresent(Int.self, forKey: "created_at")
+        self.size = try container.decodeIfPresent(ImageGenPartialImageEvent.Size.self, forKey: "size")
+        self.quality = try container.decodeIfPresent(ImageGenPartialImageEvent.Quality.self, forKey: "quality")
+        self.background = try container.decodeIfPresent(ImageGenPartialImageEvent.Background.self, forKey: "background")
+        self.outputFormat = try container.decodeIfPresent(ImageGenPartialImageEvent.OutputFormat.self, forKey: "output_format")
+        self.partialImageIndex = try container.decode(Int.self, forKey: "partial_image_index")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.b64JSON, forKey: "b64_json")
+        try container.encodeIfPresent(self.createdAt, forKey: "created_at")
+        try container.encodeIfPresent(self.size, forKey: "size")
+        try container.encodeIfPresent(self.quality, forKey: "quality")
+        try container.encodeIfPresent(self.background, forKey: "background")
+        try container.encodeIfPresent(self.outputFormat, forKey: "output_format")
+        try container.encode(self.partialImageIndex, forKey: "partial_image_index")
     }
 
     /// The image dimensions as a `WIDTHxHEIGHT` string, for example `1536x864`.
@@ -691,7 +759,7 @@ public struct ImageGenPartialImageEvent: Codable, Hashable, Sendable {
 }
 
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum ImageGenStreamEvent: Codable, Hashable, Sendable {
+public indirect enum ImageGenStreamEvent: OpenAIModel {
     /// `type`: `image_generation.partial_image`
     case imageGenerationPartialImage(ImageGenPartialImageEvent)
     /// `type`: `image_generation.completed`
@@ -731,7 +799,7 @@ public indirect enum ImageGenStreamEvent: Codable, Hashable, Sendable {
 }
 
 /// A tool that generates images using the GPT image models.
-public struct ImageGenTool: Codable, Hashable, Sendable {
+public struct ImageGenTool: OpenAIModel {
     /// The type of the image generation tool. Always `image_generation`.
     public var type: String = "image_generation"
     public var model: ImageGenTool.Model?
@@ -821,23 +889,44 @@ public struct ImageGenTool: Codable, Hashable, Sendable {
         self.action = action
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case model
-        case complexity
-        case quality
-        case size
-        case outputFormat = "output_format"
-        case frameCount = "frame_count"
-        case frameDurationMs = "frame_duration_ms"
-        case svg
-        case outputCompression = "output_compression"
-        case moderation
-        case background
-        case inputFidelity = "input_fidelity"
-        case inputImageMask = "input_image_mask"
-        case partialImages = "partial_images"
-        case action
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "image_generation"
+        self.model = try container.decodeIfPresent(ImageGenTool.Model.self, forKey: "model")
+        self.complexity = try container.decodeIfPresent(ImageGenTool.Complexity.self, forKey: "complexity")
+        self.quality = try container.decodeIfPresent(ImageGenTool.Quality.self, forKey: "quality")
+        self.size = try container.decodeIfPresent(ImageGenTool.Size.self, forKey: "size")
+        self.outputFormat = try container.decodeIfPresent(ImageGenTool.OutputFormat.self, forKey: "output_format")
+        self.frameCount = try container.decodeIfPresent(Int.self, forKey: "frame_count")
+        self.frameDurationMs = try container.decodeIfPresent(Int.self, forKey: "frame_duration_ms")
+        self.svg = try container.decodeIfPresent(SvgParam.self, forKey: "svg")
+        self.outputCompression = try container.decodeIfPresent(Int.self, forKey: "output_compression")
+        self.moderation = try container.decodeIfPresent(ImageGenTool.Moderation.self, forKey: "moderation")
+        self.background = try container.decodeIfPresent(ImageGenTool.Background.self, forKey: "background")
+        self.inputFidelity = try container.decodeIfPresent(InputFidelity.self, forKey: "input_fidelity")
+        self.inputImageMask = try container.decodeIfPresent(ImageGenTool.InputImageMask.self, forKey: "input_image_mask")
+        self.partialImages = try container.decodeIfPresent(Int.self, forKey: "partial_images")
+        self.action = try container.decodeIfPresent(ImageGenActionEnum.self, forKey: "action")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encodeIfPresent(self.complexity, forKey: "complexity")
+        try container.encodeIfPresent(self.quality, forKey: "quality")
+        try container.encodeIfPresent(self.size, forKey: "size")
+        try container.encodeIfPresent(self.outputFormat, forKey: "output_format")
+        try container.encodeIfPresent(self.frameCount, forKey: "frame_count")
+        try container.encodeIfPresent(self.frameDurationMs, forKey: "frame_duration_ms")
+        try container.encodeIfPresent(self.svg, forKey: "svg")
+        try container.encodeIfPresent(self.outputCompression, forKey: "output_compression")
+        try container.encodeIfPresent(self.moderation, forKey: "moderation")
+        try container.encodeIfPresent(self.background, forKey: "background")
+        try container.encodeIfPresent(self.inputFidelity, forKey: "input_fidelity")
+        try container.encodeIfPresent(self.inputImageMask, forKey: "input_image_mask")
+        try container.encodeIfPresent(self.partialImages, forKey: "partial_images")
+        try container.encodeIfPresent(self.action, forKey: "action")
     }
 
     /// This type is open: it accepts values the spec does not list yet.
@@ -1006,7 +1095,7 @@ public struct ImageGenTool: Codable, Hashable, Sendable {
 
     /// Optional mask for inpainting. Contains `image_url`
     /// (string, optional) and `file_id` (string, optional).
-    public struct InputImageMask: Codable, Hashable, Sendable {
+    public struct InputImageMask: OpenAIModel {
         /// Base64-encoded mask image.
         public var imageURL: String?
         /// File ID for the mask image.
@@ -1017,15 +1106,22 @@ public struct ImageGenTool: Codable, Hashable, Sendable {
             self.fileID = fileID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case imageURL = "image_url"
-            case fileID = "file_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.imageURL = try container.decodeIfPresent(String.self, forKey: "image_url")
+            self.fileID = try container.decodeIfPresent(String.self, forKey: "file_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.imageURL, forKey: "image_url")
+            try container.encodeIfPresent(self.fileID, forKey: "file_id")
         }
     }
 }
 
 /// An image generation request made by the model.
-public struct ImageGenToolCall: Codable, Hashable, Sendable {
+public struct ImageGenToolCall: OpenAIModel {
     /// The type of the image generation call. Always `image_generation_call`.
     public var type: String = "image_generation_call"
     /// The unique ID of the image generation call.
@@ -1069,19 +1165,36 @@ public struct ImageGenToolCall: Codable, Hashable, Sendable {
         self.revisedPrompt = revisedPrompt
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case status
-        case result
-        case error
-        case size
-        case quality
-        case action
-        case background
-        case outputFormat = "output_format"
-        case svgUsage = "svg_usage"
-        case revisedPrompt = "revised_prompt"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "image_generation_call"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.status = try container.decode(ImageGenToolCall.Status.self, forKey: "status")
+        self.result = try container.decodeIfPresent(String.self, forKey: "result")
+        self.error = try container.decodeIfPresent(ImageGenToolCallError.self, forKey: "error")
+        self.size = try container.decodeIfPresent(ImageGenToolCall.Size.self, forKey: "size")
+        self.quality = try container.decodeIfPresent(ImageGenToolCall.Quality.self, forKey: "quality")
+        self.action = try container.decodeIfPresent(ImageGenActionEnum.self, forKey: "action")
+        self.background = try container.decodeIfPresent(ImageBackground.self, forKey: "background")
+        self.outputFormat = try container.decodeIfPresent(ImageOutputFormat.self, forKey: "output_format")
+        self.svgUsage = try container.decodeIfPresent(SvgUsage.self, forKey: "svg_usage")
+        self.revisedPrompt = try container.decodeIfPresent(String.self, forKey: "revised_prompt")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.status, forKey: "status")
+        try container.encodeIfPresent(self.result, forKey: "result")
+        try container.encodeIfPresent(self.error, forKey: "error")
+        try container.encodeIfPresent(self.size, forKey: "size")
+        try container.encodeIfPresent(self.quality, forKey: "quality")
+        try container.encodeIfPresent(self.action, forKey: "action")
+        try container.encodeIfPresent(self.background, forKey: "background")
+        try container.encodeIfPresent(self.outputFormat, forKey: "output_format")
+        try container.encodeIfPresent(self.svgUsage, forKey: "svg_usage")
+        try container.encodeIfPresent(self.revisedPrompt, forKey: "revised_prompt")
     }
 
     /// The status of the image generation call.
@@ -1146,7 +1259,7 @@ public struct ImageGenToolCall: Codable, Hashable, Sendable {
     }
 }
 
-public struct ImageGenToolCallError: Codable, Hashable, Sendable {
+public struct ImageGenToolCallError: OpenAIModel {
     public var code: String?
     /// The error type.
     public var type: String
@@ -1170,16 +1283,26 @@ public struct ImageGenToolCallError: Codable, Hashable, Sendable {
         self.moderationDetails = moderationDetails
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case code
-        case type
-        case message
-        case param
-        case moderationDetails = "moderation_details"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.code = try container.decodeIfPresent(String.self, forKey: "code")
+        self.type = try container.decode(String.self, forKey: "type")
+        self.message = try container.decode(String.self, forKey: "message")
+        self.param = try container.decodeIfPresent(String.self, forKey: "param")
+        self.moderationDetails = try container.decodeIfPresent(ImageGenToolCallModerationDetails.self, forKey: "moderation_details")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.code, forKey: "code")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.message, forKey: "message")
+        try container.encodeIfPresent(self.param, forKey: "param")
+        try container.encodeIfPresent(self.moderationDetails, forKey: "moderation_details")
     }
 }
 
-public struct ImageGenToolCallModerationDetails: Codable, Hashable, Sendable {
+public struct ImageGenToolCallModerationDetails: OpenAIModel {
     /// The stage where moderation blocked the image generation call.
     public var moderationStage: ImageGenToolCallModerationDetails.ModerationStage
     /// Public moderation categories. New category values may be added over time.
@@ -1190,9 +1313,16 @@ public struct ImageGenToolCallModerationDetails: Codable, Hashable, Sendable {
         self.categories = categories
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case moderationStage = "moderation_stage"
-        case categories
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.moderationStage = try container.decode(ImageGenToolCallModerationDetails.ModerationStage.self, forKey: "moderation_stage")
+        self.categories = try container.decode([String].self, forKey: "categories")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.moderationStage, forKey: "moderation_stage")
+        try container.encode(self.categories, forKey: "categories")
     }
 
     /// The stage where moderation blocked the image generation call.
@@ -1216,7 +1346,7 @@ public struct ImageGenToolCallModerationDetails: Codable, Hashable, Sendable {
 }
 
 /// Token usage for image generation tool calls in a response.
-public struct ImageGenToolUsage: Codable, Hashable, Sendable {
+public struct ImageGenToolUsage: OpenAIModel {
     /// The number of tokens (images and text) in the input prompt.
     public var inputTokens: Int
     /// The total number of tokens (images and text) used for the image generation.
@@ -1246,19 +1376,31 @@ public struct ImageGenToolUsage: Codable, Hashable, Sendable {
         self.cachedTokensDetails = cachedTokensDetails
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case inputTokens = "input_tokens"
-        case totalTokens = "total_tokens"
-        case outputTokens = "output_tokens"
-        case outputTokensDetails = "output_tokens_details"
-        case inputTokensDetails = "input_tokens_details"
-        case cachedTokens = "cached_tokens"
-        case cachedTokensDetails = "cached_tokens_details"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.inputTokens = try container.decode(Int.self, forKey: "input_tokens")
+        self.totalTokens = try container.decode(Int.self, forKey: "total_tokens")
+        self.outputTokens = try container.decode(Int.self, forKey: "output_tokens")
+        self.outputTokensDetails = try container.decodeIfPresent(ImageGenOutputTokensDetails.self, forKey: "output_tokens_details")
+        self.inputTokensDetails = try container.decode(ImageGenInputUsageDetails.self, forKey: "input_tokens_details")
+        self.cachedTokens = try container.decodeIfPresent(Int.self, forKey: "cached_tokens")
+        self.cachedTokensDetails = try container.decodeIfPresent(CachedUsageDetails.self, forKey: "cached_tokens_details")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.inputTokens, forKey: "input_tokens")
+        try container.encode(self.totalTokens, forKey: "total_tokens")
+        try container.encode(self.outputTokens, forKey: "output_tokens")
+        try container.encodeIfPresent(self.outputTokensDetails, forKey: "output_tokens_details")
+        try container.encode(self.inputTokensDetails, forKey: "input_tokens_details")
+        try container.encodeIfPresent(self.cachedTokens, forKey: "cached_tokens")
+        try container.encodeIfPresent(self.cachedTokensDetails, forKey: "cached_tokens_details")
     }
 }
 
 /// Token usage information for image generation with GPT Image models.
-public struct ImageGenUsage: Codable, Hashable, Sendable {
+public struct ImageGenUsage: OpenAIModel {
     /// The number of tokens (images and text) in the input prompt.
     public var inputTokens: Int
     /// The total number of tokens (images and text) used for the image generation.
@@ -1282,17 +1424,27 @@ public struct ImageGenUsage: Codable, Hashable, Sendable {
         self.outputTokensDetails = outputTokensDetails
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case inputTokens = "input_tokens"
-        case totalTokens = "total_tokens"
-        case outputTokens = "output_tokens"
-        case outputTokensDetails = "output_tokens_details"
-        case inputTokensDetails = "input_tokens_details"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.inputTokens = try container.decode(Int.self, forKey: "input_tokens")
+        self.totalTokens = try container.decode(Int.self, forKey: "total_tokens")
+        self.outputTokens = try container.decode(Int.self, forKey: "output_tokens")
+        self.outputTokensDetails = try container.decodeIfPresent(ImageGenOutputTokensDetails.self, forKey: "output_tokens_details")
+        self.inputTokensDetails = try container.decode(ImageGenInputUsageDetails.self, forKey: "input_tokens_details")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.inputTokens, forKey: "input_tokens")
+        try container.encode(self.totalTokens, forKey: "total_tokens")
+        try container.encode(self.outputTokens, forKey: "output_tokens")
+        try container.encodeIfPresent(self.outputTokensDetails, forKey: "output_tokens_details")
+        try container.encode(self.inputTokensDetails, forKey: "input_tokens_details")
     }
 }
 
 /// Represents the content or the URL of an image generated by the OpenAI API.
-public struct ImageObject: Codable, Hashable, Sendable {
+public struct ImageObject: OpenAIModel {
     /// The base64-encoded JSON of the generated image. Returned by default for GPT image models, or when `response_format` is set to `b64_json` for models that support that parameter.
     public var b64JSON: String?
     /// The URL of the generated image when `response_format` is set to `url` for models that support that parameter. Unsupported for GPT image models.
@@ -1310,15 +1462,23 @@ public struct ImageObject: Codable, Hashable, Sendable {
         self.revisedPrompt = revisedPrompt
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case b64JSON = "b64_json"
-        case url
-        case revisedPrompt = "revised_prompt"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.b64JSON = try container.decodeIfPresent(String.self, forKey: "b64_json")
+        self.url = try container.decodeIfPresent(String.self, forKey: "url")
+        self.revisedPrompt = try container.decodeIfPresent(String.self, forKey: "revised_prompt")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.b64JSON, forKey: "b64_json")
+        try container.encodeIfPresent(self.url, forKey: "url")
+        try container.encodeIfPresent(self.revisedPrompt, forKey: "revised_prompt")
     }
 }
 
 /// Request level image options.
-public struct ImageOptionsParam: Codable, Hashable, Sendable {
+public struct ImageOptionsParam: OpenAIModel {
     /// Controls image context optimization. Defaults to `auto`, which uses the model, transport, and input to select a policy. Use `enabled` to require compression support or `disabled` to turn it off.
     public var contextCompression: ImageContextCompression?
 
@@ -1326,8 +1486,14 @@ public struct ImageOptionsParam: Codable, Hashable, Sendable {
         self.contextCompression = contextCompression
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case contextCompression = "context_compression"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.contextCompression = try container.decodeIfPresent(ImageContextCompression.self, forKey: "context_compression")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.contextCompression, forKey: "context_compression")
     }
 }
 
@@ -1352,7 +1518,7 @@ public struct ImageOutputFormat: OpenAIStringEnum {
 
 /// Reference an input image by either URL or uploaded file ID.
 /// Provide exactly one of `image_url` or `file_id`.
-public indirect enum ImageRefParam: Codable, Hashable, Sendable {
+public indirect enum ImageRefParam: OpenAIModel {
     case json(JSONValue)
     case json2(JSONValue)
     /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
@@ -1376,7 +1542,7 @@ public indirect enum ImageRefParam: Codable, Hashable, Sendable {
     }
 }
 
-public struct ImageRefParam2: Codable, Hashable, Sendable {
+public struct ImageRefParam2: OpenAIModel {
     /// A fully qualified URL or base64-encoded data URL.
     public var imageURL: String?
     public var fileID: String?
@@ -1386,8 +1552,15 @@ public struct ImageRefParam2: Codable, Hashable, Sendable {
         self.fileID = fileID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case imageURL = "image_url"
-        case fileID = "file_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.imageURL = try container.decodeIfPresent(String.self, forKey: "image_url")
+        self.fileID = try container.decodeIfPresent(String.self, forKey: "file_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.imageURL, forKey: "image_url")
+        try container.encodeIfPresent(self.fileID, forKey: "file_id")
     }
 }

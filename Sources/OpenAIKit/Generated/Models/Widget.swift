@@ -4,7 +4,7 @@
 import Foundation
 
 /// Thread item that renders a widget payload.
-public struct WidgetMessageItem: Codable, Hashable, Sendable {
+public struct WidgetMessageItem: OpenAIModel {
     /// Identifier of the thread item.
     public var id: String
     /// Type discriminator that is always `chatkit.thread_item`.
@@ -30,12 +30,23 @@ public struct WidgetMessageItem: Codable, Hashable, Sendable {
         self.widget = widget
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
-        case threadID = "thread_id"
-        case type
-        case widget
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "chatkit.thread_item"
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.threadID = try container.decode(String.self, forKey: "thread_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "chatkit.widget"
+        self.widget = try container.decode(String.self, forKey: "widget")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.threadID, forKey: "thread_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.widget, forKey: "widget")
     }
 }

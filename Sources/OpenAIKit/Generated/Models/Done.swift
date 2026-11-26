@@ -4,15 +4,22 @@
 import Foundation
 
 /// Occurs when a stream ends.
-public struct DoneEvent: Codable, Hashable, Sendable {
+public struct DoneEvent: OpenAIModel {
     public var event: String = "done"
     public var data: String = "[DONE]"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case event
-        case data
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.event = try container.decodeIfPresent(String.self, forKey: "event") ?? "done"
+        self.data = try container.decodeIfPresent(String.self, forKey: "data") ?? "[DONE]"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.event, forKey: "event")
+        try container.encode(self.data, forKey: "data")
     }
 }

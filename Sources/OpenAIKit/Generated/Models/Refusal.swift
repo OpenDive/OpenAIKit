@@ -4,7 +4,7 @@
 import Foundation
 
 /// A refusal from the model.
-public struct RefusalContent: Codable, Hashable, Sendable {
+public struct RefusalContent: OpenAIModel {
     /// The type of the refusal. Always `refusal`.
     public var type: String = "refusal"
     /// The refusal explanation from the model.
@@ -14,8 +14,15 @@ public struct RefusalContent: Codable, Hashable, Sendable {
         self.refusal = refusal
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case refusal
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "refusal"
+        self.refusal = try container.decode(String.self, forKey: "refusal")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.refusal, forKey: "refusal")
     }
 }

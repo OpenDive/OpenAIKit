@@ -21,7 +21,7 @@ public struct ProvenanceDetectionResultApi: OpenAIStringEnum {
     }
 }
 
-public struct ProvenanceResource: Codable, Hashable, Sendable {
+public struct ProvenanceResource: OpenAIModel {
     /// The object type. Always `content_provenance_check` for this endpoint.
     public var object: ProvenanceCheckObject
     /// The Unix timestamp, in seconds, when the provenance check was created.
@@ -39,14 +39,22 @@ public struct ProvenanceResource: Codable, Hashable, Sendable {
         self.results = results
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case createdAt = "created_at"
-        case results
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decode(ProvenanceCheckObject.self, forKey: "object")
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.results = try container.decode([ProvenanceResource.ResultValue].self, forKey: "results")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.results, forKey: "results")
     }
 
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum ResultValue: Codable, Hashable, Sendable {
+    public indirect enum ResultValue: OpenAIModel {
         /// `type`: `c2pa`
         case c2pa(C2PAProvenanceResult)
         /// `type`: `synthid`

@@ -7,7 +7,7 @@ import Foundation
 public typealias TurnObjectResource = String
 
 /// The canonical public representation of a session turn.
-public struct TurnResource: Codable, Hashable, Sendable {
+public struct TurnResource: OpenAIModel {
     /// Prompt cache lifetime selected when this turn started, including an inherited session TTL. Null when the turn used the model default or no TTL was recorded.
     public var promptCacheOptions: PromptCacheOptionsResource?
     /// The ID of the turn.
@@ -61,19 +61,36 @@ public struct TurnResource: Codable, Hashable, Sendable {
         self.usage = usage
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case promptCacheOptions = "prompt_cache_options"
-        case id
-        case object
-        case sessionID = "session_id"
-        case agentID = "agent_id"
-        case subagentID = "subagent_id"
-        case status
-        case createdAt = "created_at"
-        case startedAt = "started_at"
-        case completedAt = "completed_at"
-        case error
-        case usage
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.promptCacheOptions = try container.decodeIfPresent(PromptCacheOptionsResource.self, forKey: "prompt_cache_options")
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decode(TurnObjectResource.self, forKey: "object")
+        self.sessionID = try container.decode(String.self, forKey: "session_id")
+        self.agentID = try container.decode(String.self, forKey: "agent_id")
+        self.subagentID = try container.decodeIfPresent(String.self, forKey: "subagent_id")
+        self.status = try container.decode(TurnStatusResource.self, forKey: "status")
+        self.createdAt = try container.decode(Int64.self, forKey: "created_at")
+        self.startedAt = try container.decodeIfPresent(Int64.self, forKey: "started_at")
+        self.completedAt = try container.decodeIfPresent(Int64.self, forKey: "completed_at")
+        self.error = try container.decodeIfPresent(SessionTurnErrorResource.self, forKey: "error")
+        self.usage = try container.decodeIfPresent(TokenUsageResource.self, forKey: "usage")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.promptCacheOptions, forKey: "prompt_cache_options")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.sessionID, forKey: "session_id")
+        try container.encode(self.agentID, forKey: "agent_id")
+        try container.encodeIfPresent(self.subagentID, forKey: "subagent_id")
+        try container.encode(self.status, forKey: "status")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encodeIfPresent(self.startedAt, forKey: "started_at")
+        try container.encodeIfPresent(self.completedAt, forKey: "completed_at")
+        try container.encodeIfPresent(self.error, forKey: "error")
+        try container.encodeIfPresent(self.usage, forKey: "usage")
     }
 }
 

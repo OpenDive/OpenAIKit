@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct ContainerAutoParam: Codable, Hashable, Sendable {
+public struct ContainerAutoParam: OpenAIModel {
     /// Automatically creates a container for this request
     public var type: String = "container_auto"
     /// An optional list of uploaded files to make available to your code.
@@ -26,18 +26,28 @@ public struct ContainerAutoParam: Codable, Hashable, Sendable {
         self.skills = skills
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case fileIDs = "file_ids"
-        case memoryLimit = "memory_limit"
-        case networkPolicy = "network_policy"
-        case skills
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "container_auto"
+        self.fileIDs = try container.decodeIfPresent([String].self, forKey: "file_ids")
+        self.memoryLimit = try container.decodeIfPresent(ContainerMemoryLimit.self, forKey: "memory_limit")
+        self.networkPolicy = try container.decodeIfPresent(ContainerAutoParam.NetworkPolicy.self, forKey: "network_policy")
+        self.skills = try container.decodeIfPresent([ContainerAutoParam.Skill].self, forKey: "skills")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.fileIDs, forKey: "file_ids")
+        try container.encodeIfPresent(self.memoryLimit, forKey: "memory_limit")
+        try container.encodeIfPresent(self.networkPolicy, forKey: "network_policy")
+        try container.encodeIfPresent(self.skills, forKey: "skills")
     }
 
     /// Network access policy for the container.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum NetworkPolicy: Codable, Hashable, Sendable {
+    public indirect enum NetworkPolicy: OpenAIModel {
         /// `type`: `disabled`
         case disabled(ContainerNetworkPolicyDisabledParam)
         /// `type`: `allowlist`
@@ -77,7 +87,7 @@ public struct ContainerAutoParam: Codable, Hashable, Sendable {
     }
 
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Skill: Codable, Hashable, Sendable {
+    public indirect enum Skill: OpenAIModel {
         /// `type`: `skill_reference`
         case skillReference(SkillReferenceParam)
         /// `type`: `inline`
@@ -118,7 +128,7 @@ public struct ContainerAutoParam: Codable, Hashable, Sendable {
 }
 
 /// A citation for a container file used to generate a model response.
-public struct ContainerFileCitationBody: Codable, Hashable, Sendable {
+public struct ContainerFileCitationBody: OpenAIModel {
     /// The type of the container file citation. Always `container_file_citation`.
     public var type: String = "container_file_citation"
     /// The ID of the container file.
@@ -146,17 +156,28 @@ public struct ContainerFileCitationBody: Codable, Hashable, Sendable {
         self.filename = filename
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case containerID = "container_id"
-        case fileID = "file_id"
-        case startIndex = "start_index"
-        case endIndex = "end_index"
-        case filename
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "container_file_citation"
+        self.containerID = try container.decode(String.self, forKey: "container_id")
+        self.fileID = try container.decode(String.self, forKey: "file_id")
+        self.startIndex = try container.decode(Int.self, forKey: "start_index")
+        self.endIndex = try container.decode(Int.self, forKey: "end_index")
+        self.filename = try container.decode(String.self, forKey: "filename")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.containerID, forKey: "container_id")
+        try container.encode(self.fileID, forKey: "file_id")
+        try container.encode(self.startIndex, forKey: "start_index")
+        try container.encode(self.endIndex, forKey: "end_index")
+        try container.encode(self.filename, forKey: "filename")
     }
 }
 
-public struct ContainerFileCitationParam: Codable, Hashable, Sendable {
+public struct ContainerFileCitationParam: OpenAIModel {
     /// The citation type. Always `container_file_citation`.
     public var type: String = "container_file_citation"
     /// The index of the first character of the citation in the message.
@@ -184,17 +205,28 @@ public struct ContainerFileCitationParam: Codable, Hashable, Sendable {
         self.filename = filename
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case startIndex = "start_index"
-        case endIndex = "end_index"
-        case containerID = "container_id"
-        case fileID = "file_id"
-        case filename
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "container_file_citation"
+        self.startIndex = try container.decode(Int.self, forKey: "start_index")
+        self.endIndex = try container.decode(Int.self, forKey: "end_index")
+        self.containerID = try container.decode(String.self, forKey: "container_id")
+        self.fileID = try container.decode(String.self, forKey: "file_id")
+        self.filename = try container.decode(String.self, forKey: "filename")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.startIndex, forKey: "start_index")
+        try container.encode(self.endIndex, forKey: "end_index")
+        try container.encode(self.containerID, forKey: "container_id")
+        try container.encode(self.fileID, forKey: "file_id")
+        try container.encode(self.filename, forKey: "filename")
     }
 }
 
-public struct ContainerFileListResource: Codable, Hashable, Sendable {
+public struct ContainerFileListResource: OpenAIModel {
     /// The type of object returned, must be 'list'.
     public var object: String = "list"
     /// A list of container files.
@@ -218,16 +250,26 @@ public struct ContainerFileListResource: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([ContainerFileResource].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
-public struct ContainerFileResource: Codable, Hashable, Sendable {
+public struct ContainerFileResource: OpenAIModel {
     /// Unique identifier for the file.
     public var id: String
     /// The type of this object (`container.file`).
@@ -261,18 +303,30 @@ public struct ContainerFileResource: Codable, Hashable, Sendable {
         self.source = source
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case containerID = "container_id"
-        case createdAt = "created_at"
-        case bytes
-        case path
-        case source
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decode(String.self, forKey: "object")
+        self.containerID = try container.decode(String.self, forKey: "container_id")
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.bytes = try container.decode(Int.self, forKey: "bytes")
+        self.path = try container.decode(String.self, forKey: "path")
+        self.source = try container.decode(String.self, forKey: "source")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.containerID, forKey: "container_id")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.bytes, forKey: "bytes")
+        try container.encode(self.path, forKey: "path")
+        try container.encode(self.source, forKey: "source")
     }
 }
 
-public struct ContainerListResource: Codable, Hashable, Sendable {
+public struct ContainerListResource: OpenAIModel {
     /// The type of object returned, must be 'list'.
     public var object: String = "list"
     /// A list of containers.
@@ -296,12 +350,22 @@ public struct ContainerListResource: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([ContainerResource].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
@@ -323,7 +387,7 @@ public struct ContainerMemoryLimit: OpenAIStringEnum {
     }
 }
 
-public struct ContainerNetworkPolicyAllowlistParam: Codable, Hashable, Sendable {
+public struct ContainerNetworkPolicyAllowlistParam: OpenAIModel {
     /// Allow outbound network access only to specified domains. Always `allowlist`.
     public var type: String = "allowlist"
     /// A list of allowed domains when type is `allowlist`.
@@ -336,26 +400,40 @@ public struct ContainerNetworkPolicyAllowlistParam: Codable, Hashable, Sendable 
         self.domainSecrets = domainSecrets
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case allowedDomains = "allowed_domains"
-        case domainSecrets = "domain_secrets"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "allowlist"
+        self.allowedDomains = try container.decode([String].self, forKey: "allowed_domains")
+        self.domainSecrets = try container.decodeIfPresent([ContainerNetworkPolicyDomainSecretParam].self, forKey: "domain_secrets")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.allowedDomains, forKey: "allowed_domains")
+        try container.encodeIfPresent(self.domainSecrets, forKey: "domain_secrets")
     }
 }
 
-public struct ContainerNetworkPolicyDisabledParam: Codable, Hashable, Sendable {
+public struct ContainerNetworkPolicyDisabledParam: OpenAIModel {
     /// Disable outbound network access. Always `disabled`.
     public var type: String = "disabled"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "disabled"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
-public struct ContainerNetworkPolicyDomainSecretParam: Codable, Hashable, Sendable {
+public struct ContainerNetworkPolicyDomainSecretParam: OpenAIModel {
     /// The domain associated with the secret.
     public var domain: String
     /// The name of the secret to inject for the domain.
@@ -373,14 +451,22 @@ public struct ContainerNetworkPolicyDomainSecretParam: Codable, Hashable, Sendab
         self.value = value
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case domain
-        case name
-        case value
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.domain = try container.decode(String.self, forKey: "domain")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.value = try container.decode(String.self, forKey: "value")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.domain, forKey: "domain")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.value, forKey: "value")
     }
 }
 
-public struct ContainerReferenceParam: Codable, Hashable, Sendable {
+public struct ContainerReferenceParam: OpenAIModel {
     /// References a container created with the /v1/containers endpoint
     public var type: String = "container_reference"
     /// The ID of the referenced container.
@@ -390,14 +476,21 @@ public struct ContainerReferenceParam: Codable, Hashable, Sendable {
         self.containerID = containerID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case containerID = "container_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "container_reference"
+        self.containerID = try container.decode(String.self, forKey: "container_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.containerID, forKey: "container_id")
     }
 }
 
 /// Represents a container created with /v1/containers.
-public struct ContainerReferenceResource: Codable, Hashable, Sendable {
+public struct ContainerReferenceResource: OpenAIModel {
     /// The environment type. Always `container_reference`.
     public var type: String = "container_reference"
     public var containerID: String
@@ -406,13 +499,20 @@ public struct ContainerReferenceResource: Codable, Hashable, Sendable {
         self.containerID = containerID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case containerID = "container_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "container_reference"
+        self.containerID = try container.decode(String.self, forKey: "container_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.containerID, forKey: "container_id")
     }
 }
 
-public struct ContainerResource: Codable, Hashable, Sendable {
+public struct ContainerResource: OpenAIModel {
     /// Unique identifier for the container.
     public var id: String
     /// The type of this object.
@@ -456,22 +556,36 @@ public struct ContainerResource: Codable, Hashable, Sendable {
         self.networkPolicy = networkPolicy
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case name
-        case createdAt = "created_at"
-        case status
-        case lastActiveAt = "last_active_at"
-        case expiresAfter = "expires_after"
-        case memoryLimit = "memory_limit"
-        case networkPolicy = "network_policy"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decode(String.self, forKey: "object")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.status = try container.decode(String.self, forKey: "status")
+        self.lastActiveAt = try container.decodeIfPresent(Int.self, forKey: "last_active_at")
+        self.expiresAfter = try container.decodeIfPresent(ContainerResource.ExpiresAfter.self, forKey: "expires_after")
+        self.memoryLimit = try container.decodeIfPresent(ContainerResource.MemoryLimit.self, forKey: "memory_limit")
+        self.networkPolicy = try container.decodeIfPresent(ContainerResource.NetworkPolicy.self, forKey: "network_policy")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.status, forKey: "status")
+        try container.encodeIfPresent(self.lastActiveAt, forKey: "last_active_at")
+        try container.encodeIfPresent(self.expiresAfter, forKey: "expires_after")
+        try container.encodeIfPresent(self.memoryLimit, forKey: "memory_limit")
+        try container.encodeIfPresent(self.networkPolicy, forKey: "network_policy")
     }
 
     /// The container will expire after this time period.
     /// The anchor is the reference point for the expiration.
     /// The minutes is the number of minutes after the anchor before the container expires.
-    public struct ExpiresAfter: Codable, Hashable, Sendable {
+    public struct ExpiresAfter: OpenAIModel {
         /// The reference point for the expiration.
         public var anchor: String? = "last_active_at"
         /// The number of minutes after the anchor before the container expires.
@@ -481,9 +595,16 @@ public struct ContainerResource: Codable, Hashable, Sendable {
             self.minutes = minutes
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case anchor
-            case minutes
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.anchor = try container.decodeIfPresent(String.self, forKey: "anchor")
+            self.minutes = try container.decodeIfPresent(Int.self, forKey: "minutes")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.anchor, forKey: "anchor")
+            try container.encodeIfPresent(self.minutes, forKey: "minutes")
         }
     }
 
@@ -508,7 +629,7 @@ public struct ContainerResource: Codable, Hashable, Sendable {
     }
 
     /// Network access policy for the container.
-    public struct NetworkPolicy: Codable, Hashable, Sendable {
+    public struct NetworkPolicy: OpenAIModel {
         /// The network policy mode.
         public var type: ContainerResource.NetworkPolicy.Kind
         /// Allowed outbound domains when `type` is `allowlist`.
@@ -519,9 +640,16 @@ public struct ContainerResource: Codable, Hashable, Sendable {
             self.allowedDomains = allowedDomains
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case allowedDomains = "allowed_domains"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decode(ContainerResource.NetworkPolicy.Kind.self, forKey: "type")
+            self.allowedDomains = try container.decodeIfPresent([String].self, forKey: "allowed_domains")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encodeIfPresent(self.allowedDomains, forKey: "allowed_domains")
         }
 
         /// The network policy mode.

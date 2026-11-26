@@ -4,7 +4,7 @@
 import Foundation
 
 /// Constrains the tools available to the model to a pre-defined set.
-public struct ChatCompletionAllowedTools: Codable, Hashable, Sendable {
+public struct ChatCompletionAllowedTools: OpenAIModel {
     /// Constrains the tools available to the model to a pre-defined set.
     ///
     /// `auto` allows the model to pick from among the allowed tools and generate a
@@ -28,9 +28,16 @@ public struct ChatCompletionAllowedTools: Codable, Hashable, Sendable {
         self.tools = tools
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case mode
-        case tools
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.mode = try container.decode(ChatCompletionAllowedTools.Mode.self, forKey: "mode")
+        self.tools = try container.decode([JSONObject].self, forKey: "tools")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.mode, forKey: "mode")
+        try container.encode(self.tools, forKey: "tools")
     }
 
     /// Constrains the tools available to the model to a pre-defined set.
@@ -58,7 +65,7 @@ public struct ChatCompletionAllowedTools: Codable, Hashable, Sendable {
 }
 
 /// Constrains the tools available to the model to a pre-defined set.
-public struct ChatCompletionAllowedToolsChoice: Codable, Hashable, Sendable {
+public struct ChatCompletionAllowedToolsChoice: OpenAIModel {
     /// Allowed tool configuration type. Always `allowed_tools`.
     public var type: String = "allowed_tools"
     public var allowedTools: ChatCompletionAllowedTools
@@ -67,13 +74,20 @@ public struct ChatCompletionAllowedToolsChoice: Codable, Hashable, Sendable {
         self.allowedTools = allowedTools
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case allowedTools = "allowed_tools"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "allowed_tools"
+        self.allowedTools = try container.decode(ChatCompletionAllowedTools.self, forKey: "allowed_tools")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.allowedTools, forKey: "allowed_tools")
     }
 }
 
-public struct ChatCompletionDeleted: Codable, Hashable, Sendable {
+public struct ChatCompletionDeleted: OpenAIModel {
     /// The type of object being deleted.
     public var object: String = "chat.completion.deleted"
     /// The ID of the chat completion that was deleted.
@@ -86,15 +100,23 @@ public struct ChatCompletionDeleted: Codable, Hashable, Sendable {
         self.deleted = deleted
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case id
-        case deleted
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "chat.completion.deleted"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.deleted = try container.decode(Bool.self, forKey: "deleted")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.deleted, forKey: "deleted")
     }
 }
 
 /// Specifying a particular function via `{"name": "my_function"}` forces the model to call that function.
-public struct ChatCompletionFunctionCallOption: Codable, Hashable, Sendable {
+public struct ChatCompletionFunctionCallOption: OpenAIModel {
     /// The name of the function to call.
     public var name: String
 
@@ -102,12 +124,18 @@ public struct ChatCompletionFunctionCallOption: Codable, Hashable, Sendable {
         self.name = name
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case name
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.name = try container.decode(String.self, forKey: "name")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.name, forKey: "name")
     }
 }
 
-public struct ChatCompletionFunctions: Codable, Hashable, Sendable {
+public struct ChatCompletionFunctions: OpenAIModel {
     /// A description of what the function does, used by the model to choose when and how to call the function.
     public var description: String?
     /// The name of the function to be called. Must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 64.
@@ -124,15 +152,23 @@ public struct ChatCompletionFunctions: Codable, Hashable, Sendable {
         self.parameters = parameters
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case description
-        case name
-        case parameters
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.description = try container.decodeIfPresent(String.self, forKey: "description")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.parameters = try container.decodeIfPresent(FunctionParameters.self, forKey: "parameters")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.description, forKey: "description")
+        try container.encode(self.name, forKey: "name")
+        try container.encodeIfPresent(self.parameters, forKey: "parameters")
     }
 }
 
 /// An object representing a list of Chat Completions.
-public struct ChatCompletionList: Codable, Hashable, Sendable {
+public struct ChatCompletionList: OpenAIModel {
     /// The type of this object. It is always set to "list".
     public var object: String = "list"
     /// An array of chat completion objects.
@@ -156,17 +192,27 @@ public struct ChatCompletionList: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([CreateChatCompletionResponse].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
 /// A call to a custom tool created by the model.
-public struct ChatCompletionMessageCustomToolCall: Codable, Hashable, Sendable {
+public struct ChatCompletionMessageCustomToolCall: OpenAIModel {
     /// The ID of the tool call.
     public var id: String
     /// The type of the tool. Always `custom`.
@@ -179,14 +225,22 @@ public struct ChatCompletionMessageCustomToolCall: Codable, Hashable, Sendable {
         self.custom = custom
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case type
-        case custom
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "custom"
+        self.custom = try container.decode(ChatCompletionMessageCustomToolCall.Custom.self, forKey: "custom")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.custom, forKey: "custom")
     }
 
     /// The custom tool that the model called.
-    public struct Custom: Codable, Hashable, Sendable {
+    public struct Custom: OpenAIModel {
         /// The name of the custom tool to call.
         public var name: String
         /// The input for the custom tool call generated by the model.
@@ -197,15 +251,22 @@ public struct ChatCompletionMessageCustomToolCall: Codable, Hashable, Sendable {
             self.name = name
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case name
-            case input
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.name = try container.decode(String.self, forKey: "name")
+            self.input = try container.decode(String.self, forKey: "input")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.name, forKey: "name")
+            try container.encode(self.input, forKey: "input")
         }
     }
 }
 
 /// An object representing a list of chat completion messages.
-public struct ChatCompletionMessageList: Codable, Hashable, Sendable {
+public struct ChatCompletionMessageList: OpenAIModel {
     /// The type of this object. It is always set to "list".
     public var object: String = "list"
     /// An array of chat completion message objects.
@@ -229,15 +290,25 @@ public struct ChatCompletionMessageList: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([ChatCompletionMessageList.DataItem].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
     }
 
-    public struct DataItem: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
+    }
+
+    public struct DataItem: OpenAIModel {
         public var id: String
         public var role: ChatCompletionMessageList.DataItem.Role
         public var content: String?
@@ -258,12 +329,22 @@ public struct ChatCompletionMessageList: Codable, Hashable, Sendable {
             self.name = name
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case role
-            case content
-            case contentParts = "content_parts"
-            case name
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decode(String.self, forKey: "id")
+            self.role = try container.decode(ChatCompletionMessageList.DataItem.Role.self, forKey: "role")
+            self.content = try container.decodeIfPresent(String.self, forKey: "content")
+            self.contentParts = try container.decodeIfPresent([ChatCompletionMessageList.DataItem.ContentPart].self, forKey: "content_parts")
+            self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.id, forKey: "id")
+            try container.encode(self.role, forKey: "role")
+            try container.encodeIfPresent(self.content, forKey: "content")
+            try container.encodeIfPresent(self.contentParts, forKey: "content_parts")
+            try container.encodeIfPresent(self.name, forKey: "name")
         }
 
         /// This type is open: it accepts values the spec does not list yet.
@@ -286,7 +367,7 @@ public struct ChatCompletionMessageList: Codable, Hashable, Sendable {
             }
         }
 
-        public struct ContentPart: Codable, Hashable, Sendable {
+        public struct ContentPart: OpenAIModel {
             public var type: ChatCompletionMessageList.DataItem.ContentPart.Kind
             public var text: String?
             public var imageURL: ChatCompletionMessageList.DataItem.ContentPart.ImageURL?
@@ -307,12 +388,22 @@ public struct ChatCompletionMessageList: Codable, Hashable, Sendable {
                 self.inputAudio = inputAudio
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case type
-                case text
-                case imageURL = "image_url"
-                case inputAudio = "input_audio"
-                case file
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.type = try container.decode(ChatCompletionMessageList.DataItem.ContentPart.Kind.self, forKey: "type")
+                self.text = try container.decodeIfPresent(String.self, forKey: "text")
+                self.imageURL = try container.decodeIfPresent(ChatCompletionMessageList.DataItem.ContentPart.ImageURL.self, forKey: "image_url")
+                self.inputAudio = try container.decodeIfPresent(ChatCompletionMessageList.DataItem.ContentPart.InputAudio.self, forKey: "input_audio")
+                self.file = try container.decodeIfPresent(ChatCompletionMessageList.DataItem.ContentPart.File.self, forKey: "file")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encode(self.type, forKey: "type")
+                try container.encodeIfPresent(self.text, forKey: "text")
+                try container.encodeIfPresent(self.imageURL, forKey: "image_url")
+                try container.encodeIfPresent(self.inputAudio, forKey: "input_audio")
+                try container.encodeIfPresent(self.file, forKey: "file")
             }
 
             /// This type is open: it accepts values the spec does not list yet.
@@ -333,7 +424,7 @@ public struct ChatCompletionMessageList: Codable, Hashable, Sendable {
                 }
             }
 
-            public struct ImageURL: Codable, Hashable, Sendable {
+            public struct ImageURL: OpenAIModel {
                 public var url: String
                 public var detail: String?
 
@@ -342,13 +433,20 @@ public struct ChatCompletionMessageList: Codable, Hashable, Sendable {
                     self.detail = detail
                 }
 
-                private enum CodingKeys: String, CodingKey {
-                    case url
-                    case detail
+                public init(from decoder: any Decoder) throws {
+                    let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                    self.url = try container.decode(String.self, forKey: "url")
+                    self.detail = try container.decodeIfPresent(String.self, forKey: "detail")
+                }
+
+                public func encode(to encoder: any Encoder) throws {
+                    var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                    try container.encode(self.url, forKey: "url")
+                    try container.encodeIfPresent(self.detail, forKey: "detail")
                 }
             }
 
-            public struct InputAudio: Codable, Hashable, Sendable {
+            public struct InputAudio: OpenAIModel {
                 public var data: String
                 public var format: String
 
@@ -357,13 +455,20 @@ public struct ChatCompletionMessageList: Codable, Hashable, Sendable {
                     self.format = format
                 }
 
-                private enum CodingKeys: String, CodingKey {
-                    case data
-                    case format
+                public init(from decoder: any Decoder) throws {
+                    let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                    self.data = try container.decode(String.self, forKey: "data")
+                    self.format = try container.decode(String.self, forKey: "format")
+                }
+
+                public func encode(to encoder: any Encoder) throws {
+                    var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                    try container.encode(self.data, forKey: "data")
+                    try container.encode(self.format, forKey: "format")
                 }
             }
 
-            public struct File: Codable, Hashable, Sendable {
+            public struct File: OpenAIModel {
                 public var fileData: String?
                 public var filename: String?
                 public var fileID: String?
@@ -378,10 +483,18 @@ public struct ChatCompletionMessageList: Codable, Hashable, Sendable {
                     self.fileID = fileID
                 }
 
-                private enum CodingKeys: String, CodingKey {
-                    case fileData = "file_data"
-                    case filename
-                    case fileID = "file_id"
+                public init(from decoder: any Decoder) throws {
+                    let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                    self.fileData = try container.decodeIfPresent(String.self, forKey: "file_data")
+                    self.filename = try container.decodeIfPresent(String.self, forKey: "filename")
+                    self.fileID = try container.decodeIfPresent(String.self, forKey: "file_id")
+                }
+
+                public func encode(to encoder: any Encoder) throws {
+                    var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                    try container.encodeIfPresent(self.fileData, forKey: "file_data")
+                    try container.encodeIfPresent(self.filename, forKey: "filename")
+                    try container.encodeIfPresent(self.fileID, forKey: "file_id")
                 }
             }
         }
@@ -389,7 +502,7 @@ public struct ChatCompletionMessageList: Codable, Hashable, Sendable {
 }
 
 /// A call to a function tool created by the model.
-public struct ChatCompletionMessageToolCall: Codable, Hashable, Sendable {
+public struct ChatCompletionMessageToolCall: OpenAIModel {
     /// The ID of the tool call.
     public var id: String
     /// The type of the tool. Currently, only `function` is supported.
@@ -402,14 +515,22 @@ public struct ChatCompletionMessageToolCall: Codable, Hashable, Sendable {
         self.function = function
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case type
-        case function
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "function"
+        self.function = try container.decode(ChatCompletionMessageToolCall.Function.self, forKey: "function")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.function, forKey: "function")
     }
 
     /// The function that the model called.
-    public struct Function: Codable, Hashable, Sendable {
+    public struct Function: OpenAIModel {
         /// The name of the function to call.
         public var name: String
         /// The arguments to call the function with, as generated by the model in JSON format. Note that the model does not always generate valid JSON, and may hallucinate parameters not defined by your function schema. Validate the arguments in your code before calling your function.
@@ -420,14 +541,21 @@ public struct ChatCompletionMessageToolCall: Codable, Hashable, Sendable {
             self.arguments = arguments
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case name
-            case arguments
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.name = try container.decode(String.self, forKey: "name")
+            self.arguments = try container.decode(String.self, forKey: "arguments")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.name, forKey: "name")
+            try container.encode(self.arguments, forKey: "arguments")
         }
     }
 }
 
-public struct ChatCompletionMessageToolCallChunk: Codable, Hashable, Sendable {
+public struct ChatCompletionMessageToolCallChunk: OpenAIModel {
     public var index: Int
     /// The ID of the tool call.
     public var id: String?
@@ -445,14 +573,23 @@ public struct ChatCompletionMessageToolCallChunk: Codable, Hashable, Sendable {
         self.function = function
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case index
-        case id
-        case type
-        case function
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.index = try container.decode(Int.self, forKey: "index")
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type")
+        self.function = try container.decodeIfPresent(ChatCompletionMessageToolCallChunk.Function.self, forKey: "function")
     }
 
-    public struct Function: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.index, forKey: "index")
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encodeIfPresent(self.type, forKey: "type")
+        try container.encodeIfPresent(self.function, forKey: "function")
+    }
+
+    public struct Function: OpenAIModel {
         /// The name of the function to call.
         public var name: String?
         /// The arguments to call the function with, as generated by the model in JSON format. Note that the model does not always generate valid JSON, and may hallucinate parameters not defined by your function schema. Validate the arguments in your code before calling your function.
@@ -463,9 +600,16 @@ public struct ChatCompletionMessageToolCallChunk: Codable, Hashable, Sendable {
             self.arguments = arguments
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case name
-            case arguments
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.name = try container.decodeIfPresent(String.self, forKey: "name")
+            self.arguments = try container.decodeIfPresent(String.self, forKey: "arguments")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.name, forKey: "name")
+            try container.encodeIfPresent(self.arguments, forKey: "arguments")
         }
     }
 }
@@ -474,7 +618,7 @@ public struct ChatCompletionMessageToolCallChunk: Codable, Hashable, Sendable {
 public typealias ChatCompletionMessageToolCalls = [ChatCompletionMessageToolCallsElement]
 
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum ChatCompletionMessageToolCallsElement: Codable, Hashable, Sendable {
+public indirect enum ChatCompletionMessageToolCallsElement: OpenAIModel {
     /// `type`: `function`
     case function(ChatCompletionMessageToolCall)
     /// `type`: `custom`
@@ -532,7 +676,7 @@ public struct ChatCompletionModalitiesElement: OpenAIStringEnum {
 }
 
 /// Moderation results or errors for the request input and generated output.
-public struct ChatCompletionModeration: Codable, Hashable, Sendable {
+public struct ChatCompletionModeration: OpenAIModel {
     /// Moderation for the request input.
     public var input: ChatCompletionModeration.Input
     /// Moderation for the generated output.
@@ -543,15 +687,22 @@ public struct ChatCompletionModeration: Codable, Hashable, Sendable {
         self.output = output
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case input
-        case output
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.input = try container.decode(ChatCompletionModeration.Input.self, forKey: "input")
+        self.output = try container.decode(ChatCompletionModeration.Output.self, forKey: "output")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.input, forKey: "input")
+        try container.encode(self.output, forKey: "output")
     }
 
     /// Moderation for the request input.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Input: Codable, Hashable, Sendable {
+    public indirect enum Input: OpenAIModel {
         /// `type`: `moderation_results`
         case moderationResults(ChatCompletionModerationResults)
         /// `type`: `error`
@@ -593,7 +744,7 @@ public struct ChatCompletionModeration: Codable, Hashable, Sendable {
     /// Moderation for the generated output.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Output: Codable, Hashable, Sendable {
+    public indirect enum Output: OpenAIModel {
         /// `type`: `moderation_results`
         case moderationResults(ChatCompletionModerationResults)
         /// `type`: `error`
@@ -634,7 +785,7 @@ public struct ChatCompletionModeration: Codable, Hashable, Sendable {
 }
 
 /// An error produced while attempting moderation.
-public struct ChatCompletionModerationError: Codable, Hashable, Sendable {
+public struct ChatCompletionModerationError: OpenAIModel {
     /// The object type, which is always `error`.
     public var type: String = "error"
     /// The error code.
@@ -647,15 +798,23 @@ public struct ChatCompletionModerationError: Codable, Hashable, Sendable {
         self.message = message
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case code
-        case message
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "error"
+        self.code = try container.decode(String.self, forKey: "code")
+        self.message = try container.decode(String.self, forKey: "message")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.code, forKey: "code")
+        try container.encode(self.message, forKey: "message")
     }
 }
 
 /// Successful moderation results for the request input or generated output.
-public struct ChatCompletionModerationResults: Codable, Hashable, Sendable {
+public struct ChatCompletionModerationResults: OpenAIModel {
     /// The object type, which is always `moderation_results`.
     public var type: String = "moderation_results"
     /// The moderation model used to generate the results.
@@ -668,15 +827,23 @@ public struct ChatCompletionModerationResults: Codable, Hashable, Sendable {
         self.results = results
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case model
-        case results
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "moderation_results"
+        self.model = try container.decode(String.self, forKey: "model")
+        self.results = try container.decode([ModerationResultBody].self, forKey: "results")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.model, forKey: "model")
+        try container.encode(self.results, forKey: "results")
     }
 }
 
 /// Specifies a tool the model should use. Use to force the model to call a specific function.
-public struct ChatCompletionNamedToolChoice: Codable, Hashable, Sendable {
+public struct ChatCompletionNamedToolChoice: OpenAIModel {
     /// For function calling, the type is always `function`.
     public var type: String = "function"
     public var function: ChatCompletionNamedToolChoice.Function
@@ -685,12 +852,19 @@ public struct ChatCompletionNamedToolChoice: Codable, Hashable, Sendable {
         self.function = function
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case function
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "function"
+        self.function = try container.decode(ChatCompletionNamedToolChoice.Function.self, forKey: "function")
     }
 
-    public struct Function: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.function, forKey: "function")
+    }
+
+    public struct Function: OpenAIModel {
         /// The name of the function to call.
         public var name: String
 
@@ -698,14 +872,20 @@ public struct ChatCompletionNamedToolChoice: Codable, Hashable, Sendable {
             self.name = name
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case name
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.name = try container.decode(String.self, forKey: "name")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.name, forKey: "name")
         }
     }
 }
 
 /// Specifies a tool the model should use. Use to force the model to call a specific custom tool.
-public struct ChatCompletionNamedToolChoiceCustom: Codable, Hashable, Sendable {
+public struct ChatCompletionNamedToolChoiceCustom: OpenAIModel {
     /// For custom tool calling, the type is always `custom`.
     public var type: String = "custom"
     public var custom: ChatCompletionNamedToolChoiceCustom.Custom
@@ -714,12 +894,19 @@ public struct ChatCompletionNamedToolChoiceCustom: Codable, Hashable, Sendable {
         self.custom = custom
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case custom
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "custom"
+        self.custom = try container.decode(ChatCompletionNamedToolChoiceCustom.Custom.self, forKey: "custom")
     }
 
-    public struct Custom: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.custom, forKey: "custom")
+    }
+
+    public struct Custom: OpenAIModel {
         /// The name of the custom tool to call.
         public var name: String
 
@@ -727,14 +914,20 @@ public struct ChatCompletionNamedToolChoiceCustom: Codable, Hashable, Sendable {
             self.name = name
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case name
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.name = try container.decode(String.self, forKey: "name")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.name, forKey: "name")
         }
     }
 }
 
 /// Messages sent by the model in response to user messages.
-public struct ChatCompletionRequestAssistantMessage: Codable, Hashable, Sendable {
+public struct ChatCompletionRequestAssistantMessage: OpenAIModel {
     public var content: ChatCompletionRequestAssistantMessage.Content?
     public var refusal: String?
     /// The role of the messages author, in this case `assistant`.
@@ -761,18 +954,30 @@ public struct ChatCompletionRequestAssistantMessage: Codable, Hashable, Sendable
         self.functionCall = functionCall
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case content
-        case refusal
-        case role
-        case name
-        case audio
-        case toolCalls = "tool_calls"
-        case functionCall = "function_call"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.content = try container.decodeIfPresent(ChatCompletionRequestAssistantMessage.Content.self, forKey: "content")
+        self.refusal = try container.decodeIfPresent(String.self, forKey: "refusal")
+        self.role = try container.decodeIfPresent(String.self, forKey: "role") ?? "assistant"
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.audio = try container.decodeIfPresent(ChatCompletionRequestAssistantMessage.Audio.self, forKey: "audio")
+        self.toolCalls = try container.decodeIfPresent(ChatCompletionMessageToolCalls.self, forKey: "tool_calls")
+        self.functionCall = try container.decodeIfPresent(ChatCompletionRequestAssistantMessage.FunctionCall.self, forKey: "function_call")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.content, forKey: "content")
+        try container.encodeIfPresent(self.refusal, forKey: "refusal")
+        try container.encode(self.role, forKey: "role")
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encodeIfPresent(self.audio, forKey: "audio")
+        try container.encodeIfPresent(self.toolCalls, forKey: "tool_calls")
+        try container.encodeIfPresent(self.functionCall, forKey: "function_call")
     }
 
     /// The contents of the assistant message. Required unless `tool_calls` or `function_call` is specified.
-    public indirect enum Content: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum Content: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         /// The contents of the assistant message.
         case textContent(String)
         /// An array of content parts with a defined type. Can be one or more of type `text`, or exactly one of type `refusal`.
@@ -812,7 +1017,7 @@ public struct ChatCompletionRequestAssistantMessage: Codable, Hashable, Sendable
 
     /// Data about a previous audio response from the model.
     /// [Learn more](https://developers.openai.com/api/docs/guides/audio).
-    public struct Audio: Codable, Hashable, Sendable {
+    public struct Audio: OpenAIModel {
         /// Unique identifier for a previous audio response from the model.
         public var id: String
 
@@ -820,13 +1025,19 @@ public struct ChatCompletionRequestAssistantMessage: Codable, Hashable, Sendable
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decode(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.id, forKey: "id")
         }
     }
 
     /// Deprecated and replaced by `tool_calls`. The name and arguments of a function that should be called, as generated by the model.
-    public struct FunctionCall: Codable, Hashable, Sendable {
+    public struct FunctionCall: OpenAIModel {
         /// The arguments to call the function with, as generated by the model in JSON format. Note that the model does not always generate valid JSON, and may hallucinate parameters not defined by your function schema. Validate the arguments in your code before calling your function.
         public var arguments: String
         /// The name of the function to call.
@@ -837,15 +1048,22 @@ public struct ChatCompletionRequestAssistantMessage: Codable, Hashable, Sendable
             self.name = name
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case arguments
-            case name
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.arguments = try container.decode(String.self, forKey: "arguments")
+            self.name = try container.decode(String.self, forKey: "name")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.arguments, forKey: "arguments")
+            try container.encode(self.name, forKey: "name")
         }
     }
 }
 
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum ChatCompletionRequestAssistantMessageContentPart: Codable, Hashable, Sendable {
+public indirect enum ChatCompletionRequestAssistantMessageContentPart: OpenAIModel {
     /// `type`: `text`
     case text(ChatCompletionRequestMessageContentPartText)
     /// `type`: `refusal`
@@ -887,7 +1105,7 @@ public indirect enum ChatCompletionRequestAssistantMessageContentPart: Codable, 
 /// Developer-provided instructions that the model should follow, regardless of
 /// messages sent by the user. With o1 models and newer, `developer` messages
 /// replace the previous `system` messages.
-public struct ChatCompletionRequestDeveloperMessage: Codable, Hashable, Sendable {
+public struct ChatCompletionRequestDeveloperMessage: OpenAIModel {
     /// The contents of the developer message.
     public var content: ChatCompletionRequestDeveloperMessage.Content
     /// The role of the messages author, in this case `developer`.
@@ -900,14 +1118,22 @@ public struct ChatCompletionRequestDeveloperMessage: Codable, Hashable, Sendable
         self.name = name
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case content
-        case role
-        case name
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.content = try container.decode(ChatCompletionRequestDeveloperMessage.Content.self, forKey: "content")
+        self.role = try container.decodeIfPresent(String.self, forKey: "role") ?? "developer"
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.content, forKey: "content")
+        try container.encode(self.role, forKey: "role")
+        try container.encodeIfPresent(self.name, forKey: "name")
     }
 
     /// The contents of the developer message.
-    public indirect enum Content: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum Content: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         /// The contents of the developer message.
         case textContent(String)
         /// An array of content parts with a defined type. For developer messages, only type `text` is supported.
@@ -946,7 +1172,7 @@ public struct ChatCompletionRequestDeveloperMessage: Codable, Hashable, Sendable
     }
 }
 
-public struct ChatCompletionRequestFunctionMessage: Codable, Hashable, Sendable {
+public struct ChatCompletionRequestFunctionMessage: OpenAIModel {
     /// The role of the messages author, in this case `function`.
     public var role: String = "function"
     public var content: String?
@@ -958,15 +1184,23 @@ public struct ChatCompletionRequestFunctionMessage: Codable, Hashable, Sendable 
         self.content = content
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case role
-        case content
-        case name
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.role = try container.decodeIfPresent(String.self, forKey: "role") ?? "function"
+        self.content = try container.decodeIfPresent(String.self, forKey: "content")
+        self.name = try container.decode(String.self, forKey: "name")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.role, forKey: "role")
+        try container.encodeIfPresent(self.content, forKey: "content")
+        try container.encode(self.name, forKey: "name")
     }
 }
 
 /// Decoding picks the case from the `role` field. Values this version does not know decode as `.unknown`.
-public indirect enum ChatCompletionRequestMessage: Codable, Hashable, Sendable {
+public indirect enum ChatCompletionRequestMessage: OpenAIModel {
     /// `role`: `developer`
     case developer(ChatCompletionRequestDeveloperMessage)
     /// `role`: `system`
@@ -1034,7 +1268,7 @@ public indirect enum ChatCompletionRequestMessage: Codable, Hashable, Sendable {
 }
 
 /// Learn about [audio inputs](https://developers.openai.com/api/docs/guides/audio).
-public struct ChatCompletionRequestMessageContentPartAudio: Codable, Hashable, Sendable {
+public struct ChatCompletionRequestMessageContentPartAudio: OpenAIModel {
     /// The type of the content part. Always `input_audio`.
     public var type: String = "input_audio"
     public var inputAudio: ChatCompletionRequestMessageContentPartAudio.InputAudio
@@ -1045,13 +1279,21 @@ public struct ChatCompletionRequestMessageContentPartAudio: Codable, Hashable, S
         self.promptCacheBreakpoint = promptCacheBreakpoint
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case inputAudio = "input_audio"
-        case promptCacheBreakpoint = "prompt_cache_breakpoint"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "input_audio"
+        self.inputAudio = try container.decode(ChatCompletionRequestMessageContentPartAudio.InputAudio.self, forKey: "input_audio")
+        self.promptCacheBreakpoint = try container.decodeIfPresent(PromptCacheBreakpointParam.self, forKey: "prompt_cache_breakpoint")
     }
 
-    public struct InputAudio: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.inputAudio, forKey: "input_audio")
+        try container.encodeIfPresent(self.promptCacheBreakpoint, forKey: "prompt_cache_breakpoint")
+    }
+
+    public struct InputAudio: OpenAIModel {
         /// Base64 encoded audio data.
         public var data: String
         /// The format of the encoded audio data. Currently supports "wav" and "mp3".
@@ -1062,9 +1304,16 @@ public struct ChatCompletionRequestMessageContentPartAudio: Codable, Hashable, S
             self.format = format
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case data
-            case format
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.data = try container.decode(String.self, forKey: "data")
+            self.format = try container.decode(ChatCompletionRequestMessageContentPartAudio.InputAudio.Format.self, forKey: "format")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.data, forKey: "data")
+            try container.encode(self.format, forKey: "format")
         }
 
         /// The format of the encoded audio data. Currently supports "wav" and "mp3".
@@ -1088,7 +1337,7 @@ public struct ChatCompletionRequestMessageContentPartAudio: Codable, Hashable, S
 }
 
 /// Learn about [file inputs](https://developers.openai.com/api/docs/guides/text) for text generation.
-public struct ChatCompletionRequestMessageContentPartFile: Codable, Hashable, Sendable {
+public struct ChatCompletionRequestMessageContentPartFile: OpenAIModel {
     /// The type of the content part. Always `file`.
     public var type: String = "file"
     public var file: ChatCompletionRequestMessageContentPartFile.File
@@ -1099,13 +1348,21 @@ public struct ChatCompletionRequestMessageContentPartFile: Codable, Hashable, Se
         self.promptCacheBreakpoint = promptCacheBreakpoint
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case file
-        case promptCacheBreakpoint = "prompt_cache_breakpoint"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "file"
+        self.file = try container.decode(ChatCompletionRequestMessageContentPartFile.File.self, forKey: "file")
+        self.promptCacheBreakpoint = try container.decodeIfPresent(PromptCacheBreakpointParam.self, forKey: "prompt_cache_breakpoint")
     }
 
-    public struct File: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.file, forKey: "file")
+        try container.encodeIfPresent(self.promptCacheBreakpoint, forKey: "prompt_cache_breakpoint")
+    }
+
+    public struct File: OpenAIModel {
         /// The name of the file, used when passing the file to the model as a
         /// string.
         public var filename: String?
@@ -1125,16 +1382,24 @@ public struct ChatCompletionRequestMessageContentPartFile: Codable, Hashable, Se
             self.fileID = fileID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case filename
-            case fileData = "file_data"
-            case fileID = "file_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.filename = try container.decodeIfPresent(String.self, forKey: "filename")
+            self.fileData = try container.decodeIfPresent(String.self, forKey: "file_data")
+            self.fileID = try container.decodeIfPresent(String.self, forKey: "file_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.filename, forKey: "filename")
+            try container.encodeIfPresent(self.fileData, forKey: "file_data")
+            try container.encodeIfPresent(self.fileID, forKey: "file_id")
         }
     }
 }
 
 /// Learn about [image inputs](https://developers.openai.com/api/docs/guides/images-vision).
-public struct ChatCompletionRequestMessageContentPartImage: Codable, Hashable, Sendable {
+public struct ChatCompletionRequestMessageContentPartImage: OpenAIModel {
     /// The type of the content part.
     public var type: String = "image_url"
     public var imageURL: ChatCompletionRequestMessageContentPartImage.ImageURL
@@ -1145,13 +1410,21 @@ public struct ChatCompletionRequestMessageContentPartImage: Codable, Hashable, S
         self.promptCacheBreakpoint = promptCacheBreakpoint
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case imageURL = "image_url"
-        case promptCacheBreakpoint = "prompt_cache_breakpoint"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "image_url"
+        self.imageURL = try container.decode(ChatCompletionRequestMessageContentPartImage.ImageURL.self, forKey: "image_url")
+        self.promptCacheBreakpoint = try container.decodeIfPresent(PromptCacheBreakpointParam.self, forKey: "prompt_cache_breakpoint")
     }
 
-    public struct ImageURL: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.imageURL, forKey: "image_url")
+        try container.encodeIfPresent(self.promptCacheBreakpoint, forKey: "prompt_cache_breakpoint")
+    }
+
+    public struct ImageURL: OpenAIModel {
         /// Either a URL of the image or the base64 encoded image data.
         public var url: String
         /// Specifies the detail level of the image. Learn more in the [Vision guide](https://developers.openai.com/api/docs/guides/images-vision#choose-an-image-detail-level).
@@ -1162,9 +1435,16 @@ public struct ChatCompletionRequestMessageContentPartImage: Codable, Hashable, S
             self.detail = detail
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case url
-            case detail
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.url = try container.decode(String.self, forKey: "url")
+            self.detail = try container.decodeIfPresent(ChatCompletionRequestMessageContentPartImage.ImageURL.Detail.self, forKey: "detail")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.url, forKey: "url")
+            try container.encodeIfPresent(self.detail, forKey: "detail")
         }
 
         /// Specifies the detail level of the image. Learn more in the [Vision guide](https://developers.openai.com/api/docs/guides/images-vision#choose-an-image-detail-level).
@@ -1189,7 +1469,7 @@ public struct ChatCompletionRequestMessageContentPartImage: Codable, Hashable, S
     }
 }
 
-public struct ChatCompletionRequestMessageContentPartRefusal: Codable, Hashable, Sendable {
+public struct ChatCompletionRequestMessageContentPartRefusal: OpenAIModel {
     /// The type of the content part.
     public var type: String = "refusal"
     /// The refusal message generated by the model.
@@ -1199,14 +1479,21 @@ public struct ChatCompletionRequestMessageContentPartRefusal: Codable, Hashable,
         self.refusal = refusal
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case refusal
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "refusal"
+        self.refusal = try container.decode(String.self, forKey: "refusal")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.refusal, forKey: "refusal")
     }
 }
 
 /// Learn about [text inputs](https://developers.openai.com/api/docs/guides/text).
-public struct ChatCompletionRequestMessageContentPartText: Codable, Hashable, Sendable {
+public struct ChatCompletionRequestMessageContentPartText: OpenAIModel {
     /// The type of the content part.
     public var type: String = "text"
     /// The text content.
@@ -1218,17 +1505,25 @@ public struct ChatCompletionRequestMessageContentPartText: Codable, Hashable, Se
         self.promptCacheBreakpoint = promptCacheBreakpoint
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case text
-        case promptCacheBreakpoint = "prompt_cache_breakpoint"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "text"
+        self.text = try container.decode(String.self, forKey: "text")
+        self.promptCacheBreakpoint = try container.decodeIfPresent(PromptCacheBreakpointParam.self, forKey: "prompt_cache_breakpoint")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.text, forKey: "text")
+        try container.encodeIfPresent(self.promptCacheBreakpoint, forKey: "prompt_cache_breakpoint")
     }
 }
 
 /// Developer-provided instructions that the model should follow, regardless of
 /// messages sent by the user. With o1 models and newer, use `developer` messages
 /// for this purpose instead.
-public struct ChatCompletionRequestSystemMessage: Codable, Hashable, Sendable {
+public struct ChatCompletionRequestSystemMessage: OpenAIModel {
     /// The contents of the system message.
     public var content: ChatCompletionRequestSystemMessage.Content
     /// The role of the messages author, in this case `system`.
@@ -1241,14 +1536,22 @@ public struct ChatCompletionRequestSystemMessage: Codable, Hashable, Sendable {
         self.name = name
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case content
-        case role
-        case name
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.content = try container.decode(ChatCompletionRequestSystemMessage.Content.self, forKey: "content")
+        self.role = try container.decodeIfPresent(String.self, forKey: "role") ?? "system"
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.content, forKey: "content")
+        try container.encode(self.role, forKey: "role")
+        try container.encodeIfPresent(self.name, forKey: "name")
     }
 
     /// The contents of the system message.
-    public indirect enum Content: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum Content: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         /// The contents of the system message.
         case textContent(String)
         /// An array of content parts with a defined type. For system messages, only type `text` is supported.
@@ -1289,7 +1592,7 @@ public struct ChatCompletionRequestSystemMessage: Codable, Hashable, Sendable {
 
 public typealias ChatCompletionRequestSystemMessageContentPart = ChatCompletionRequestMessageContentPartText
 
-public struct ChatCompletionRequestToolMessage: Codable, Hashable, Sendable {
+public struct ChatCompletionRequestToolMessage: OpenAIModel {
     /// The role of the messages author, in this case `tool`.
     public var role: String = "tool"
     /// The contents of the tool message.
@@ -1302,14 +1605,22 @@ public struct ChatCompletionRequestToolMessage: Codable, Hashable, Sendable {
         self.toolCallID = toolCallID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case role
-        case content
-        case toolCallID = "tool_call_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.role = try container.decodeIfPresent(String.self, forKey: "role") ?? "tool"
+        self.content = try container.decode(ChatCompletionRequestToolMessage.Content.self, forKey: "content")
+        self.toolCallID = try container.decode(String.self, forKey: "tool_call_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.role, forKey: "role")
+        try container.encode(self.content, forKey: "content")
+        try container.encode(self.toolCallID, forKey: "tool_call_id")
     }
 
     /// The contents of the tool message.
-    public indirect enum Content: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum Content: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         /// The contents of the tool message.
         case textContent(String)
         /// An array of content parts with a defined type. For tool messages, only type `text` is supported.
@@ -1352,7 +1663,7 @@ public typealias ChatCompletionRequestToolMessageContentPart = ChatCompletionReq
 
 /// Messages sent by an end user, containing prompts or additional context
 /// information.
-public struct ChatCompletionRequestUserMessage: Codable, Hashable, Sendable {
+public struct ChatCompletionRequestUserMessage: OpenAIModel {
     /// The contents of the user message.
     public var content: ChatCompletionRequestUserMessage.Content
     /// The role of the messages author, in this case `user`.
@@ -1365,14 +1676,22 @@ public struct ChatCompletionRequestUserMessage: Codable, Hashable, Sendable {
         self.name = name
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case content
-        case role
-        case name
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.content = try container.decode(ChatCompletionRequestUserMessage.Content.self, forKey: "content")
+        self.role = try container.decodeIfPresent(String.self, forKey: "role") ?? "user"
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.content, forKey: "content")
+        try container.encode(self.role, forKey: "role")
+        try container.encodeIfPresent(self.name, forKey: "name")
     }
 
     /// The contents of the user message.
-    public indirect enum Content: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum Content: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         /// The text contents of the message.
         case textContent(String)
         /// An array of content parts with a defined type. Supported options differ based on the [model](https://developers.openai.com/api/docs/models) being used to generate the response. Can contain text, image, or audio inputs.
@@ -1412,7 +1731,7 @@ public struct ChatCompletionRequestUserMessage: Codable, Hashable, Sendable {
 }
 
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum ChatCompletionRequestUserMessageContentPart: Codable, Hashable, Sendable {
+public indirect enum ChatCompletionRequestUserMessageContentPart: OpenAIModel {
     /// `type`: `text`
     case text(ChatCompletionRequestMessageContentPartText)
     /// `type`: `image_url`
@@ -1466,7 +1785,7 @@ public indirect enum ChatCompletionRequestUserMessageContentPart: Codable, Hasha
 }
 
 /// A chat completion message generated by the model.
-public struct ChatCompletionResponseMessage: Codable, Hashable, Sendable {
+public struct ChatCompletionResponseMessage: OpenAIModel {
     public var content: String?
     public var refusal: String?
     public var toolCalls: ChatCompletionMessageToolCalls?
@@ -1497,18 +1816,30 @@ public struct ChatCompletionResponseMessage: Codable, Hashable, Sendable {
         self.audio = audio
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case content
-        case refusal
-        case toolCalls = "tool_calls"
-        case annotations
-        case role
-        case functionCall = "function_call"
-        case audio
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.content = try container.decodeIfPresent(String.self, forKey: "content")
+        self.refusal = try container.decodeIfPresent(String.self, forKey: "refusal")
+        self.toolCalls = try container.decodeIfPresent(ChatCompletionMessageToolCalls.self, forKey: "tool_calls")
+        self.annotations = try container.decodeIfPresent([ChatCompletionResponseMessage.Annotation].self, forKey: "annotations")
+        self.role = try container.decodeIfPresent(String.self, forKey: "role") ?? "assistant"
+        self.functionCall = try container.decodeIfPresent(ChatCompletionResponseMessage.FunctionCall.self, forKey: "function_call")
+        self.audio = try container.decodeIfPresent(ChatCompletionResponseMessage.Audio.self, forKey: "audio")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.content, forKey: "content")
+        try container.encodeIfPresent(self.refusal, forKey: "refusal")
+        try container.encodeIfPresent(self.toolCalls, forKey: "tool_calls")
+        try container.encodeIfPresent(self.annotations, forKey: "annotations")
+        try container.encode(self.role, forKey: "role")
+        try container.encodeIfPresent(self.functionCall, forKey: "function_call")
+        try container.encodeIfPresent(self.audio, forKey: "audio")
     }
 
     /// A URL citation when using web search.
-    public struct Annotation: Codable, Hashable, Sendable {
+    public struct Annotation: OpenAIModel {
         /// The type of the URL citation. Always `url_citation`.
         public var type: String = "url_citation"
         /// A URL citation when using web search.
@@ -1518,13 +1849,20 @@ public struct ChatCompletionResponseMessage: Codable, Hashable, Sendable {
             self.urlCitation = urlCitation
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case urlCitation = "url_citation"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "url_citation"
+            self.urlCitation = try container.decode(ChatCompletionResponseMessage.Annotation.URLCitation.self, forKey: "url_citation")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.urlCitation, forKey: "url_citation")
         }
 
         /// A URL citation when using web search.
-        public struct URLCitation: Codable, Hashable, Sendable {
+        public struct URLCitation: OpenAIModel {
             /// The index of the last character of the URL citation in the message.
             public var endIndex: Int
             /// The index of the first character of the URL citation in the message.
@@ -1546,17 +1884,26 @@ public struct ChatCompletionResponseMessage: Codable, Hashable, Sendable {
                 self.title = title
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case endIndex = "end_index"
-                case startIndex = "start_index"
-                case url
-                case title
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.endIndex = try container.decode(Int.self, forKey: "end_index")
+                self.startIndex = try container.decode(Int.self, forKey: "start_index")
+                self.url = try container.decode(String.self, forKey: "url")
+                self.title = try container.decode(String.self, forKey: "title")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encode(self.endIndex, forKey: "end_index")
+                try container.encode(self.startIndex, forKey: "start_index")
+                try container.encode(self.url, forKey: "url")
+                try container.encode(self.title, forKey: "title")
             }
         }
     }
 
     /// Deprecated and replaced by `tool_calls`. The name and arguments of a function that should be called, as generated by the model.
-    public struct FunctionCall: Codable, Hashable, Sendable {
+    public struct FunctionCall: OpenAIModel {
         /// The arguments to call the function with, as generated by the model in JSON format. Note that the model does not always generate valid JSON, and may hallucinate parameters not defined by your function schema. Validate the arguments in your code before calling your function.
         public var arguments: String
         /// The name of the function to call.
@@ -1567,15 +1914,22 @@ public struct ChatCompletionResponseMessage: Codable, Hashable, Sendable {
             self.name = name
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case arguments
-            case name
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.arguments = try container.decode(String.self, forKey: "arguments")
+            self.name = try container.decode(String.self, forKey: "name")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.arguments, forKey: "arguments")
+            try container.encode(self.name, forKey: "name")
         }
     }
 
     /// If the audio output modality is requested, this object contains data
     /// about the audio response from the model. [Learn more](https://developers.openai.com/api/docs/guides/audio).
-    public struct Audio: Codable, Hashable, Sendable {
+    public struct Audio: OpenAIModel {
         /// Unique identifier for this audio response.
         public var id: String
         /// The Unix timestamp (in seconds) for when this audio response will
@@ -1600,11 +1954,20 @@ public struct ChatCompletionResponseMessage: Codable, Hashable, Sendable {
             self.transcript = transcript
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case expiresAt = "expires_at"
-            case data
-            case transcript
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decode(String.self, forKey: "id")
+            self.expiresAt = try container.decode(Int.self, forKey: "expires_at")
+            self.data = try container.decode(String.self, forKey: "data")
+            self.transcript = try container.decode(String.self, forKey: "transcript")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.id, forKey: "id")
+            try container.encode(self.expiresAt, forKey: "expires_at")
+            try container.encode(self.data, forKey: "data")
+            try container.encode(self.transcript, forKey: "transcript")
         }
     }
 }
@@ -1632,7 +1995,7 @@ public struct ChatCompletionRole: OpenAIStringEnum {
 }
 
 /// Options for streaming response. Only set this when you set `stream: true`.
-public struct ChatCompletionStreamOptions: Codable, Hashable, Sendable {
+public struct ChatCompletionStreamOptions: OpenAIModel {
     /// If set, an additional chunk will be streamed before the `data: [DONE]`
     /// message. The `usage` field on this chunk shows the token usage statistics
     /// for the entire request, and the `choices` field will always be an empty
@@ -1656,16 +2019,23 @@ public struct ChatCompletionStreamOptions: Codable, Hashable, Sendable {
         self.includeObfuscation = includeObfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case includeUsage = "include_usage"
-        case includeObfuscation = "include_obfuscation"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.includeUsage = try container.decodeIfPresent(Bool.self, forKey: "include_usage")
+        self.includeObfuscation = try container.decodeIfPresent(Bool.self, forKey: "include_obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.includeUsage, forKey: "include_usage")
+        try container.encodeIfPresent(self.includeObfuscation, forKey: "include_obfuscation")
     }
 }
 
 /// A chat completion delta generated by streamed model responses.
 /// Streamed audio can arrive in partial updates with an ID, base64 data, or
 /// transcript text. The final audio update contains only its expiry timestamp.
-public struct ChatCompletionStreamResponseDelta: Codable, Hashable, Sendable {
+public struct ChatCompletionStreamResponseDelta: OpenAIModel {
     /// A partial audio response. Audio chunks may carry an ID, base64 data, or
     /// transcript text; the final audio update contains only its expiry timestamp.
     public var audio: ChatCompletionStreamResponseDelta.Audio?
@@ -1695,18 +2065,29 @@ public struct ChatCompletionStreamResponseDelta: Codable, Hashable, Sendable {
         self.refusal = refusal
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case audio
-        case content
-        case functionCall = "function_call"
-        case toolCalls = "tool_calls"
-        case role
-        case refusal
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.audio = try container.decodeIfPresent(ChatCompletionStreamResponseDelta.Audio.self, forKey: "audio")
+        self.content = try container.decodeIfPresent(String.self, forKey: "content")
+        self.functionCall = try container.decodeIfPresent(ChatCompletionStreamResponseDelta.FunctionCall.self, forKey: "function_call")
+        self.toolCalls = try container.decodeIfPresent([ChatCompletionMessageToolCallChunk].self, forKey: "tool_calls")
+        self.role = try container.decodeIfPresent(ChatCompletionStreamResponseDelta.Role.self, forKey: "role")
+        self.refusal = try container.decodeIfPresent(String.self, forKey: "refusal")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.audio, forKey: "audio")
+        try container.encodeIfPresent(self.content, forKey: "content")
+        try container.encodeIfPresent(self.functionCall, forKey: "function_call")
+        try container.encodeIfPresent(self.toolCalls, forKey: "tool_calls")
+        try container.encodeIfPresent(self.role, forKey: "role")
+        try container.encodeIfPresent(self.refusal, forKey: "refusal")
     }
 
     /// A partial audio response. Audio chunks may carry an ID, base64 data, or
     /// transcript text; the final audio update contains only its expiry timestamp.
-    public struct Audio: Codable, Hashable, Sendable {
+    public struct Audio: OpenAIModel {
         /// Unique identifier for this audio response.
         public var id: String?
         /// The Unix timestamp (in seconds) for when this audio response will no
@@ -1730,16 +2111,25 @@ public struct ChatCompletionStreamResponseDelta: Codable, Hashable, Sendable {
             self.transcript = transcript
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case expiresAt = "expires_at"
-            case data
-            case transcript
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.expiresAt = try container.decodeIfPresent(Int.self, forKey: "expires_at")
+            self.data = try container.decodeIfPresent(String.self, forKey: "data")
+            self.transcript = try container.decodeIfPresent(String.self, forKey: "transcript")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.expiresAt, forKey: "expires_at")
+            try container.encodeIfPresent(self.data, forKey: "data")
+            try container.encodeIfPresent(self.transcript, forKey: "transcript")
         }
     }
 
     /// Deprecated and replaced by `tool_calls`. The name and arguments of a function that should be called, as generated by the model.
-    public struct FunctionCall: Codable, Hashable, Sendable {
+    public struct FunctionCall: OpenAIModel {
         /// The arguments to call the function with, as generated by the model in JSON format. Note that the model does not always generate valid JSON, and may hallucinate parameters not defined by your function schema. Validate the arguments in your code before calling your function.
         public var arguments: String?
         /// The name of the function to call.
@@ -1750,9 +2140,16 @@ public struct ChatCompletionStreamResponseDelta: Codable, Hashable, Sendable {
             self.name = name
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case arguments
-            case name
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.arguments = try container.decodeIfPresent(String.self, forKey: "arguments")
+            self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.arguments, forKey: "arguments")
+            try container.encodeIfPresent(self.name, forKey: "name")
         }
     }
 
@@ -1778,7 +2175,7 @@ public struct ChatCompletionStreamResponseDelta: Codable, Hashable, Sendable {
     }
 }
 
-public struct ChatCompletionTokenLogprob: Codable, Hashable, Sendable {
+public struct ChatCompletionTokenLogprob: OpenAIModel {
     /// The token.
     public var token: String
     /// The log probability of this token, if it is within the top 20 most likely tokens. Otherwise, the value `-9999.0` is used to signify that the token is very unlikely.
@@ -1799,14 +2196,23 @@ public struct ChatCompletionTokenLogprob: Codable, Hashable, Sendable {
         self.bytes = bytes
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case token
-        case logprob
-        case bytes
-        case topLogprobs = "top_logprobs"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.token = try container.decode(String.self, forKey: "token")
+        self.logprob = try container.decode(Double.self, forKey: "logprob")
+        self.bytes = try container.decodeIfPresent([Int].self, forKey: "bytes")
+        self.topLogprobs = try container.decode([ChatCompletionTokenLogprob.TopLogprob].self, forKey: "top_logprobs")
     }
 
-    public struct TopLogprob: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.token, forKey: "token")
+        try container.encode(self.logprob, forKey: "logprob")
+        try container.encodeIfPresent(self.bytes, forKey: "bytes")
+        try container.encode(self.topLogprobs, forKey: "top_logprobs")
+    }
+
+    public struct TopLogprob: OpenAIModel {
         /// The token.
         public var token: String
         /// The log probability of this token, if it is within the top 20 most likely tokens. Otherwise, the value `-9999.0` is used to signify that the token is very unlikely.
@@ -1823,16 +2229,24 @@ public struct ChatCompletionTokenLogprob: Codable, Hashable, Sendable {
             self.bytes = bytes
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case token
-            case logprob
-            case bytes
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.token = try container.decode(String.self, forKey: "token")
+            self.logprob = try container.decode(Double.self, forKey: "logprob")
+            self.bytes = try container.decodeIfPresent([Int].self, forKey: "bytes")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.token, forKey: "token")
+            try container.encode(self.logprob, forKey: "logprob")
+            try container.encodeIfPresent(self.bytes, forKey: "bytes")
         }
     }
 }
 
 /// A function tool that can be used to generate a response.
-public struct ChatCompletionTool: Codable, Hashable, Sendable {
+public struct ChatCompletionTool: OpenAIModel {
     /// The type of the tool. Currently, only `function` is supported.
     public var type: String = "function"
     public var function: FunctionObject
@@ -1841,9 +2255,16 @@ public struct ChatCompletionTool: Codable, Hashable, Sendable {
         self.function = function
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case function
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "function"
+        self.function = try container.decode(FunctionObject.self, forKey: "function")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.function, forKey: "function")
     }
 }
 
@@ -1856,7 +2277,7 @@ public struct ChatCompletionTool: Codable, Hashable, Sendable {
 /// `none` is the default when no tools are present. `auto` is the default if tools are present.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum ChatCompletionToolChoiceOption: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+public indirect enum ChatCompletionToolChoiceOption: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
     /// `none` means the model will not call any tool and instead generates a message. `auto` means the model can pick between generating a message or calling one or more tools. `required` means the model must call one or more tools.
     case toolChoiceMode(ChatCompletionToolChoiceOption.ToolChoiceMode)
     /// `type`: `allowed_tools`
@@ -1934,7 +2355,7 @@ public indirect enum ChatCompletionToolChoiceOption: Codable, Hashable, Sendable
 }
 
 /// Automatic thread title preferences for the session.
-public struct ChatSessionAutomaticThreadTitling: Codable, Hashable, Sendable {
+public struct ChatSessionAutomaticThreadTitling: OpenAIModel {
     /// Whether automatic thread titling is enabled.
     public var enabled: Bool
 
@@ -1942,13 +2363,19 @@ public struct ChatSessionAutomaticThreadTitling: Codable, Hashable, Sendable {
         self.enabled = enabled
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case enabled
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.enabled = try container.decode(Bool.self, forKey: "enabled")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.enabled, forKey: "enabled")
     }
 }
 
 /// ChatKit configuration for the session.
-public struct ChatSessionChatkitConfiguration: Codable, Hashable, Sendable {
+public struct ChatSessionChatkitConfiguration: OpenAIModel {
     /// Automatic thread titling preferences.
     public var automaticThreadTitling: ChatSessionAutomaticThreadTitling
     /// Upload settings for the session.
@@ -1966,15 +2393,23 @@ public struct ChatSessionChatkitConfiguration: Codable, Hashable, Sendable {
         self.history = history
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case automaticThreadTitling = "automatic_thread_titling"
-        case fileUpload = "file_upload"
-        case history
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.automaticThreadTitling = try container.decode(ChatSessionAutomaticThreadTitling.self, forKey: "automatic_thread_titling")
+        self.fileUpload = try container.decode(ChatSessionFileUpload.self, forKey: "file_upload")
+        self.history = try container.decode(ChatSessionHistory.self, forKey: "history")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.automaticThreadTitling, forKey: "automatic_thread_titling")
+        try container.encode(self.fileUpload, forKey: "file_upload")
+        try container.encode(self.history, forKey: "history")
     }
 }
 
 /// Upload permissions and limits applied to the session.
-public struct ChatSessionFileUpload: Codable, Hashable, Sendable {
+public struct ChatSessionFileUpload: OpenAIModel {
     /// Indicates if uploads are enabled for the session.
     public var enabled: Bool
     public var maxFileSize: Int?
@@ -1990,15 +2425,23 @@ public struct ChatSessionFileUpload: Codable, Hashable, Sendable {
         self.maxFiles = maxFiles
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case enabled
-        case maxFileSize = "max_file_size"
-        case maxFiles = "max_files"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.enabled = try container.decode(Bool.self, forKey: "enabled")
+        self.maxFileSize = try container.decodeIfPresent(Int.self, forKey: "max_file_size")
+        self.maxFiles = try container.decodeIfPresent(Int.self, forKey: "max_files")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.enabled, forKey: "enabled")
+        try container.encodeIfPresent(self.maxFileSize, forKey: "max_file_size")
+        try container.encodeIfPresent(self.maxFiles, forKey: "max_files")
     }
 }
 
 /// History retention preferences returned for the session.
-public struct ChatSessionHistory: Codable, Hashable, Sendable {
+public struct ChatSessionHistory: OpenAIModel {
     /// Indicates if chat history is persisted for the session.
     public var enabled: Bool
     public var recentThreads: Int?
@@ -2008,14 +2451,21 @@ public struct ChatSessionHistory: Codable, Hashable, Sendable {
         self.recentThreads = recentThreads
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case enabled
-        case recentThreads = "recent_threads"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.enabled = try container.decode(Bool.self, forKey: "enabled")
+        self.recentThreads = try container.decodeIfPresent(Int.self, forKey: "recent_threads")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.enabled, forKey: "enabled")
+        try container.encodeIfPresent(self.recentThreads, forKey: "recent_threads")
     }
 }
 
 /// Active per-minute request limit for the session.
-public struct ChatSessionRateLimits: Codable, Hashable, Sendable {
+public struct ChatSessionRateLimits: OpenAIModel {
     /// Maximum allowed requests per one-minute window.
     public var maxRequestsPer1Minute: Int
 
@@ -2023,13 +2473,19 @@ public struct ChatSessionRateLimits: Codable, Hashable, Sendable {
         self.maxRequestsPer1Minute = maxRequestsPer1Minute
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case maxRequestsPer1Minute = "max_requests_per_1_minute"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.maxRequestsPer1Minute = try container.decode(Int.self, forKey: "max_requests_per_1_minute")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.maxRequestsPer1Minute, forKey: "max_requests_per_1_minute")
     }
 }
 
 /// Represents a ChatKit session and its resolved configuration.
-public struct ChatSessionResource: Codable, Hashable, Sendable {
+public struct ChatSessionResource: OpenAIModel {
     /// Identifier for the ChatKit session.
     public var id: String
     /// Type discriminator that is always `chatkit.session`.
@@ -2073,17 +2529,32 @@ public struct ChatSessionResource: Codable, Hashable, Sendable {
         self.chatkitConfiguration = chatkitConfiguration
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case expiresAt = "expires_at"
-        case clientSecret = "client_secret"
-        case workflow
-        case user
-        case rateLimits = "rate_limits"
-        case maxRequestsPer1Minute = "max_requests_per_1_minute"
-        case status
-        case chatkitConfiguration = "chatkit_configuration"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "chatkit.session"
+        self.expiresAt = try container.decode(Int.self, forKey: "expires_at")
+        self.clientSecret = try container.decode(String.self, forKey: "client_secret")
+        self.workflow = try container.decode(ChatkitWorkflow.self, forKey: "workflow")
+        self.user = try container.decode(String.self, forKey: "user")
+        self.rateLimits = try container.decode(ChatSessionRateLimits.self, forKey: "rate_limits")
+        self.maxRequestsPer1Minute = try container.decode(Int.self, forKey: "max_requests_per_1_minute")
+        self.status = try container.decode(ChatSessionStatus.self, forKey: "status")
+        self.chatkitConfiguration = try container.decode(ChatSessionChatkitConfiguration.self, forKey: "chatkit_configuration")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.expiresAt, forKey: "expires_at")
+        try container.encode(self.clientSecret, forKey: "client_secret")
+        try container.encode(self.workflow, forKey: "workflow")
+        try container.encode(self.user, forKey: "user")
+        try container.encode(self.rateLimits, forKey: "rate_limits")
+        try container.encode(self.maxRequestsPer1Minute, forKey: "max_requests_per_1_minute")
+        try container.encode(self.status, forKey: "status")
+        try container.encode(self.chatkitConfiguration, forKey: "chatkit_configuration")
     }
 }
 

@@ -4,14 +4,20 @@
 import Foundation
 
 /// A screenshot action.
-public struct ScreenshotParam: Codable, Hashable, Sendable {
+public struct ScreenshotParam: OpenAIModel {
     /// Specifies the event type. For a screenshot action, this property is always set to `screenshot`.
     public var type: String = "screenshot"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "screenshot"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }

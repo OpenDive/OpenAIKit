@@ -3,7 +3,738 @@
 
 import Foundation
 
-public struct ResponseUsageResource: Codable, Hashable, Sendable {
+/// Event emitted while a response is streamed.
+///
+/// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
+public indirect enum ResponseStreamEvent: OpenAIModel {
+    /// `type`: `response.audio.delta`
+    case responseAudioDelta(ResponseAudioDeltaEvent)
+    /// `type`: `response.audio.done`
+    case responseAudioDone(ResponseAudioDoneEvent)
+    /// `type`: `response.audio.transcript.delta`
+    case responseAudioTranscriptDelta(ResponseAudioTranscriptDeltaEvent)
+    /// `type`: `response.audio.transcript.done`
+    case responseAudioTranscriptDone(ResponseAudioTranscriptDoneEvent)
+    /// `type`: `response.code_interpreter_call_code.delta`
+    case responseCodeInterpreterCallCodeDelta(ResponseCodeInterpreterCallCodeDeltaEvent)
+    /// `type`: `response.code_interpreter_call_code.done`
+    case responseCodeInterpreterCallCodeDone(ResponseCodeInterpreterCallCodeDoneEvent)
+    /// `type`: `response.code_interpreter_call.completed`
+    case responseCodeInterpreterCallCompleted(ResponseCodeInterpreterCallCompletedEvent)
+    /// `type`: `response.code_interpreter_call.in_progress`
+    case responseCodeInterpreterCallInProgress(ResponseCodeInterpreterCallInProgressEvent)
+    /// `type`: `response.code_interpreter_call.interpreting`
+    case responseCodeInterpreterCallInterpreting(ResponseCodeInterpreterCallInterpretingEvent)
+    /// `type`: `response.compaction.compacting`
+    case responseCompactionCompacting(ResponseCompactionCompactingStreamingEvent)
+    /// `type`: `response.completed`
+    case responseCompleted(ResponseCompletedEvent)
+    /// `type`: `response.content_part.added`
+    case responseContentPartAdded(ResponseContentPartAddedEvent)
+    /// `type`: `response.content_part.done`
+    case responseContentPartDone(ResponseContentPartDoneEvent)
+    /// `type`: `response.created`
+    case responseCreated(ResponseCreatedEvent)
+    /// `type`: `error`
+    case error(ResponseErrorEvent)
+    /// `type`: `response.file_search_call.completed`
+    case responseFileSearchCallCompleted(ResponseFileSearchCallCompletedEvent)
+    /// `type`: `response.file_search_call.in_progress`
+    case responseFileSearchCallInProgress(ResponseFileSearchCallInProgressEvent)
+    /// `type`: `response.file_search_call.searching`
+    case responseFileSearchCallSearching(ResponseFileSearchCallSearchingEvent)
+    /// `type`: `response.function_call_arguments.delta`
+    case responseFunctionCallArgumentsDelta(ResponseFunctionCallArgumentsDeltaEvent)
+    /// `type`: `response.function_call_arguments.done`
+    case responseFunctionCallArgumentsDone(ResponseFunctionCallArgumentsDoneEvent)
+    /// `type`: `response.shell_call_command.added`
+    case responseShellCallCommandAdded(ResponseShellCallCommandAddedStreamingEvent)
+    /// `type`: `response.shell_call_command.delta`
+    case responseShellCallCommandDelta(ResponseShellCallCommandDeltaStreamingEvent)
+    /// `type`: `response.shell_call_command.done`
+    case responseShellCallCommandDone(ResponseShellCallCommandDoneStreamingEvent)
+    /// `type`: `response.shell_call_output_content.delta`
+    case responseShellCallOutputContentDelta(ResponseShellCallOutputContentDeltaStreamingEvent)
+    /// `type`: `response.shell_call_output_content.done`
+    case responseShellCallOutputContentDone(ResponseShellCallOutputContentDoneStreamingEvent)
+    /// `type`: `response.in_progress`
+    case responseInProgress(ResponseInProgressEvent)
+    /// `type`: `response.failed`
+    case responseFailed(ResponseFailedEvent)
+    /// `type`: `response.incomplete`
+    case responseIncomplete(ResponseIncompleteEvent)
+    /// `type`: `response.output_item.added`
+    case responseOutputItemAdded(ResponseOutputItemAddedEvent)
+    /// `type`: `response.output_item.done`
+    case responseOutputItemDone(ResponseOutputItemDoneEvent)
+    /// `type`: `response.reasoning_summary_part.added`
+    case responseReasoningSummaryPartAdded(ResponseReasoningSummaryPartAddedEvent)
+    /// `type`: `response.reasoning_summary_part.done`
+    case responseReasoningSummaryPartDone(ResponseReasoningSummaryPartDoneEvent)
+    /// `type`: `response.reasoning_summary_text.delta`
+    case responseReasoningSummaryTextDelta(ResponseReasoningSummaryTextDeltaEvent)
+    /// `type`: `response.reasoning_summary_text.done`
+    case responseReasoningSummaryTextDone(ResponseReasoningSummaryTextDoneEvent)
+    /// `type`: `response.reasoning_text.delta`
+    case responseReasoningTextDelta(ResponseReasoningTextDeltaEvent)
+    /// `type`: `response.reasoning_text.done`
+    case responseReasoningTextDone(ResponseReasoningTextDoneEvent)
+    /// `type`: `response.refusal.delta`
+    case responseRefusalDelta(ResponseRefusalDeltaEvent)
+    /// `type`: `response.refusal.done`
+    case responseRefusalDone(ResponseRefusalDoneEvent)
+    /// `type`: `response.output_text.delta`
+    case responseOutputTextDelta(ResponseTextDeltaEvent)
+    /// `type`: `response.output_text.done`
+    case responseOutputTextDone(ResponseTextDoneEvent)
+    /// `type`: `response.web_search_call.completed`
+    case responseWebSearchCallCompleted(ResponseWebSearchCallCompletedEvent)
+    /// `type`: `response.web_search_call.in_progress`
+    case responseWebSearchCallInProgress(ResponseWebSearchCallInProgressEvent)
+    /// `type`: `response.web_search_call.searching`
+    case responseWebSearchCallSearching(ResponseWebSearchCallSearchingEvent)
+    /// `type`: `response.image_generation_call.completed`
+    case responseImageGenerationCallCompleted(ResponseImageGenCallCompletedEvent)
+    /// `type`: `response.image_generation_call.generating`
+    case responseImageGenerationCallGenerating(ResponseImageGenCallGeneratingEvent)
+    /// `type`: `response.image_generation_call.in_progress`
+    case responseImageGenerationCallInProgress(ResponseImageGenCallInProgressEvent)
+    /// `type`: `response.image_generation_call.partial_image`
+    case responseImageGenerationCallPartialImage(ResponseImageGenCallPartialImageEvent)
+    /// `type`: `response.mcp_call_arguments.delta`
+    case responseMcpCallArgumentsDelta(ResponseMCPCallArgumentsDeltaEvent)
+    /// `type`: `response.mcp_call_arguments.done`
+    case responseMcpCallArgumentsDone(ResponseMCPCallArgumentsDoneEvent)
+    /// `type`: `response.mcp_call.completed`
+    case responseMcpCallCompleted(ResponseMCPCallCompletedEvent)
+    /// `type`: `response.mcp_call.failed`
+    case responseMcpCallFailed(ResponseMCPCallFailedEvent)
+    /// `type`: `response.mcp_call.in_progress`
+    case responseMcpCallInProgress(ResponseMCPCallInProgressEvent)
+    /// `type`: `response.mcp_list_tools.completed`
+    case responseMcpListToolsCompleted(ResponseMCPListToolsCompletedEvent)
+    /// `type`: `response.mcp_list_tools.failed`
+    case responseMcpListToolsFailed(ResponseMCPListToolsFailedEvent)
+    /// `type`: `response.mcp_list_tools.in_progress`
+    case responseMcpListToolsInProgress(ResponseMCPListToolsInProgressEvent)
+    /// `type`: `response.output_text.annotation.added`
+    case responseOutputTextAnnotationAdded(ResponseOutputTextAnnotationAddedEvent)
+    /// `type`: `response.queued`
+    case responseQueued(ResponseQueuedEvent)
+    /// `type`: `response.custom_tool_call_input.delta`
+    case responseCustomToolCallInputDelta(ResponseCustomToolCallInputDeltaEvent)
+    /// `type`: `response.custom_tool_call_input.done`
+    case responseCustomToolCallInputDone(ResponseCustomToolCallInputDoneEvent)
+    /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
+    case unknown(JSONValue)
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let keyed = try? decoder.container(keyedBy: OpenAIDynamicCodingKey.self),
+           let discriminator = try? keyed.decode(String.self, forKey: OpenAIDynamicCodingKey("type")) {
+            switch discriminator {
+            case "response.audio.delta":
+                self = .responseAudioDelta(try container.decode(ResponseAudioDeltaEvent.self))
+                return
+            case "response.audio.done":
+                self = .responseAudioDone(try container.decode(ResponseAudioDoneEvent.self))
+                return
+            case "response.audio.transcript.delta":
+                self = .responseAudioTranscriptDelta(try container.decode(ResponseAudioTranscriptDeltaEvent.self))
+                return
+            case "response.audio.transcript.done":
+                self = .responseAudioTranscriptDone(try container.decode(ResponseAudioTranscriptDoneEvent.self))
+                return
+            case "response.code_interpreter_call_code.delta":
+                self = .responseCodeInterpreterCallCodeDelta(try container.decode(ResponseCodeInterpreterCallCodeDeltaEvent.self))
+                return
+            case "response.code_interpreter_call_code.done":
+                self = .responseCodeInterpreterCallCodeDone(try container.decode(ResponseCodeInterpreterCallCodeDoneEvent.self))
+                return
+            case "response.code_interpreter_call.completed":
+                self = .responseCodeInterpreterCallCompleted(try container.decode(ResponseCodeInterpreterCallCompletedEvent.self))
+                return
+            case "response.code_interpreter_call.in_progress":
+                self = .responseCodeInterpreterCallInProgress(try container.decode(ResponseCodeInterpreterCallInProgressEvent.self))
+                return
+            case "response.code_interpreter_call.interpreting":
+                self = .responseCodeInterpreterCallInterpreting(try container.decode(ResponseCodeInterpreterCallInterpretingEvent.self))
+                return
+            case "response.compaction.compacting":
+                self = .responseCompactionCompacting(try container.decode(ResponseCompactionCompactingStreamingEvent.self))
+                return
+            case "response.completed":
+                self = .responseCompleted(try container.decode(ResponseCompletedEvent.self))
+                return
+            case "response.content_part.added":
+                self = .responseContentPartAdded(try container.decode(ResponseContentPartAddedEvent.self))
+                return
+            case "response.content_part.done":
+                self = .responseContentPartDone(try container.decode(ResponseContentPartDoneEvent.self))
+                return
+            case "response.created":
+                self = .responseCreated(try container.decode(ResponseCreatedEvent.self))
+                return
+            case "error":
+                self = .error(try container.decode(ResponseErrorEvent.self))
+                return
+            case "response.file_search_call.completed":
+                self = .responseFileSearchCallCompleted(try container.decode(ResponseFileSearchCallCompletedEvent.self))
+                return
+            case "response.file_search_call.in_progress":
+                self = .responseFileSearchCallInProgress(try container.decode(ResponseFileSearchCallInProgressEvent.self))
+                return
+            case "response.file_search_call.searching":
+                self = .responseFileSearchCallSearching(try container.decode(ResponseFileSearchCallSearchingEvent.self))
+                return
+            case "response.function_call_arguments.delta":
+                self = .responseFunctionCallArgumentsDelta(try container.decode(ResponseFunctionCallArgumentsDeltaEvent.self))
+                return
+            case "response.function_call_arguments.done":
+                self = .responseFunctionCallArgumentsDone(try container.decode(ResponseFunctionCallArgumentsDoneEvent.self))
+                return
+            case "response.shell_call_command.added":
+                self = .responseShellCallCommandAdded(try container.decode(ResponseShellCallCommandAddedStreamingEvent.self))
+                return
+            case "response.shell_call_command.delta":
+                self = .responseShellCallCommandDelta(try container.decode(ResponseShellCallCommandDeltaStreamingEvent.self))
+                return
+            case "response.shell_call_command.done":
+                self = .responseShellCallCommandDone(try container.decode(ResponseShellCallCommandDoneStreamingEvent.self))
+                return
+            case "response.shell_call_output_content.delta":
+                self = .responseShellCallOutputContentDelta(try container.decode(ResponseShellCallOutputContentDeltaStreamingEvent.self))
+                return
+            case "response.shell_call_output_content.done":
+                self = .responseShellCallOutputContentDone(try container.decode(ResponseShellCallOutputContentDoneStreamingEvent.self))
+                return
+            case "response.in_progress":
+                self = .responseInProgress(try container.decode(ResponseInProgressEvent.self))
+                return
+            case "response.failed":
+                self = .responseFailed(try container.decode(ResponseFailedEvent.self))
+                return
+            case "response.incomplete":
+                self = .responseIncomplete(try container.decode(ResponseIncompleteEvent.self))
+                return
+            case "response.output_item.added":
+                self = .responseOutputItemAdded(try container.decode(ResponseOutputItemAddedEvent.self))
+                return
+            case "response.output_item.done":
+                self = .responseOutputItemDone(try container.decode(ResponseOutputItemDoneEvent.self))
+                return
+            case "response.reasoning_summary_part.added":
+                self = .responseReasoningSummaryPartAdded(try container.decode(ResponseReasoningSummaryPartAddedEvent.self))
+                return
+            case "response.reasoning_summary_part.done":
+                self = .responseReasoningSummaryPartDone(try container.decode(ResponseReasoningSummaryPartDoneEvent.self))
+                return
+            case "response.reasoning_summary_text.delta":
+                self = .responseReasoningSummaryTextDelta(try container.decode(ResponseReasoningSummaryTextDeltaEvent.self))
+                return
+            case "response.reasoning_summary_text.done":
+                self = .responseReasoningSummaryTextDone(try container.decode(ResponseReasoningSummaryTextDoneEvent.self))
+                return
+            case "response.reasoning_text.delta":
+                self = .responseReasoningTextDelta(try container.decode(ResponseReasoningTextDeltaEvent.self))
+                return
+            case "response.reasoning_text.done":
+                self = .responseReasoningTextDone(try container.decode(ResponseReasoningTextDoneEvent.self))
+                return
+            case "response.refusal.delta":
+                self = .responseRefusalDelta(try container.decode(ResponseRefusalDeltaEvent.self))
+                return
+            case "response.refusal.done":
+                self = .responseRefusalDone(try container.decode(ResponseRefusalDoneEvent.self))
+                return
+            case "response.output_text.delta":
+                self = .responseOutputTextDelta(try container.decode(ResponseTextDeltaEvent.self))
+                return
+            case "response.output_text.done":
+                self = .responseOutputTextDone(try container.decode(ResponseTextDoneEvent.self))
+                return
+            case "response.web_search_call.completed":
+                self = .responseWebSearchCallCompleted(try container.decode(ResponseWebSearchCallCompletedEvent.self))
+                return
+            case "response.web_search_call.in_progress":
+                self = .responseWebSearchCallInProgress(try container.decode(ResponseWebSearchCallInProgressEvent.self))
+                return
+            case "response.web_search_call.searching":
+                self = .responseWebSearchCallSearching(try container.decode(ResponseWebSearchCallSearchingEvent.self))
+                return
+            case "response.image_generation_call.completed":
+                self = .responseImageGenerationCallCompleted(try container.decode(ResponseImageGenCallCompletedEvent.self))
+                return
+            case "response.image_generation_call.generating":
+                self = .responseImageGenerationCallGenerating(try container.decode(ResponseImageGenCallGeneratingEvent.self))
+                return
+            case "response.image_generation_call.in_progress":
+                self = .responseImageGenerationCallInProgress(try container.decode(ResponseImageGenCallInProgressEvent.self))
+                return
+            case "response.image_generation_call.partial_image":
+                self = .responseImageGenerationCallPartialImage(try container.decode(ResponseImageGenCallPartialImageEvent.self))
+                return
+            case "response.mcp_call_arguments.delta":
+                self = .responseMcpCallArgumentsDelta(try container.decode(ResponseMCPCallArgumentsDeltaEvent.self))
+                return
+            case "response.mcp_call_arguments.done":
+                self = .responseMcpCallArgumentsDone(try container.decode(ResponseMCPCallArgumentsDoneEvent.self))
+                return
+            case "response.mcp_call.completed":
+                self = .responseMcpCallCompleted(try container.decode(ResponseMCPCallCompletedEvent.self))
+                return
+            case "response.mcp_call.failed":
+                self = .responseMcpCallFailed(try container.decode(ResponseMCPCallFailedEvent.self))
+                return
+            case "response.mcp_call.in_progress":
+                self = .responseMcpCallInProgress(try container.decode(ResponseMCPCallInProgressEvent.self))
+                return
+            case "response.mcp_list_tools.completed":
+                self = .responseMcpListToolsCompleted(try container.decode(ResponseMCPListToolsCompletedEvent.self))
+                return
+            case "response.mcp_list_tools.failed":
+                self = .responseMcpListToolsFailed(try container.decode(ResponseMCPListToolsFailedEvent.self))
+                return
+            case "response.mcp_list_tools.in_progress":
+                self = .responseMcpListToolsInProgress(try container.decode(ResponseMCPListToolsInProgressEvent.self))
+                return
+            case "response.output_text.annotation.added":
+                self = .responseOutputTextAnnotationAdded(try container.decode(ResponseOutputTextAnnotationAddedEvent.self))
+                return
+            case "response.queued":
+                self = .responseQueued(try container.decode(ResponseQueuedEvent.self))
+                return
+            case "response.custom_tool_call_input.delta":
+                self = .responseCustomToolCallInputDelta(try container.decode(ResponseCustomToolCallInputDeltaEvent.self))
+                return
+            case "response.custom_tool_call_input.done":
+                self = .responseCustomToolCallInputDone(try container.decode(ResponseCustomToolCallInputDoneEvent.self))
+                return
+            default:
+                break
+            }
+        }
+        self = .unknown(try container.decode(JSONValue.self))
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .responseAudioDelta(let value):
+            try container.encode(value)
+        case .responseAudioDone(let value):
+            try container.encode(value)
+        case .responseAudioTranscriptDelta(let value):
+            try container.encode(value)
+        case .responseAudioTranscriptDone(let value):
+            try container.encode(value)
+        case .responseCodeInterpreterCallCodeDelta(let value):
+            try container.encode(value)
+        case .responseCodeInterpreterCallCodeDone(let value):
+            try container.encode(value)
+        case .responseCodeInterpreterCallCompleted(let value):
+            try container.encode(value)
+        case .responseCodeInterpreterCallInProgress(let value):
+            try container.encode(value)
+        case .responseCodeInterpreterCallInterpreting(let value):
+            try container.encode(value)
+        case .responseCompactionCompacting(let value):
+            try container.encode(value)
+        case .responseCompleted(let value):
+            try container.encode(value)
+        case .responseContentPartAdded(let value):
+            try container.encode(value)
+        case .responseContentPartDone(let value):
+            try container.encode(value)
+        case .responseCreated(let value):
+            try container.encode(value)
+        case .error(let value):
+            try container.encode(value)
+        case .responseFileSearchCallCompleted(let value):
+            try container.encode(value)
+        case .responseFileSearchCallInProgress(let value):
+            try container.encode(value)
+        case .responseFileSearchCallSearching(let value):
+            try container.encode(value)
+        case .responseFunctionCallArgumentsDelta(let value):
+            try container.encode(value)
+        case .responseFunctionCallArgumentsDone(let value):
+            try container.encode(value)
+        case .responseShellCallCommandAdded(let value):
+            try container.encode(value)
+        case .responseShellCallCommandDelta(let value):
+            try container.encode(value)
+        case .responseShellCallCommandDone(let value):
+            try container.encode(value)
+        case .responseShellCallOutputContentDelta(let value):
+            try container.encode(value)
+        case .responseShellCallOutputContentDone(let value):
+            try container.encode(value)
+        case .responseInProgress(let value):
+            try container.encode(value)
+        case .responseFailed(let value):
+            try container.encode(value)
+        case .responseIncomplete(let value):
+            try container.encode(value)
+        case .responseOutputItemAdded(let value):
+            try container.encode(value)
+        case .responseOutputItemDone(let value):
+            try container.encode(value)
+        case .responseReasoningSummaryPartAdded(let value):
+            try container.encode(value)
+        case .responseReasoningSummaryPartDone(let value):
+            try container.encode(value)
+        case .responseReasoningSummaryTextDelta(let value):
+            try container.encode(value)
+        case .responseReasoningSummaryTextDone(let value):
+            try container.encode(value)
+        case .responseReasoningTextDelta(let value):
+            try container.encode(value)
+        case .responseReasoningTextDone(let value):
+            try container.encode(value)
+        case .responseRefusalDelta(let value):
+            try container.encode(value)
+        case .responseRefusalDone(let value):
+            try container.encode(value)
+        case .responseOutputTextDelta(let value):
+            try container.encode(value)
+        case .responseOutputTextDone(let value):
+            try container.encode(value)
+        case .responseWebSearchCallCompleted(let value):
+            try container.encode(value)
+        case .responseWebSearchCallInProgress(let value):
+            try container.encode(value)
+        case .responseWebSearchCallSearching(let value):
+            try container.encode(value)
+        case .responseImageGenerationCallCompleted(let value):
+            try container.encode(value)
+        case .responseImageGenerationCallGenerating(let value):
+            try container.encode(value)
+        case .responseImageGenerationCallInProgress(let value):
+            try container.encode(value)
+        case .responseImageGenerationCallPartialImage(let value):
+            try container.encode(value)
+        case .responseMcpCallArgumentsDelta(let value):
+            try container.encode(value)
+        case .responseMcpCallArgumentsDone(let value):
+            try container.encode(value)
+        case .responseMcpCallCompleted(let value):
+            try container.encode(value)
+        case .responseMcpCallFailed(let value):
+            try container.encode(value)
+        case .responseMcpCallInProgress(let value):
+            try container.encode(value)
+        case .responseMcpListToolsCompleted(let value):
+            try container.encode(value)
+        case .responseMcpListToolsFailed(let value):
+            try container.encode(value)
+        case .responseMcpListToolsInProgress(let value):
+            try container.encode(value)
+        case .responseOutputTextAnnotationAdded(let value):
+            try container.encode(value)
+        case .responseQueued(let value):
+            try container.encode(value)
+        case .responseCustomToolCallInputDelta(let value):
+            try container.encode(value)
+        case .responseCustomToolCallInputDone(let value):
+            try container.encode(value)
+        case .unknown(let value):
+            try container.encode(value)
+        }
+    }
+}
+
+/// Options for streaming responses. Only set this when you set `stream: true`.
+public struct ResponseStreamOptions: OpenAIModel {
+    /// When true, stream obfuscation will be enabled. Stream obfuscation adds
+    /// random characters to an `obfuscation` field on streaming delta events to
+    /// normalize payload sizes as a mitigation to certain side-channel attacks.
+    /// These obfuscation fields are included by default, but add a small amount
+    /// of overhead to the data stream. You can set `include_obfuscation` to
+    /// false to optimize for bandwidth if you trust the network links between
+    /// your application and the OpenAI API.
+    public var includeObfuscation: Bool?
+
+    public init(includeObfuscation: Bool? = nil) {
+        self.includeObfuscation = includeObfuscation
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.includeObfuscation = try container.decodeIfPresent(Bool.self, forKey: "include_obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.includeObfuscation, forKey: "include_obfuscation")
+    }
+}
+
+/// Emitted when there is an additional text delta.
+public struct ResponseTextDeltaEvent: OpenAIModel {
+    /// The type of the event. Always `response.output_text.delta`.
+    public var type: String = "response.output_text.delta"
+    /// The ID of the output item that the text delta was added to.
+    public var itemID: String
+    /// The index of the output item that the text delta was added to.
+    public var outputIndex: Int
+    /// The index of the content part that the text delta was added to.
+    public var contentIndex: Int
+    /// The text delta that was added.
+    public var delta: String
+    /// The sequence number for this event.
+    public var sequenceNumber: Int
+    /// The log probabilities of the tokens in the delta.
+    public var logprobs: [ResponseLogProb]
+
+    public init(
+        itemID: String,
+        outputIndex: Int,
+        contentIndex: Int,
+        delta: String,
+        sequenceNumber: Int,
+        logprobs: [ResponseLogProb]
+    ) {
+        self.itemID = itemID
+        self.outputIndex = outputIndex
+        self.contentIndex = contentIndex
+        self.delta = delta
+        self.sequenceNumber = sequenceNumber
+        self.logprobs = logprobs
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.output_text.delta"
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.contentIndex = try container.decode(Int.self, forKey: "content_index")
+        self.delta = try container.decode(String.self, forKey: "delta")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+        self.logprobs = try container.decode([ResponseLogProb].self, forKey: "logprobs")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.contentIndex, forKey: "content_index")
+        try container.encode(self.delta, forKey: "delta")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+        try container.encode(self.logprobs, forKey: "logprobs")
+    }
+}
+
+/// Emitted when text content is finalized.
+public struct ResponseTextDoneEvent: OpenAIModel {
+    /// The type of the event. Always `response.output_text.done`.
+    public var type: String = "response.output_text.done"
+    /// The ID of the output item that the text content is finalized.
+    public var itemID: String
+    /// The index of the output item that the text content is finalized.
+    public var outputIndex: Int
+    /// The index of the content part that the text content is finalized.
+    public var contentIndex: Int
+    /// The text content that is finalized.
+    public var text: String
+    /// The sequence number for this event.
+    public var sequenceNumber: Int
+    /// The log probabilities of the tokens in the delta.
+    public var logprobs: [ResponseLogProb]
+
+    public init(
+        itemID: String,
+        outputIndex: Int,
+        contentIndex: Int,
+        text: String,
+        sequenceNumber: Int,
+        logprobs: [ResponseLogProb]
+    ) {
+        self.itemID = itemID
+        self.outputIndex = outputIndex
+        self.contentIndex = contentIndex
+        self.text = text
+        self.sequenceNumber = sequenceNumber
+        self.logprobs = logprobs
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.output_text.done"
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.contentIndex = try container.decode(Int.self, forKey: "content_index")
+        self.text = try container.decode(String.self, forKey: "text")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+        self.logprobs = try container.decode([ResponseLogProb].self, forKey: "logprobs")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.contentIndex, forKey: "content_index")
+        try container.encode(self.text, forKey: "text")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+        try container.encode(self.logprobs, forKey: "logprobs")
+    }
+}
+
+/// Configuration options for a text response from the model. Can be plain
+/// text or structured JSON data. Learn more:
+/// - [Text inputs and outputs](https://developers.openai.com/api/docs/guides/text)
+/// - [Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs)
+public struct ResponseTextParam: OpenAIModel {
+    public var format: TextResponseFormatConfiguration?
+    public var verbosity: Verbosity?
+
+    public init(format: TextResponseFormatConfiguration? = nil, verbosity: Verbosity? = nil) {
+        self.format = format
+        self.verbosity = verbosity
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.format = try container.decodeIfPresent(TextResponseFormatConfiguration.self, forKey: "format")
+        self.verbosity = try container.decodeIfPresent(Verbosity.self, forKey: "verbosity")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.format, forKey: "format")
+        try container.encodeIfPresent(self.verbosity, forKey: "verbosity")
+    }
+}
+
+/// Aggregated usage details for billable tools that ran while generating the response.
+public struct ResponseToolUsage: OpenAIModel {
+    /// Aggregated usage statistics for image generation tool calls.
+    public var imageGen: ImageGenToolUsage
+    /// Aggregated billable usage statistics for web search tool calls.
+    public var webSearch: WebSearchUsage
+
+    public init(imageGen: ImageGenToolUsage, webSearch: WebSearchUsage) {
+        self.imageGen = imageGen
+        self.webSearch = webSearch
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.imageGen = try container.decode(ImageGenToolUsage.self, forKey: "image_gen")
+        self.webSearch = try container.decode(WebSearchUsage.self, forKey: "web_search")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.imageGen, forKey: "image_gen")
+        try container.encode(self.webSearch, forKey: "web_search")
+    }
+}
+
+/// Represents token usage details including input tokens, output tokens,
+/// a breakdown of output tokens, and the total tokens used.
+public struct ResponseUsage: OpenAIModel {
+    /// The number of input tokens.
+    public var inputTokens: Int
+    /// A detailed breakdown of the input tokens.
+    public var inputTokensDetails: ResponseUsage.InputTokensDetails
+    /// The number of output tokens.
+    public var outputTokens: Int
+    /// A detailed breakdown of the output tokens.
+    public var outputTokensDetails: ResponseUsage.OutputTokensDetails
+    /// The total number of tokens used.
+    public var totalTokens: Int
+
+    public init(
+        inputTokens: Int,
+        inputTokensDetails: ResponseUsage.InputTokensDetails,
+        outputTokens: Int,
+        outputTokensDetails: ResponseUsage.OutputTokensDetails,
+        totalTokens: Int
+    ) {
+        self.inputTokens = inputTokens
+        self.inputTokensDetails = inputTokensDetails
+        self.outputTokens = outputTokens
+        self.outputTokensDetails = outputTokensDetails
+        self.totalTokens = totalTokens
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.inputTokens = try container.decode(Int.self, forKey: "input_tokens")
+        self.inputTokensDetails = try container.decode(ResponseUsage.InputTokensDetails.self, forKey: "input_tokens_details")
+        self.outputTokens = try container.decode(Int.self, forKey: "output_tokens")
+        self.outputTokensDetails = try container.decode(ResponseUsage.OutputTokensDetails.self, forKey: "output_tokens_details")
+        self.totalTokens = try container.decode(Int.self, forKey: "total_tokens")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.inputTokens, forKey: "input_tokens")
+        try container.encode(self.inputTokensDetails, forKey: "input_tokens_details")
+        try container.encode(self.outputTokens, forKey: "output_tokens")
+        try container.encode(self.outputTokensDetails, forKey: "output_tokens_details")
+        try container.encode(self.totalTokens, forKey: "total_tokens")
+    }
+
+    /// A detailed breakdown of the input tokens.
+    public struct InputTokensDetails: OpenAIModel {
+        /// The number of tokens that were retrieved from the cache.
+        /// [More on prompt caching](https://developers.openai.com/api/docs/guides/prompt-caching).
+        public var cachedTokens: Int
+        /// The number of input tokens that were written to the cache.
+        public var cacheWriteTokens: Int
+        public var cacheWriteTokensDetails: CacheWriteTokensDetails?
+
+        public init(
+            cachedTokens: Int,
+            cacheWriteTokens: Int,
+            cacheWriteTokensDetails: CacheWriteTokensDetails? = nil
+        ) {
+            self.cachedTokens = cachedTokens
+            self.cacheWriteTokens = cacheWriteTokens
+            self.cacheWriteTokensDetails = cacheWriteTokensDetails
+        }
+
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.cachedTokens = try container.decode(Int.self, forKey: "cached_tokens")
+            self.cacheWriteTokens = try container.decode(Int.self, forKey: "cache_write_tokens")
+            self.cacheWriteTokensDetails = try container.decodeIfPresent(CacheWriteTokensDetails.self, forKey: "cache_write_tokens_details")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.cachedTokens, forKey: "cached_tokens")
+            try container.encode(self.cacheWriteTokens, forKey: "cache_write_tokens")
+            try container.encodeIfPresent(self.cacheWriteTokensDetails, forKey: "cache_write_tokens_details")
+        }
+    }
+
+    /// A detailed breakdown of the output tokens.
+    public struct OutputTokensDetails: OpenAIModel {
+        /// The number of reasoning tokens.
+        public var reasoningTokens: Int
+
+        public init(reasoningTokens: Int) {
+            self.reasoningTokens = reasoningTokens
+        }
+
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.reasoningTokens = try container.decode(Int.self, forKey: "reasoning_tokens")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.reasoningTokens, forKey: "reasoning_tokens")
+        }
+    }
+}
+
+public struct ResponseUsageResource: OpenAIModel {
     public var inputTokens: Int64
     public var inputTokensDetails: InputTokensDetailsResource
     public var outputTokens: Int64
@@ -24,17 +755,27 @@ public struct ResponseUsageResource: Codable, Hashable, Sendable {
         self.totalTokens = totalTokens
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case inputTokens = "input_tokens"
-        case inputTokensDetails = "input_tokens_details"
-        case outputTokens = "output_tokens"
-        case outputTokensDetails = "output_tokens_details"
-        case totalTokens = "total_tokens"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.inputTokens = try container.decode(Int64.self, forKey: "input_tokens")
+        self.inputTokensDetails = try container.decode(InputTokensDetailsResource.self, forKey: "input_tokens_details")
+        self.outputTokens = try container.decode(Int64.self, forKey: "output_tokens")
+        self.outputTokensDetails = try container.decode(OutputTokensDetailsResource.self, forKey: "output_tokens_details")
+        self.totalTokens = try container.decode(Int64.self, forKey: "total_tokens")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.inputTokens, forKey: "input_tokens")
+        try container.encode(self.inputTokensDetails, forKey: "input_tokens_details")
+        try container.encode(self.outputTokens, forKey: "output_tokens")
+        try container.encode(self.outputTokensDetails, forKey: "output_tokens_details")
+        try container.encode(self.totalTokens, forKey: "total_tokens")
     }
 }
 
 /// Emitted when a web search call is completed.
-public struct ResponseWebSearchCallCompletedEvent: Codable, Hashable, Sendable {
+public struct ResponseWebSearchCallCompletedEvent: OpenAIModel {
     /// The type of the event. Always `response.web_search_call.completed`.
     public var type: String = "response.web_search_call.completed"
     /// The index of the output item that the web search call is associated with.
@@ -54,16 +795,25 @@ public struct ResponseWebSearchCallCompletedEvent: Codable, Hashable, Sendable {
         self.sequenceNumber = sequenceNumber
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case outputIndex = "output_index"
-        case itemID = "item_id"
-        case sequenceNumber = "sequence_number"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.web_search_call.completed"
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
     }
 }
 
 /// Emitted when a web search call is initiated.
-public struct ResponseWebSearchCallInProgressEvent: Codable, Hashable, Sendable {
+public struct ResponseWebSearchCallInProgressEvent: OpenAIModel {
     /// The type of the event. Always `response.web_search_call.in_progress`.
     public var type: String = "response.web_search_call.in_progress"
     /// The index of the output item that the web search call is associated with.
@@ -83,16 +833,25 @@ public struct ResponseWebSearchCallInProgressEvent: Codable, Hashable, Sendable 
         self.sequenceNumber = sequenceNumber
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case outputIndex = "output_index"
-        case itemID = "item_id"
-        case sequenceNumber = "sequence_number"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.web_search_call.in_progress"
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
     }
 }
 
 /// Emitted when a web search call is executing.
-public struct ResponseWebSearchCallSearchingEvent: Codable, Hashable, Sendable {
+public struct ResponseWebSearchCallSearchingEvent: OpenAIModel {
     /// The type of the event. Always `response.web_search_call.searching`.
     public var type: String = "response.web_search_call.searching"
     /// The index of the output item that the web search call is associated with.
@@ -112,16 +871,25 @@ public struct ResponseWebSearchCallSearchingEvent: Codable, Hashable, Sendable {
         self.sequenceNumber = sequenceNumber
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case outputIndex = "output_index"
-        case itemID = "item_id"
-        case sequenceNumber = "sequence_number"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.web_search_call.searching"
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
     }
 }
 
 /// Emitted when an error occurs while processing a Responses WebSocket request.
-public struct ResponseWsError: Codable, Hashable, Sendable {
+public struct ResponseWsError: OpenAIModel {
     /// The type of the event. Always `error`.
     public var type: String = "error"
     /// The HTTP status code associated with a WebSocket protocol error.
@@ -146,11 +914,21 @@ public struct ResponseWsError: Codable, Hashable, Sendable {
         self.streamID = streamID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case status
-        case sequenceNumber = "sequence_number"
-        case error
-        case streamID = "stream_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "error"
+        self.status = try container.decodeIfPresent(Int.self, forKey: "status")
+        self.sequenceNumber = try container.decodeIfPresent(Int.self, forKey: "sequence_number")
+        self.error = try container.decode(ErrorPayload.self, forKey: "error")
+        self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.status, forKey: "status")
+        try container.encodeIfPresent(self.sequenceNumber, forKey: "sequence_number")
+        try container.encode(self.error, forKey: "error")
+        try container.encodeIfPresent(self.streamID, forKey: "stream_id")
     }
 }

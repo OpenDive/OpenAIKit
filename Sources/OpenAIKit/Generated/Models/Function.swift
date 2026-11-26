@@ -4,7 +4,7 @@
 import Foundation
 
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum FunctionAndCustomToolCallOutput: Codable, Hashable, Sendable {
+public indirect enum FunctionAndCustomToolCallOutput: OpenAIModel {
     /// `type`: `input_text`
     case inputText(InputTextContent)
     /// `type`: `input_image`
@@ -51,7 +51,7 @@ public indirect enum FunctionAndCustomToolCallOutput: Codable, Hashable, Sendabl
 }
 
 /// A function call produced by the agent.
-public struct FunctionCallItemResource: Codable, Hashable, Sendable {
+public struct FunctionCallItemResource: OpenAIModel {
     /// The item type. Always `function_call`.
     public var type: String = "function_call"
     /// The ID of the function call item.
@@ -83,14 +83,26 @@ public struct FunctionCallItemResource: Codable, Hashable, Sendable {
         self.status = status
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case turnID = "turn_id"
-        case callID = "call_id"
-        case name
-        case arguments
-        case status
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "function_call"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.turnID = try container.decode(String.self, forKey: "turn_id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.arguments = try container.decode(JSONValue.self, forKey: "arguments")
+        self.status = try container.decode(FunctionCallStatusResource.self, forKey: "status")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.turnID, forKey: "turn_id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.arguments, forKey: "arguments")
+        try container.encode(self.status, forKey: "status")
     }
 }
 
@@ -112,7 +124,7 @@ public struct FunctionCallItemStatus: OpenAIStringEnum {
 }
 
 /// The output of a function tool call.
-public struct FunctionCallOutputItemParam: Codable, Hashable, Sendable {
+public struct FunctionCallOutputItemParam: OpenAIModel {
     public var id: String?
     public var callID: String?
     /// The type of the function tool call output. Always `function_call_output`.
@@ -142,19 +154,32 @@ public struct FunctionCallOutputItemParam: Codable, Hashable, Sendable {
         self.status = status
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case callID = "call_id"
-        case type
-        case output
-        case name
-        case namespace
-        case caller
-        case status
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.callID = try container.decodeIfPresent(String.self, forKey: "call_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "function_call_output"
+        self.output = try container.decode(FunctionCallOutputItemParam.Output.self, forKey: "output")
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.namespace = try container.decodeIfPresent(String.self, forKey: "namespace")
+        self.caller = try container.decodeIfPresent(ToolCallCallerParam.self, forKey: "caller")
+        self.status = try container.decodeIfPresent(FunctionCallItemStatus.self, forKey: "status")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encodeIfPresent(self.callID, forKey: "call_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.output, forKey: "output")
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encodeIfPresent(self.namespace, forKey: "namespace")
+        try container.encodeIfPresent(self.caller, forKey: "caller")
+        try container.encodeIfPresent(self.status, forKey: "status")
     }
 
     /// Text, image, or file output of the function tool call.
-    public indirect enum Output: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum Output: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         /// A JSON string of the output of the function tool call.
         case string(String)
         /// An array of content outputs (text, image, file) for the function tool call.
@@ -194,7 +219,7 @@ public struct FunctionCallOutputItemParam: Codable, Hashable, Sendable {
         /// A piece of message content, such as text, an image, or a file.
         ///
         /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-        public indirect enum Item: Codable, Hashable, Sendable {
+        public indirect enum Item: OpenAIModel {
             /// `type`: `input_text`
             case inputText(InputTextContentParam)
             /// `type`: `input_image`
@@ -243,7 +268,7 @@ public struct FunctionCallOutputItemParam: Codable, Hashable, Sendable {
 }
 
 /// The result supplied for a function call.
-public struct FunctionCallOutputItemResource: Codable, Hashable, Sendable {
+public struct FunctionCallOutputItemResource: OpenAIModel {
     /// The ID of the function call output item.
     public var id: String
     /// The ID of the turn that contains this item.
@@ -275,19 +300,31 @@ public struct FunctionCallOutputItemResource: Codable, Hashable, Sendable {
         self.error = error
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case turnID = "turn_id"
-        case type
-        case callID = "call_id"
-        case status
-        case output
-        case error
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.turnID = try container.decode(String.self, forKey: "turn_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "function_call_output"
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.status = try container.decode(FunctionCallStatusResource.self, forKey: "status")
+        self.output = try container.decodeIfPresent(FunctionCallOutputResource.self, forKey: "output")
+        self.error = try container.decodeIfPresent(String.self, forKey: "error")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.turnID, forKey: "turn_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encode(self.status, forKey: "status")
+        try container.encodeIfPresent(self.output, forKey: "output")
+        try container.encodeIfPresent(self.error, forKey: "error")
     }
 }
 
 /// A function result represented as text or supported model-input content.
-public indirect enum FunctionCallOutputParam: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+public indirect enum FunctionCallOutputParam: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
     case string(String)
     case array([InputContentParam])
     /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
@@ -324,7 +361,7 @@ public indirect enum FunctionCallOutputParam: Codable, Hashable, Sendable, Expre
 }
 
 /// The text or model-input content supplied as a function result.
-public indirect enum FunctionCallOutputResource: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+public indirect enum FunctionCallOutputResource: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
     case string(String)
     case array([InputContentResource])
     /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
@@ -431,7 +468,7 @@ public struct FunctionCallStatusResource: OpenAIStringEnum {
     }
 }
 
-public struct FunctionObject: Codable, Hashable, Sendable {
+public struct FunctionObject: OpenAIModel {
     /// A description of what the function does, used by the model to choose when and how to call the function.
     public var description: String?
     /// The name of the function to be called. Must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 64.
@@ -451,11 +488,20 @@ public struct FunctionObject: Codable, Hashable, Sendable {
         self.strict = strict
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case description
-        case name
-        case parameters
-        case strict
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.description = try container.decodeIfPresent(String.self, forKey: "description")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.parameters = try container.decodeIfPresent(FunctionParameters.self, forKey: "parameters")
+        self.strict = try container.decodeIfPresent(Bool.self, forKey: "strict")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.description, forKey: "description")
+        try container.encode(self.name, forKey: "name")
+        try container.encodeIfPresent(self.parameters, forKey: "parameters")
+        try container.encodeIfPresent(self.strict, forKey: "strict")
     }
 }
 
@@ -465,7 +511,7 @@ public struct FunctionObject: Codable, Hashable, Sendable {
 public typealias FunctionParameters = JSONObject
 
 /// Execute a shell command.
-public struct FunctionShellAction: Codable, Hashable, Sendable {
+public struct FunctionShellAction: OpenAIModel {
     public var commands: [String]
     public var timeoutMs: Int?
     public var maxOutputLength: Int?
@@ -480,15 +526,23 @@ public struct FunctionShellAction: Codable, Hashable, Sendable {
         self.maxOutputLength = maxOutputLength
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case commands
-        case timeoutMs = "timeout_ms"
-        case maxOutputLength = "max_output_length"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.commands = try container.decode([String].self, forKey: "commands")
+        self.timeoutMs = try container.decodeIfPresent(Int.self, forKey: "timeout_ms")
+        self.maxOutputLength = try container.decodeIfPresent(Int.self, forKey: "max_output_length")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.commands, forKey: "commands")
+        try container.encodeIfPresent(self.timeoutMs, forKey: "timeout_ms")
+        try container.encodeIfPresent(self.maxOutputLength, forKey: "max_output_length")
     }
 }
 
 /// Commands and limits describing how to run the shell tool call.
-public struct FunctionShellActionParam: Codable, Hashable, Sendable {
+public struct FunctionShellActionParam: OpenAIModel {
     /// Ordered shell commands for the execution environment to run.
     public var commands: [String]
     public var timeoutMs: Int?
@@ -504,15 +558,23 @@ public struct FunctionShellActionParam: Codable, Hashable, Sendable {
         self.maxOutputLength = maxOutputLength
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case commands
-        case timeoutMs = "timeout_ms"
-        case maxOutputLength = "max_output_length"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.commands = try container.decode([String].self, forKey: "commands")
+        self.timeoutMs = try container.decodeIfPresent(Int.self, forKey: "timeout_ms")
+        self.maxOutputLength = try container.decodeIfPresent(Int.self, forKey: "max_output_length")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.commands, forKey: "commands")
+        try container.encodeIfPresent(self.timeoutMs, forKey: "timeout_ms")
+        try container.encodeIfPresent(self.maxOutputLength, forKey: "max_output_length")
     }
 }
 
 /// A tool call that executes one or more shell commands in a managed environment.
-public struct FunctionShellCall: Codable, Hashable, Sendable {
+public struct FunctionShellCall: OpenAIModel {
     /// The type of the item. Always `shell_call`.
     public var type: String = "shell_call"
     /// The unique ID of the shell tool call. Populated when this item is returned via API.
@@ -546,19 +608,32 @@ public struct FunctionShellCall: Codable, Hashable, Sendable {
         self.createdBy = createdBy
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case callID = "call_id"
-        case caller
-        case action
-        case status
-        case environment
-        case createdBy = "created_by"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "shell_call"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.caller = try container.decodeIfPresent(ToolCallCaller.self, forKey: "caller")
+        self.action = try container.decode(FunctionShellAction.self, forKey: "action")
+        self.status = try container.decode(FunctionShellCallStatus.self, forKey: "status")
+        self.environment = try container.decodeIfPresent(FunctionShellCall.EnvironmentValue.self, forKey: "environment")
+        self.createdBy = try container.decodeIfPresent(String.self, forKey: "created_by")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encodeIfPresent(self.caller, forKey: "caller")
+        try container.encode(self.action, forKey: "action")
+        try container.encode(self.status, forKey: "status")
+        try container.encodeIfPresent(self.environment, forKey: "environment")
+        try container.encodeIfPresent(self.createdBy, forKey: "created_by")
     }
 
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum EnvironmentValue: Codable, Hashable, Sendable {
+    public indirect enum EnvironmentValue: OpenAIModel {
         /// `type`: `local`
         case local(LocalEnvironmentResource)
         /// `type`: `container_reference`
@@ -599,7 +674,7 @@ public struct FunctionShellCall: Codable, Hashable, Sendable {
 }
 
 /// A tool representing a request to execute one or more shell commands.
-public struct FunctionShellCallItemParam: Codable, Hashable, Sendable {
+public struct FunctionShellCallItemParam: OpenAIModel {
     public var id: String?
     /// The unique ID of the shell tool call generated by the model.
     public var callID: String
@@ -627,20 +702,32 @@ public struct FunctionShellCallItemParam: Codable, Hashable, Sendable {
         self.environment = environment
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case callID = "call_id"
-        case caller
-        case type
-        case action
-        case status
-        case environment
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.caller = try container.decodeIfPresent(ToolCallCallerParam.self, forKey: "caller")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "shell_call"
+        self.action = try container.decode(FunctionShellActionParam.self, forKey: "action")
+        self.status = try container.decodeIfPresent(FunctionShellCallItemStatus.self, forKey: "status")
+        self.environment = try container.decodeIfPresent(FunctionShellCallItemParam.EnvironmentValue.self, forKey: "environment")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encodeIfPresent(self.caller, forKey: "caller")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.action, forKey: "action")
+        try container.encodeIfPresent(self.status, forKey: "status")
+        try container.encodeIfPresent(self.environment, forKey: "environment")
     }
 
     /// The environment to execute the shell commands in.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum EnvironmentValue: Codable, Hashable, Sendable {
+    public indirect enum EnvironmentValue: OpenAIModel {
         /// `type`: `local`
         case local(LocalEnvironmentParam)
         /// `type`: `container_reference`
@@ -700,7 +787,7 @@ public struct FunctionShellCallItemStatus: OpenAIStringEnum {
 }
 
 /// The output of a shell tool call that was emitted.
-public struct FunctionShellCallOutput: Codable, Hashable, Sendable {
+public struct FunctionShellCallOutput: OpenAIModel {
     /// The type of the shell call output. Always `shell_call_output`.
     public var type: String = "shell_call_output"
     /// The unique ID of the shell call output. Populated when this item is returned via API.
@@ -734,20 +821,33 @@ public struct FunctionShellCallOutput: Codable, Hashable, Sendable {
         self.createdBy = createdBy
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case callID = "call_id"
-        case caller
-        case status
-        case output
-        case maxOutputLength = "max_output_length"
-        case createdBy = "created_by"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "shell_call_output"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.caller = try container.decodeIfPresent(ToolCallCaller.self, forKey: "caller")
+        self.status = try container.decode(FunctionShellCallOutputStatusEnum.self, forKey: "status")
+        self.output = try container.decode([FunctionShellCallOutputContent].self, forKey: "output")
+        self.maxOutputLength = try container.decodeIfPresent(Int.self, forKey: "max_output_length")
+        self.createdBy = try container.decodeIfPresent(String.self, forKey: "created_by")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encodeIfPresent(self.caller, forKey: "caller")
+        try container.encode(self.status, forKey: "status")
+        try container.encode(self.output, forKey: "output")
+        try container.encodeIfPresent(self.maxOutputLength, forKey: "max_output_length")
+        try container.encodeIfPresent(self.createdBy, forKey: "created_by")
     }
 }
 
 /// The content of a shell tool call output that was emitted.
-public struct FunctionShellCallOutputContent: Codable, Hashable, Sendable {
+public struct FunctionShellCallOutputContent: OpenAIModel {
     /// The standard output that was captured.
     public var stdout: String
     /// The standard error output that was captured.
@@ -769,17 +869,26 @@ public struct FunctionShellCallOutputContent: Codable, Hashable, Sendable {
         self.createdBy = createdBy
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case stdout
-        case stderr
-        case outcome
-        case createdBy = "created_by"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.stdout = try container.decode(String.self, forKey: "stdout")
+        self.stderr = try container.decode(String.self, forKey: "stderr")
+        self.outcome = try container.decode(FunctionShellCallOutputContent.Outcome.self, forKey: "outcome")
+        self.createdBy = try container.decodeIfPresent(String.self, forKey: "created_by")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.stdout, forKey: "stdout")
+        try container.encode(self.stderr, forKey: "stderr")
+        try container.encode(self.outcome, forKey: "outcome")
+        try container.encodeIfPresent(self.createdBy, forKey: "created_by")
     }
 
     /// Represents either an exit outcome (with an exit code) or a timeout outcome for a shell call output chunk.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Outcome: Codable, Hashable, Sendable {
+    public indirect enum Outcome: OpenAIModel {
         /// `type`: `timeout`
         case timeout(FunctionShellCallOutputTimeoutOutcome)
         /// `type`: `exit`
@@ -820,7 +929,7 @@ public struct FunctionShellCallOutputContent: Codable, Hashable, Sendable {
 }
 
 /// Captured stdout and stderr for a portion of a shell tool call output.
-public struct FunctionShellCallOutputContentParam: Codable, Hashable, Sendable {
+public struct FunctionShellCallOutputContentParam: OpenAIModel {
     /// Captured stdout output for the shell call.
     public var stdout: String
     /// Captured stderr output for the shell call.
@@ -838,15 +947,23 @@ public struct FunctionShellCallOutputContentParam: Codable, Hashable, Sendable {
         self.outcome = outcome
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case stdout
-        case stderr
-        case outcome
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.stdout = try container.decode(String.self, forKey: "stdout")
+        self.stderr = try container.decode(String.self, forKey: "stderr")
+        self.outcome = try container.decode(FunctionShellCallOutputOutcomeParam.self, forKey: "outcome")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.stdout, forKey: "stdout")
+        try container.encode(self.stderr, forKey: "stderr")
+        try container.encode(self.outcome, forKey: "outcome")
     }
 }
 
 /// Indicates that the shell commands finished and returned an exit code.
-public struct FunctionShellCallOutputExitOutcome: Codable, Hashable, Sendable {
+public struct FunctionShellCallOutputExitOutcome: OpenAIModel {
     /// The outcome type. Always `exit`.
     public var type: String = "exit"
     /// Exit code from the shell process.
@@ -856,14 +973,21 @@ public struct FunctionShellCallOutputExitOutcome: Codable, Hashable, Sendable {
         self.exitCode = exitCode
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case exitCode = "exit_code"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "exit"
+        self.exitCode = try container.decode(Int.self, forKey: "exit_code")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.exitCode, forKey: "exit_code")
     }
 }
 
 /// Indicates that the shell commands finished and returned an exit code.
-public struct FunctionShellCallOutputExitOutcomeParam: Codable, Hashable, Sendable {
+public struct FunctionShellCallOutputExitOutcomeParam: OpenAIModel {
     /// The outcome type. Always `exit`.
     public var type: String = "exit"
     /// The exit code returned by the shell process.
@@ -873,14 +997,21 @@ public struct FunctionShellCallOutputExitOutcomeParam: Codable, Hashable, Sendab
         self.exitCode = exitCode
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case exitCode = "exit_code"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "exit"
+        self.exitCode = try container.decode(Int.self, forKey: "exit_code")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.exitCode, forKey: "exit_code")
     }
 }
 
 /// The streamed output items emitted by a shell tool call.
-public struct FunctionShellCallOutputItemParam: Codable, Hashable, Sendable {
+public struct FunctionShellCallOutputItemParam: OpenAIModel {
     public var id: String?
     /// The unique ID of the shell tool call generated by the model.
     public var callID: String
@@ -908,21 +1039,33 @@ public struct FunctionShellCallOutputItemParam: Codable, Hashable, Sendable {
         self.maxOutputLength = maxOutputLength
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case callID = "call_id"
-        case caller
-        case type
-        case output
-        case status
-        case maxOutputLength = "max_output_length"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.caller = try container.decodeIfPresent(ToolCallCallerParam.self, forKey: "caller")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "shell_call_output"
+        self.output = try container.decode([FunctionShellCallOutputContentParam].self, forKey: "output")
+        self.status = try container.decodeIfPresent(FunctionShellCallItemStatus.self, forKey: "status")
+        self.maxOutputLength = try container.decodeIfPresent(Int.self, forKey: "max_output_length")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encodeIfPresent(self.caller, forKey: "caller")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.output, forKey: "output")
+        try container.encodeIfPresent(self.status, forKey: "status")
+        try container.encodeIfPresent(self.maxOutputLength, forKey: "max_output_length")
     }
 }
 
 /// The exit or timeout outcome associated with this shell call.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum FunctionShellCallOutputOutcomeParam: Codable, Hashable, Sendable {
+public indirect enum FunctionShellCallOutputOutcomeParam: OpenAIModel {
     /// `type`: `timeout`
     case timeout(FunctionShellCallOutputTimeoutOutcomeParam)
     /// `type`: `exit`
@@ -979,28 +1122,40 @@ public struct FunctionShellCallOutputStatusEnum: OpenAIStringEnum {
 }
 
 /// Indicates that the shell call exceeded its configured time limit.
-public struct FunctionShellCallOutputTimeoutOutcome: Codable, Hashable, Sendable {
+public struct FunctionShellCallOutputTimeoutOutcome: OpenAIModel {
     /// The outcome type. Always `timeout`.
     public var type: String = "timeout"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "timeout"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// Indicates that the shell call exceeded its configured time limit.
-public struct FunctionShellCallOutputTimeoutOutcomeParam: Codable, Hashable, Sendable {
+public struct FunctionShellCallOutputTimeoutOutcomeParam: OpenAIModel {
     /// The outcome type. Always `timeout`.
     public var type: String = "timeout"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "timeout"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
@@ -1022,7 +1177,7 @@ public struct FunctionShellCallStatus: OpenAIStringEnum {
 }
 
 /// A tool that allows the model to execute shell commands.
-public struct FunctionShellToolParam: Codable, Hashable, Sendable {
+public struct FunctionShellToolParam: OpenAIModel {
     /// The type of the shell tool. Always `shell`.
     public var type: String = "shell"
     public var environment: FunctionShellToolParam.EnvironmentValue?
@@ -1033,14 +1188,22 @@ public struct FunctionShellToolParam: Codable, Hashable, Sendable {
         self.allowedCallers = allowedCallers
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case environment
-        case allowedCallers = "allowed_callers"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "shell"
+        self.environment = try container.decodeIfPresent(FunctionShellToolParam.EnvironmentValue.self, forKey: "environment")
+        self.allowedCallers = try container.decodeIfPresent([CallableToolAllowedCaller].self, forKey: "allowed_callers")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.environment, forKey: "environment")
+        try container.encodeIfPresent(self.allowedCallers, forKey: "allowed_callers")
     }
 
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum EnvironmentValue: Codable, Hashable, Sendable {
+    public indirect enum EnvironmentValue: OpenAIModel {
         /// `type`: `container_auto`
         case containerAuto(ContainerAutoParam)
         /// `type`: `local`
@@ -1088,7 +1251,7 @@ public struct FunctionShellToolParam: Codable, Hashable, Sendable {
 }
 
 /// Defines a function in your own code the model can choose to call. Learn more about [function calling](https://developers.openai.com/api/docs/guides/function-calling).
-public struct FunctionTool: Codable, Hashable, Sendable {
+public struct FunctionTool: OpenAIModel {
     /// The type of the function tool. Always `function`.
     public var type: String = "function"
     /// The name of the function to call.
@@ -1122,22 +1285,36 @@ public struct FunctionTool: Codable, Hashable, Sendable {
         self.allowedCallers = allowedCallers
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
-        case `async`
-        case description
-        case parameters
-        case outputSchema = "output_schema"
-        case strict
-        case deferLoading = "defer_loading"
-        case allowedCallers = "allowed_callers"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "function"
+        self.name = try container.decode(String.self, forKey: "name")
+        self.async = try container.decodeIfPresent(Bool.self, forKey: "async")
+        self.description = try container.decodeIfPresent(String.self, forKey: "description")
+        self.parameters = try container.decodeIfPresent(JSONObject.self, forKey: "parameters")
+        self.outputSchema = try container.decodeIfPresent(JSONObject.self, forKey: "output_schema")
+        self.strict = try container.decodeIfPresent(Bool.self, forKey: "strict")
+        self.deferLoading = try container.decodeIfPresent(Bool.self, forKey: "defer_loading")
+        self.allowedCallers = try container.decodeIfPresent([CallableToolAllowedCaller].self, forKey: "allowed_callers")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.name, forKey: "name")
+        try container.encodeIfPresent(self.async, forKey: "async")
+        try container.encodeIfPresent(self.description, forKey: "description")
+        try container.encodeIfPresent(self.parameters, forKey: "parameters")
+        try container.encodeIfPresent(self.outputSchema, forKey: "output_schema")
+        try container.encodeIfPresent(self.strict, forKey: "strict")
+        try container.encodeIfPresent(self.deferLoading, forKey: "defer_loading")
+        try container.encodeIfPresent(self.allowedCallers, forKey: "allowed_callers")
     }
 }
 
 /// A tool call to run a function. See the
 /// [function calling guide](https://developers.openai.com/api/docs/guides/function-calling) for more information.
-public struct FunctionToolCall: Codable, Hashable, Sendable {
+public struct FunctionToolCall: OpenAIModel {
     /// The unique ID of the function tool call.
     public var id: String?
     /// The type of the function tool call. Always `function_call`.
@@ -1177,16 +1354,30 @@ public struct FunctionToolCall: Codable, Hashable, Sendable {
         self.async = `async`
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case type
-        case callID = "call_id"
-        case caller
-        case namespace
-        case name
-        case arguments
-        case status
-        case `async`
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "function_call"
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.caller = try container.decodeIfPresent(ToolCallCaller.self, forKey: "caller")
+        self.namespace = try container.decodeIfPresent(String.self, forKey: "namespace")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.arguments = try container.decode(String.self, forKey: "arguments")
+        self.status = try container.decodeIfPresent(FunctionToolCall.Status.self, forKey: "status")
+        self.async = try container.decodeIfPresent(Bool.self, forKey: "async")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encodeIfPresent(self.caller, forKey: "caller")
+        try container.encodeIfPresent(self.namespace, forKey: "namespace")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.arguments, forKey: "arguments")
+        try container.encodeIfPresent(self.status, forKey: "status")
+        try container.encodeIfPresent(self.async, forKey: "async")
     }
 
     /// The status of the item. One of `in_progress`, `completed`, or
@@ -1211,7 +1402,7 @@ public struct FunctionToolCall: Codable, Hashable, Sendable {
 }
 
 /// The output of a function tool call.
-public struct FunctionToolCallOutput: Codable, Hashable, Sendable {
+public struct FunctionToolCallOutput: OpenAIModel {
     /// The unique ID of the function tool call output. Populated when this item
     /// is returned via API.
     public var id: String?
@@ -1249,20 +1440,33 @@ public struct FunctionToolCallOutput: Codable, Hashable, Sendable {
         self.status = status
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case type
-        case callID = "call_id"
-        case name
-        case namespace
-        case caller
-        case output
-        case status
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "function_call_output"
+        self.callID = try container.decodeIfPresent(String.self, forKey: "call_id")
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.namespace = try container.decodeIfPresent(String.self, forKey: "namespace")
+        self.caller = try container.decodeIfPresent(ToolCallCallerParam.self, forKey: "caller")
+        self.output = try container.decode(FunctionToolCallOutput.Output.self, forKey: "output")
+        self.status = try container.decodeIfPresent(FunctionToolCallOutput.Status.self, forKey: "status")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.callID, forKey: "call_id")
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encodeIfPresent(self.namespace, forKey: "namespace")
+        try container.encodeIfPresent(self.caller, forKey: "caller")
+        try container.encode(self.output, forKey: "output")
+        try container.encodeIfPresent(self.status, forKey: "status")
     }
 
     /// The output from the function call generated by your code.
     /// Can be a string or an list of output content.
-    public indirect enum Output: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum Output: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         /// A string of the output of the function call.
         case stringOutput(String)
         /// Text, image, or file output of the function call.
@@ -1321,7 +1525,7 @@ public struct FunctionToolCallOutput: Codable, Hashable, Sendable {
     }
 }
 
-public struct FunctionToolCallOutputResource: Codable, Hashable, Sendable {
+public struct FunctionToolCallOutputResource: OpenAIModel {
     /// The unique ID of the function call tool output.
     public var id: String
     /// The type of the function tool call output. Always `function_call_output`.
@@ -1362,21 +1566,35 @@ public struct FunctionToolCallOutputResource: Codable, Hashable, Sendable {
         self.createdBy = createdBy
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case type
-        case callID = "call_id"
-        case name
-        case namespace
-        case caller
-        case output
-        case status
-        case createdBy = "created_by"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "function_call_output"
+        self.callID = try container.decodeIfPresent(String.self, forKey: "call_id")
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.namespace = try container.decodeIfPresent(String.self, forKey: "namespace")
+        self.caller = try container.decodeIfPresent(ToolCallCallerParam.self, forKey: "caller")
+        self.output = try container.decode(FunctionToolCallOutputResource.Output.self, forKey: "output")
+        self.status = try container.decode(FunctionCallOutputStatusEnum.self, forKey: "status")
+        self.createdBy = try container.decodeIfPresent(String.self, forKey: "created_by")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.callID, forKey: "call_id")
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encodeIfPresent(self.namespace, forKey: "namespace")
+        try container.encodeIfPresent(self.caller, forKey: "caller")
+        try container.encode(self.output, forKey: "output")
+        try container.encode(self.status, forKey: "status")
+        try container.encodeIfPresent(self.createdBy, forKey: "created_by")
     }
 
     /// The output from the function call generated by your code.
     /// Can be a string or an list of output content.
-    public indirect enum Output: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum Output: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         /// A string of the output of the function call.
         case stringOutput(String)
         /// Text, image, or file output of the function call.
@@ -1415,7 +1633,7 @@ public struct FunctionToolCallOutputResource: Codable, Hashable, Sendable {
     }
 }
 
-public struct FunctionToolCallResource: Codable, Hashable, Sendable {
+public struct FunctionToolCallResource: OpenAIModel {
     /// The unique ID of the function tool call.
     public var id: String
     /// The type of the function tool call. Always `function_call`.
@@ -1459,21 +1677,36 @@ public struct FunctionToolCallResource: Codable, Hashable, Sendable {
         self.createdBy = createdBy
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case type
-        case callID = "call_id"
-        case caller
-        case namespace
-        case name
-        case arguments
-        case status
-        case `async`
-        case createdBy = "created_by"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "function_call"
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.caller = try container.decodeIfPresent(ToolCallCaller.self, forKey: "caller")
+        self.namespace = try container.decodeIfPresent(String.self, forKey: "namespace")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.arguments = try container.decode(String.self, forKey: "arguments")
+        self.status = try container.decode(FunctionCallStatus.self, forKey: "status")
+        self.async = try container.decodeIfPresent(Bool.self, forKey: "async")
+        self.createdBy = try container.decodeIfPresent(String.self, forKey: "created_by")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encodeIfPresent(self.caller, forKey: "caller")
+        try container.encodeIfPresent(self.namespace, forKey: "namespace")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.arguments, forKey: "arguments")
+        try container.encode(self.status, forKey: "status")
+        try container.encodeIfPresent(self.async, forKey: "async")
+        try container.encodeIfPresent(self.createdBy, forKey: "created_by")
     }
 }
 
-public struct FunctionToolParam: Codable, Hashable, Sendable {
+public struct FunctionToolParam: OpenAIModel {
     public var name: String
     public var description: String?
     public var parameters: EmptyModelParam?
@@ -1506,15 +1739,29 @@ public struct FunctionToolParam: Codable, Hashable, Sendable {
         self.allowedCallers = allowedCallers
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case name
-        case description
-        case parameters
-        case strict
-        case type
-        case `async`
-        case outputSchema = "output_schema"
-        case deferLoading = "defer_loading"
-        case allowedCallers = "allowed_callers"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.name = try container.decode(String.self, forKey: "name")
+        self.description = try container.decodeIfPresent(String.self, forKey: "description")
+        self.parameters = try container.decodeIfPresent(EmptyModelParam.self, forKey: "parameters")
+        self.strict = try container.decodeIfPresent(Bool.self, forKey: "strict")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "function"
+        self.async = try container.decodeIfPresent(Bool.self, forKey: "async")
+        self.outputSchema = try container.decodeIfPresent(JSONObject.self, forKey: "output_schema")
+        self.deferLoading = try container.decodeIfPresent(Bool.self, forKey: "defer_loading")
+        self.allowedCallers = try container.decodeIfPresent([CallableToolAllowedCaller].self, forKey: "allowed_callers")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.name, forKey: "name")
+        try container.encodeIfPresent(self.description, forKey: "description")
+        try container.encodeIfPresent(self.parameters, forKey: "parameters")
+        try container.encodeIfPresent(self.strict, forKey: "strict")
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.async, forKey: "async")
+        try container.encodeIfPresent(self.outputSchema, forKey: "output_schema")
+        try container.encodeIfPresent(self.deferLoading, forKey: "defer_loading")
+        try container.encodeIfPresent(self.allowedCallers, forKey: "allowed_callers")
     }
 }

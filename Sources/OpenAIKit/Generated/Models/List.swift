@@ -4,7 +4,7 @@
 import Foundation
 
 /// A page of Agents API resources, with IDs for retrieving additional pages.
-public struct ListAgentAutomationInvocationsResponse: Codable, Hashable, Sendable {
+public struct ListAgentAutomationInvocationsResponse: OpenAIModel {
     /// The object type, which is always `list`.
     public var object: String = "list"
     /// The resources returned in this page, in the requested sort order.
@@ -28,17 +28,27 @@ public struct ListAgentAutomationInvocationsResponse: Codable, Hashable, Sendabl
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([AutomationInvocationResource].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
 /// A page of Agents API resources, with IDs for retrieving additional pages.
-public struct ListAgentAutomationsResponse: Codable, Hashable, Sendable {
+public struct ListAgentAutomationsResponse: OpenAIModel {
     /// The object type, which is always `list`.
     public var object: String = "list"
     /// The resources returned in this page, in the requested sort order.
@@ -62,17 +72,27 @@ public struct ListAgentAutomationsResponse: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([AutomationResource].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
 /// A page of Agents API resources, with IDs for retrieving additional pages.
-public struct ListAgentSessionSubagentsResponse: Codable, Hashable, Sendable {
+public struct ListAgentSessionSubagentsResponse: OpenAIModel {
     /// The object type, which is always `list`.
     public var object: String = "list"
     /// The resources returned in this page, in the requested sort order.
@@ -96,16 +116,26 @@ public struct ListAgentSessionSubagentsResponse: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([SubagentResource].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
-public struct ListAssistantsResponse: Codable, Hashable, Sendable {
+public struct ListAssistantsResponse: OpenAIModel {
     public var object: String
     public var data: [AssistantObject]
     public var firstID: String?
@@ -126,16 +156,26 @@ public struct ListAssistantsResponse: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decode(String.self, forKey: "object")
+        self.data = try container.decode([AssistantObject].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
-public struct ListAuditLogsResponse: Codable, Hashable, Sendable {
+public struct ListAuditLogsResponse: OpenAIModel {
     public var object: String = "list"
     public var data: [AuditLog]
     public var firstID: String?
@@ -154,16 +194,26 @@ public struct ListAuditLogsResponse: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([AuditLog].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
-public struct ListBatchesResponse: Codable, Hashable, Sendable {
+public struct ListBatchesResponse: OpenAIModel {
     public var data: [Batch]
     public var firstID: String?
     public var lastID: String?
@@ -182,16 +232,26 @@ public struct ListBatchesResponse: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
-        case object
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.data = try container.decode([Batch].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
+        try container.encode(self.object, forKey: "object")
     }
 }
 
-public struct ListCertificatesResponse: Codable, Hashable, Sendable {
+public struct ListCertificatesResponse: OpenAIModel {
     public var data: [OrganizationCertificate]
     public var firstID: String?
     public var lastID: String?
@@ -210,16 +270,26 @@ public struct ListCertificatesResponse: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
-        case object
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.data = try container.decode([OrganizationCertificate].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
+        try container.encode(self.object, forKey: "object")
     }
 }
 
-public struct ListExternalKeysResource: Codable, Hashable, Sendable {
+public struct ListExternalKeysResource: OpenAIModel {
     public var object: String = "list"
     public var data: [ExternalKeyResource]
     public var firstID: String?
@@ -238,16 +308,26 @@ public struct ListExternalKeysResource: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([ExternalKeyResource].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
-public struct ListFilesResponse: Codable, Hashable, Sendable {
+public struct ListFilesResponse: OpenAIModel {
     public var object: String
     public var data: [OpenAIFile]
     public var firstID: String?
@@ -268,16 +348,26 @@ public struct ListFilesResponse: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decode(String.self, forKey: "object")
+        self.data = try container.decode([OpenAIFile].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
-public struct ListFineTuningCheckpointPermissionResponse: Codable, Hashable, Sendable {
+public struct ListFineTuningCheckpointPermissionResponse: OpenAIModel {
     public var data: [FineTuningCheckpointPermission]
     public var object: String = "list"
     public var firstID: String?
@@ -296,16 +386,26 @@ public struct ListFineTuningCheckpointPermissionResponse: Codable, Hashable, Sen
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case data
-        case object
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.data = try container.decode([FineTuningCheckpointPermission].self, forKey: "data")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.data, forKey: "data")
+        try container.encode(self.object, forKey: "object")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
-public struct ListFineTuningJobCheckpointsResponse: Codable, Hashable, Sendable {
+public struct ListFineTuningJobCheckpointsResponse: OpenAIModel {
     public var data: [FineTuningJobCheckpoint]
     public var object: String = "list"
     public var firstID: String?
@@ -324,16 +424,26 @@ public struct ListFineTuningJobCheckpointsResponse: Codable, Hashable, Sendable 
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case data
-        case object
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.data = try container.decode([FineTuningJobCheckpoint].self, forKey: "data")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.data, forKey: "data")
+        try container.encode(self.object, forKey: "object")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
-public struct ListFineTuningJobEventsResponse: Codable, Hashable, Sendable {
+public struct ListFineTuningJobEventsResponse: OpenAIModel {
     public var data: [FineTuningJobEvent]
     public var object: String = "list"
     public var hasMore: Bool
@@ -343,14 +453,22 @@ public struct ListFineTuningJobEventsResponse: Codable, Hashable, Sendable {
         self.hasMore = hasMore
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case data
-        case object
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.data = try container.decode([FineTuningJobEvent].self, forKey: "data")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.data, forKey: "data")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
-public struct ListMessagesResponse: Codable, Hashable, Sendable {
+public struct ListMessagesResponse: OpenAIModel {
     public var object: String
     public var data: [MessageObject]
     public var firstID: String?
@@ -371,16 +489,26 @@ public struct ListMessagesResponse: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decode(String.self, forKey: "object")
+        self.data = try container.decode([MessageObject].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
-public struct ListModelsResponse: Codable, Hashable, Sendable {
+public struct ListModelsResponse: OpenAIModel {
     public var object: String = "list"
     public var data: [Model]
 
@@ -388,9 +516,16 @@ public struct ListModelsResponse: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([Model].self, forKey: "data")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
     }
 }
 
@@ -412,7 +547,7 @@ public struct ListOrderParam: OpenAIStringEnum {
     }
 }
 
-public struct ListPaginatedFineTuningJobsResponse: Codable, Hashable, Sendable {
+public struct ListPaginatedFineTuningJobsResponse: OpenAIModel {
     public var data: [FineTuningJob]
     public var hasMore: Bool
     public var object: String = "list"
@@ -422,14 +557,22 @@ public struct ListPaginatedFineTuningJobsResponse: Codable, Hashable, Sendable {
         self.hasMore = hasMore
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case data
-        case hasMore = "has_more"
-        case object
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.data = try container.decode([FineTuningJob].self, forKey: "data")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.data, forKey: "data")
+        try container.encode(self.hasMore, forKey: "has_more")
+        try container.encode(self.object, forKey: "object")
     }
 }
 
-public struct ListProjectCertificatesResponse: Codable, Hashable, Sendable {
+public struct ListProjectCertificatesResponse: OpenAIModel {
     public var data: [OrganizationProjectCertificate]
     public var firstID: String?
     public var lastID: String?
@@ -448,16 +591,26 @@ public struct ListProjectCertificatesResponse: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
-        case object
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.data = try container.decode([OrganizationProjectCertificate].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
+        try container.encode(self.object, forKey: "object")
     }
 }
 
-public struct ListRunStepsResponse: Codable, Hashable, Sendable {
+public struct ListRunStepsResponse: OpenAIModel {
     public var object: String
     public var data: [RunStepObject]
     public var firstID: String?
@@ -478,16 +631,26 @@ public struct ListRunStepsResponse: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decode(String.self, forKey: "object")
+        self.data = try container.decode([RunStepObject].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
-public struct ListRunsResponse: Codable, Hashable, Sendable {
+public struct ListRunsResponse: OpenAIModel {
     public var object: String
     public var data: [RunObject]
     public var firstID: String?
@@ -508,16 +671,26 @@ public struct ListRunsResponse: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decode(String.self, forKey: "object")
+        self.data = try container.decode([RunObject].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
-public struct ListVectorStoreFilesResponse: Codable, Hashable, Sendable {
+public struct ListVectorStoreFilesResponse: OpenAIModel {
     public var object: String
     public var data: [VectorStoreFileObject]
     public var firstID: String?
@@ -538,16 +711,26 @@ public struct ListVectorStoreFilesResponse: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decode(String.self, forKey: "object")
+        self.data = try container.decode([VectorStoreFileObject].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
-public struct ListVectorStoresResponse: Codable, Hashable, Sendable {
+public struct ListVectorStoresResponse: OpenAIModel {
     public var object: String
     public var data: [VectorStoreObject]
     public var firstID: String?
@@ -568,11 +751,21 @@ public struct ListVectorStoresResponse: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decode(String.self, forKey: "object")
+        self.data = try container.decode([VectorStoreObject].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }

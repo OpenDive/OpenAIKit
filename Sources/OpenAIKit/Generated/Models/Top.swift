@@ -4,7 +4,7 @@
 import Foundation
 
 /// The top log probability of a token.
-public struct TopLogProb: Codable, Hashable, Sendable {
+public struct TopLogProb: OpenAIModel {
     public var token: String
     public var logprob: Double
     public var bytes: [Int]
@@ -19,9 +19,17 @@ public struct TopLogProb: Codable, Hashable, Sendable {
         self.bytes = bytes
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case token
-        case logprob
-        case bytes
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.token = try container.decode(String.self, forKey: "token")
+        self.logprob = try container.decode(Double.self, forKey: "logprob")
+        self.bytes = try container.decode([Int].self, forKey: "bytes")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.token, forKey: "token")
+        try container.encode(self.logprob, forKey: "logprob")
+        try container.encode(self.bytes, forKey: "bytes")
     }
 }

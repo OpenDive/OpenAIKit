@@ -4,7 +4,7 @@
 import Foundation
 
 /// Represents an individual `user` within an organization.
-public struct User: Codable, Hashable, Sendable {
+public struct User: OpenAIModel {
     /// The object type, which is always `organization.user`
     public var object: String = "organization.user"
     /// The identifier, which can be referenced in API endpoints
@@ -72,27 +72,48 @@ public struct User: Codable, Hashable, Sendable {
         self.projects = projects
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case id
-        case name
-        case email
-        case role
-        case addedAt = "added_at"
-        case isDefault = "is_default"
-        case created
-        case user
-        case isServiceAccount = "is_service_account"
-        case isScaleTierAuthorizedPurchaser = "is_scale_tier_authorized_purchaser"
-        case isScimManaged = "is_scim_managed"
-        case apiKeyLastUsedAt = "api_key_last_used_at"
-        case technicalLevel = "technical_level"
-        case developerPersona = "developer_persona"
-        case projects
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.user"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.email = try container.decodeIfPresent(String.self, forKey: "email")
+        self.role = try container.decodeIfPresent(String.self, forKey: "role")
+        self.addedAt = try container.decode(Int.self, forKey: "added_at")
+        self.isDefault = try container.decodeIfPresent(Bool.self, forKey: "is_default")
+        self.created = try container.decodeIfPresent(Int.self, forKey: "created")
+        self.user = try container.decodeIfPresent(User.UserValue.self, forKey: "user")
+        self.isServiceAccount = try container.decodeIfPresent(Bool.self, forKey: "is_service_account")
+        self.isScaleTierAuthorizedPurchaser = try container.decodeIfPresent(Bool.self, forKey: "is_scale_tier_authorized_purchaser")
+        self.isScimManaged = try container.decodeIfPresent(Bool.self, forKey: "is_scim_managed")
+        self.apiKeyLastUsedAt = try container.decodeIfPresent(Int.self, forKey: "api_key_last_used_at")
+        self.technicalLevel = try container.decodeIfPresent(String.self, forKey: "technical_level")
+        self.developerPersona = try container.decodeIfPresent(String.self, forKey: "developer_persona")
+        self.projects = try container.decodeIfPresent(User.Projects.self, forKey: "projects")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.id, forKey: "id")
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encodeIfPresent(self.email, forKey: "email")
+        try container.encodeIfPresent(self.role, forKey: "role")
+        try container.encode(self.addedAt, forKey: "added_at")
+        try container.encodeIfPresent(self.isDefault, forKey: "is_default")
+        try container.encodeIfPresent(self.created, forKey: "created")
+        try container.encodeIfPresent(self.user, forKey: "user")
+        try container.encodeIfPresent(self.isServiceAccount, forKey: "is_service_account")
+        try container.encodeIfPresent(self.isScaleTierAuthorizedPurchaser, forKey: "is_scale_tier_authorized_purchaser")
+        try container.encodeIfPresent(self.isScimManaged, forKey: "is_scim_managed")
+        try container.encodeIfPresent(self.apiKeyLastUsedAt, forKey: "api_key_last_used_at")
+        try container.encodeIfPresent(self.technicalLevel, forKey: "technical_level")
+        try container.encodeIfPresent(self.developerPersona, forKey: "developer_persona")
+        try container.encodeIfPresent(self.projects, forKey: "projects")
     }
 
     /// Nested user details.
-    public struct UserValue: Codable, Hashable, Sendable {
+    public struct UserValue: OpenAIModel {
         public var object: String = "user"
         public var id: String
         public var email: String?
@@ -120,20 +141,33 @@ public struct User: Codable, Hashable, Sendable {
             self.bannedAt = bannedAt
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case object
-            case id
-            case email
-            case name
-            case picture
-            case enabled
-            case banned
-            case bannedAt = "banned_at"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "user"
+            self.id = try container.decode(String.self, forKey: "id")
+            self.email = try container.decodeIfPresent(String.self, forKey: "email")
+            self.name = try container.decodeIfPresent(String.self, forKey: "name")
+            self.picture = try container.decodeIfPresent(String.self, forKey: "picture")
+            self.enabled = try container.decodeIfPresent(Bool.self, forKey: "enabled")
+            self.banned = try container.decodeIfPresent(Bool.self, forKey: "banned")
+            self.bannedAt = try container.decodeIfPresent(Int.self, forKey: "banned_at")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.object, forKey: "object")
+            try container.encode(self.id, forKey: "id")
+            try container.encodeIfPresent(self.email, forKey: "email")
+            try container.encodeIfPresent(self.name, forKey: "name")
+            try container.encodeIfPresent(self.picture, forKey: "picture")
+            try container.encodeIfPresent(self.enabled, forKey: "enabled")
+            try container.encodeIfPresent(self.banned, forKey: "banned")
+            try container.encodeIfPresent(self.bannedAt, forKey: "banned_at")
         }
     }
 
     /// Projects associated with the user, if included.
-    public struct Projects: Codable, Hashable, Sendable {
+    public struct Projects: OpenAIModel {
         public var object: String = "list"
         public var data: [User.Projects.DataItem]
 
@@ -141,12 +175,19 @@ public struct User: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case object
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+            self.data = try container.decode([User.Projects.DataItem].self, forKey: "data")
         }
 
-        public struct DataItem: Codable, Hashable, Sendable {
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.object, forKey: "object")
+            try container.encode(self.data, forKey: "data")
+        }
+
+        public struct DataItem: OpenAIModel {
             public var id: String?
             public var name: String?
             public var role: String?
@@ -161,16 +202,24 @@ public struct User: Codable, Hashable, Sendable {
                 self.role = role
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case id
-                case name
-                case role
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.id = try container.decodeIfPresent(String.self, forKey: "id")
+                self.name = try container.decodeIfPresent(String.self, forKey: "name")
+                self.role = try container.decodeIfPresent(String.self, forKey: "role")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.id, forKey: "id")
+                try container.encodeIfPresent(self.name, forKey: "name")
+                try container.encodeIfPresent(self.role, forKey: "role")
             }
         }
     }
 }
 
-public struct UserDeleteResponse: Codable, Hashable, Sendable {
+public struct UserDeleteResponse: OpenAIModel {
     public var object: String = "organization.user.deleted"
     public var id: String
     public var deleted: Bool
@@ -180,15 +229,23 @@ public struct UserDeleteResponse: Codable, Hashable, Sendable {
         self.deleted = deleted
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case id
-        case deleted
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.user.deleted"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.deleted = try container.decode(Bool.self, forKey: "deleted")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.deleted, forKey: "deleted")
     }
 }
 
 /// Paginated list of user objects returned when inspecting group membership.
-public struct UserListResource: Codable, Hashable, Sendable {
+public struct UserListResource: OpenAIModel {
     /// Always `list`.
     public var object: String = "list"
     /// Users in the current page.
@@ -208,15 +265,24 @@ public struct UserListResource: Codable, Hashable, Sendable {
         self.next = next
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case hasMore = "has_more"
-        case next
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([GroupUser].self, forKey: "data")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+        self.next = try container.decodeIfPresent(String.self, forKey: "next")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encode(self.hasMore, forKey: "has_more")
+        try container.encodeIfPresent(self.next, forKey: "next")
     }
 }
 
-public struct UserListResponse: Codable, Hashable, Sendable {
+public struct UserListResponse: OpenAIModel {
     public var object: String = "list"
     public var data: [User]
     public var firstID: String?
@@ -235,17 +301,27 @@ public struct UserListResponse: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([User].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
 /// Text block that a user contributed to the thread.
-public struct UserMessageInputText: Codable, Hashable, Sendable {
+public struct UserMessageInputText: OpenAIModel {
     /// Type discriminator that is always `input_text`.
     public var type: String = "input_text"
     /// Plain-text content supplied by the user.
@@ -255,14 +331,21 @@ public struct UserMessageInputText: Codable, Hashable, Sendable {
         self.text = text
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case text
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "input_text"
+        self.text = try container.decode(String.self, forKey: "text")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.text, forKey: "text")
     }
 }
 
 /// User-authored messages within a thread.
-public struct UserMessageItem: Codable, Hashable, Sendable {
+public struct UserMessageItem: OpenAIModel {
     /// Identifier of the thread item.
     public var id: String
     /// Type discriminator that is always `chatkit.thread_item`.
@@ -294,21 +377,34 @@ public struct UserMessageItem: Codable, Hashable, Sendable {
         self.inferenceOptions = inferenceOptions
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
-        case threadID = "thread_id"
-        case type
-        case content
-        case attachments
-        case inferenceOptions = "inference_options"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "chatkit.thread_item"
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.threadID = try container.decode(String.self, forKey: "thread_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "chatkit.user_message"
+        self.content = try container.decode([UserMessageItem.ContentItem].self, forKey: "content")
+        self.attachments = try container.decode([Attachment].self, forKey: "attachments")
+        self.inferenceOptions = try container.decodeIfPresent(InferenceOptions.self, forKey: "inference_options")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.threadID, forKey: "thread_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.content, forKey: "content")
+        try container.encode(self.attachments, forKey: "attachments")
+        try container.encodeIfPresent(self.inferenceOptions, forKey: "inference_options")
     }
 
     /// Content blocks that comprise a user message.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum ContentItem: Codable, Hashable, Sendable {
+    public indirect enum ContentItem: OpenAIModel {
         /// `type`: `input_text`
         case inputText(UserMessageInputText)
         /// `type`: `quoted_text`
@@ -348,7 +444,7 @@ public struct UserMessageItem: Codable, Hashable, Sendable {
     }
 }
 
-public struct UserMessageItemParam: Codable, Hashable, Sendable {
+public struct UserMessageItemParam: OpenAIModel {
     public var id: String?
     /// The item type. Always `message`.
     public var type: String = "message"
@@ -368,16 +464,26 @@ public struct UserMessageItemParam: Codable, Hashable, Sendable {
         self.status = status
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case type
-        case role
-        case content
-        case status
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "message"
+        self.role = try container.decodeIfPresent(String.self, forKey: "role") ?? "user"
+        self.content = try container.decode(UserMessageItemParam.Content.self, forKey: "content")
+        self.status = try container.decodeIfPresent(String.self, forKey: "status")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.role, forKey: "role")
+        try container.encode(self.content, forKey: "content")
+        try container.encodeIfPresent(self.status, forKey: "status")
     }
 
     /// The message content, as an array of content parts.
-    public indirect enum Content: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum Content: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         case array([UserMessageItemParam.Content.Item])
         /// The message content, as a single string.
         case string(String)
@@ -416,7 +522,7 @@ public struct UserMessageItemParam: Codable, Hashable, Sendable {
         /// A piece of message content, such as text, an image, or a file.
         ///
         /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-        public indirect enum Item: Codable, Hashable, Sendable {
+        public indirect enum Item: OpenAIModel {
             /// `type`: `input_text`
             case inputText(InputTextContentParam)
             /// `type`: `input_image`
@@ -465,7 +571,7 @@ public struct UserMessageItemParam: Codable, Hashable, Sendable {
 }
 
 /// Quoted snippet that the user referenced in their message.
-public struct UserMessageQuotedText: Codable, Hashable, Sendable {
+public struct UserMessageQuotedText: OpenAIModel {
     /// Type discriminator that is always `quoted_text`.
     public var type: String = "quoted_text"
     /// Quoted text content.
@@ -475,14 +581,21 @@ public struct UserMessageQuotedText: Codable, Hashable, Sendable {
         self.text = text
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case text
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "quoted_text"
+        self.text = try container.decode(String.self, forKey: "text")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.text, forKey: "text")
     }
 }
 
 /// Role assignment linking a user to a role.
-public struct UserRoleAssignment: Codable, Hashable, Sendable {
+public struct UserRoleAssignment: OpenAIModel {
     /// Always `user.role`.
     public var object: String = "user.role"
     public var user: User
@@ -493,14 +606,22 @@ public struct UserRoleAssignment: Codable, Hashable, Sendable {
         self.role = role
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case user
-        case role
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "user.role"
+        self.user = try container.decode(User.self, forKey: "user")
+        self.role = try container.decode(Role.self, forKey: "role")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.user, forKey: "user")
+        try container.encode(self.role, forKey: "role")
     }
 }
 
-public struct UserRoleUpdateRequest: Codable, Hashable, Sendable {
+public struct UserRoleUpdateRequest: OpenAIModel {
     /// `owner` or `reader`
     public var role: String?
     /// Role ID to assign to the user.
@@ -522,10 +643,19 @@ public struct UserRoleUpdateRequest: Codable, Hashable, Sendable {
         self.developerPersona = developerPersona
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case role
-        case roleID = "role_id"
-        case technicalLevel = "technical_level"
-        case developerPersona = "developer_persona"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.role = try container.decodeIfPresent(String.self, forKey: "role")
+        self.roleID = try container.decodeIfPresent(String.self, forKey: "role_id")
+        self.technicalLevel = try container.decodeIfPresent(String.self, forKey: "technical_level")
+        self.developerPersona = try container.decodeIfPresent(String.self, forKey: "developer_persona")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.role, forKey: "role")
+        try container.encodeIfPresent(self.roleID, forKey: "role_id")
+        try container.encodeIfPresent(self.technicalLevel, forKey: "technical_level")
+        try container.encodeIfPresent(self.developerPersona, forKey: "developer_persona")
     }
 }

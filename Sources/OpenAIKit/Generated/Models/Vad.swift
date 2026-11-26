@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct VadConfig: Codable, Hashable, Sendable {
+public struct VadConfig: OpenAIModel {
     /// Must be set to `server_vad` to enable manual chunking using server side VAD.
     public var type: String = "server_vad"
     /// Amount of audio to include before the VAD detected speech (in
@@ -28,10 +28,19 @@ public struct VadConfig: Codable, Hashable, Sendable {
         self.threshold = threshold
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case prefixPaddingMs = "prefix_padding_ms"
-        case silenceDurationMs = "silence_duration_ms"
-        case threshold
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "server_vad"
+        self.prefixPaddingMs = try container.decodeIfPresent(Int.self, forKey: "prefix_padding_ms")
+        self.silenceDurationMs = try container.decodeIfPresent(Int.self, forKey: "silence_duration_ms")
+        self.threshold = try container.decodeIfPresent(Double.self, forKey: "threshold")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.prefixPaddingMs, forKey: "prefix_padding_ms")
+        try container.encodeIfPresent(self.silenceDurationMs, forKey: "silence_duration_ms")
+        try container.encodeIfPresent(self.threshold, forKey: "threshold")
     }
 }

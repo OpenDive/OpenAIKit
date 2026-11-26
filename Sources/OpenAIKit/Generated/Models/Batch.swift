@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct Batch: Codable, Hashable, Sendable {
+public struct Batch: OpenAIModel {
     public var id: String
     /// The object type, which is always `batch`.
     public var object: String = "batch"
@@ -96,32 +96,59 @@ public struct Batch: Codable, Hashable, Sendable {
         self.metadata = metadata
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case endpoint
-        case model
-        case errors
-        case inputFileID = "input_file_id"
-        case completionWindow = "completion_window"
-        case status
-        case outputFileID = "output_file_id"
-        case errorFileID = "error_file_id"
-        case createdAt = "created_at"
-        case inProgressAt = "in_progress_at"
-        case expiresAt = "expires_at"
-        case finalizingAt = "finalizing_at"
-        case completedAt = "completed_at"
-        case failedAt = "failed_at"
-        case expiredAt = "expired_at"
-        case cancellingAt = "cancelling_at"
-        case cancelledAt = "cancelled_at"
-        case requestCounts = "request_counts"
-        case usage
-        case metadata
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "batch"
+        self.endpoint = try container.decode(String.self, forKey: "endpoint")
+        self.model = try container.decodeIfPresent(String.self, forKey: "model")
+        self.errors = try container.decodeIfPresent(Batch.Errors.self, forKey: "errors")
+        self.inputFileID = try container.decode(String.self, forKey: "input_file_id")
+        self.completionWindow = try container.decode(String.self, forKey: "completion_window")
+        self.status = try container.decode(Batch.Status.self, forKey: "status")
+        self.outputFileID = try container.decodeIfPresent(String.self, forKey: "output_file_id")
+        self.errorFileID = try container.decodeIfPresent(String.self, forKey: "error_file_id")
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.inProgressAt = try container.decodeIfPresent(Int.self, forKey: "in_progress_at")
+        self.expiresAt = try container.decodeIfPresent(Int.self, forKey: "expires_at")
+        self.finalizingAt = try container.decodeIfPresent(Int.self, forKey: "finalizing_at")
+        self.completedAt = try container.decodeIfPresent(Int.self, forKey: "completed_at")
+        self.failedAt = try container.decodeIfPresent(Int.self, forKey: "failed_at")
+        self.expiredAt = try container.decodeIfPresent(Int.self, forKey: "expired_at")
+        self.cancellingAt = try container.decodeIfPresent(Int.self, forKey: "cancelling_at")
+        self.cancelledAt = try container.decodeIfPresent(Int.self, forKey: "cancelled_at")
+        self.requestCounts = try container.decodeIfPresent(BatchRequestCounts.self, forKey: "request_counts")
+        self.usage = try container.decodeIfPresent(Batch.Usage.self, forKey: "usage")
+        self.metadata = try container.decodeIfPresent(Metadata.self, forKey: "metadata")
     }
 
-    public struct Errors: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.endpoint, forKey: "endpoint")
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encodeIfPresent(self.errors, forKey: "errors")
+        try container.encode(self.inputFileID, forKey: "input_file_id")
+        try container.encode(self.completionWindow, forKey: "completion_window")
+        try container.encode(self.status, forKey: "status")
+        try container.encodeIfPresent(self.outputFileID, forKey: "output_file_id")
+        try container.encodeIfPresent(self.errorFileID, forKey: "error_file_id")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encodeIfPresent(self.inProgressAt, forKey: "in_progress_at")
+        try container.encodeIfPresent(self.expiresAt, forKey: "expires_at")
+        try container.encodeIfPresent(self.finalizingAt, forKey: "finalizing_at")
+        try container.encodeIfPresent(self.completedAt, forKey: "completed_at")
+        try container.encodeIfPresent(self.failedAt, forKey: "failed_at")
+        try container.encodeIfPresent(self.expiredAt, forKey: "expired_at")
+        try container.encodeIfPresent(self.cancellingAt, forKey: "cancelling_at")
+        try container.encodeIfPresent(self.cancelledAt, forKey: "cancelled_at")
+        try container.encodeIfPresent(self.requestCounts, forKey: "request_counts")
+        try container.encodeIfPresent(self.usage, forKey: "usage")
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
+    }
+
+    public struct Errors: OpenAIModel {
         /// The object type, which is always `list`.
         public var object: String?
         public var data: [BatchError]?
@@ -131,9 +158,16 @@ public struct Batch: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case object
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.object = try container.decodeIfPresent(String.self, forKey: "object")
+            self.data = try container.decodeIfPresent([BatchError].self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.object, forKey: "object")
+            try container.encodeIfPresent(self.data, forKey: "data")
         }
     }
 
@@ -164,7 +198,7 @@ public struct Batch: Codable, Hashable, Sendable {
     /// Represents token usage details including input tokens, output tokens, a
     /// breakdown of output tokens, and the total tokens used. Only populated on
     /// batches created after September 7, 2025.
-    public struct Usage: Codable, Hashable, Sendable {
+    public struct Usage: OpenAIModel {
         /// The number of input tokens.
         public var inputTokens: Int
         /// A detailed breakdown of the input tokens.
@@ -190,16 +224,26 @@ public struct Batch: Codable, Hashable, Sendable {
             self.totalTokens = totalTokens
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case inputTokens = "input_tokens"
-            case inputTokensDetails = "input_tokens_details"
-            case outputTokens = "output_tokens"
-            case outputTokensDetails = "output_tokens_details"
-            case totalTokens = "total_tokens"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.inputTokens = try container.decode(Int.self, forKey: "input_tokens")
+            self.inputTokensDetails = try container.decode(Batch.Usage.InputTokensDetails.self, forKey: "input_tokens_details")
+            self.outputTokens = try container.decode(Int.self, forKey: "output_tokens")
+            self.outputTokensDetails = try container.decode(Batch.Usage.OutputTokensDetails.self, forKey: "output_tokens_details")
+            self.totalTokens = try container.decode(Int.self, forKey: "total_tokens")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.inputTokens, forKey: "input_tokens")
+            try container.encode(self.inputTokensDetails, forKey: "input_tokens_details")
+            try container.encode(self.outputTokens, forKey: "output_tokens")
+            try container.encode(self.outputTokensDetails, forKey: "output_tokens_details")
+            try container.encode(self.totalTokens, forKey: "total_tokens")
         }
 
         /// A detailed breakdown of the input tokens.
-        public struct InputTokensDetails: Codable, Hashable, Sendable {
+        public struct InputTokensDetails: OpenAIModel {
             /// The number of tokens that were retrieved from the cache. [More on
             /// prompt caching](https://developers.openai.com/api/docs/guides/prompt-caching).
             public var cachedTokens: Int
@@ -208,13 +252,19 @@ public struct Batch: Codable, Hashable, Sendable {
                 self.cachedTokens = cachedTokens
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case cachedTokens = "cached_tokens"
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.cachedTokens = try container.decode(Int.self, forKey: "cached_tokens")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encode(self.cachedTokens, forKey: "cached_tokens")
             }
         }
 
         /// A detailed breakdown of the output tokens.
-        public struct OutputTokensDetails: Codable, Hashable, Sendable {
+        public struct OutputTokensDetails: OpenAIModel {
             /// The number of reasoning tokens.
             public var reasoningTokens: Int
 
@@ -222,14 +272,20 @@ public struct Batch: Codable, Hashable, Sendable {
                 self.reasoningTokens = reasoningTokens
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case reasoningTokens = "reasoning_tokens"
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.reasoningTokens = try container.decode(Int.self, forKey: "reasoning_tokens")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encode(self.reasoningTokens, forKey: "reasoning_tokens")
             }
         }
     }
 }
 
-public struct BatchError: Codable, Hashable, Sendable {
+public struct BatchError: OpenAIModel {
     /// An error code identifying the error type.
     public var code: String?
     /// A human-readable message providing more details about the error.
@@ -249,16 +305,25 @@ public struct BatchError: Codable, Hashable, Sendable {
         self.line = line
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case code
-        case message
-        case param
-        case line
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.code = try container.decodeIfPresent(String.self, forKey: "code")
+        self.message = try container.decodeIfPresent(String.self, forKey: "message")
+        self.param = try container.decodeIfPresent(String.self, forKey: "param")
+        self.line = try container.decodeIfPresent(Int.self, forKey: "line")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.code, forKey: "code")
+        try container.encodeIfPresent(self.message, forKey: "message")
+        try container.encodeIfPresent(self.param, forKey: "param")
+        try container.encodeIfPresent(self.line, forKey: "line")
     }
 }
 
 /// The expiration policy for the output and/or error file that are generated for a batch.
-public struct BatchFileExpirationAfter: Codable, Hashable, Sendable {
+public struct BatchFileExpirationAfter: OpenAIModel {
     /// Anchor timestamp after which the expiration policy applies. Supported anchors: `created_at`. Note that the anchor is the file creation time, not the time the batch is created.
     public var anchor: String = "created_at"
     /// The number of seconds after the anchor time that the file will expire. Must be between 3600 (1 hour) and 2592000 (30 days).
@@ -268,14 +333,21 @@ public struct BatchFileExpirationAfter: Codable, Hashable, Sendable {
         self.seconds = seconds
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case anchor
-        case seconds
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.anchor = try container.decodeIfPresent(String.self, forKey: "anchor") ?? "created_at"
+        self.seconds = try container.decode(Int64.self, forKey: "seconds")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.anchor, forKey: "anchor")
+        try container.encode(self.seconds, forKey: "seconds")
     }
 }
 
 /// The request counts for different statuses within the batch.
-public struct BatchRequestCounts: Codable, Hashable, Sendable {
+public struct BatchRequestCounts: OpenAIModel {
     /// Total number of requests in the batch.
     public var total: Int
     /// Number of requests that have been completed successfully.
@@ -293,9 +365,17 @@ public struct BatchRequestCounts: Codable, Hashable, Sendable {
         self.failed = failed
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case total
-        case completed
-        case failed
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.total = try container.decode(Int.self, forKey: "total")
+        self.completed = try container.decode(Int.self, forKey: "completed")
+        self.failed = try container.decode(Int.self, forKey: "failed")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.total, forKey: "total")
+        try container.encode(self.completed, forKey: "completed")
+        try container.encode(self.failed, forKey: "failed")
     }
 }

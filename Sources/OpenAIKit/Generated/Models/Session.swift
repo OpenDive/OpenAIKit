@@ -4,7 +4,7 @@
 import Foundation
 
 /// The newly created Live session. Use its ID for session controls and sideband connections.
-public struct Session: Codable, Hashable, Sendable {
+public struct Session: OpenAIModel {
     /// Opaque session identifier. Preserve the returned value unchanged, including its prefix.
     public var id: String
 
@@ -12,13 +12,19 @@ public struct Session: Codable, Hashable, Sendable {
         self.id = id
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
     }
 }
 
 /// Agent configuration for a session. Omitted fields inherit from `agent_id` when supplied. Supplied objects and arrays replace the whole field, except experimental settings, which merge by key. Null resets nullable fields.
-public struct SessionAgentConfigParam: Codable, Hashable, Sendable {
+public struct SessionAgentConfigParam: OpenAIModel {
     /// Experimental settings to merge by key. Omitted settings keep their current values.
     public var experimental: ExperimentalConfigOverridesParam?
     /// The model to use for the agent. The requested model name is preserved.
@@ -60,21 +66,35 @@ public struct SessionAgentConfigParam: Codable, Hashable, Sendable {
         self.tools = tools
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case experimental
-        case model
-        case reasoning
-        case text
-        case serviceTier = "service_tier"
-        case instructions
-        case multiAgent = "multi_agent"
-        case compaction
-        case tools
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.experimental = try container.decodeIfPresent(ExperimentalConfigOverridesParam.self, forKey: "experimental")
+        self.model = try container.decodeIfPresent(String.self, forKey: "model")
+        self.reasoning = try container.decodeIfPresent(ReasoningParam.self, forKey: "reasoning")
+        self.text = try container.decodeIfPresent(TextParam.self, forKey: "text")
+        self.serviceTier = try container.decodeIfPresent(ServiceTierParam.self, forKey: "service_tier")
+        self.instructions = try container.decodeIfPresent(String.self, forKey: "instructions")
+        self.multiAgent = try container.decodeIfPresent(MultiAgentConfigCurrentParam.self, forKey: "multi_agent")
+        self.compaction = try container.decodeIfPresent(CompactionParam.self, forKey: "compaction")
+        self.tools = try container.decodeIfPresent([AgentToolConfigParam].self, forKey: "tools")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.experimental, forKey: "experimental")
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encodeIfPresent(self.reasoning, forKey: "reasoning")
+        try container.encodeIfPresent(self.text, forKey: "text")
+        try container.encodeIfPresent(self.serviceTier, forKey: "service_tier")
+        try container.encodeIfPresent(self.instructions, forKey: "instructions")
+        try container.encodeIfPresent(self.multiAgent, forKey: "multi_agent")
+        try container.encodeIfPresent(self.compaction, forKey: "compaction")
+        try container.encodeIfPresent(self.tools, forKey: "tools")
     }
 }
 
 /// The effective agent configuration for a session.
-public struct SessionAgentResource: Codable, Hashable, Sendable {
+public struct SessionAgentResource: OpenAIModel {
     /// The ID of the agent.
     public var id: String
     /// The reusable agent's name when the session was created, or null if no name was saved. Later changes to the agent's name do not affect this value.
@@ -124,23 +144,39 @@ public struct SessionAgentResource: Codable, Hashable, Sendable {
         self.experimental = experimental
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case name
-        case model
-        case reasoning
-        case text
-        case serviceTier = "service_tier"
-        case instructions
-        case tools
-        case multiAgent = "multi_agent"
-        case compaction
-        case experimental
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.model = try container.decode(String.self, forKey: "model")
+        self.reasoning = try container.decode(ReasoningResource.self, forKey: "reasoning")
+        self.text = try container.decode(TextResource.self, forKey: "text")
+        self.serviceTier = try container.decode(ServiceTierResource.self, forKey: "service_tier")
+        self.instructions = try container.decodeIfPresent(String.self, forKey: "instructions")
+        self.tools = try container.decode([AgentToolResource].self, forKey: "tools")
+        self.multiAgent = try container.decode(MultiAgentConfigResource.self, forKey: "multi_agent")
+        self.compaction = try container.decodeIfPresent(CompactionResource.self, forKey: "compaction")
+        self.experimental = try container.decodeIfPresent(ExperimentalConfigResource.self, forKey: "experimental")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encode(self.model, forKey: "model")
+        try container.encode(self.reasoning, forKey: "reasoning")
+        try container.encode(self.text, forKey: "text")
+        try container.encode(self.serviceTier, forKey: "service_tier")
+        try container.encodeIfPresent(self.instructions, forKey: "instructions")
+        try container.encode(self.tools, forKey: "tools")
+        try container.encode(self.multiAgent, forKey: "multi_agent")
+        try container.encodeIfPresent(self.compaction, forKey: "compaction")
+        try container.encodeIfPresent(self.experimental, forKey: "experimental")
     }
 }
 
 /// A page of Agents API resources, with IDs for retrieving additional pages.
-public struct SessionArtifactListResource: Codable, Hashable, Sendable {
+public struct SessionArtifactListResource: OpenAIModel {
     /// The object type, which is always `list`.
     public var object: String = "list"
     /// The resources returned in this page, in the requested sort order.
@@ -164,17 +200,27 @@ public struct SessionArtifactListResource: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([SessionArtifactResource].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
 /// An immutable file published by a completed hosted session turn.
-public struct SessionArtifactResource: Codable, Hashable, Sendable {
+public struct SessionArtifactResource: OpenAIModel {
     /// The immutable artifact ID.
     public var id: String
     /// The object type. Always `agent.session.artifact`.
@@ -210,20 +256,33 @@ public struct SessionArtifactResource: Codable, Hashable, Sendable {
         self.createdAt = createdAt
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case sessionID = "session_id"
-        case environmentID = "environment_id"
-        case turnID = "turn_id"
-        case path
-        case sizeBytes = "size_bytes"
-        case createdAt = "created_at"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "agent.session.artifact"
+        self.sessionID = try container.decode(String.self, forKey: "session_id")
+        self.environmentID = try container.decode(String.self, forKey: "environment_id")
+        self.turnID = try container.decode(String.self, forKey: "turn_id")
+        self.path = try container.decode(String.self, forKey: "path")
+        self.sizeBytes = try container.decode(Int64.self, forKey: "size_bytes")
+        self.createdAt = try container.decode(Int64.self, forKey: "created_at")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.sessionID, forKey: "session_id")
+        try container.encode(self.environmentID, forKey: "environment_id")
+        try container.encode(self.turnID, forKey: "turn_id")
+        try container.encode(self.path, forKey: "path")
+        try container.encode(self.sizeBytes, forKey: "size_bytes")
+        try container.encode(self.createdAt, forKey: "created_at")
     }
 }
 
 /// Sets the session-wide limit without changing recorded spend.
-public struct SessionBudgetControlParams: Codable, Hashable, Sendable {
+public struct SessionBudgetControlParams: OpenAIModel {
     /// Positive USD cents, or null to remove the limit.
     public var limit: Int64?
 
@@ -231,13 +290,19 @@ public struct SessionBudgetControlParams: Codable, Hashable, Sendable {
         self.limit = limit
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case limit
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.limit = try container.decodeIfPresent(Int64.self, forKey: "limit")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.limit, forKey: "limit")
     }
 }
 
 /// Session-wide spending limit and best-effort consumption, including unlimited sessions.
-public struct SessionBudgetControlResource: Codable, Hashable, Sendable {
+public struct SessionBudgetControlResource: OpenAIModel {
     /// The configured positive limit in USD cents, or null when unlimited.
     public var limit: Int64?
     /// Best-effort recorded spend floored to whole USD cents, or null when unavailable.
@@ -248,14 +313,21 @@ public struct SessionBudgetControlResource: Codable, Hashable, Sendable {
         self.consumed = consumed
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case limit
-        case consumed
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.limit = try container.decodeIfPresent(Int64.self, forKey: "limit")
+        self.consumed = try container.decodeIfPresent(Int.self, forKey: "consumed")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.limit, forKey: "limit")
+        try container.encodeIfPresent(self.consumed, forKey: "consumed")
     }
 }
 
 /// An error reported while preparing a session environment.
-public struct SessionEnvironmentErrorResource: Codable, Hashable, Sendable {
+public struct SessionEnvironmentErrorResource: OpenAIModel {
     /// The error type.
     public var type: String
     /// A machine-readable error code.
@@ -273,15 +345,23 @@ public struct SessionEnvironmentErrorResource: Codable, Hashable, Sendable {
         self.message = message
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case code
-        case message
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decode(String.self, forKey: "type")
+        self.code = try container.decode(String.self, forKey: "code")
+        self.message = try container.decode(String.self, forKey: "message")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.code, forKey: "code")
+        try container.encode(self.message, forKey: "message")
     }
 }
 
 /// The current state of a session environment.
-public struct SessionEnvironmentStateResource: Codable, Hashable, Sendable {
+public struct SessionEnvironmentStateResource: OpenAIModel {
     /// The public ID of the environment.
     public var id: String
     /// The environment type.
@@ -303,11 +383,20 @@ public struct SessionEnvironmentStateResource: Codable, Hashable, Sendable {
         self.error = error
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case type
-        case status
-        case error
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.type = try container.decode(String.self, forKey: "type")
+        self.status = try container.decode(SessionEnvironmentStatusResource.self, forKey: "status")
+        self.error = try container.decodeIfPresent(SessionEnvironmentErrorResource.self, forKey: "error")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.status, forKey: "status")
+        try container.encodeIfPresent(self.error, forKey: "error")
     }
 }
 
@@ -335,7 +424,7 @@ public struct SessionEnvironmentStatusResource: OpenAIStringEnum {
 }
 
 /// An error payload with the same public fields as Responses API streaming errors.
-public struct SessionErrorResource: Codable, Hashable, Sendable {
+public struct SessionErrorResource: OpenAIModel {
     /// The error type.
     public var type: String
     /// The machine-readable error code, if any.
@@ -357,18 +446,27 @@ public struct SessionErrorResource: Codable, Hashable, Sendable {
         self.param = param
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case code
-        case message
-        case param
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decode(String.self, forKey: "type")
+        self.code = try container.decodeIfPresent(String.self, forKey: "code")
+        self.message = try container.decode(String.self, forKey: "message")
+        self.param = try container.decodeIfPresent(String.self, forKey: "param")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.code, forKey: "code")
+        try container.encode(self.message, forKey: "message")
+        try container.encodeIfPresent(self.param, forKey: "param")
     }
 }
 
 /// An event emitted by a Managed Agents session.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum SessionEvent: Codable, Hashable, Sendable {
+public indirect enum SessionEvent: OpenAIModel {
     /// `type`: `error`
     case error(SessionEventError)
     /// `type`: `agent.session.environment.ready`
@@ -632,7 +730,7 @@ public indirect enum SessionEvent: Codable, Hashable, Sendable {
 }
 
 /// Emitted when command execution produces an output delta.
-public struct SessionEventAgentOutputCommandExecutionOutputDelta: Codable, Hashable, Sendable {
+public struct SessionEventAgentOutputCommandExecutionOutputDelta: OpenAIModel {
     /// The type of the object. Always `agent.output.command_execution_output.delta`.
     public var type: String = "agent.output.command_execution_output.delta"
     /// The unique ID of the event.
@@ -668,20 +766,33 @@ public struct SessionEventAgentOutputCommandExecutionOutputDelta: Codable, Hasha
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case sessionID = "session_id"
-        case turnID = "turn_id"
-        case itemID = "item_id"
-        case outputIndex = "output_index"
-        case delta
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.output.command_execution_output.delta"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.sessionID = try container.decode(String.self, forKey: "session_id")
+        self.turnID = try container.decodeIfPresent(String.self, forKey: "turn_id")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int64.self, forKey: "output_index")
+        self.delta = try container.decode(String.self, forKey: "delta")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.sessionID, forKey: "session_id")
+        try container.encodeIfPresent(self.turnID, forKey: "turn_id")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.delta, forKey: "delta")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Emitted when a session pauses because its spending limit was reached.
-public struct SessionEventAgentSessionBudgetReached: Codable, Hashable, Sendable {
+public struct SessionEventAgentSessionBudgetReached: OpenAIModel {
     /// The type of the object. Always `agent.session.budget_reached`.
     public var type: String = "agent.session.budget_reached"
     /// The unique ID of the event.
@@ -701,16 +812,25 @@ public struct SessionEventAgentSessionBudgetReached: Codable, Hashable, Sendable
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case session
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.budget_reached"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.session = try container.decode(SessionResource.self, forKey: "session")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.session, forKey: "session")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Emitted when a session is created.
-public struct SessionEventAgentSessionCreated: Codable, Hashable, Sendable {
+public struct SessionEventAgentSessionCreated: OpenAIModel {
     /// The type of the object. Always `agent.session.created`.
     public var type: String = "agent.session.created"
     /// The unique ID of the event.
@@ -730,16 +850,25 @@ public struct SessionEventAgentSessionCreated: Codable, Hashable, Sendable {
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case session
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.created"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.session = try container.decode(SessionResource.self, forKey: "session")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.session, forKey: "session")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Emitted when a session environment connects.
-public struct SessionEventAgentSessionEnvironmentConnected: Codable, Hashable, Sendable {
+public struct SessionEventAgentSessionEnvironmentConnected: OpenAIModel {
     /// The type of the object. Always `agent.session.environment.connected`.
     public var type: String = "agent.session.environment.connected"
     /// The unique ID of the event.
@@ -767,18 +896,29 @@ public struct SessionEventAgentSessionEnvironmentConnected: Codable, Hashable, S
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case sessionID = "session_id"
-        case turnID = "turn_id"
-        case environment
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.environment.connected"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.sessionID = try container.decode(String.self, forKey: "session_id")
+        self.turnID = try container.decodeIfPresent(String.self, forKey: "turn_id")
+        self.environment = try container.decode(SessionEnvironmentStateResource.self, forKey: "environment")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.sessionID, forKey: "session_id")
+        try container.encodeIfPresent(self.turnID, forKey: "turn_id")
+        try container.encode(self.environment, forKey: "environment")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Emitted when a session environment disconnects.
-public struct SessionEventAgentSessionEnvironmentDisconnected: Codable, Hashable, Sendable {
+public struct SessionEventAgentSessionEnvironmentDisconnected: OpenAIModel {
     /// The type of the object. Always `agent.session.environment.disconnected`.
     public var type: String = "agent.session.environment.disconnected"
     /// The unique ID of the event.
@@ -806,18 +946,29 @@ public struct SessionEventAgentSessionEnvironmentDisconnected: Codable, Hashable
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case sessionID = "session_id"
-        case turnID = "turn_id"
-        case environment
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.environment.disconnected"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.sessionID = try container.decode(String.self, forKey: "session_id")
+        self.turnID = try container.decodeIfPresent(String.self, forKey: "turn_id")
+        self.environment = try container.decode(SessionEnvironmentStateResource.self, forKey: "environment")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.sessionID, forKey: "session_id")
+        try container.encodeIfPresent(self.turnID, forKey: "turn_id")
+        try container.encode(self.environment, forKey: "environment")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Emitted after a suspended hosted session environment and its checkpoint expire.
-public struct SessionEventAgentSessionEnvironmentExpired: Codable, Hashable, Sendable {
+public struct SessionEventAgentSessionEnvironmentExpired: OpenAIModel {
     /// The type of the object. Always `agent.session.environment.expired`.
     public var type: String = "agent.session.environment.expired"
     /// The unique ID of the event.
@@ -845,18 +996,29 @@ public struct SessionEventAgentSessionEnvironmentExpired: Codable, Hashable, Sen
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case sessionID = "session_id"
-        case turnID = "turn_id"
-        case environment
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.environment.expired"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.sessionID = try container.decode(String.self, forKey: "session_id")
+        self.turnID = try container.decodeIfPresent(String.self, forKey: "turn_id")
+        self.environment = try container.decode(SessionEnvironmentStateResource.self, forKey: "environment")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.sessionID, forKey: "session_id")
+        try container.encodeIfPresent(self.turnID, forKey: "turn_id")
+        try container.encode(self.environment, forKey: "environment")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Emitted when a session environment fails.
-public struct SessionEventAgentSessionEnvironmentFailed: Codable, Hashable, Sendable {
+public struct SessionEventAgentSessionEnvironmentFailed: OpenAIModel {
     /// The type of the object. Always `agent.session.environment.failed`.
     public var type: String = "agent.session.environment.failed"
     /// The unique ID of the event.
@@ -884,18 +1046,29 @@ public struct SessionEventAgentSessionEnvironmentFailed: Codable, Hashable, Send
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case sessionID = "session_id"
-        case turnID = "turn_id"
-        case environment
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.environment.failed"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.sessionID = try container.decode(String.self, forKey: "session_id")
+        self.turnID = try container.decodeIfPresent(String.self, forKey: "turn_id")
+        self.environment = try container.decode(SessionEnvironmentStateResource.self, forKey: "environment")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.sessionID, forKey: "session_id")
+        try container.encodeIfPresent(self.turnID, forKey: "turn_id")
+        try container.encode(self.environment, forKey: "environment")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Emitted while a session environment is being prepared.
-public struct SessionEventAgentSessionEnvironmentPending: Codable, Hashable, Sendable {
+public struct SessionEventAgentSessionEnvironmentPending: OpenAIModel {
     /// The type of the object. Always `agent.session.environment.pending`.
     public var type: String = "agent.session.environment.pending"
     /// The unique ID of the event.
@@ -923,18 +1096,29 @@ public struct SessionEventAgentSessionEnvironmentPending: Codable, Hashable, Sen
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case sessionID = "session_id"
-        case turnID = "turn_id"
-        case environment
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.environment.pending"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.sessionID = try container.decode(String.self, forKey: "session_id")
+        self.turnID = try container.decodeIfPresent(String.self, forKey: "turn_id")
+        self.environment = try container.decode(SessionEnvironmentStateResource.self, forKey: "environment")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.sessionID, forKey: "session_id")
+        try container.encodeIfPresent(self.turnID, forKey: "turn_id")
+        try container.encode(self.environment, forKey: "environment")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Emitted when a hosted session environment is ready to connect.
-public struct SessionEventAgentSessionEnvironmentReady: Codable, Hashable, Sendable {
+public struct SessionEventAgentSessionEnvironmentReady: OpenAIModel {
     /// The type of the object. Always `agent.session.environment.ready`.
     public var type: String = "agent.session.environment.ready"
     /// The unique ID of the event.
@@ -962,18 +1146,29 @@ public struct SessionEventAgentSessionEnvironmentReady: Codable, Hashable, Senda
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case sessionID = "session_id"
-        case turnID = "turn_id"
-        case environment
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.environment.ready"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.sessionID = try container.decode(String.self, forKey: "session_id")
+        self.turnID = try container.decodeIfPresent(String.self, forKey: "turn_id")
+        self.environment = try container.decode(SessionEnvironmentStateResource.self, forKey: "environment")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.sessionID, forKey: "session_id")
+        try container.encodeIfPresent(self.turnID, forKey: "turn_id")
+        try container.encode(self.environment, forKey: "environment")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Emitted after a hosted sandbox is replaced. Conversation history survives; changes to the previous sandbox's files and processes do not.
-public struct SessionEventAgentSessionEnvironmentReset: Codable, Hashable, Sendable {
+public struct SessionEventAgentSessionEnvironmentReset: OpenAIModel {
     /// The type of the object. Always `agent.session.environment.reset`.
     public var type: String = "agent.session.environment.reset"
     /// The unique ID of the event.
@@ -1005,19 +1200,31 @@ public struct SessionEventAgentSessionEnvironmentReset: Codable, Hashable, Senda
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case sessionID = "session_id"
-        case turnID = "turn_id"
-        case environmentID = "environment_id"
-        case resetCount = "reset_count"
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.environment.reset"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.sessionID = try container.decode(String.self, forKey: "session_id")
+        self.turnID = try container.decodeIfPresent(String.self, forKey: "turn_id")
+        self.environmentID = try container.decode(String.self, forKey: "environment_id")
+        self.resetCount = try container.decode(Int64.self, forKey: "reset_count")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.sessionID, forKey: "session_id")
+        try container.encodeIfPresent(self.turnID, forKey: "turn_id")
+        try container.encode(self.environmentID, forKey: "environment_id")
+        try container.encode(self.resetCount, forKey: "reset_count")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Emitted after an idle hosted session environment is checkpointed and stopped.
-public struct SessionEventAgentSessionEnvironmentSuspended: Codable, Hashable, Sendable {
+public struct SessionEventAgentSessionEnvironmentSuspended: OpenAIModel {
     /// The type of the object. Always `agent.session.environment.suspended`.
     public var type: String = "agent.session.environment.suspended"
     /// The unique ID of the event.
@@ -1045,18 +1252,29 @@ public struct SessionEventAgentSessionEnvironmentSuspended: Codable, Hashable, S
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case sessionID = "session_id"
-        case turnID = "turn_id"
-        case environment
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.environment.suspended"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.sessionID = try container.decode(String.self, forKey: "session_id")
+        self.turnID = try container.decodeIfPresent(String.self, forKey: "turn_id")
+        self.environment = try container.decode(SessionEnvironmentStateResource.self, forKey: "environment")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.sessionID, forKey: "session_id")
+        try container.encodeIfPresent(self.turnID, forKey: "turn_id")
+        try container.encode(self.environment, forKey: "environment")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Emitted when a session fails.
-public struct SessionEventAgentSessionFailed: Codable, Hashable, Sendable {
+public struct SessionEventAgentSessionFailed: OpenAIModel {
     /// The type of the object. Always `agent.session.failed`.
     public var type: String = "agent.session.failed"
     /// The unique ID of the event.
@@ -1076,16 +1294,25 @@ public struct SessionEventAgentSessionFailed: Codable, Hashable, Sendable {
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case session
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.failed"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.session = try container.decode(SessionResource.self, forKey: "session")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.session, forKey: "session")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Emitted when a session becomes idle.
-public struct SessionEventAgentSessionIdle: Codable, Hashable, Sendable {
+public struct SessionEventAgentSessionIdle: OpenAIModel {
     /// The type of the object. Always `agent.session.idle`.
     public var type: String = "agent.session.idle"
     /// The unique ID of the event.
@@ -1105,16 +1332,25 @@ public struct SessionEventAgentSessionIdle: Codable, Hashable, Sendable {
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case session
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.idle"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.session = try container.decode(SessionResource.self, forKey: "session")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.session, forKey: "session")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Emitted when a session starts processing a turn.
-public struct SessionEventAgentSessionInProgress: Codable, Hashable, Sendable {
+public struct SessionEventAgentSessionInProgress: OpenAIModel {
     /// The type of the object. Always `agent.session.in_progress`.
     public var type: String = "agent.session.in_progress"
     /// The unique ID of the event.
@@ -1134,16 +1370,25 @@ public struct SessionEventAgentSessionInProgress: Codable, Hashable, Sendable {
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case session
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.in_progress"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.session = try container.decode(SessionResource.self, forKey: "session")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.session, forKey: "session")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Emitted when a session is waiting for one or more required actions.
-public struct SessionEventAgentSessionRequiresAction: Codable, Hashable, Sendable {
+public struct SessionEventAgentSessionRequiresAction: OpenAIModel {
     /// The type of the object. Always `agent.session.requires_action`.
     public var type: String = "agent.session.requires_action"
     /// The unique ID of the event.
@@ -1163,16 +1408,25 @@ public struct SessionEventAgentSessionRequiresAction: Codable, Hashable, Sendabl
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case session
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.requires_action"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.session = try container.decode(SessionResource.self, forKey: "session")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.session, forKey: "session")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Emitted when a closed subagent successfully resumes.
-public struct SessionEventAgentSessionSubagentActive: Codable, Hashable, Sendable {
+public struct SessionEventAgentSessionSubagentActive: OpenAIModel {
     /// The type of the object. Always `agent.session.subagent.active`.
     public var type: String = "agent.session.subagent.active"
     /// The unique ID of the event.
@@ -1192,16 +1446,25 @@ public struct SessionEventAgentSessionSubagentActive: Codable, Hashable, Sendabl
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case subagent
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.subagent.active"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.subagent = try container.decode(SubagentResource.self, forKey: "subagent")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.subagent, forKey: "subagent")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Emitted when a subagent is closed.
-public struct SessionEventAgentSessionSubagentClosed: Codable, Hashable, Sendable {
+public struct SessionEventAgentSessionSubagentClosed: OpenAIModel {
     /// The type of the object. Always `agent.session.subagent.closed`.
     public var type: String = "agent.session.subagent.closed"
     /// The unique ID of the event.
@@ -1221,16 +1484,25 @@ public struct SessionEventAgentSessionSubagentClosed: Codable, Hashable, Sendabl
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case subagent
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.subagent.closed"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.subagent = try container.decode(SubagentResource.self, forKey: "subagent")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.subagent, forKey: "subagent")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Emitted when a subagent is created.
-public struct SessionEventAgentSessionSubagentCreated: Codable, Hashable, Sendable {
+public struct SessionEventAgentSessionSubagentCreated: OpenAIModel {
     /// The type of the object. Always `agent.session.subagent.created`.
     public var type: String = "agent.session.subagent.created"
     /// The unique ID of the event.
@@ -1250,16 +1522,25 @@ public struct SessionEventAgentSessionSubagentCreated: Codable, Hashable, Sendab
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case subagent
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.subagent.created"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.subagent = try container.decode(SubagentResource.self, forKey: "subagent")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.subagent, forKey: "subagent")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Emitted when a turn is cancelled.
-public struct SessionEventAgentSessionTurnCancelled: Codable, Hashable, Sendable {
+public struct SessionEventAgentSessionTurnCancelled: OpenAIModel {
     /// The type of the object. Always `agent.session.turn.cancelled`.
     public var type: String = "agent.session.turn.cancelled"
     /// The unique ID of the event.
@@ -1291,19 +1572,31 @@ public struct SessionEventAgentSessionTurnCancelled: Codable, Hashable, Sendable
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case sessionID = "session_id"
-        case turnID = "turn_id"
-        case turn
-        case usage
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.turn.cancelled"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.sessionID = try container.decode(String.self, forKey: "session_id")
+        self.turnID = try container.decode(String.self, forKey: "turn_id")
+        self.turn = try container.decode(TurnResource.self, forKey: "turn")
+        self.usage = try container.decodeIfPresent(TokenUsageResource.self, forKey: "usage")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.sessionID, forKey: "session_id")
+        try container.encode(self.turnID, forKey: "turn_id")
+        try container.encode(self.turn, forKey: "turn")
+        try container.encodeIfPresent(self.usage, forKey: "usage")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Emitted when a turn completes.
-public struct SessionEventAgentSessionTurnCompleted: Codable, Hashable, Sendable {
+public struct SessionEventAgentSessionTurnCompleted: OpenAIModel {
     /// The type of the object. Always `agent.session.turn.completed`.
     public var type: String = "agent.session.turn.completed"
     /// The unique ID of the event.
@@ -1335,19 +1628,31 @@ public struct SessionEventAgentSessionTurnCompleted: Codable, Hashable, Sendable
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case sessionID = "session_id"
-        case turnID = "turn_id"
-        case turn
-        case usage
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.turn.completed"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.sessionID = try container.decode(String.self, forKey: "session_id")
+        self.turnID = try container.decode(String.self, forKey: "turn_id")
+        self.turn = try container.decode(TurnResource.self, forKey: "turn")
+        self.usage = try container.decodeIfPresent(TokenUsageResource.self, forKey: "usage")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.sessionID, forKey: "session_id")
+        try container.encode(self.turnID, forKey: "turn_id")
+        try container.encode(self.turn, forKey: "turn")
+        try container.encodeIfPresent(self.usage, forKey: "usage")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Emitted when an output text content part is added.
-public struct SessionEventAgentSessionTurnContentPartAdded: Codable, Hashable, Sendable {
+public struct SessionEventAgentSessionTurnContentPartAdded: OpenAIModel {
     /// The type of the object. Always `agent.session.turn.content_part.added`.
     public var type: String = "agent.session.turn.content_part.added"
     /// The unique ID of the event.
@@ -1387,21 +1692,35 @@ public struct SessionEventAgentSessionTurnContentPartAdded: Codable, Hashable, S
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case sessionID = "session_id"
-        case turnID = "turn_id"
-        case itemID = "item_id"
-        case outputIndex = "output_index"
-        case contentIndex = "content_index"
-        case part
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.turn.content_part.added"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.sessionID = try container.decode(String.self, forKey: "session_id")
+        self.turnID = try container.decodeIfPresent(String.self, forKey: "turn_id")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int64.self, forKey: "output_index")
+        self.contentIndex = try container.decode(Int64.self, forKey: "content_index")
+        self.part = try container.decode(OutputTextResource.self, forKey: "part")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.sessionID, forKey: "session_id")
+        try container.encodeIfPresent(self.turnID, forKey: "turn_id")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.contentIndex, forKey: "content_index")
+        try container.encode(self.part, forKey: "part")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Emitted when an output content part is complete.
-public struct SessionEventAgentSessionTurnContentPartDone: Codable, Hashable, Sendable {
+public struct SessionEventAgentSessionTurnContentPartDone: OpenAIModel {
     /// The type of the object. Always `agent.session.turn.content_part.done`.
     public var type: String = "agent.session.turn.content_part.done"
     /// The unique ID of the event.
@@ -1441,21 +1760,35 @@ public struct SessionEventAgentSessionTurnContentPartDone: Codable, Hashable, Se
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case sessionID = "session_id"
-        case turnID = "turn_id"
-        case itemID = "item_id"
-        case outputIndex = "output_index"
-        case contentIndex = "content_index"
-        case part
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.turn.content_part.done"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.sessionID = try container.decode(String.self, forKey: "session_id")
+        self.turnID = try container.decodeIfPresent(String.self, forKey: "turn_id")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int64.self, forKey: "output_index")
+        self.contentIndex = try container.decode(Int64.self, forKey: "content_index")
+        self.part = try container.decode(OutputTextResource.self, forKey: "part")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.sessionID, forKey: "session_id")
+        try container.encodeIfPresent(self.turnID, forKey: "turn_id")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.contentIndex, forKey: "content_index")
+        try container.encode(self.part, forKey: "part")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Emitted when a turn is created.
-public struct SessionEventAgentSessionTurnCreated: Codable, Hashable, Sendable {
+public struct SessionEventAgentSessionTurnCreated: OpenAIModel {
     /// The type of the object. Always `agent.session.turn.created`.
     public var type: String = "agent.session.turn.created"
     /// The unique ID of the event.
@@ -1483,18 +1816,29 @@ public struct SessionEventAgentSessionTurnCreated: Codable, Hashable, Sendable {
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case sessionID = "session_id"
-        case turnID = "turn_id"
-        case turn
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.turn.created"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.sessionID = try container.decode(String.self, forKey: "session_id")
+        self.turnID = try container.decode(String.self, forKey: "turn_id")
+        self.turn = try container.decode(TurnResource.self, forKey: "turn")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.sessionID, forKey: "session_id")
+        try container.encode(self.turnID, forKey: "turn_id")
+        try container.encode(self.turn, forKey: "turn")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Emitted when a turn fails.
-public struct SessionEventAgentSessionTurnFailed: Codable, Hashable, Sendable {
+public struct SessionEventAgentSessionTurnFailed: OpenAIModel {
     /// The type of the object. Always `agent.session.turn.failed`.
     public var type: String = "agent.session.turn.failed"
     /// The unique ID of the event.
@@ -1526,19 +1870,31 @@ public struct SessionEventAgentSessionTurnFailed: Codable, Hashable, Sendable {
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case sessionID = "session_id"
-        case turnID = "turn_id"
-        case turn
-        case usage
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.turn.failed"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.sessionID = try container.decode(String.self, forKey: "session_id")
+        self.turnID = try container.decode(String.self, forKey: "turn_id")
+        self.turn = try container.decode(TurnResource.self, forKey: "turn")
+        self.usage = try container.decodeIfPresent(TokenUsageResource.self, forKey: "usage")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.sessionID, forKey: "session_id")
+        try container.encode(self.turnID, forKey: "turn_id")
+        try container.encode(self.turn, forKey: "turn")
+        try container.encodeIfPresent(self.usage, forKey: "usage")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Emitted when a turn starts running.
-public struct SessionEventAgentSessionTurnInProgress: Codable, Hashable, Sendable {
+public struct SessionEventAgentSessionTurnInProgress: OpenAIModel {
     /// The type of the object. Always `agent.session.turn.in_progress`.
     public var type: String = "agent.session.turn.in_progress"
     /// The unique ID of the event.
@@ -1566,18 +1922,29 @@ public struct SessionEventAgentSessionTurnInProgress: Codable, Hashable, Sendabl
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case sessionID = "session_id"
-        case turnID = "turn_id"
-        case turn
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.turn.in_progress"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.sessionID = try container.decode(String.self, forKey: "session_id")
+        self.turnID = try container.decode(String.self, forKey: "turn_id")
+        self.turn = try container.decode(TurnResource.self, forKey: "turn")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.sessionID, forKey: "session_id")
+        try container.encode(self.turnID, forKey: "turn_id")
+        try container.encode(self.turn, forKey: "turn")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Emitted when an item is added to a turn.
-public struct SessionEventAgentSessionTurnItemAdded: Codable, Hashable, Sendable {
+public struct SessionEventAgentSessionTurnItemAdded: OpenAIModel {
     /// The type of the object. Always `agent.session.turn.item.added`.
     public var type: String = "agent.session.turn.item.added"
     /// The unique ID of the event.
@@ -1609,19 +1976,31 @@ public struct SessionEventAgentSessionTurnItemAdded: Codable, Hashable, Sendable
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case sessionID = "session_id"
-        case turnID = "turn_id"
-        case outputIndex = "output_index"
-        case item
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.turn.item.added"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.sessionID = try container.decode(String.self, forKey: "session_id")
+        self.turnID = try container.decodeIfPresent(String.self, forKey: "turn_id")
+        self.outputIndex = try container.decodeIfPresent(Int64.self, forKey: "output_index")
+        self.item = try container.decode(SessionTurnItemResource.self, forKey: "item")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.sessionID, forKey: "session_id")
+        try container.encodeIfPresent(self.turnID, forKey: "turn_id")
+        try container.encodeIfPresent(self.outputIndex, forKey: "output_index")
+        try container.encode(self.item, forKey: "item")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Emitted when an output item is complete.
-public struct SessionEventAgentSessionTurnItemDone: Codable, Hashable, Sendable {
+public struct SessionEventAgentSessionTurnItemDone: OpenAIModel {
     /// The type of the object. Always `agent.session.turn.item.done`.
     public var type: String = "agent.session.turn.item.done"
     /// The unique ID of the event.
@@ -1653,19 +2032,31 @@ public struct SessionEventAgentSessionTurnItemDone: Codable, Hashable, Sendable 
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case sessionID = "session_id"
-        case turnID = "turn_id"
-        case outputIndex = "output_index"
-        case item
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.turn.item.done"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.sessionID = try container.decode(String.self, forKey: "session_id")
+        self.turnID = try container.decodeIfPresent(String.self, forKey: "turn_id")
+        self.outputIndex = try container.decode(Int64.self, forKey: "output_index")
+        self.item = try container.decode(AgentOutputItemResource.self, forKey: "item")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.sessionID, forKey: "session_id")
+        try container.encodeIfPresent(self.turnID, forKey: "turn_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.item, forKey: "item")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Emitted when text is appended to an output text content part.
-public struct SessionEventAgentSessionTurnOutputTextDelta: Codable, Hashable, Sendable {
+public struct SessionEventAgentSessionTurnOutputTextDelta: OpenAIModel {
     /// The type of the object. Always `agent.session.turn.output_text.delta`.
     public var type: String = "agent.session.turn.output_text.delta"
     /// The unique ID of the event.
@@ -1705,21 +2096,35 @@ public struct SessionEventAgentSessionTurnOutputTextDelta: Codable, Hashable, Se
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case sessionID = "session_id"
-        case turnID = "turn_id"
-        case itemID = "item_id"
-        case outputIndex = "output_index"
-        case contentIndex = "content_index"
-        case delta
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.turn.output_text.delta"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.sessionID = try container.decode(String.self, forKey: "session_id")
+        self.turnID = try container.decodeIfPresent(String.self, forKey: "turn_id")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int64.self, forKey: "output_index")
+        self.contentIndex = try container.decode(Int64.self, forKey: "content_index")
+        self.delta = try container.decode(String.self, forKey: "delta")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.sessionID, forKey: "session_id")
+        try container.encodeIfPresent(self.turnID, forKey: "turn_id")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.contentIndex, forKey: "content_index")
+        try container.encode(self.delta, forKey: "delta")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Emitted when an output text content part is complete.
-public struct SessionEventAgentSessionTurnOutputTextDone: Codable, Hashable, Sendable {
+public struct SessionEventAgentSessionTurnOutputTextDone: OpenAIModel {
     /// The type of the object. Always `agent.session.turn.output_text.done`.
     public var type: String = "agent.session.turn.output_text.done"
     /// The unique ID of the event.
@@ -1759,21 +2164,35 @@ public struct SessionEventAgentSessionTurnOutputTextDone: Codable, Hashable, Sen
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case sessionID = "session_id"
-        case turnID = "turn_id"
-        case itemID = "item_id"
-        case outputIndex = "output_index"
-        case contentIndex = "content_index"
-        case text
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.turn.output_text.done"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.sessionID = try container.decode(String.self, forKey: "session_id")
+        self.turnID = try container.decodeIfPresent(String.self, forKey: "turn_id")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int64.self, forKey: "output_index")
+        self.contentIndex = try container.decode(Int64.self, forKey: "content_index")
+        self.text = try container.decode(String.self, forKey: "text")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.sessionID, forKey: "session_id")
+        try container.encodeIfPresent(self.turnID, forKey: "turn_id")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.contentIndex, forKey: "content_index")
+        try container.encode(self.text, forKey: "text")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Emitted when a reasoning summary content part is added.
-public struct SessionEventAgentSessionTurnReasoningSummaryPartAdded: Codable, Hashable, Sendable {
+public struct SessionEventAgentSessionTurnReasoningSummaryPartAdded: OpenAIModel {
     /// The type of the object. Always `agent.session.turn.reasoning_summary_part.added`.
     public var type: String = "agent.session.turn.reasoning_summary_part.added"
     /// The unique ID of the event.
@@ -1813,21 +2232,35 @@ public struct SessionEventAgentSessionTurnReasoningSummaryPartAdded: Codable, Ha
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case sessionID = "session_id"
-        case turnID = "turn_id"
-        case itemID = "item_id"
-        case outputIndex = "output_index"
-        case summaryIndex = "summary_index"
-        case part
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.turn.reasoning_summary_part.added"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.sessionID = try container.decode(String.self, forKey: "session_id")
+        self.turnID = try container.decodeIfPresent(String.self, forKey: "turn_id")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int64.self, forKey: "output_index")
+        self.summaryIndex = try container.decode(Int64.self, forKey: "summary_index")
+        self.part = try container.decode(SummaryTextResource.self, forKey: "part")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.sessionID, forKey: "session_id")
+        try container.encodeIfPresent(self.turnID, forKey: "turn_id")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.summaryIndex, forKey: "summary_index")
+        try container.encode(self.part, forKey: "part")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Emitted when a reasoning summary part is complete.
-public struct SessionEventAgentSessionTurnReasoningSummaryPartDone: Codable, Hashable, Sendable {
+public struct SessionEventAgentSessionTurnReasoningSummaryPartDone: OpenAIModel {
     /// The type of the object. Always `agent.session.turn.reasoning_summary_part.done`.
     public var type: String = "agent.session.turn.reasoning_summary_part.done"
     /// The unique ID of the event.
@@ -1869,22 +2302,37 @@ public struct SessionEventAgentSessionTurnReasoningSummaryPartDone: Codable, Has
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case sessionID = "session_id"
-        case turnID = "turn_id"
-        case itemID = "item_id"
-        case outputIndex = "output_index"
-        case summaryIndex = "summary_index"
-        case part
-        case status
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.turn.reasoning_summary_part.done"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.sessionID = try container.decode(String.self, forKey: "session_id")
+        self.turnID = try container.decodeIfPresent(String.self, forKey: "turn_id")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int64.self, forKey: "output_index")
+        self.summaryIndex = try container.decode(Int64.self, forKey: "summary_index")
+        self.part = try container.decode(SummaryTextResource.self, forKey: "part")
+        self.status = try container.decodeIfPresent(String.self, forKey: "status")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.sessionID, forKey: "session_id")
+        try container.encodeIfPresent(self.turnID, forKey: "turn_id")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.summaryIndex, forKey: "summary_index")
+        try container.encode(self.part, forKey: "part")
+        try container.encodeIfPresent(self.status, forKey: "status")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Emitted when text is appended to a reasoning summary.
-public struct SessionEventAgentSessionTurnReasoningSummaryTextDelta: Codable, Hashable, Sendable {
+public struct SessionEventAgentSessionTurnReasoningSummaryTextDelta: OpenAIModel {
     /// The type of the object. Always `agent.session.turn.reasoning_summary_text.delta`.
     public var type: String = "agent.session.turn.reasoning_summary_text.delta"
     /// The unique ID of the event.
@@ -1924,21 +2372,35 @@ public struct SessionEventAgentSessionTurnReasoningSummaryTextDelta: Codable, Ha
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case sessionID = "session_id"
-        case turnID = "turn_id"
-        case itemID = "item_id"
-        case outputIndex = "output_index"
-        case summaryIndex = "summary_index"
-        case delta
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.turn.reasoning_summary_text.delta"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.sessionID = try container.decode(String.self, forKey: "session_id")
+        self.turnID = try container.decodeIfPresent(String.self, forKey: "turn_id")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int64.self, forKey: "output_index")
+        self.summaryIndex = try container.decode(Int64.self, forKey: "summary_index")
+        self.delta = try container.decode(String.self, forKey: "delta")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.sessionID, forKey: "session_id")
+        try container.encodeIfPresent(self.turnID, forKey: "turn_id")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.summaryIndex, forKey: "summary_index")
+        try container.encode(self.delta, forKey: "delta")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Emitted when a reasoning summary content part is complete.
-public struct SessionEventAgentSessionTurnReasoningSummaryTextDone: Codable, Hashable, Sendable {
+public struct SessionEventAgentSessionTurnReasoningSummaryTextDone: OpenAIModel {
     /// The type of the object. Always `agent.session.turn.reasoning_summary_text.done`.
     public var type: String = "agent.session.turn.reasoning_summary_text.done"
     /// The unique ID of the event.
@@ -1978,21 +2440,35 @@ public struct SessionEventAgentSessionTurnReasoningSummaryTextDone: Codable, Has
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case sessionID = "session_id"
-        case turnID = "turn_id"
-        case itemID = "item_id"
-        case outputIndex = "output_index"
-        case summaryIndex = "summary_index"
-        case text
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.turn.reasoning_summary_text.done"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.sessionID = try container.decode(String.self, forKey: "session_id")
+        self.turnID = try container.decodeIfPresent(String.self, forKey: "turn_id")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int64.self, forKey: "output_index")
+        self.summaryIndex = try container.decode(Int64.self, forKey: "summary_index")
+        self.text = try container.decode(String.self, forKey: "text")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.sessionID, forKey: "session_id")
+        try container.encodeIfPresent(self.turnID, forKey: "turn_id")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.summaryIndex, forKey: "summary_index")
+        try container.encode(self.text, forKey: "text")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Emitted when a turn or session fails.
-public struct SessionEventError: Codable, Hashable, Sendable {
+public struct SessionEventError: OpenAIModel {
     /// The type of the object. Always `error`.
     public var type: String = "error"
     /// The unique ID of the event.
@@ -2016,19 +2492,29 @@ public struct SessionEventError: Codable, Hashable, Sendable {
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case eventID = "event_id"
-        case sessionID = "session_id"
-        case error
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "error"
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.sessionID = try container.decode(String.self, forKey: "session_id")
+        self.error = try container.decode(SessionErrorResource.self, forKey: "error")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.sessionID, forKey: "session_id")
+        try container.encode(self.error, forKey: "error")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// Input submitted to an existing session.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum SessionInputParam: Codable, Hashable, Sendable {
+public indirect enum SessionInputParam: OpenAIModel {
     /// `type`: `agent.session.input.mcp_approval_request_result`
     case agentSessionInputMcpApprovalRequestResult(SessionInputParamAgentSessionInputMcpApprovalRequestResult)
     /// `type`: `agent.session.input.computer_use_approval_request_result`
@@ -2089,20 +2575,26 @@ public indirect enum SessionInputParam: Codable, Hashable, Sendable {
 }
 
 /// Cancels the session's active turn.
-public struct SessionInputParamAgentSessionInputCancel: Codable, Hashable, Sendable {
+public struct SessionInputParamAgentSessionInputCancel: OpenAIModel {
     /// The type of the object. Always `agent.session.input.cancel`.
     public var type: String = "agent.session.input.cancel"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.input.cancel"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// Responds to a pending Computer Use approval request.
-public struct SessionInputParamAgentSessionInputComputerUseApprovalRequestResult: Codable, Hashable, Sendable {
+public struct SessionInputParamAgentSessionInputComputerUseApprovalRequestResult: OpenAIModel {
     /// The type of the object. Always `agent.session.input.computer_use_approval_request_result`.
     public var type: String = "agent.session.input.computer_use_approval_request_result"
     /// The registered request ID from the required action.
@@ -2115,15 +2607,23 @@ public struct SessionInputParamAgentSessionInputComputerUseApprovalRequestResult
         self.response = response
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case requestID = "request_id"
-        case response
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.input.computer_use_approval_request_result"
+        self.requestID = try container.decode(String.self, forKey: "request_id")
+        self.response = try container.decode(ComputerUseApprovalResponseParam.self, forKey: "response")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.requestID, forKey: "request_id")
+        try container.encode(self.response, forKey: "response")
     }
 }
 
 /// Responds to a pending MCP tool-call approval request.
-public struct SessionInputParamAgentSessionInputMcpApprovalRequestResult: Codable, Hashable, Sendable {
+public struct SessionInputParamAgentSessionInputMcpApprovalRequestResult: OpenAIModel {
     /// The type of the object. Always `agent.session.input.mcp_approval_request_result`.
     public var type: String = "agent.session.input.mcp_approval_request_result"
     /// The opaque approval ID from the required action.
@@ -2135,15 +2635,23 @@ public struct SessionInputParamAgentSessionInputMcpApprovalRequestResult: Codabl
         self.response = response
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case requestID = "request_id"
-        case response
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.input.mcp_approval_request_result"
+        self.requestID = try container.decode(String.self, forKey: "request_id")
+        self.response = try container.decode(McpApprovalResponseParam.self, forKey: "response")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.requestID, forKey: "request_id")
+        try container.encode(self.response, forKey: "response")
     }
 }
 
 /// Adds one or more user messages and starts a turn.
-public struct SessionInputParamAgentSessionInputMessage: Codable, Hashable, Sendable {
+public struct SessionInputParamAgentSessionInputMessage: OpenAIModel {
     /// The type of the object. Always `agent.session.input.message`.
     public var type: String = "agent.session.input.message"
     /// The user messages to add to the session.
@@ -2153,14 +2661,21 @@ public struct SessionInputParamAgentSessionInputMessage: Codable, Hashable, Send
         self.input = input
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case input
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.input.message"
+        self.input = try container.decode([InputMessageParam].self, forKey: "input")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.input, forKey: "input")
     }
 }
 
 /// Submits the result of a function call.
-public struct SessionInputParamAgentSessionInputToolResult: Codable, Hashable, Sendable {
+public struct SessionInputParamAgentSessionInputToolResult: OpenAIModel {
     /// The type of the object. Always `agent.session.input.tool_result`.
     public var type: String = "agent.session.input.tool_result"
     /// The ID of the turn that requested the function call.
@@ -2188,18 +2703,29 @@ public struct SessionInputParamAgentSessionInputToolResult: Codable, Hashable, S
         self.error = error
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case turnID = "turn_id"
-        case callID = "call_id"
-        case success
-        case output
-        case error
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent.session.input.tool_result"
+        self.turnID = try container.decode(String.self, forKey: "turn_id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.success = try container.decode(Bool.self, forKey: "success")
+        self.output = try container.decodeIfPresent(FunctionCallOutputParam.self, forKey: "output")
+        self.error = try container.decodeIfPresent(String.self, forKey: "error")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.turnID, forKey: "turn_id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encode(self.success, forKey: "success")
+        try container.encodeIfPresent(self.output, forKey: "output")
+        try container.encodeIfPresent(self.error, forKey: "error")
     }
 }
 
 /// A page of messages, reasoning, and tool calls from a session's item history.
-public struct SessionItemListResource: Codable, Hashable, Sendable {
+public struct SessionItemListResource: OpenAIModel {
     /// The object type, which is always `list`.
     public var object: String = "list"
     /// The resources returned in this page, in the requested sort order.
@@ -2223,17 +2749,27 @@ public struct SessionItemListResource: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([SessionTurnItemResource].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
 /// A page of Agents API resources, with IDs for retrieving additional pages.
-public struct SessionListResource: Codable, Hashable, Sendable {
+public struct SessionListResource: OpenAIModel {
     /// The object type, which is always `list`.
     public var object: String = "list"
     /// The resources returned in this page, in the requested sort order.
@@ -2257,12 +2793,22 @@ public struct SessionListResource: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([SessionResource].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
@@ -2287,7 +2833,7 @@ public struct SessionMessageRoleResource: OpenAIStringEnum {
 /// An action that must be completed before a session can continue.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum SessionRequiredActionResource: Codable, Hashable, Sendable {
+public indirect enum SessionRequiredActionResource: OpenAIModel {
     /// `type`: `mcp_approval_request`
     case mcpApprovalRequest(SessionRequiredActionResourceMcpApprovalRequest)
     /// `type`: `computer_use_approval_request`
@@ -2341,7 +2887,7 @@ public indirect enum SessionRequiredActionResource: Codable, Hashable, Sendable 
 }
 
 /// Respond to a computer-use request.
-public struct SessionRequiredActionResourceComputerUseApprovalRequest: Codable, Hashable, Sendable {
+public struct SessionRequiredActionResourceComputerUseApprovalRequest: OpenAIModel {
     /// The type of the object. Always `computer_use_approval_request`.
     public var type: String = "computer_use_approval_request"
     /// The turn that requested approval.
@@ -2361,16 +2907,25 @@ public struct SessionRequiredActionResourceComputerUseApprovalRequest: Codable, 
         self.request = request
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case turnID = "turn_id"
-        case requestID = "request_id"
-        case request
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "computer_use_approval_request"
+        self.turnID = try container.decode(String.self, forKey: "turn_id")
+        self.requestID = try container.decode(String.self, forKey: "request_id")
+        self.request = try container.decode(ComputerUseApprovalRequestKindResource.self, forKey: "request")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.turnID, forKey: "turn_id")
+        try container.encode(self.requestID, forKey: "request_id")
+        try container.encode(self.request, forKey: "request")
     }
 }
 
 /// Reconnect a session environment.
-public struct SessionRequiredActionResourceEnvironmentConnection: Codable, Hashable, Sendable {
+public struct SessionRequiredActionResourceEnvironmentConnection: OpenAIModel {
     /// The type of the object. Always `environment_connection`.
     public var type: String = "environment_connection"
     /// The ID of the environment to reconnect.
@@ -2380,14 +2935,21 @@ public struct SessionRequiredActionResourceEnvironmentConnection: Codable, Hasha
         self.environmentID = environmentID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case environmentID = "environment_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "environment_connection"
+        self.environmentID = try container.decode(String.self, forKey: "environment_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.environmentID, forKey: "environment_id")
     }
 }
 
 /// Run a function tool and submit its result.
-public struct SessionRequiredActionResourceFunctionCall: Codable, Hashable, Sendable {
+public struct SessionRequiredActionResourceFunctionCall: OpenAIModel {
     /// The type of the object. Always `function_call`.
     public var type: String = "function_call"
     /// The ID of the turn that requested the function call.
@@ -2411,17 +2973,27 @@ public struct SessionRequiredActionResourceFunctionCall: Codable, Hashable, Send
         self.arguments = arguments
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case turnID = "turn_id"
-        case callID = "call_id"
-        case name
-        case arguments
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "function_call"
+        self.turnID = try container.decode(String.self, forKey: "turn_id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.arguments = try container.decode(JSONValue.self, forKey: "arguments")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.turnID, forKey: "turn_id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.arguments, forKey: "arguments")
     }
 }
 
 /// Respond to an MCP tool-call approval request.
-public struct SessionRequiredActionResourceMcpApprovalRequest: Codable, Hashable, Sendable {
+public struct SessionRequiredActionResourceMcpApprovalRequest: OpenAIModel {
     /// The type of the object. Always `mcp_approval_request`.
     public var type: String = "mcp_approval_request"
     /// The turn that requested approval.
@@ -2440,16 +3012,25 @@ public struct SessionRequiredActionResourceMcpApprovalRequest: Codable, Hashable
         self.request = request
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case turnID = "turn_id"
-        case requestID = "request_id"
-        case request
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "mcp_approval_request"
+        self.turnID = try container.decode(String.self, forKey: "turn_id")
+        self.requestID = try container.decode(String.self, forKey: "request_id")
+        self.request = try container.decode(McpApprovalRequestResource.self, forKey: "request")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.turnID, forKey: "turn_id")
+        try container.encode(self.requestID, forKey: "request_id")
+        try container.encode(self.request, forKey: "request")
     }
 }
 
 /// A Managed Agents session.
-public struct SessionResource: Codable, Hashable, Sendable {
+public struct SessionResource: OpenAIModel {
     /// Default prompt cache lifetime for turns in this session, when configured.
     public var promptCacheOptions: PromptCacheOptionsResource?
     /// Review applied to eligible actions in this session. Omitted when review is none and automatic review is not enabled. Omission means none.
@@ -2513,22 +3094,42 @@ public struct SessionResource: Codable, Hashable, Sendable {
         self.usage = usage
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case promptCacheOptions = "prompt_cache_options"
-        case review
-        case spendControl = "spend_control"
-        case metadata
-        case id
-        case object
-        case createdAt = "created_at"
-        case lastActiveAt = "last_active_at"
-        case status
-        case requiredActions = "required_actions"
-        case error
-        case agent
-        case environment
-        case vaultIDs = "vault_ids"
-        case usage
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.promptCacheOptions = try container.decodeIfPresent(PromptCacheOptionsResource.self, forKey: "prompt_cache_options")
+        self.review = try container.decodeIfPresent(SessionReviewResource.self, forKey: "review")
+        self.spendControl = try container.decode(SessionBudgetControlResource.self, forKey: "spend_control")
+        self.metadata = try container.decode([String: String].self, forKey: "metadata")
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "agent.session"
+        self.createdAt = try container.decode(Int64.self, forKey: "created_at")
+        self.lastActiveAt = try container.decode(Int64.self, forKey: "last_active_at")
+        self.status = try container.decode(SessionStatusResource.self, forKey: "status")
+        self.requiredActions = try container.decode([SessionRequiredActionResource].self, forKey: "required_actions")
+        self.error = try container.decodeIfPresent(String.self, forKey: "error")
+        self.agent = try container.decode(SessionAgentResource.self, forKey: "agent")
+        self.environment = try container.decode(EnvironmentResource.self, forKey: "environment")
+        self.vaultIDs = try container.decode([String].self, forKey: "vault_ids")
+        self.usage = try container.decodeIfPresent(TokenUsageResource.self, forKey: "usage")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.promptCacheOptions, forKey: "prompt_cache_options")
+        try container.encodeIfPresent(self.review, forKey: "review")
+        try container.encode(self.spendControl, forKey: "spend_control")
+        try container.encode(self.metadata, forKey: "metadata")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.lastActiveAt, forKey: "last_active_at")
+        try container.encode(self.status, forKey: "status")
+        try container.encode(self.requiredActions, forKey: "required_actions")
+        try container.encodeIfPresent(self.error, forKey: "error")
+        try container.encode(self.agent, forKey: "agent")
+        try container.encode(self.environment, forKey: "environment")
+        try container.encode(self.vaultIDs, forKey: "vault_ids")
+        try container.encodeIfPresent(self.usage, forKey: "usage")
     }
 }
 
@@ -2590,7 +3191,7 @@ public struct SessionStatusResource: OpenAIStringEnum {
 }
 
 /// Options for a Managed Agents session event stream.
-public struct SessionStreamOptionsParam: Codable, Hashable, Sendable {
+public struct SessionStreamOptionsParam: OpenAIModel {
     /// Whether to include obfuscation padding in events on this connection. Defaults to `true`.
     public var includeObfuscation: Bool?
 
@@ -2598,13 +3199,19 @@ public struct SessionStreamOptionsParam: Codable, Hashable, Sendable {
         self.includeObfuscation = includeObfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case includeObfuscation = "include_obfuscation"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.includeObfuscation = try container.decodeIfPresent(Bool.self, forKey: "include_obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.includeObfuscation, forKey: "include_obfuscation")
     }
 }
 
 /// A page of Agents API resources, with IDs for retrieving additional pages.
-public struct SessionTraceListResource: Codable, Hashable, Sendable {
+public struct SessionTraceListResource: OpenAIModel {
     /// The object type, which is always `list`.
     public var object: String = "list"
     /// The resources returned in this page, in the requested sort order.
@@ -2628,12 +3235,22 @@ public struct SessionTraceListResource: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([SessionTurnTraceResource].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
@@ -2680,7 +3297,7 @@ public struct SessionTurnErrorCodeResource: OpenAIStringEnum {
 }
 
 /// A customer-safe error describing why a session request failed.
-public struct SessionTurnErrorResource: Codable, Hashable, Sendable {
+public struct SessionTurnErrorResource: OpenAIModel {
     /// A stable, machine-readable failure category.
     public var code: SessionTurnErrorCodeResource
     /// A customer-safe explanation of the failure.
@@ -2691,16 +3308,23 @@ public struct SessionTurnErrorResource: Codable, Hashable, Sendable {
         self.message = message
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case code
-        case message
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.code = try container.decode(SessionTurnErrorCodeResource.self, forKey: "code")
+        self.message = try container.decode(String.self, forKey: "message")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.code, forKey: "code")
+        try container.encode(self.message, forKey: "message")
     }
 }
 
 /// An item associated with a session turn.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum SessionTurnItemResource: Codable, Hashable, Sendable {
+public indirect enum SessionTurnItemResource: OpenAIModel {
     /// `type`: `message`
     case message(MessageItemResource)
     /// `type`: `reasoning`
@@ -2845,7 +3469,7 @@ public indirect enum SessionTurnItemResource: Codable, Hashable, Sendable {
 }
 
 /// A page of Agents API resources, with IDs for retrieving additional pages.
-public struct SessionTurnListResource: Codable, Hashable, Sendable {
+public struct SessionTurnListResource: OpenAIModel {
     /// The object type, which is always `list`.
     public var object: String = "list"
     /// The resources returned in this page, in the requested sort order.
@@ -2869,16 +3493,26 @@ public struct SessionTurnListResource: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([TurnResource].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
-public struct SessionTurnTraceResource: Codable, Hashable, Sendable {
+public struct SessionTurnTraceResource: OpenAIModel {
     /// The root turn ID. Use this ID as the pagination anchor.
     public var id: String
     /// The object type, which is always `agent.session.trace`.
@@ -2902,11 +3536,21 @@ public struct SessionTurnTraceResource: Codable, Hashable, Sendable {
         self.otlp = otlp
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case sessionID = "session_id"
-        case createdAt = "created_at"
-        case otlp
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "agent.session.trace"
+        self.sessionID = try container.decode(String.self, forKey: "session_id")
+        self.createdAt = try container.decode(Int64.self, forKey: "created_at")
+        self.otlp = try container.decode(JSONObject.self, forKey: "otlp")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.sessionID, forKey: "session_id")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.otlp, forKey: "otlp")
     }
 }

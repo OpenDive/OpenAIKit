@@ -4,7 +4,7 @@
 import Foundation
 
 /// Controls whether ChatKit automatically generates thread titles.
-public struct AutomaticThreadTitlingParam: Codable, Hashable, Sendable {
+public struct AutomaticThreadTitlingParam: OpenAIModel {
     /// Enable automatic thread title generation. Defaults to true.
     public var enabled: Bool?
 
@@ -12,7 +12,13 @@ public struct AutomaticThreadTitlingParam: Codable, Hashable, Sendable {
         self.enabled = enabled
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case enabled
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.enabled = try container.decodeIfPresent(Bool.self, forKey: "enabled")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.enabled, forKey: "enabled")
     }
 }

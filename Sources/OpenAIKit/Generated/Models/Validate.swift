@@ -3,19 +3,25 @@
 
 import Foundation
 
-public struct ValidateExternalKeyResource: Codable, Hashable, Sendable {
+public struct ValidateExternalKeyResource: OpenAIModel {
     public var status: String
 
     public init(status: String) {
         self.status = status
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case status
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.status = try container.decode(String.self, forKey: "status")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.status, forKey: "status")
     }
 }
 
-public struct ValidateGraderRequest: Codable, Hashable, Sendable {
+public struct ValidateGraderRequest: OpenAIModel {
     /// The grader used for the fine-tuning job.
     public var grader: ValidateGraderRequest.Grader
 
@@ -23,14 +29,20 @@ public struct ValidateGraderRequest: Codable, Hashable, Sendable {
         self.grader = grader
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case grader
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.grader = try container.decode(ValidateGraderRequest.Grader.self, forKey: "grader")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.grader, forKey: "grader")
     }
 
     /// The grader used for the fine-tuning job.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Grader: Codable, Hashable, Sendable {
+    public indirect enum Grader: OpenAIModel {
         /// `type`: `string_check`
         case stringCheck(GraderStringCheck)
         /// `type`: `text_similarity`
@@ -91,7 +103,7 @@ public struct ValidateGraderRequest: Codable, Hashable, Sendable {
     }
 }
 
-public struct ValidateGraderResponse: Codable, Hashable, Sendable {
+public struct ValidateGraderResponse: OpenAIModel {
     /// The grader used for the fine-tuning job.
     public var grader: ValidateGraderResponse.Grader?
 
@@ -99,14 +111,20 @@ public struct ValidateGraderResponse: Codable, Hashable, Sendable {
         self.grader = grader
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case grader
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.grader = try container.decodeIfPresent(ValidateGraderResponse.Grader.self, forKey: "grader")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.grader, forKey: "grader")
     }
 
     /// The grader used for the fine-tuning job.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Grader: Codable, Hashable, Sendable {
+    public indirect enum Grader: OpenAIModel {
         /// `type`: `string_check`
         case stringCheck(GraderStringCheck)
         /// `type`: `text_similarity`

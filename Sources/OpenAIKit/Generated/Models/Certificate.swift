@@ -4,7 +4,7 @@
 import Foundation
 
 /// Represents an individual `certificate` uploaded to the organization.
-public struct Certificate: Codable, Hashable, Sendable {
+public struct Certificate: OpenAIModel {
     /// The object type.
     ///
     /// - If creating, updating, or getting a specific certificate, the object type is `certificate`.
@@ -37,13 +37,24 @@ public struct Certificate: Codable, Hashable, Sendable {
         self.active = active
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case id
-        case name
-        case createdAt = "created_at"
-        case certificateDetails = "certificate_details"
-        case active
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decode(Certificate.Object.self, forKey: "object")
+        self.id = try container.decode(String.self, forKey: "id")
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.certificateDetails = try container.decode(Certificate.CertificateDetails.self, forKey: "certificate_details")
+        self.active = try container.decodeIfPresent(Bool.self, forKey: "active")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.id, forKey: "id")
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.certificateDetails, forKey: "certificate_details")
+        try container.encodeIfPresent(self.active, forKey: "active")
     }
 
     /// The object type.
@@ -69,7 +80,7 @@ public struct Certificate: Codable, Hashable, Sendable {
         }
     }
 
-    public struct CertificateDetails: Codable, Hashable, Sendable {
+    public struct CertificateDetails: OpenAIModel {
         /// The Unix timestamp (in seconds) of when the certificate becomes valid.
         public var validAt: Int?
         /// The Unix timestamp (in seconds) of when the certificate expires.
@@ -87,10 +98,18 @@ public struct Certificate: Codable, Hashable, Sendable {
             self.content = content
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case validAt = "valid_at"
-            case expiresAt = "expires_at"
-            case content
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.validAt = try container.decodeIfPresent(Int.self, forKey: "valid_at")
+            self.expiresAt = try container.decodeIfPresent(Int.self, forKey: "expires_at")
+            self.content = try container.decodeIfPresent(String.self, forKey: "content")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.validAt, forKey: "valid_at")
+            try container.encodeIfPresent(self.expiresAt, forKey: "expires_at")
+            try container.encodeIfPresent(self.content, forKey: "content")
         }
     }
 }

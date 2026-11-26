@@ -4,7 +4,7 @@
 import Foundation
 
 /// Controls when the session expires relative to an anchor timestamp.
-public struct ExpiresAfterParam: Codable, Hashable, Sendable {
+public struct ExpiresAfterParam: OpenAIModel {
     /// Base timestamp used to calculate expiration. Currently fixed to `created_at`.
     public var anchor: String = "created_at"
     /// Number of seconds after the anchor when the session expires.
@@ -14,8 +14,15 @@ public struct ExpiresAfterParam: Codable, Hashable, Sendable {
         self.seconds = seconds
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case anchor
-        case seconds
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.anchor = try container.decodeIfPresent(String.self, forKey: "anchor") ?? "created_at"
+        self.seconds = try container.decode(Int64.self, forKey: "seconds")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.anchor, forKey: "anchor")
+        try container.encode(self.seconds, forKey: "seconds")
     }
 }

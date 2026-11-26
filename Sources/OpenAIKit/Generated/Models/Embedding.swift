@@ -4,7 +4,7 @@
 import Foundation
 
 /// Represents an embedding vector returned by embedding endpoint.
-public struct Embedding: Codable, Hashable, Sendable {
+public struct Embedding: OpenAIModel {
     /// The index of the embedding in the list of embeddings.
     public var index: Int
     /// The embedding vector, returned as a list of floats when `encoding_format` is `float` (the default), or as a base64-encoded string when `encoding_format` is `base64`. The length of the vector depends on the model as listed in the [embedding guide](https://developers.openai.com/api/docs/guides/embeddings).
@@ -17,14 +17,22 @@ public struct Embedding: Codable, Hashable, Sendable {
         self.embedding = embedding
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case index
-        case embedding
-        case object
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.index = try container.decode(Int.self, forKey: "index")
+        self.embedding = try container.decode(Embedding.EmbeddingValue.self, forKey: "embedding")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "embedding"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.index, forKey: "index")
+        try container.encode(self.embedding, forKey: "embedding")
+        try container.encode(self.object, forKey: "object")
     }
 
     /// The embedding vector, returned as a list of floats when `encoding_format` is `float` (the default), or as a base64-encoded string when `encoding_format` is `base64`. The length of the vector depends on the model as listed in the [embedding guide](https://developers.openai.com/api/docs/guides/embeddings).
-    public indirect enum EmbeddingValue: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum EmbeddingValue: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         case array([Double])
         case string(String)
         /// A value this version of OpenAIKit does not recognize, kept as raw JSON.

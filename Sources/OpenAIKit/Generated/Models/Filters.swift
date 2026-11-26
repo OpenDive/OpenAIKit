@@ -3,7 +3,7 @@
 
 import Foundation
 
-public indirect enum Filters: Codable, Hashable, Sendable {
+public indirect enum Filters: OpenAIModel {
     case comparison(ComparisonFilter)
     case compound(CompoundFilter)
     /// A value this version of OpenAIKit does not recognize, kept as raw JSON.

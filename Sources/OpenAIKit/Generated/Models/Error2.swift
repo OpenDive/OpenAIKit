@@ -4,7 +4,7 @@
 import Foundation
 
 /// An error that occurred while generating the response.
-public struct Error2: Codable, Hashable, Sendable {
+public struct Error2: OpenAIModel {
     /// A machine-readable error code that was returned.
     public var code: String
     public var type: String?
@@ -31,12 +31,23 @@ public struct Error2: Codable, Hashable, Sendable {
         self.misalignment = misalignment
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case code
-        case type
-        case param
-        case message
-        case headers
-        case misalignment
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.code = try container.decode(String.self, forKey: "code")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type")
+        self.param = try container.decodeIfPresent(String.self, forKey: "param")
+        self.message = try container.decode(String.self, forKey: "message")
+        self.headers = try container.decodeIfPresent([String: String].self, forKey: "headers")
+        self.misalignment = try container.decodeIfPresent(MisalignmentErrorDetailsResource.self, forKey: "misalignment")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.code, forKey: "code")
+        try container.encodeIfPresent(self.type, forKey: "type")
+        try container.encodeIfPresent(self.param, forKey: "param")
+        try container.encode(self.message, forKey: "message")
+        try container.encodeIfPresent(self.headers, forKey: "headers")
+        try container.encodeIfPresent(self.misalignment, forKey: "misalignment")
     }
 }

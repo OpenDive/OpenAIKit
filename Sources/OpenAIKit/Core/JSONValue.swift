@@ -160,8 +160,9 @@ extension JSONValue: CustomStringConvertible {
     public var description: String { jsonString }
 }
 
-/// A coding key built from any string, used by generated unions to read discriminators.
-public struct OpenAIDynamicCodingKey: CodingKey, Hashable, Sendable {
+/// A coding key built from any string. Generated models use it for every property, instead of
+/// a `CodingKeys` enum per type, which kept megabytes of code in every app.
+public struct OpenAIDynamicCodingKey: CodingKey, Hashable, Sendable, ExpressibleByStringLiteral {
     public var stringValue: String
     public var intValue: Int?
 
@@ -178,6 +179,10 @@ public struct OpenAIDynamicCodingKey: CodingKey, Hashable, Sendable {
     public init?(intValue: Int) {
         self.stringValue = String(intValue)
         self.intValue = intValue
+    }
+
+    public init(stringLiteral value: String) {
+        self.init(value)
     }
 }
 

@@ -3,8 +3,715 @@
 
 import Foundation
 
+/// Request payload for creating a new group in the organization.
+public struct CreateGroupBody: OpenAIModel {
+    /// Human readable name for the group.
+    public var name: String
+
+    public init(name: String) {
+        self.name = name
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.name = try container.decode(String.self, forKey: "name")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.name, forKey: "name")
+    }
+}
+
+/// Request payload for adding a user to a group.
+public struct CreateGroupUserBody: OpenAIModel {
+    /// Identifier of the user to add to the group.
+    public var userID: String
+
+    public init(userID: String) {
+        self.userID = userID
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.userID = try container.decode(String.self, forKey: "user_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.userID, forKey: "user_id")
+    }
+}
+
+public struct CreateImageEditRequest: OpenAIModel {
+    public var frameCount: FrameCount?
+    public var frameDurationMs: FrameDurationMs?
+    public var complexity: Complexity?
+    /// The image(s) to edit. Must be a supported image file or an array of images.
+    ///
+    /// For the GPT image models (`gpt-image-1-mini`, `gpt-image-1.5`,
+    /// `gpt-image-2`, `gpt-image-2-2026-04-21`, `gpt-image-2.5-sunburst`,
+    /// `gpt-image-2.5-sunburst-2026-09-08`, `gpt-image-2.5-flare`, and
+    /// `gpt-image-2.5-flare-2026-09-08`), each image should be a `png`, `webp`, or `jpg`
+    /// file less than 50MB. You can provide up to 16 images. `chatgpt-image-latest`
+    /// follows the same input constraints as GPT image models.
+    public var image: CreateImageEditRequest.ImageValue
+    /// A text description of the desired image(s). The maximum length is 32000 characters for the GPT image models.
+    public var prompt: String
+    /// An additional image whose fully transparent areas (e.g. where alpha is zero) indicate where `image` should be edited. If there are multiple images provided, the mask will be applied on the first image. Must be a valid PNG file, less than 4MB, and have the same dimensions as `image`.
+    public var mask: FileUpload?
+    /// A transparent PNG overlaid on the first image to guide the edit. Must match that image's dimensions after orientation and contain transparent pixels. Supports GPT Image 2.5. Cannot be combined with mask.
+    public var markup: Markup?
+    /// Set the background of the generated image(s). This parameter is only supported for
+    /// the GPT image models. Must be one of `transparent`, `opaque`, or `auto` (default
+    /// value). When `auto` is used, the model will automatically determine the best
+    /// background for the image.
+    ///
+    /// `gpt-image-2.5-sunburst` and `gpt-image-2.5-flare`, including their `2026-09-08`
+    /// snapshots, support `opaque` and `transparent` backgrounds. Transparent backgrounds
+    /// are available for supported GPT Image models. For `gpt-image-2` and
+    /// `gpt-image-2-2026-04-21`, this support is in preview. When using `transparent`,
+    /// set the output format to `png` or `webp`.
+    public var background: CreateImageEditRequest.Background?
+    /// The GPT image model to use for image editing
+    /// (`gpt-image-1-mini`, `gpt-image-1.5`, `gpt-image-2`,
+    /// `gpt-image-2-2026-04-21`, `gpt-image-2.5-sunburst`,
+    /// `gpt-image-2.5-sunburst-2026-09-08`, `gpt-image-2.5-flare`,
+    /// `gpt-image-2.5-flare-2026-09-08`, `gpt-image-2.6-sunburst`, `gpt-image-2.6-flare`,
+    /// or `chatgpt-image-latest`).
+    ///
+    /// `gpt-image-1` was shut down on October 23, 2026. Use
+    /// `gpt-image-2.5-sunburst` or `gpt-image-2.5-flare` instead.
+    public var model: CreateImageEditRequest.Model
+    /// The number of images to generate. Must be between 1 and 10.
+    public var n: Int?
+    /// The size of the generated images. Defaults to `auto`. For `gpt-image-2`, `gpt-image-2-2026-04-21`, `gpt-image-2.5-sunburst`, `gpt-image-2.5-sunburst-2026-09-08`, `gpt-image-2.5-flare`, and `gpt-image-2.5-flare-2026-09-08`, arbitrary resolutions are supported as `WIDTHxHEIGHT` strings, for example `1536x864`. Width and height must both be divisible by 16 and the requested aspect ratio must be between 1:3 and 3:1. Resolutions above `2560x1440` are experimental, and the maximum supported resolution is `3840x2160`. The requested size must also satisfy the model's current pixel and edge limits. The standard sizes `1024x1024`, `1536x1024`, and `1024x1536` are supported by the GPT image models; `auto` is supported for models that allow automatic sizing.
+    public var size: CreateImageEditRequest.Size?
+    /// Legacy response format parameter for retired image models. Unsupported for GPT image models, which always return base64-encoded images.
+    ///
+    /// - Note: Deprecated by OpenAI.
+    public var responseFormat: CreateImageEditRequest.ResponseFormat?
+    /// The format in which the generated images are returned. This parameter is
+    /// only supported for the GPT image models.
+    /// The default value is `png`.
+    /// SVG output requires a supported image model and project access.
+    public var outputFormat: ImagesApiOutputFormat?
+    /// Selects the author model and reasoning effort for `output_format=svg`. Supply `svg.model` when SVG model selection is enabled. Otherwise, omit this object. SVG output requires `n=1` and cannot use streaming, partial images, or output compression. Use multipart fields such as `svg[model]`.
+    public var svg: SvgParam?
+    /// The compression level (0-100%) for the generated images. This parameter
+    /// is only supported for the GPT image models with the `webp` or `jpeg` output
+    /// formats, and defaults to 100.
+    public var outputCompression: Int?
+    /// A stable identifier for an end user in your organization, used for safety monitoring and abuse detection. Hash a username or email address to avoid sending identifying information. A non-empty value takes precedence over the deprecated `user` parameter. If omitted, null, or empty, the API uses `user` when available. [Learn more](https://developers.openai.com/api/docs/guides/safety-best-practices#implement-safety-identifiers).
+    public var safetyIdentifier: String?
+    /// Deprecated: use `safety_identifier` instead. This parameter remains accepted for backward compatibility and is used when `safety_identifier` is omitted, null, or empty. [Learn more](https://developers.openai.com/api/docs/guides/safety-best-practices#implement-safety-identifiers).
+    ///
+    /// - Note: Deprecated by OpenAI.
+    public var user: String?
+    public var inputFidelity: InputFidelity?
+    /// Edit the image in streaming mode. Defaults to `false`. See the
+    /// [Image generation guide](https://developers.openai.com/api/docs/guides/image-generation) for more information.
+    public var stream: Bool?
+    public var partialImages: PartialImages?
+    /// The quality of the image that will be generated for GPT image models. The GPT image models support `low`, `medium`, and `high`. `gpt-image-2.5-sunburst` and `gpt-image-2.5-flare`, including their `2026-09-08` snapshots, also support `xhigh` and `max`. Defaults to `auto`.
+    public var quality: CreateImageEditRequest.Quality?
+
+    public init(
+        model: CreateImageEditRequest.Model,
+        prompt: String,
+        image: CreateImageEditRequest.ImageValue,
+        frameCount: FrameCount? = nil,
+        frameDurationMs: FrameDurationMs? = nil,
+        complexity: Complexity? = nil,
+        mask: FileUpload? = nil,
+        markup: Markup? = nil,
+        background: CreateImageEditRequest.Background? = nil,
+        n: Int? = nil,
+        size: CreateImageEditRequest.Size? = nil,
+        responseFormat: CreateImageEditRequest.ResponseFormat? = nil,
+        outputFormat: ImagesApiOutputFormat? = nil,
+        svg: SvgParam? = nil,
+        outputCompression: Int? = nil,
+        safetyIdentifier: String? = nil,
+        user: String? = nil,
+        inputFidelity: InputFidelity? = nil,
+        stream: Bool? = nil,
+        partialImages: PartialImages? = nil,
+        quality: CreateImageEditRequest.Quality? = nil
+    ) {
+        self.model = model
+        self.prompt = prompt
+        self.image = image
+        self.frameCount = frameCount
+        self.frameDurationMs = frameDurationMs
+        self.complexity = complexity
+        self.mask = mask
+        self.markup = markup
+        self.background = background
+        self.n = n
+        self.size = size
+        self.responseFormat = responseFormat
+        self.outputFormat = outputFormat
+        self.svg = svg
+        self.outputCompression = outputCompression
+        self.safetyIdentifier = safetyIdentifier
+        self.user = user
+        self.inputFidelity = inputFidelity
+        self.stream = stream
+        self.partialImages = partialImages
+        self.quality = quality
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.frameCount = try container.decodeIfPresent(FrameCount.self, forKey: "frame_count")
+        self.frameDurationMs = try container.decodeIfPresent(FrameDurationMs.self, forKey: "frame_duration_ms")
+        self.complexity = try container.decodeIfPresent(Complexity.self, forKey: "complexity")
+        self.image = try container.decode(CreateImageEditRequest.ImageValue.self, forKey: "image")
+        self.prompt = try container.decode(String.self, forKey: "prompt")
+        self.mask = try container.decodeIfPresent(FileUpload.self, forKey: "mask")
+        self.markup = try container.decodeIfPresent(Markup.self, forKey: "markup")
+        self.background = try container.decodeIfPresent(CreateImageEditRequest.Background.self, forKey: "background")
+        self.model = try container.decode(CreateImageEditRequest.Model.self, forKey: "model")
+        self.n = try container.decodeIfPresent(Int.self, forKey: "n")
+        self.size = try container.decodeIfPresent(CreateImageEditRequest.Size.self, forKey: "size")
+        self.responseFormat = try container.decodeIfPresent(CreateImageEditRequest.ResponseFormat.self, forKey: "response_format")
+        self.outputFormat = try container.decodeIfPresent(ImagesApiOutputFormat.self, forKey: "output_format")
+        self.svg = try container.decodeIfPresent(SvgParam.self, forKey: "svg")
+        self.outputCompression = try container.decodeIfPresent(Int.self, forKey: "output_compression")
+        self.safetyIdentifier = try container.decodeIfPresent(String.self, forKey: "safety_identifier")
+        self.user = try container.decodeIfPresent(String.self, forKey: "user")
+        self.inputFidelity = try container.decodeIfPresent(InputFidelity.self, forKey: "input_fidelity")
+        self.stream = try container.decodeIfPresent(Bool.self, forKey: "stream")
+        self.partialImages = try container.decodeIfPresent(PartialImages.self, forKey: "partial_images")
+        self.quality = try container.decodeIfPresent(CreateImageEditRequest.Quality.self, forKey: "quality")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.frameCount, forKey: "frame_count")
+        try container.encodeIfPresent(self.frameDurationMs, forKey: "frame_duration_ms")
+        try container.encodeIfPresent(self.complexity, forKey: "complexity")
+        try container.encode(self.image, forKey: "image")
+        try container.encode(self.prompt, forKey: "prompt")
+        try container.encodeIfPresent(self.mask, forKey: "mask")
+        try container.encodeIfPresent(self.markup, forKey: "markup")
+        try container.encodeIfPresent(self.background, forKey: "background")
+        try container.encode(self.model, forKey: "model")
+        try container.encodeIfPresent(self.n, forKey: "n")
+        try container.encodeIfPresent(self.size, forKey: "size")
+        try container.encodeIfPresent(self.responseFormat, forKey: "response_format")
+        try container.encodeIfPresent(self.outputFormat, forKey: "output_format")
+        try container.encodeIfPresent(self.svg, forKey: "svg")
+        try container.encodeIfPresent(self.outputCompression, forKey: "output_compression")
+        try container.encodeIfPresent(self.safetyIdentifier, forKey: "safety_identifier")
+        try container.encodeIfPresent(self.user, forKey: "user")
+        try container.encodeIfPresent(self.inputFidelity, forKey: "input_fidelity")
+        try container.encodeIfPresent(self.stream, forKey: "stream")
+        try container.encodeIfPresent(self.partialImages, forKey: "partial_images")
+        try container.encodeIfPresent(self.quality, forKey: "quality")
+    }
+
+    /// The image(s) to edit. Must be a supported image file or an array of images.
+    ///
+    /// For the GPT image models (`gpt-image-1-mini`, `gpt-image-1.5`,
+    /// `gpt-image-2`, `gpt-image-2-2026-04-21`, `gpt-image-2.5-sunburst`,
+    /// `gpt-image-2.5-sunburst-2026-09-08`, `gpt-image-2.5-flare`, and
+    /// `gpt-image-2.5-flare-2026-09-08`), each image should be a `png`, `webp`, or `jpg`
+    /// file less than 50MB. You can provide up to 16 images. `chatgpt-image-latest`
+    /// follows the same input constraints as GPT image models.
+    public indirect enum ImageValue: OpenAIModel {
+        case file(FileUpload)
+        case array([FileUpload])
+        /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
+        case unknown(JSONValue)
+
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            if let value = try? container.decode([FileUpload].self) {
+                self = .array(value)
+                return
+            }
+            if let value = try? container.decode(FileUpload.self) {
+                self = .file(value)
+                return
+            }
+            self = .unknown(try container.decode(JSONValue.self))
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.singleValueContainer()
+            switch self {
+            case .file(let value):
+                try container.encode(value)
+            case .array(let value):
+                try container.encode(value)
+            case .unknown(let value):
+                try container.encode(value)
+            }
+        }
+    }
+
+    /// Set the background of the generated image(s). This parameter is only supported for
+    /// the GPT image models. Must be one of `transparent`, `opaque`, or `auto` (default
+    /// value). When `auto` is used, the model will automatically determine the best
+    /// background for the image.
+    ///
+    /// `gpt-image-2.5-sunburst` and `gpt-image-2.5-flare`, including their `2026-09-08`
+    /// snapshots, support `opaque` and `transparent` backgrounds. Transparent backgrounds
+    /// are available for supported GPT Image models. For `gpt-image-2` and
+    /// `gpt-image-2-2026-04-21`, this support is in preview. When using `transparent`,
+    /// set the output format to `png` or `webp`.
+    ///
+    /// This type is open: it accepts values the spec does not list yet.
+    public struct Background: OpenAIStringEnum {
+        public let rawValue: String
+
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
+
+        public static let transparent: Self = "transparent"
+        public static let opaque: Self = "opaque"
+        public static let auto: Self = "auto"
+
+        public static var knownValues: [Self] {
+            [.transparent, .opaque, .auto]
+        }
+    }
+
+    /// The GPT image model to use for image editing
+    /// (`gpt-image-1-mini`, `gpt-image-1.5`, `gpt-image-2`,
+    /// `gpt-image-2-2026-04-21`, `gpt-image-2.5-sunburst`,
+    /// `gpt-image-2.5-sunburst-2026-09-08`, `gpt-image-2.5-flare`,
+    /// `gpt-image-2.5-flare-2026-09-08`, `gpt-image-2.6-sunburst`, `gpt-image-2.6-flare`,
+    /// or `chatgpt-image-latest`).
+    ///
+    /// `gpt-image-1` was shut down on October 23, 2026. Use
+    /// `gpt-image-2.5-sunburst` or `gpt-image-2.5-flare` instead.
+    ///
+    /// This type is open: it accepts values the spec does not list yet.
+    public struct Model: OpenAIStringEnum {
+        public let rawValue: String
+
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
+
+        public static let gptImage1_5: Self = "gpt-image-1.5"
+        public static let gptImage2: Self = "gpt-image-2"
+        public static let gptImage2_2026_04_21: Self = "gpt-image-2-2026-04-21"
+        public static let gptImage2_5Sunburst: Self = "gpt-image-2.5-sunburst"
+        public static let gptImage2_5Sunburst2026_09_08: Self = "gpt-image-2.5-sunburst-2026-09-08"
+        public static let gptImage2_5Flare: Self = "gpt-image-2.5-flare"
+        public static let gptImage2_5Flare2026_09_08: Self = "gpt-image-2.5-flare-2026-09-08"
+        public static let gptImage2_6Sunburst: Self = "gpt-image-2.6-sunburst"
+        public static let gptImage2_6Flare: Self = "gpt-image-2.6-flare"
+        public static let gptImage1: Self = "gpt-image-1"
+        public static let gptImage1Mini: Self = "gpt-image-1-mini"
+        public static let chatgptImageLatest: Self = "chatgpt-image-latest"
+        public static let dallE2: Self = "dall-e-2"
+
+        public static var knownValues: [Self] {
+            [.gptImage1_5, .gptImage2, .gptImage2_2026_04_21, .gptImage2_5Sunburst, .gptImage2_5Sunburst2026_09_08, .gptImage2_5Flare, .gptImage2_5Flare2026_09_08, .gptImage2_6Sunburst, .gptImage2_6Flare, .gptImage1, .gptImage1Mini, .chatgptImageLatest, .dallE2]
+        }
+    }
+
+    /// The size of the generated images. Defaults to `auto`. For `gpt-image-2`, `gpt-image-2-2026-04-21`, `gpt-image-2.5-sunburst`, `gpt-image-2.5-sunburst-2026-09-08`, `gpt-image-2.5-flare`, and `gpt-image-2.5-flare-2026-09-08`, arbitrary resolutions are supported as `WIDTHxHEIGHT` strings, for example `1536x864`. Width and height must both be divisible by 16 and the requested aspect ratio must be between 1:3 and 3:1. Resolutions above `2560x1440` are experimental, and the maximum supported resolution is `3840x2160`. The requested size must also satisfy the model's current pixel and edge limits. The standard sizes `1024x1024`, `1536x1024`, and `1024x1536` are supported by the GPT image models; `auto` is supported for models that allow automatic sizing.
+    ///
+    /// This type is open: it accepts values the spec does not list yet.
+    public struct Size: OpenAIStringEnum {
+        public let rawValue: String
+
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
+
+        public static let _1024x1024: Self = "1024x1024"
+        public static let _1536x1024: Self = "1536x1024"
+        public static let _1024x1536: Self = "1024x1536"
+        public static let auto: Self = "auto"
+        public static let _256x256: Self = "256x256"
+        public static let _512x512: Self = "512x512"
+
+        public static var knownValues: [Self] {
+            [._1024x1024, ._1536x1024, ._1024x1536, .auto, ._256x256, ._512x512]
+        }
+    }
+
+    /// Legacy response format parameter for retired image models. Unsupported for GPT image models, which always return base64-encoded images.
+    ///
+    /// This type is open: it accepts values the spec does not list yet.
+    public struct ResponseFormat: OpenAIStringEnum {
+        public let rawValue: String
+
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
+
+        public static let url: Self = "url"
+        public static let b64Json: Self = "b64_json"
+
+        public static var knownValues: [Self] {
+            [.url, .b64Json]
+        }
+    }
+
+    /// The quality of the image that will be generated for GPT image models. The GPT image models support `low`, `medium`, and `high`. `gpt-image-2.5-sunburst` and `gpt-image-2.5-flare`, including their `2026-09-08` snapshots, also support `xhigh` and `max`. Defaults to `auto`.
+    ///
+    /// This type is open: it accepts values the spec does not list yet.
+    public struct Quality: OpenAIStringEnum {
+        public let rawValue: String
+
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
+
+        public static let low: Self = "low"
+        public static let medium: Self = "medium"
+        public static let high: Self = "high"
+        public static let xhigh: Self = "xhigh"
+        public static let max: Self = "max"
+        public static let auto: Self = "auto"
+        public static let standard: Self = "standard"
+
+        public static var knownValues: [Self] {
+            [.low, .medium, .high, .xhigh, .max, .auto, .standard]
+        }
+    }
+}
+
+public struct CreateImageRequest: OpenAIModel {
+    public var frameCount: FrameCount?
+    public var frameDurationMs: FrameDurationMs?
+    public var complexity: Complexity?
+    public var svg: Svg?
+    /// A text description of the desired image(s). The maximum length is 32000 characters.
+    public var prompt: String
+    /// The GPT image model to use for image generation. Specify a model explicitly.
+    /// Supported models include `gpt-image-1-mini`, `gpt-image-1.5`, `gpt-image-2`,
+    /// `gpt-image-2-2026-04-21`, `gpt-image-2.5-sunburst`,
+    /// `gpt-image-2.5-sunburst-2026-09-08`, `gpt-image-2.5-flare`,
+    /// `gpt-image-2.5-flare-2026-09-08`, `gpt-image-2.6-sunburst`, `gpt-image-2.6-flare`,
+    /// and `chatgpt-image-latest`.
+    ///
+    /// `gpt-image-1` was shut down on October 23, 2026. Use
+    /// `gpt-image-2.5-sunburst` or `gpt-image-2.5-flare` instead.
+    public var model: CreateImageRequest.Model
+    /// The number of images to generate. Must be between 1 and 10.
+    public var n: Int?
+    /// The quality of the image that will be generated.
+    ///
+    /// - `auto` (default value) will automatically select the best quality for the given
+    ///   model.
+    /// - `high`, `medium` and `low` are supported for the GPT image models.
+    /// - `gpt-image-2.5-sunburst` and `gpt-image-2.5-flare`, including their `2026-09-08`
+    ///   snapshots, also support `xhigh` and `max`.
+    public var quality: CreateImageRequest.Quality?
+    /// Legacy response format parameter for retired image models. Unsupported for GPT image models, which always return base64-encoded images.
+    ///
+    /// - Note: Deprecated by OpenAI.
+    public var responseFormat: CreateImageRequest.ResponseFormat?
+    /// The format in which the generated images are returned. This parameter is only supported for the GPT image models.
+    public var outputFormat: ImagesApiOutputFormat?
+    /// The compression level (0-100%) for the generated images. This parameter is only supported for the GPT image models with the `webp` or `jpeg` output formats, and defaults to 100.
+    public var outputCompression: Int?
+    /// Generate the image in streaming mode. Defaults to `false`. See the
+    /// [Image generation guide](https://developers.openai.com/api/docs/guides/image-generation) for more information.
+    /// This parameter is only supported for the GPT image models.
+    public var stream: Bool?
+    public var partialImages: PartialImages?
+    /// The size of the generated images. For `gpt-image-2`, `gpt-image-2-2026-04-21`, `gpt-image-2.5-sunburst`, `gpt-image-2.5-sunburst-2026-09-08`, `gpt-image-2.5-flare`, and `gpt-image-2.5-flare-2026-09-08`, arbitrary resolutions are supported as `WIDTHxHEIGHT` strings, for example `1536x864`. Width and height must both be divisible by 16 and the requested aspect ratio must be between 1:3 and 3:1. Resolutions above `2560x1440` are experimental, and the maximum supported resolution is `3840x2160`. The requested size must also satisfy the model's current pixel and edge limits. The standard sizes `1024x1024`, `1536x1024`, and `1024x1536` are supported by the GPT image models; `auto` is supported for models that allow automatic sizing.
+    public var size: CreateImageRequest.Size?
+    /// Control the content-moderation level for images generated by the GPT image models. Must be either `low` for less restrictive filtering or `auto` (default value).
+    public var moderation: CreateImageRequest.Moderation?
+    /// Set the background of the generated image(s). This parameter is only supported for
+    /// the GPT image models. Must be one of `transparent`, `opaque`, or `auto` (default
+    /// value). When `auto` is used, the model will automatically determine the best
+    /// background for the image.
+    ///
+    /// `gpt-image-2.5-sunburst` and `gpt-image-2.5-flare`, including their `2026-09-08`
+    /// snapshots, support `opaque` and `transparent` backgrounds. Transparent backgrounds
+    /// are available for supported GPT Image models. For `gpt-image-2` and
+    /// `gpt-image-2-2026-04-21`, this support is in preview. When using `transparent`,
+    /// set the output format to `png` or `webp`.
+    public var background: CreateImageRequest.Background?
+    /// Legacy style parameter for retired image models. Unsupported for GPT image models; describe the desired style in the prompt instead.
+    ///
+    /// - Note: Deprecated by OpenAI.
+    public var style: CreateImageRequest.Style?
+    /// A stable identifier for an end user in your organization, used for safety monitoring and abuse detection. Hash a username or email address to avoid sending identifying information. A non-empty value takes precedence over the deprecated `user` parameter. If omitted, null, or empty, the API uses `user` when available. [Learn more](https://developers.openai.com/api/docs/guides/safety-best-practices#implement-safety-identifiers).
+    public var safetyIdentifier: String?
+    /// Deprecated: use `safety_identifier` instead. This parameter remains accepted for backward compatibility and is used when `safety_identifier` is omitted, null, or empty. [Learn more](https://developers.openai.com/api/docs/guides/safety-best-practices#implement-safety-identifiers).
+    ///
+    /// - Note: Deprecated by OpenAI.
+    public var user: String?
+
+    public init(
+        model: CreateImageRequest.Model,
+        prompt: String,
+        frameCount: FrameCount? = nil,
+        frameDurationMs: FrameDurationMs? = nil,
+        complexity: Complexity? = nil,
+        svg: Svg? = nil,
+        n: Int? = nil,
+        quality: CreateImageRequest.Quality? = nil,
+        responseFormat: CreateImageRequest.ResponseFormat? = nil,
+        outputFormat: ImagesApiOutputFormat? = nil,
+        outputCompression: Int? = nil,
+        stream: Bool? = nil,
+        partialImages: PartialImages? = nil,
+        size: CreateImageRequest.Size? = nil,
+        moderation: CreateImageRequest.Moderation? = nil,
+        background: CreateImageRequest.Background? = nil,
+        style: CreateImageRequest.Style? = nil,
+        safetyIdentifier: String? = nil,
+        user: String? = nil
+    ) {
+        self.model = model
+        self.prompt = prompt
+        self.frameCount = frameCount
+        self.frameDurationMs = frameDurationMs
+        self.complexity = complexity
+        self.svg = svg
+        self.n = n
+        self.quality = quality
+        self.responseFormat = responseFormat
+        self.outputFormat = outputFormat
+        self.outputCompression = outputCompression
+        self.stream = stream
+        self.partialImages = partialImages
+        self.size = size
+        self.moderation = moderation
+        self.background = background
+        self.style = style
+        self.safetyIdentifier = safetyIdentifier
+        self.user = user
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.frameCount = try container.decodeIfPresent(FrameCount.self, forKey: "frame_count")
+        self.frameDurationMs = try container.decodeIfPresent(FrameDurationMs.self, forKey: "frame_duration_ms")
+        self.complexity = try container.decodeIfPresent(Complexity.self, forKey: "complexity")
+        self.svg = try container.decodeIfPresent(Svg.self, forKey: "svg")
+        self.prompt = try container.decode(String.self, forKey: "prompt")
+        self.model = try container.decode(CreateImageRequest.Model.self, forKey: "model")
+        self.n = try container.decodeIfPresent(Int.self, forKey: "n")
+        self.quality = try container.decodeIfPresent(CreateImageRequest.Quality.self, forKey: "quality")
+        self.responseFormat = try container.decodeIfPresent(CreateImageRequest.ResponseFormat.self, forKey: "response_format")
+        self.outputFormat = try container.decodeIfPresent(ImagesApiOutputFormat.self, forKey: "output_format")
+        self.outputCompression = try container.decodeIfPresent(Int.self, forKey: "output_compression")
+        self.stream = try container.decodeIfPresent(Bool.self, forKey: "stream")
+        self.partialImages = try container.decodeIfPresent(PartialImages.self, forKey: "partial_images")
+        self.size = try container.decodeIfPresent(CreateImageRequest.Size.self, forKey: "size")
+        self.moderation = try container.decodeIfPresent(CreateImageRequest.Moderation.self, forKey: "moderation")
+        self.background = try container.decodeIfPresent(CreateImageRequest.Background.self, forKey: "background")
+        self.style = try container.decodeIfPresent(CreateImageRequest.Style.self, forKey: "style")
+        self.safetyIdentifier = try container.decodeIfPresent(String.self, forKey: "safety_identifier")
+        self.user = try container.decodeIfPresent(String.self, forKey: "user")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.frameCount, forKey: "frame_count")
+        try container.encodeIfPresent(self.frameDurationMs, forKey: "frame_duration_ms")
+        try container.encodeIfPresent(self.complexity, forKey: "complexity")
+        try container.encodeIfPresent(self.svg, forKey: "svg")
+        try container.encode(self.prompt, forKey: "prompt")
+        try container.encode(self.model, forKey: "model")
+        try container.encodeIfPresent(self.n, forKey: "n")
+        try container.encodeIfPresent(self.quality, forKey: "quality")
+        try container.encodeIfPresent(self.responseFormat, forKey: "response_format")
+        try container.encodeIfPresent(self.outputFormat, forKey: "output_format")
+        try container.encodeIfPresent(self.outputCompression, forKey: "output_compression")
+        try container.encodeIfPresent(self.stream, forKey: "stream")
+        try container.encodeIfPresent(self.partialImages, forKey: "partial_images")
+        try container.encodeIfPresent(self.size, forKey: "size")
+        try container.encodeIfPresent(self.moderation, forKey: "moderation")
+        try container.encodeIfPresent(self.background, forKey: "background")
+        try container.encodeIfPresent(self.style, forKey: "style")
+        try container.encodeIfPresent(self.safetyIdentifier, forKey: "safety_identifier")
+        try container.encodeIfPresent(self.user, forKey: "user")
+    }
+
+    /// The GPT image model to use for image generation. Specify a model explicitly.
+    /// Supported models include `gpt-image-1-mini`, `gpt-image-1.5`, `gpt-image-2`,
+    /// `gpt-image-2-2026-04-21`, `gpt-image-2.5-sunburst`,
+    /// `gpt-image-2.5-sunburst-2026-09-08`, `gpt-image-2.5-flare`,
+    /// `gpt-image-2.5-flare-2026-09-08`, `gpt-image-2.6-sunburst`, `gpt-image-2.6-flare`,
+    /// and `chatgpt-image-latest`.
+    ///
+    /// `gpt-image-1` was shut down on October 23, 2026. Use
+    /// `gpt-image-2.5-sunburst` or `gpt-image-2.5-flare` instead.
+    ///
+    /// This type is open: it accepts values the spec does not list yet.
+    public struct Model: OpenAIStringEnum {
+        public let rawValue: String
+
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
+
+        public static let gptImage1_5: Self = "gpt-image-1.5"
+        public static let gptImage2: Self = "gpt-image-2"
+        public static let gptImage2_2026_04_21: Self = "gpt-image-2-2026-04-21"
+        public static let gptImage2_5Sunburst: Self = "gpt-image-2.5-sunburst"
+        public static let gptImage2_5Sunburst2026_09_08: Self = "gpt-image-2.5-sunburst-2026-09-08"
+        public static let gptImage2_5Flare: Self = "gpt-image-2.5-flare"
+        public static let gptImage2_5Flare2026_09_08: Self = "gpt-image-2.5-flare-2026-09-08"
+        public static let gptImage2_6Sunburst: Self = "gpt-image-2.6-sunburst"
+        public static let gptImage2_6Flare: Self = "gpt-image-2.6-flare"
+        public static let gptImage1: Self = "gpt-image-1"
+        public static let gptImage1Mini: Self = "gpt-image-1-mini"
+        public static let chatgptImageLatest: Self = "chatgpt-image-latest"
+        public static let dallE2: Self = "dall-e-2"
+        public static let dallE3: Self = "dall-e-3"
+
+        public static var knownValues: [Self] {
+            [.gptImage1_5, .gptImage2, .gptImage2_2026_04_21, .gptImage2_5Sunburst, .gptImage2_5Sunburst2026_09_08, .gptImage2_5Flare, .gptImage2_5Flare2026_09_08, .gptImage2_6Sunburst, .gptImage2_6Flare, .gptImage1, .gptImage1Mini, .chatgptImageLatest, .dallE2, .dallE3]
+        }
+    }
+
+    /// The quality of the image that will be generated.
+    ///
+    /// - `auto` (default value) will automatically select the best quality for the given
+    ///   model.
+    /// - `high`, `medium` and `low` are supported for the GPT image models.
+    /// - `gpt-image-2.5-sunburst` and `gpt-image-2.5-flare`, including their `2026-09-08`
+    ///   snapshots, also support `xhigh` and `max`.
+    ///
+    /// This type is open: it accepts values the spec does not list yet.
+    public struct Quality: OpenAIStringEnum {
+        public let rawValue: String
+
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
+
+        public static let low: Self = "low"
+        public static let medium: Self = "medium"
+        public static let high: Self = "high"
+        public static let xhigh: Self = "xhigh"
+        public static let max: Self = "max"
+        public static let auto: Self = "auto"
+        public static let standard: Self = "standard"
+        public static let hd: Self = "hd"
+
+        public static var knownValues: [Self] {
+            [.low, .medium, .high, .xhigh, .max, .auto, .standard, .hd]
+        }
+    }
+
+    /// Legacy response format parameter for retired image models. Unsupported for GPT image models, which always return base64-encoded images.
+    ///
+    /// This type is open: it accepts values the spec does not list yet.
+    public struct ResponseFormat: OpenAIStringEnum {
+        public let rawValue: String
+
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
+
+        public static let url: Self = "url"
+        public static let b64Json: Self = "b64_json"
+
+        public static var knownValues: [Self] {
+            [.url, .b64Json]
+        }
+    }
+
+    /// The size of the generated images. For `gpt-image-2`, `gpt-image-2-2026-04-21`, `gpt-image-2.5-sunburst`, `gpt-image-2.5-sunburst-2026-09-08`, `gpt-image-2.5-flare`, and `gpt-image-2.5-flare-2026-09-08`, arbitrary resolutions are supported as `WIDTHxHEIGHT` strings, for example `1536x864`. Width and height must both be divisible by 16 and the requested aspect ratio must be between 1:3 and 3:1. Resolutions above `2560x1440` are experimental, and the maximum supported resolution is `3840x2160`. The requested size must also satisfy the model's current pixel and edge limits. The standard sizes `1024x1024`, `1536x1024`, and `1024x1536` are supported by the GPT image models; `auto` is supported for models that allow automatic sizing.
+    ///
+    /// This type is open: it accepts values the spec does not list yet.
+    public struct Size: OpenAIStringEnum {
+        public let rawValue: String
+
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
+
+        public static let auto: Self = "auto"
+        public static let _1024x1024: Self = "1024x1024"
+        public static let _1536x1024: Self = "1536x1024"
+        public static let _1024x1536: Self = "1024x1536"
+        public static let _256x256: Self = "256x256"
+        public static let _512x512: Self = "512x512"
+        public static let _1792x1024: Self = "1792x1024"
+        public static let _1024x1792: Self = "1024x1792"
+
+        public static var knownValues: [Self] {
+            [.auto, ._1024x1024, ._1536x1024, ._1024x1536, ._256x256, ._512x512, ._1792x1024, ._1024x1792]
+        }
+    }
+
+    /// Control the content-moderation level for images generated by the GPT image models. Must be either `low` for less restrictive filtering or `auto` (default value).
+    ///
+    /// This type is open: it accepts values the spec does not list yet.
+    public struct Moderation: OpenAIStringEnum {
+        public let rawValue: String
+
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
+
+        public static let low: Self = "low"
+        public static let auto: Self = "auto"
+
+        public static var knownValues: [Self] {
+            [.low, .auto]
+        }
+    }
+
+    /// Set the background of the generated image(s). This parameter is only supported for
+    /// the GPT image models. Must be one of `transparent`, `opaque`, or `auto` (default
+    /// value). When `auto` is used, the model will automatically determine the best
+    /// background for the image.
+    ///
+    /// `gpt-image-2.5-sunburst` and `gpt-image-2.5-flare`, including their `2026-09-08`
+    /// snapshots, support `opaque` and `transparent` backgrounds. Transparent backgrounds
+    /// are available for supported GPT Image models. For `gpt-image-2` and
+    /// `gpt-image-2-2026-04-21`, this support is in preview. When using `transparent`,
+    /// set the output format to `png` or `webp`.
+    ///
+    /// This type is open: it accepts values the spec does not list yet.
+    public struct Background: OpenAIStringEnum {
+        public let rawValue: String
+
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
+
+        public static let transparent: Self = "transparent"
+        public static let opaque: Self = "opaque"
+        public static let auto: Self = "auto"
+
+        public static var knownValues: [Self] {
+            [.transparent, .opaque, .auto]
+        }
+    }
+
+    /// Legacy style parameter for retired image models. Unsupported for GPT image models; describe the desired style in the prompt instead.
+    ///
+    /// This type is open: it accepts values the spec does not list yet.
+    public struct Style: OpenAIStringEnum {
+        public let rawValue: String
+
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
+
+        public static let vivid: Self = "vivid"
+        public static let natural: Self = "natural"
+
+        public static var knownValues: [Self] {
+            [.vivid, .natural]
+        }
+    }
+}
+
 /// Legacy request for the retired image variations endpoint.
-public struct CreateImageVariationRequest: Codable, Hashable, Sendable {
+public struct CreateImageVariationRequest: OpenAIModel {
     /// The image to use as the basis for the variation(s). Must be a valid PNG file, less than 4MB, and square.
     public var image: FileUpload
     /// The legacy model used by the retired image variations endpoint. This endpoint no longer accepts requests.
@@ -34,13 +741,24 @@ public struct CreateImageVariationRequest: Codable, Hashable, Sendable {
         self.user = user
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case image
-        case model
-        case n
-        case responseFormat = "response_format"
-        case size
-        case user
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.image = try container.decode(FileUpload.self, forKey: "image")
+        self.model = try container.decodeIfPresent(CreateImageVariationRequest.Model.self, forKey: "model")
+        self.n = try container.decodeIfPresent(Int.self, forKey: "n")
+        self.responseFormat = try container.decodeIfPresent(CreateImageVariationRequest.ResponseFormat.self, forKey: "response_format")
+        self.size = try container.decodeIfPresent(CreateImageVariationRequest.Size.self, forKey: "size")
+        self.user = try container.decodeIfPresent(String.self, forKey: "user")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.image, forKey: "image")
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encodeIfPresent(self.n, forKey: "n")
+        try container.encodeIfPresent(self.responseFormat, forKey: "response_format")
+        try container.encodeIfPresent(self.size, forKey: "size")
+        try container.encodeIfPresent(self.user, forKey: "user")
     }
 
     /// The legacy model used by the retired image variations endpoint. This endpoint no longer accepts requests.
@@ -99,7 +817,7 @@ public struct CreateImageVariationRequest: Codable, Hashable, Sendable {
 }
 
 /// Configuration for refreshing the access token of an MCP OAuth credential.
-public struct CreateMcpOauthRefreshParam: Codable, Hashable, Sendable {
+public struct CreateMcpOauthRefreshParam: OpenAIModel {
     /// The HTTPS OAuth token endpoint used to exchange the refresh token for a new access token.
     public var tokenEndpoint: String
     /// The OAuth client ID used when requesting a new access token.
@@ -129,20 +847,31 @@ public struct CreateMcpOauthRefreshParam: Codable, Hashable, Sendable {
         self.scope = scope
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case tokenEndpoint = "token_endpoint"
-        case clientID = "client_id"
-        case resource
-        case scope
-        case refreshToken = "refresh_token"
-        case tokenEndpointAuth = "token_endpoint_auth"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.tokenEndpoint = try container.decode(String.self, forKey: "token_endpoint")
+        self.clientID = try container.decode(String.self, forKey: "client_id")
+        self.resource = try container.decodeIfPresent(String.self, forKey: "resource")
+        self.scope = try container.decodeIfPresent(String.self, forKey: "scope")
+        self.refreshToken = try container.decode(String.self, forKey: "refresh_token")
+        self.tokenEndpointAuth = try container.decode(CreateMcpOauthTokenEndpointAuthParam.self, forKey: "token_endpoint_auth")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.tokenEndpoint, forKey: "token_endpoint")
+        try container.encode(self.clientID, forKey: "client_id")
+        try container.encodeIfPresent(self.resource, forKey: "resource")
+        try container.encodeIfPresent(self.scope, forKey: "scope")
+        try container.encode(self.refreshToken, forKey: "refresh_token")
+        try container.encode(self.tokenEndpointAuth, forKey: "token_endpoint_auth")
     }
 }
 
 /// Client authentication credentials for OAuth token refresh.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum CreateMcpOauthTokenEndpointAuthParam: Codable, Hashable, Sendable {
+public indirect enum CreateMcpOauthTokenEndpointAuthParam: OpenAIModel {
     /// `type`: `none`
     case noneValue(CreateMcpOauthTokenEndpointAuthParamNone)
     /// `type`: `client_secret_basic`
@@ -189,7 +918,7 @@ public indirect enum CreateMcpOauthTokenEndpointAuthParam: Codable, Hashable, Se
 }
 
 /// Sends the client ID and secret using HTTP Basic authentication.
-public struct CreateMcpOauthTokenEndpointAuthParamClientSecretBasic: Codable, Hashable, Sendable {
+public struct CreateMcpOauthTokenEndpointAuthParamClientSecretBasic: OpenAIModel {
     /// The type of the object. Always `client_secret_basic`.
     public var type: String = "client_secret_basic"
     /// The OAuth client secret to store. Never returned in credential resources.
@@ -199,14 +928,21 @@ public struct CreateMcpOauthTokenEndpointAuthParamClientSecretBasic: Codable, Ha
         self.clientSecret = clientSecret
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case clientSecret = "client_secret"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "client_secret_basic"
+        self.clientSecret = try container.decode(String.self, forKey: "client_secret")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.clientSecret, forKey: "client_secret")
     }
 }
 
 /// Sends the client ID and secret in the token request body.
-public struct CreateMcpOauthTokenEndpointAuthParamClientSecretPost: Codable, Hashable, Sendable {
+public struct CreateMcpOauthTokenEndpointAuthParamClientSecretPost: OpenAIModel {
     /// The type of the object. Always `client_secret_post`.
     public var type: String = "client_secret_post"
     /// The OAuth client secret to store. Never returned in credential resources.
@@ -216,26 +952,39 @@ public struct CreateMcpOauthTokenEndpointAuthParamClientSecretPost: Codable, Has
         self.clientSecret = clientSecret
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case clientSecret = "client_secret"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "client_secret_post"
+        self.clientSecret = try container.decode(String.self, forKey: "client_secret")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.clientSecret, forKey: "client_secret")
     }
 }
 
 /// Sends the client ID without a client secret.
-public struct CreateMcpOauthTokenEndpointAuthParamNone: Codable, Hashable, Sendable {
+public struct CreateMcpOauthTokenEndpointAuthParamNone: OpenAIModel {
     /// The type of the object. Always `none`.
     public var type: String = "none"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "none"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
-public struct CreateMessageRequest: Codable, Hashable, Sendable {
+public struct CreateMessageRequest: OpenAIModel {
     /// The role of the entity that is creating the message. Allowed values include:
     /// - `user`: Indicates the message is sent by an actual user and should be used in most cases to represent user-generated messages.
     /// - `assistant`: Indicates the message is generated by the assistant. Use this value to insert messages from the assistant into the conversation.
@@ -256,11 +1005,20 @@ public struct CreateMessageRequest: Codable, Hashable, Sendable {
         self.metadata = metadata
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case role
-        case content
-        case attachments
-        case metadata
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.role = try container.decode(CreateMessageRequest.Role.self, forKey: "role")
+        self.content = try container.decode(CreateMessageRequest.Content.self, forKey: "content")
+        self.attachments = try container.decodeIfPresent([CreateMessageRequest.Attachment].self, forKey: "attachments")
+        self.metadata = try container.decodeIfPresent(Metadata.self, forKey: "metadata")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.role, forKey: "role")
+        try container.encode(self.content, forKey: "content")
+        try container.encodeIfPresent(self.attachments, forKey: "attachments")
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
     }
 
     /// The role of the entity that is creating the message. Allowed values include:
@@ -283,7 +1041,7 @@ public struct CreateMessageRequest: Codable, Hashable, Sendable {
         }
     }
 
-    public indirect enum Content: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum Content: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         /// The text contents of the message.
         case textContent(String)
         /// An array of content parts with a defined type, each can be of type `text` or images can be passed with `image_url` or `image_file`. Image types are only supported on [Vision-compatible models](https://developers.openai.com/api/docs/models).
@@ -321,7 +1079,7 @@ public struct CreateMessageRequest: Codable, Hashable, Sendable {
         }
 
         /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-        public indirect enum Item: Codable, Hashable, Sendable {
+        public indirect enum Item: OpenAIModel {
             /// `type`: `image_file`
             case imageFile(MessageContentImageFileObject)
             /// `type`: `image_url`
@@ -368,7 +1126,7 @@ public struct CreateMessageRequest: Codable, Hashable, Sendable {
         }
     }
 
-    public struct Attachment: Codable, Hashable, Sendable {
+    public struct Attachment: OpenAIModel {
         /// The ID of the file to attach to the message.
         public var fileID: String?
         /// The tools to add this file to.
@@ -379,13 +1137,20 @@ public struct CreateMessageRequest: Codable, Hashable, Sendable {
             self.tools = tools
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case fileID = "file_id"
-            case tools
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.fileID = try container.decodeIfPresent(String.self, forKey: "file_id")
+            self.tools = try container.decodeIfPresent([CreateMessageRequest.Attachment.Tool].self, forKey: "tools")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.fileID, forKey: "file_id")
+            try container.encodeIfPresent(self.tools, forKey: "tools")
         }
 
         /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-        public indirect enum Tool: Codable, Hashable, Sendable {
+        public indirect enum Tool: OpenAIModel {
             /// `type`: `code_interpreter`
             case codeInterpreter(AssistantToolsCode)
             /// `type`: `file_search`
@@ -426,7 +1191,7 @@ public struct CreateMessageRequest: Codable, Hashable, Sendable {
     }
 }
 
-public struct CreateModelResponseProperties: Codable, Hashable, Sendable {
+public struct CreateModelResponseProperties: OpenAIModel {
     public var metadata: Metadata?
     /// An integer between 0 and 20 specifying the maximum number of most likely
     /// tokens to return at each token position, each with an associated log
@@ -466,15 +1231,28 @@ public struct CreateModelResponseProperties: Codable, Hashable, Sendable {
         self.promptCacheRetention = promptCacheRetention
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case metadata
-        case topLogprobs = "top_logprobs"
-        case temperature
-        case topP = "top_p"
-        case user
-        case safetyIdentifier = "safety_identifier"
-        case promptCacheKey = "prompt_cache_key"
-        case promptCacheRetention = "prompt_cache_retention"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.metadata = try container.decodeIfPresent(Metadata.self, forKey: "metadata")
+        self.topLogprobs = try container.decodeIfPresent(Int.self, forKey: "top_logprobs")
+        self.temperature = try container.decodeIfPresent(Double.self, forKey: "temperature")
+        self.topP = try container.decodeIfPresent(Double.self, forKey: "top_p")
+        self.user = try container.decodeIfPresent(String.self, forKey: "user")
+        self.safetyIdentifier = try container.decodeIfPresent(String.self, forKey: "safety_identifier")
+        self.promptCacheKey = try container.decodeIfPresent(String.self, forKey: "prompt_cache_key")
+        self.promptCacheRetention = try container.decodeIfPresent(CreateModelResponseProperties.PromptCacheRetention.self, forKey: "prompt_cache_retention")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
+        try container.encodeIfPresent(self.topLogprobs, forKey: "top_logprobs")
+        try container.encodeIfPresent(self.temperature, forKey: "temperature")
+        try container.encodeIfPresent(self.topP, forKey: "top_p")
+        try container.encodeIfPresent(self.user, forKey: "user")
+        try container.encodeIfPresent(self.safetyIdentifier, forKey: "safety_identifier")
+        try container.encodeIfPresent(self.promptCacheKey, forKey: "prompt_cache_key")
+        try container.encodeIfPresent(self.promptCacheRetention, forKey: "prompt_cache_retention")
     }
 
     /// Deprecated. Use `prompt_cache_options.ttl` instead.
@@ -506,7 +1284,7 @@ public struct CreateModelResponseProperties: Codable, Hashable, Sendable {
     }
 }
 
-public struct CreateModerationRequest: Codable, Hashable, Sendable {
+public struct CreateModerationRequest: OpenAIModel {
     /// Input (or inputs) to classify. Can be a single string, an array of strings, or
     /// an array of multi-modal input objects similar to other models.
     public var input: CreateModerationRequest.Input
@@ -521,14 +1299,21 @@ public struct CreateModerationRequest: Codable, Hashable, Sendable {
         self.model = model
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case input
-        case model
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.input = try container.decode(CreateModerationRequest.Input.self, forKey: "input")
+        self.model = try container.decodeIfPresent(CreateModerationRequest.Model.self, forKey: "model")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.input, forKey: "input")
+        try container.encodeIfPresent(self.model, forKey: "model")
     }
 
     /// Input (or inputs) to classify. Can be a single string, an array of strings, or
     /// an array of multi-modal input objects similar to other models.
-    public indirect enum Input: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum Input: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         /// A string of text to classify for moderation.
         case string(String)
         /// An array of strings to classify for moderation.
@@ -574,7 +1359,7 @@ public struct CreateModerationRequest: Codable, Hashable, Sendable {
         }
 
         /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-        public indirect enum Item: Codable, Hashable, Sendable {
+        public indirect enum Item: OpenAIModel {
             /// An object describing an image to classify.
             ///
             /// `type`: `image_url`
@@ -617,7 +1402,7 @@ public struct CreateModerationRequest: Codable, Hashable, Sendable {
             }
 
             /// An object describing an image to classify.
-            public struct ImageURL: Codable, Hashable, Sendable {
+            public struct ImageURL: OpenAIModel {
                 /// Always `image_url`.
                 public var type: String = "image_url"
                 /// Contains either an image URL or a data URL for a base64 encoded image.
@@ -627,13 +1412,20 @@ public struct CreateModerationRequest: Codable, Hashable, Sendable {
                     self.imageURL = imageURL
                 }
 
-                private enum CodingKeys: String, CodingKey {
-                    case type
-                    case imageURL = "image_url"
+                public init(from decoder: any Decoder) throws {
+                    let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                    self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "image_url"
+                    self.imageURL = try container.decode(CreateModerationRequest.Input.Item.ImageURL.ImageURLValue.self, forKey: "image_url")
+                }
+
+                public func encode(to encoder: any Encoder) throws {
+                    var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                    try container.encode(self.type, forKey: "type")
+                    try container.encode(self.imageURL, forKey: "image_url")
                 }
 
                 /// Contains either an image URL or a data URL for a base64 encoded image.
-                public struct ImageURLValue: Codable, Hashable, Sendable {
+                public struct ImageURLValue: OpenAIModel {
                     /// Either a URL of the image or the base64 encoded image data.
                     public var url: String
 
@@ -641,14 +1433,20 @@ public struct CreateModerationRequest: Codable, Hashable, Sendable {
                         self.url = url
                     }
 
-                    private enum CodingKeys: String, CodingKey {
-                        case url
+                    public init(from decoder: any Decoder) throws {
+                        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                        self.url = try container.decode(String.self, forKey: "url")
+                    }
+
+                    public func encode(to encoder: any Encoder) throws {
+                        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                        try container.encode(self.url, forKey: "url")
                     }
                 }
             }
 
             /// An object describing text to classify.
-            public struct TextValue: Codable, Hashable, Sendable {
+            public struct TextValue: OpenAIModel {
                 /// Always `text`.
                 public var type: String = "text"
                 /// A string of text to classify.
@@ -658,9 +1456,16 @@ public struct CreateModerationRequest: Codable, Hashable, Sendable {
                     self.text = text
                 }
 
-                private enum CodingKeys: String, CodingKey {
-                    case type
-                    case text
+                public init(from decoder: any Decoder) throws {
+                    let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                    self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "text"
+                    self.text = try container.decode(String.self, forKey: "text")
+                }
+
+                public func encode(to encoder: any Encoder) throws {
+                    var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                    try container.encode(self.type, forKey: "type")
+                    try container.encode(self.text, forKey: "text")
                 }
             }
         }
@@ -692,7 +1497,7 @@ public struct CreateModerationRequest: Codable, Hashable, Sendable {
 }
 
 /// Represents if a given text input is potentially harmful.
-public struct CreateModerationResponse: Codable, Hashable, Sendable {
+public struct CreateModerationResponse: OpenAIModel {
     /// The unique identifier for the moderation request.
     public var id: String
     /// The model used to generate the moderation results.
@@ -710,13 +1515,21 @@ public struct CreateModerationResponse: Codable, Hashable, Sendable {
         self.results = results
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case model
-        case results
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.model = try container.decode(String.self, forKey: "model")
+        self.results = try container.decode([CreateModerationResponse.ResultValue].self, forKey: "results")
     }
 
-    public struct ResultValue: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.model, forKey: "model")
+        try container.encode(self.results, forKey: "results")
+    }
+
+    public struct ResultValue: OpenAIModel {
         /// Whether any of the below categories are flagged.
         public var flagged: Bool
         /// A list of the categories, and whether they are flagged or not.
@@ -738,15 +1551,24 @@ public struct CreateModerationResponse: Codable, Hashable, Sendable {
             self.categoryAppliedInputTypes = categoryAppliedInputTypes
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case flagged
-            case categories
-            case categoryScores = "category_scores"
-            case categoryAppliedInputTypes = "category_applied_input_types"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.flagged = try container.decode(Bool.self, forKey: "flagged")
+            self.categories = try container.decode(CreateModerationResponse.ResultValue.Categories.self, forKey: "categories")
+            self.categoryScores = try container.decode(CreateModerationResponse.ResultValue.CategoryScores.self, forKey: "category_scores")
+            self.categoryAppliedInputTypes = try container.decode(CreateModerationResponse.ResultValue.CategoryAppliedInputTypes.self, forKey: "category_applied_input_types")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.flagged, forKey: "flagged")
+            try container.encode(self.categories, forKey: "categories")
+            try container.encode(self.categoryScores, forKey: "category_scores")
+            try container.encode(self.categoryAppliedInputTypes, forKey: "category_applied_input_types")
         }
 
         /// A list of the categories, and whether they are flagged or not.
-        public struct Categories: Codable, Hashable, Sendable {
+        public struct Categories: OpenAIModel {
             /// Content that expresses, incites, or promotes hate based on race, gender, ethnicity, religion, nationality, sexual orientation, disability status, or caste. Hateful content aimed at non-protected groups (e.g., chess players) is harassment.
             public var hate: Bool
             /// Hateful content that also includes violence or serious harm towards the targeted group based on race, gender, ethnicity, religion, nationality, sexual orientation, disability status, or caste.
@@ -802,25 +1624,43 @@ public struct CreateModerationResponse: Codable, Hashable, Sendable {
                 self.illicitViolent = illicitViolent
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case hate
-                case hateThreatening = "hate/threatening"
-                case harassment
-                case harassmentThreatening = "harassment/threatening"
-                case illicit
-                case illicitViolent = "illicit/violent"
-                case selfHarm = "self-harm"
-                case selfHarmIntent = "self-harm/intent"
-                case selfHarmInstructions = "self-harm/instructions"
-                case sexual
-                case sexualMinors = "sexual/minors"
-                case violence
-                case violenceGraphic = "violence/graphic"
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.hate = try container.decode(Bool.self, forKey: "hate")
+                self.hateThreatening = try container.decode(Bool.self, forKey: "hate/threatening")
+                self.harassment = try container.decode(Bool.self, forKey: "harassment")
+                self.harassmentThreatening = try container.decode(Bool.self, forKey: "harassment/threatening")
+                self.illicit = try container.decodeIfPresent(Bool.self, forKey: "illicit")
+                self.illicitViolent = try container.decodeIfPresent(Bool.self, forKey: "illicit/violent")
+                self.selfHarm = try container.decode(Bool.self, forKey: "self-harm")
+                self.selfHarmIntent = try container.decode(Bool.self, forKey: "self-harm/intent")
+                self.selfHarmInstructions = try container.decode(Bool.self, forKey: "self-harm/instructions")
+                self.sexual = try container.decode(Bool.self, forKey: "sexual")
+                self.sexualMinors = try container.decode(Bool.self, forKey: "sexual/minors")
+                self.violence = try container.decode(Bool.self, forKey: "violence")
+                self.violenceGraphic = try container.decode(Bool.self, forKey: "violence/graphic")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encode(self.hate, forKey: "hate")
+                try container.encode(self.hateThreatening, forKey: "hate/threatening")
+                try container.encode(self.harassment, forKey: "harassment")
+                try container.encode(self.harassmentThreatening, forKey: "harassment/threatening")
+                try container.encodeIfPresent(self.illicit, forKey: "illicit")
+                try container.encodeIfPresent(self.illicitViolent, forKey: "illicit/violent")
+                try container.encode(self.selfHarm, forKey: "self-harm")
+                try container.encode(self.selfHarmIntent, forKey: "self-harm/intent")
+                try container.encode(self.selfHarmInstructions, forKey: "self-harm/instructions")
+                try container.encode(self.sexual, forKey: "sexual")
+                try container.encode(self.sexualMinors, forKey: "sexual/minors")
+                try container.encode(self.violence, forKey: "violence")
+                try container.encode(self.violenceGraphic, forKey: "violence/graphic")
             }
         }
 
         /// A list of the categories along with their scores as predicted by model.
-        public struct CategoryScores: Codable, Hashable, Sendable {
+        public struct CategoryScores: OpenAIModel {
             /// The score for the category 'hate'.
             public var hate: Double
             /// The score for the category 'hate/threatening'.
@@ -878,25 +1718,43 @@ public struct CreateModerationResponse: Codable, Hashable, Sendable {
                 self.violenceGraphic = violenceGraphic
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case hate
-                case hateThreatening = "hate/threatening"
-                case harassment
-                case harassmentThreatening = "harassment/threatening"
-                case illicit
-                case illicitViolent = "illicit/violent"
-                case selfHarm = "self-harm"
-                case selfHarmIntent = "self-harm/intent"
-                case selfHarmInstructions = "self-harm/instructions"
-                case sexual
-                case sexualMinors = "sexual/minors"
-                case violence
-                case violenceGraphic = "violence/graphic"
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.hate = try container.decode(Double.self, forKey: "hate")
+                self.hateThreatening = try container.decode(Double.self, forKey: "hate/threatening")
+                self.harassment = try container.decode(Double.self, forKey: "harassment")
+                self.harassmentThreatening = try container.decode(Double.self, forKey: "harassment/threatening")
+                self.illicit = try container.decode(Double.self, forKey: "illicit")
+                self.illicitViolent = try container.decode(Double.self, forKey: "illicit/violent")
+                self.selfHarm = try container.decode(Double.self, forKey: "self-harm")
+                self.selfHarmIntent = try container.decode(Double.self, forKey: "self-harm/intent")
+                self.selfHarmInstructions = try container.decode(Double.self, forKey: "self-harm/instructions")
+                self.sexual = try container.decode(Double.self, forKey: "sexual")
+                self.sexualMinors = try container.decode(Double.self, forKey: "sexual/minors")
+                self.violence = try container.decode(Double.self, forKey: "violence")
+                self.violenceGraphic = try container.decode(Double.self, forKey: "violence/graphic")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encode(self.hate, forKey: "hate")
+                try container.encode(self.hateThreatening, forKey: "hate/threatening")
+                try container.encode(self.harassment, forKey: "harassment")
+                try container.encode(self.harassmentThreatening, forKey: "harassment/threatening")
+                try container.encode(self.illicit, forKey: "illicit")
+                try container.encode(self.illicitViolent, forKey: "illicit/violent")
+                try container.encode(self.selfHarm, forKey: "self-harm")
+                try container.encode(self.selfHarmIntent, forKey: "self-harm/intent")
+                try container.encode(self.selfHarmInstructions, forKey: "self-harm/instructions")
+                try container.encode(self.sexual, forKey: "sexual")
+                try container.encode(self.sexualMinors, forKey: "sexual/minors")
+                try container.encode(self.violence, forKey: "violence")
+                try container.encode(self.violenceGraphic, forKey: "violence/graphic")
             }
         }
 
         /// A list of the categories along with the input type(s) that the score applies to.
-        public struct CategoryAppliedInputTypes: Codable, Hashable, Sendable {
+        public struct CategoryAppliedInputTypes: OpenAIModel {
             /// The applied input type(s) for the category 'hate'.
             public var hate: [String]
             /// The applied input type(s) for the category 'hate/threatening'.
@@ -954,20 +1812,38 @@ public struct CreateModerationResponse: Codable, Hashable, Sendable {
                 self.violenceGraphic = violenceGraphic
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case hate
-                case hateThreatening = "hate/threatening"
-                case harassment
-                case harassmentThreatening = "harassment/threatening"
-                case illicit
-                case illicitViolent = "illicit/violent"
-                case selfHarm = "self-harm"
-                case selfHarmIntent = "self-harm/intent"
-                case selfHarmInstructions = "self-harm/instructions"
-                case sexual
-                case sexualMinors = "sexual/minors"
-                case violence
-                case violenceGraphic = "violence/graphic"
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.hate = try container.decode([String].self, forKey: "hate")
+                self.hateThreatening = try container.decode([String].self, forKey: "hate/threatening")
+                self.harassment = try container.decode([String].self, forKey: "harassment")
+                self.harassmentThreatening = try container.decode([String].self, forKey: "harassment/threatening")
+                self.illicit = try container.decode([String].self, forKey: "illicit")
+                self.illicitViolent = try container.decode([String].self, forKey: "illicit/violent")
+                self.selfHarm = try container.decode([CreateModerationResponse.ResultValue.CategoryAppliedInputTypes.SelfHarmItem].self, forKey: "self-harm")
+                self.selfHarmIntent = try container.decode([CreateModerationResponse.ResultValue.CategoryAppliedInputTypes.SelfHarmIntentItem].self, forKey: "self-harm/intent")
+                self.selfHarmInstructions = try container.decode([CreateModerationResponse.ResultValue.CategoryAppliedInputTypes.SelfHarmInstruction].self, forKey: "self-harm/instructions")
+                self.sexual = try container.decode([CreateModerationResponse.ResultValue.CategoryAppliedInputTypes.SexualItem].self, forKey: "sexual")
+                self.sexualMinors = try container.decode([String].self, forKey: "sexual/minors")
+                self.violence = try container.decode([CreateModerationResponse.ResultValue.CategoryAppliedInputTypes.ViolenceItem].self, forKey: "violence")
+                self.violenceGraphic = try container.decode([CreateModerationResponse.ResultValue.CategoryAppliedInputTypes.ViolenceGraphicItem].self, forKey: "violence/graphic")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encode(self.hate, forKey: "hate")
+                try container.encode(self.hateThreatening, forKey: "hate/threatening")
+                try container.encode(self.harassment, forKey: "harassment")
+                try container.encode(self.harassmentThreatening, forKey: "harassment/threatening")
+                try container.encode(self.illicit, forKey: "illicit")
+                try container.encode(self.illicitViolent, forKey: "illicit/violent")
+                try container.encode(self.selfHarm, forKey: "self-harm")
+                try container.encode(self.selfHarmIntent, forKey: "self-harm/intent")
+                try container.encode(self.selfHarmInstructions, forKey: "self-harm/instructions")
+                try container.encode(self.sexual, forKey: "sexual")
+                try container.encode(self.sexualMinors, forKey: "sexual/minors")
+                try container.encode(self.violence, forKey: "violence")
+                try container.encode(self.violenceGraphic, forKey: "violence/graphic")
             }
 
             /// This type is open: it accepts values the spec does not list yet.
@@ -1069,7 +1945,7 @@ public struct CreateModerationResponse: Codable, Hashable, Sendable {
     }
 }
 
-public indirect enum CreateModerationResponse2: Codable, Hashable, Sendable {
+public indirect enum CreateModerationResponse2: OpenAIModel {
     case moderation(CreateModerationResponse)
     case cSAMModeration(CreateCSAMModerationResponse)
     /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
@@ -1101,7 +1977,7 @@ public indirect enum CreateModerationResponse2: Codable, Hashable, Sendable {
     }
 }
 
-public struct CreatePlatformWorkloadIdentityFederationRuleBody: Codable, Hashable, Sendable {
+public struct CreatePlatformWorkloadIdentityFederationRuleBody: OpenAIModel {
     public var projectID: String
     public var serviceAccountID: String
     public var name: String?
@@ -1128,17 +2004,29 @@ public struct CreatePlatformWorkloadIdentityFederationRuleBody: Codable, Hashabl
         self.enabled = enabled
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case projectID = "project_id"
-        case serviceAccountID = "service_account_id"
-        case name
-        case description
-        case attributeMatchers = "attribute_matchers"
-        case permissions
-        case enabled
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.projectID = try container.decode(String.self, forKey: "project_id")
+        self.serviceAccountID = try container.decode(String.self, forKey: "service_account_id")
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.description = try container.decodeIfPresent(String.self, forKey: "description")
+        self.attributeMatchers = try container.decode([String: CreatePlatformWorkloadIdentityFederationRuleBody.AttributeMatcher].self, forKey: "attribute_matchers")
+        self.permissions = try container.decodeIfPresent(CreatePlatformWorkloadIdentityFederationRuleBody.Permissions.self, forKey: "permissions")
+        self.enabled = try container.decodeIfPresent(Bool.self, forKey: "enabled")
     }
 
-    public indirect enum AttributeMatcher: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.projectID, forKey: "project_id")
+        try container.encode(self.serviceAccountID, forKey: "service_account_id")
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encodeIfPresent(self.description, forKey: "description")
+        try container.encode(self.attributeMatchers, forKey: "attribute_matchers")
+        try container.encodeIfPresent(self.permissions, forKey: "permissions")
+        try container.encodeIfPresent(self.enabled, forKey: "enabled")
+    }
+
+    public indirect enum AttributeMatcher: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         case string(String)
         case bool(Bool)
         case integer(Int)
@@ -1189,7 +2077,7 @@ public struct CreatePlatformWorkloadIdentityFederationRuleBody: Codable, Hashabl
     }
 
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Permissions: Codable, Hashable, Sendable {
+    public indirect enum Permissions: OpenAIModel {
         /// `type`: `service_account_default`
         case serviceAccountDefault(DefaultPermissionsParam)
         /// `type`: `restricted`
@@ -1229,7 +2117,7 @@ public struct CreatePlatformWorkloadIdentityFederationRuleBody: Codable, Hashabl
     }
 }
 
-public struct CreatePlatformWorkloadIdentityProviderBody: Codable, Hashable, Sendable {
+public struct CreatePlatformWorkloadIdentityProviderBody: OpenAIModel {
     public var name: String
     public var type: String = "oidc"
     public var issuer: String
@@ -1257,19 +2145,32 @@ public struct CreatePlatformWorkloadIdentityProviderBody: Codable, Hashable, Sen
         self.enabled = enabled
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case name
-        case type
-        case issuer
-        case audience
-        case verification
-        case description
-        case attributeTransformations = "attribute_transformations"
-        case enabled
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.name = try container.decode(String.self, forKey: "name")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "oidc"
+        self.issuer = try container.decode(String.self, forKey: "issuer")
+        self.audience = try container.decode(String.self, forKey: "audience")
+        self.verification = try container.decodeIfPresent(CreatePlatformWorkloadIdentityProviderBody.Verification.self, forKey: "verification")
+        self.description = try container.decodeIfPresent(String.self, forKey: "description")
+        self.attributeTransformations = try container.decodeIfPresent([TransformationParam].self, forKey: "attribute_transformations")
+        self.enabled = try container.decodeIfPresent(Bool.self, forKey: "enabled")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.issuer, forKey: "issuer")
+        try container.encode(self.audience, forKey: "audience")
+        try container.encodeIfPresent(self.verification, forKey: "verification")
+        try container.encodeIfPresent(self.description, forKey: "description")
+        try container.encodeIfPresent(self.attributeTransformations, forKey: "attribute_transformations")
+        try container.encodeIfPresent(self.enabled, forKey: "enabled")
     }
 
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Verification: Codable, Hashable, Sendable {
+    public indirect enum Verification: OpenAIModel {
         /// `type`: `discovery`
         case discovery(DiscoveryVerificationParam)
         /// `type`: `uploaded_jwks`
@@ -1310,7 +2211,7 @@ public struct CreatePlatformWorkloadIdentityProviderBody: Codable, Hashable, Sen
 }
 
 /// The service account API key create request payload.
-public struct CreateProjectServiceAccountApiKeyBody: Codable, Hashable, Sendable {
+public struct CreateProjectServiceAccountApiKeyBody: OpenAIModel {
     /// API key name.
     public var name: String?
     /// API key scopes.
@@ -1327,14 +2228,22 @@ public struct CreateProjectServiceAccountApiKeyBody: Codable, Hashable, Sendable
         self.expiresInSeconds = expiresInSeconds
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case name
-        case scopes
-        case expiresInSeconds = "expires_in_seconds"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.scopes = try container.decodeIfPresent([String].self, forKey: "scopes")
+        self.expiresInSeconds = try container.decodeIfPresent(Int.self, forKey: "expires_in_seconds")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encodeIfPresent(self.scopes, forKey: "scopes")
+        try container.encodeIfPresent(self.expiresInSeconds, forKey: "expires_in_seconds")
     }
 }
 
-public struct CreateResponse: Codable, Hashable, Sendable {
+public struct CreateResponse: OpenAIModel {
     public var metadata: Metadata?
     /// An integer between 0 and 20 specifying the maximum number of most likely
     /// tokens to return at each token position, each with an associated log
@@ -1460,41 +2369,80 @@ public struct CreateResponse: Codable, Hashable, Sendable {
         self.maxOutputTokens = maxOutputTokens
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case metadata
-        case topLogprobs = "top_logprobs"
-        case temperature
-        case topP = "top_p"
-        case user
-        case safetyIdentifier = "safety_identifier"
-        case promptCacheKey = "prompt_cache_key"
-        case promptCacheRetention = "prompt_cache_retention"
-        case previousResponseID = "previous_response_id"
-        case model
-        case background
-        case maxToolCalls = "max_tool_calls"
-        case text
-        case tools
-        case toolChoice = "tool_choice"
-        case prompt
-        case accessPrograms = "access_programs"
-        case image
-        case promptCacheOptions = "prompt_cache_options"
-        case serviceTier = "service_tier"
-        case truncation
-        case reasoning
-        case input
-        case include
-        case parallelToolCalls = "parallel_tool_calls"
-        case store
-        case instructions
-        case moderation
-        case backgroundOptions = "background_options"
-        case stream
-        case streamOptions = "stream_options"
-        case conversation
-        case contextManagement = "context_management"
-        case maxOutputTokens = "max_output_tokens"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.metadata = try container.decodeIfPresent(Metadata.self, forKey: "metadata")
+        self.topLogprobs = try container.decodeIfPresent(Int.self, forKey: "top_logprobs")
+        self.temperature = try container.decodeIfPresent(Double.self, forKey: "temperature")
+        self.topP = try container.decodeIfPresent(Double.self, forKey: "top_p")
+        self.user = try container.decodeIfPresent(String.self, forKey: "user")
+        self.safetyIdentifier = try container.decodeIfPresent(String.self, forKey: "safety_identifier")
+        self.promptCacheKey = try container.decodeIfPresent(String.self, forKey: "prompt_cache_key")
+        self.promptCacheRetention = try container.decodeIfPresent(CreateResponse.PromptCacheRetention.self, forKey: "prompt_cache_retention")
+        self.previousResponseID = try container.decodeIfPresent(String.self, forKey: "previous_response_id")
+        self.model = try container.decodeIfPresent(ModelIdsResponses.self, forKey: "model")
+        self.background = try container.decodeIfPresent(Bool.self, forKey: "background")
+        self.maxToolCalls = try container.decodeIfPresent(Int.self, forKey: "max_tool_calls")
+        self.text = try container.decodeIfPresent(ResponseTextParam.self, forKey: "text")
+        self.tools = try container.decodeIfPresent(ToolsArray.self, forKey: "tools")
+        self.toolChoice = try container.decodeIfPresent(ToolChoiceParam.self, forKey: "tool_choice")
+        self.prompt = try container.decodeIfPresent(Prompt.self, forKey: "prompt")
+        self.accessPrograms = try container.decodeIfPresent(AccessProgramsParam.self, forKey: "access_programs")
+        self.image = try container.decodeIfPresent(ImageOptionsParam.self, forKey: "image")
+        self.promptCacheOptions = try container.decodeIfPresent(ResponsePromptCacheOptionsParam.self, forKey: "prompt_cache_options")
+        self.serviceTier = try container.decodeIfPresent(ServiceTierResponses.self, forKey: "service_tier")
+        self.truncation = try container.decodeIfPresent(CreateResponse.Truncation.self, forKey: "truncation")
+        self.reasoning = try container.decodeIfPresent(Reasoning.self, forKey: "reasoning")
+        self.input = try container.decodeIfPresent(InputParam.self, forKey: "input")
+        self.include = try container.decodeIfPresent([IncludeEnum].self, forKey: "include")
+        self.parallelToolCalls = try container.decodeIfPresent(Bool.self, forKey: "parallel_tool_calls")
+        self.store = try container.decodeIfPresent(Bool.self, forKey: "store")
+        self.instructions = try container.decodeIfPresent(String.self, forKey: "instructions")
+        self.moderation = try container.decodeIfPresent(ModerationParam.self, forKey: "moderation")
+        self.backgroundOptions = try container.decodeIfPresent(BackgroundOptionsParam.self, forKey: "background_options")
+        self.stream = try container.decodeIfPresent(Bool.self, forKey: "stream")
+        self.streamOptions = try container.decodeIfPresent(ResponseStreamOptions.self, forKey: "stream_options")
+        self.conversation = try container.decodeIfPresent(ConversationParam.self, forKey: "conversation")
+        self.contextManagement = try container.decodeIfPresent([ContextManagementParam].self, forKey: "context_management")
+        self.maxOutputTokens = try container.decodeIfPresent(Int.self, forKey: "max_output_tokens")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
+        try container.encodeIfPresent(self.topLogprobs, forKey: "top_logprobs")
+        try container.encodeIfPresent(self.temperature, forKey: "temperature")
+        try container.encodeIfPresent(self.topP, forKey: "top_p")
+        try container.encodeIfPresent(self.user, forKey: "user")
+        try container.encodeIfPresent(self.safetyIdentifier, forKey: "safety_identifier")
+        try container.encodeIfPresent(self.promptCacheKey, forKey: "prompt_cache_key")
+        try container.encodeIfPresent(self.promptCacheRetention, forKey: "prompt_cache_retention")
+        try container.encodeIfPresent(self.previousResponseID, forKey: "previous_response_id")
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encodeIfPresent(self.background, forKey: "background")
+        try container.encodeIfPresent(self.maxToolCalls, forKey: "max_tool_calls")
+        try container.encodeIfPresent(self.text, forKey: "text")
+        try container.encodeIfPresent(self.tools, forKey: "tools")
+        try container.encodeIfPresent(self.toolChoice, forKey: "tool_choice")
+        try container.encodeIfPresent(self.prompt, forKey: "prompt")
+        try container.encodeIfPresent(self.accessPrograms, forKey: "access_programs")
+        try container.encodeIfPresent(self.image, forKey: "image")
+        try container.encodeIfPresent(self.promptCacheOptions, forKey: "prompt_cache_options")
+        try container.encodeIfPresent(self.serviceTier, forKey: "service_tier")
+        try container.encodeIfPresent(self.truncation, forKey: "truncation")
+        try container.encodeIfPresent(self.reasoning, forKey: "reasoning")
+        try container.encodeIfPresent(self.input, forKey: "input")
+        try container.encodeIfPresent(self.include, forKey: "include")
+        try container.encodeIfPresent(self.parallelToolCalls, forKey: "parallel_tool_calls")
+        try container.encodeIfPresent(self.store, forKey: "store")
+        try container.encodeIfPresent(self.instructions, forKey: "instructions")
+        try container.encodeIfPresent(self.moderation, forKey: "moderation")
+        try container.encodeIfPresent(self.backgroundOptions, forKey: "background_options")
+        try container.encodeIfPresent(self.stream, forKey: "stream")
+        try container.encodeIfPresent(self.streamOptions, forKey: "stream_options")
+        try container.encodeIfPresent(self.conversation, forKey: "conversation")
+        try container.encodeIfPresent(self.contextManagement, forKey: "context_management")
+        try container.encodeIfPresent(self.maxOutputTokens, forKey: "max_output_tokens")
     }
 
     /// Deprecated. Use `prompt_cache_options.ttl` instead.
@@ -1551,7 +2499,7 @@ public struct CreateResponse: Codable, Hashable, Sendable {
     }
 }
 
-public struct CreateRunRequest: Codable, Hashable, Sendable {
+public struct CreateRunRequest: OpenAIModel {
     /// The ID of the [assistant](https://developers.openai.com/api/docs/assistants/migration) to use to execute this run.
     public var assistantID: String
     /// The ID of the [Model](https://developers.openai.com/api/reference/resources/models) to be used to execute this run. If a value is provided here, it will override the model associated with the assistant. If not, the model associated with the assistant will be used.
@@ -1621,28 +2569,50 @@ public struct CreateRunRequest: Codable, Hashable, Sendable {
         self.responseFormat = responseFormat
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case assistantID = "assistant_id"
-        case model
-        case reasoningEffort = "reasoning_effort"
-        case instructions
-        case additionalInstructions = "additional_instructions"
-        case additionalMessages = "additional_messages"
-        case tools
-        case metadata
-        case temperature
-        case topP = "top_p"
-        case stream
-        case maxPromptTokens = "max_prompt_tokens"
-        case maxCompletionTokens = "max_completion_tokens"
-        case truncationStrategy = "truncation_strategy"
-        case toolChoice = "tool_choice"
-        case parallelToolCalls = "parallel_tool_calls"
-        case responseFormat = "response_format"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.assistantID = try container.decode(String.self, forKey: "assistant_id")
+        self.model = try container.decodeIfPresent(AssistantSupportedModels.self, forKey: "model")
+        self.reasoningEffort = try container.decodeIfPresent(ReasoningEffort.self, forKey: "reasoning_effort")
+        self.instructions = try container.decodeIfPresent(String.self, forKey: "instructions")
+        self.additionalInstructions = try container.decodeIfPresent(String.self, forKey: "additional_instructions")
+        self.additionalMessages = try container.decodeIfPresent([CreateMessageRequest].self, forKey: "additional_messages")
+        self.tools = try container.decodeIfPresent([CreateRunRequest.Tool].self, forKey: "tools")
+        self.metadata = try container.decodeIfPresent(Metadata.self, forKey: "metadata")
+        self.temperature = try container.decodeIfPresent(Double.self, forKey: "temperature")
+        self.topP = try container.decodeIfPresent(Double.self, forKey: "top_p")
+        self.stream = try container.decodeIfPresent(Bool.self, forKey: "stream")
+        self.maxPromptTokens = try container.decodeIfPresent(Int.self, forKey: "max_prompt_tokens")
+        self.maxCompletionTokens = try container.decodeIfPresent(Int.self, forKey: "max_completion_tokens")
+        self.truncationStrategy = try container.decodeIfPresent(JSONValue.self, forKey: "truncation_strategy")
+        self.toolChoice = try container.decodeIfPresent(JSONValue.self, forKey: "tool_choice")
+        self.parallelToolCalls = try container.decodeIfPresent(ParallelToolCalls.self, forKey: "parallel_tool_calls")
+        self.responseFormat = try container.decodeIfPresent(AssistantsApiResponseFormatOption.self, forKey: "response_format")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.assistantID, forKey: "assistant_id")
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encodeIfPresent(self.reasoningEffort, forKey: "reasoning_effort")
+        try container.encodeIfPresent(self.instructions, forKey: "instructions")
+        try container.encodeIfPresent(self.additionalInstructions, forKey: "additional_instructions")
+        try container.encodeIfPresent(self.additionalMessages, forKey: "additional_messages")
+        try container.encodeIfPresent(self.tools, forKey: "tools")
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
+        try container.encodeIfPresent(self.temperature, forKey: "temperature")
+        try container.encodeIfPresent(self.topP, forKey: "top_p")
+        try container.encodeIfPresent(self.stream, forKey: "stream")
+        try container.encodeIfPresent(self.maxPromptTokens, forKey: "max_prompt_tokens")
+        try container.encodeIfPresent(self.maxCompletionTokens, forKey: "max_completion_tokens")
+        try container.encodeIfPresent(self.truncationStrategy, forKey: "truncation_strategy")
+        try container.encodeIfPresent(self.toolChoice, forKey: "tool_choice")
+        try container.encodeIfPresent(self.parallelToolCalls, forKey: "parallel_tool_calls")
+        try container.encodeIfPresent(self.responseFormat, forKey: "response_format")
     }
 
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Tool: Codable, Hashable, Sendable {
+    public indirect enum Tool: OpenAIModel {
         /// `type`: `code_interpreter`
         case codeInterpreter(AssistantToolsCode)
         /// `type`: `file_search`
@@ -1690,7 +2660,7 @@ public struct CreateRunRequest: Codable, Hashable, Sendable {
 }
 
 /// Input events submitted to an existing session.
-public struct CreateSessionEventsParams: Codable, Hashable, Sendable {
+public struct CreateSessionEventsParams: OpenAIModel {
     /// The input events to submit to the session.
     public var events: [SessionInputParam]
 
@@ -1698,13 +2668,19 @@ public struct CreateSessionEventsParams: Codable, Hashable, Sendable {
         self.events = events
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case events
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.events = try container.decode([SessionInputParam].self, forKey: "events")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.events, forKey: "events")
     }
 }
 
 /// Initial input submitted when creating a session.
-public indirect enum CreateSessionInputParam: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+public indirect enum CreateSessionInputParam: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
     case string(String)
     case array([InputMessageParam])
     /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
@@ -1741,18 +2717,24 @@ public indirect enum CreateSessionInputParam: Codable, Hashable, Sendable, Expre
 }
 
 /// Uploads a skill either as a directory (multipart `files[]`) or as a single zip file.
-public struct CreateSkillBody: Codable, Hashable, Sendable {
+public struct CreateSkillBody: OpenAIModel {
     public var files: CreateSkillBody.Files
 
     public init(files: CreateSkillBody.Files) {
         self.files = files
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case files
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.files = try container.decode(CreateSkillBody.Files.self, forKey: "files")
     }
 
-    public indirect enum Files: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.files, forKey: "files")
+    }
+
+    public indirect enum Files: OpenAIModel {
         /// Skill files to upload (directory upload) or a single zip file.
         case array([FileUpload])
         /// Skill zip file to upload.
@@ -1788,7 +2770,7 @@ public struct CreateSkillBody: Codable, Hashable, Sendable {
 }
 
 /// Uploads a new immutable version of a skill.
-public struct CreateSkillVersionBody: Codable, Hashable, Sendable {
+public struct CreateSkillVersionBody: OpenAIModel {
     public var files: CreateSkillVersionBody.Files
     /// Whether to set this version as the default.
     public var `default`: Bool?
@@ -1798,12 +2780,19 @@ public struct CreateSkillVersionBody: Codable, Hashable, Sendable {
         self.default = `default`
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case files
-        case `default`
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.files = try container.decode(CreateSkillVersionBody.Files.self, forKey: "files")
+        self.default = try container.decodeIfPresent(Bool.self, forKey: "default")
     }
 
-    public indirect enum Files: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.files, forKey: "files")
+        try container.encodeIfPresent(self.default, forKey: "default")
+    }
+
+    public indirect enum Files: OpenAIModel {
         /// Skill files to upload (directory upload) or a single zip file.
         case array([FileUpload])
         /// Skill zip file to upload.
@@ -1838,7 +2827,7 @@ public struct CreateSkillVersionBody: Codable, Hashable, Sendable {
     }
 }
 
-public struct CreateSpeechRequest: Codable, Hashable, Sendable {
+public struct CreateSpeechRequest: OpenAIModel {
     /// One of the available [TTS models](https://developers.openai.com/api/docs/guides/text-to-speech): `tts-1`, `tts-1-hd`, `gpt-4o-mini-tts`, or `gpt-4o-mini-tts-2025-12-15`.
     public var model: CreateSpeechRequest.Model
     /// The text to generate audio for. The maximum length is 4096 characters.
@@ -1872,14 +2861,26 @@ public struct CreateSpeechRequest: Codable, Hashable, Sendable {
         self.streamFormat = streamFormat
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case model
-        case input
-        case instructions
-        case voice
-        case responseFormat = "response_format"
-        case speed
-        case streamFormat = "stream_format"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.model = try container.decode(CreateSpeechRequest.Model.self, forKey: "model")
+        self.input = try container.decode(String.self, forKey: "input")
+        self.instructions = try container.decodeIfPresent(String.self, forKey: "instructions")
+        self.voice = try container.decode(CreateSpeechRequest.Voice.self, forKey: "voice")
+        self.responseFormat = try container.decodeIfPresent(CreateSpeechRequest.ResponseFormat.self, forKey: "response_format")
+        self.speed = try container.decodeIfPresent(Double.self, forKey: "speed")
+        self.streamFormat = try container.decodeIfPresent(CreateSpeechRequest.StreamFormat.self, forKey: "stream_format")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.model, forKey: "model")
+        try container.encode(self.input, forKey: "input")
+        try container.encodeIfPresent(self.instructions, forKey: "instructions")
+        try container.encode(self.voice, forKey: "voice")
+        try container.encodeIfPresent(self.responseFormat, forKey: "response_format")
+        try container.encodeIfPresent(self.speed, forKey: "speed")
+        try container.encodeIfPresent(self.streamFormat, forKey: "stream_format")
     }
 
     /// One of the available [TTS models](https://developers.openai.com/api/docs/guides/text-to-speech): `tts-1`, `tts-1-hd`, `gpt-4o-mini-tts`, or `gpt-4o-mini-tts-2025-12-15`.
@@ -1903,7 +2904,7 @@ public struct CreateSpeechRequest: Codable, Hashable, Sendable {
     }
 
     /// The voice to use when generating the audio. Supported built-in voices are `alloy`, `ash`, `ballad`, `coral`, `echo`, `fable`, `onyx`, `nova`, `sage`, `shimmer`, `verse`, `marin`, and `cedar`. You may also provide a custom voice object with an `id`, for example `{ "id": "voice_1234" }`. Previews of the voices are available in the [Text to speech guide](https://developers.openai.com/api/docs/guides/text-to-speech#voice-options). Custom voices must be created from audio samples. Voices created from text prompts are supported only in Live.
-    public indirect enum Voice: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum Voice: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         case string(CreateSpeechRequest.Voice.StringValue)
         /// Custom voice reference.
         case variant2(CreateSpeechRequest.Voice.Variant2)
@@ -1967,7 +2968,7 @@ public struct CreateSpeechRequest: Codable, Hashable, Sendable {
         }
 
         /// Custom voice reference.
-        public struct Variant2: Codable, Hashable, Sendable {
+        public struct Variant2: OpenAIModel {
             /// The custom voice ID, e.g. `voice_1234`.
             public var id: String
 
@@ -1975,8 +2976,14 @@ public struct CreateSpeechRequest: Codable, Hashable, Sendable {
                 self.id = id
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case id
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.id = try container.decode(String.self, forKey: "id")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encode(self.id, forKey: "id")
             }
         }
     }
@@ -2023,7 +3030,7 @@ public struct CreateSpeechRequest: Codable, Hashable, Sendable {
 }
 
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum CreateSpeechResponseStreamEvent: Codable, Hashable, Sendable {
+public indirect enum CreateSpeechResponseStreamEvent: OpenAIModel {
     /// `type`: `speech.audio.delta`
     case speechAudioDelta(SpeechAudioDeltaEvent)
     /// `type`: `speech.audio.done`
@@ -2063,7 +3070,7 @@ public indirect enum CreateSpeechResponseStreamEvent: Codable, Hashable, Sendabl
 }
 
 /// Parameters for creating or updating a spend alert.
-public struct CreateSpendAlertBody: Codable, Hashable, Sendable {
+public struct CreateSpendAlertBody: OpenAIModel {
     /// The alert threshold amount, in cents.
     public var thresholdAmount: Int
     /// The currency for the threshold amount.
@@ -2077,16 +3084,25 @@ public struct CreateSpendAlertBody: Codable, Hashable, Sendable {
         self.notificationChannel = notificationChannel
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case thresholdAmount = "threshold_amount"
-        case currency
-        case interval
-        case notificationChannel = "notification_channel"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.thresholdAmount = try container.decode(Int.self, forKey: "threshold_amount")
+        self.currency = try container.decodeIfPresent(String.self, forKey: "currency") ?? "USD"
+        self.interval = try container.decodeIfPresent(String.self, forKey: "interval") ?? "month"
+        self.notificationChannel = try container.decode(SpendAlertNotificationChannel.self, forKey: "notification_channel")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.thresholdAmount, forKey: "threshold_amount")
+        try container.encode(self.currency, forKey: "currency")
+        try container.encode(self.interval, forKey: "interval")
+        try container.encode(self.notificationChannel, forKey: "notification_channel")
     }
 }
 
 /// A request to spawn a subagent.
-public struct CreateSubagentCallItemResource: Codable, Hashable, Sendable {
+public struct CreateSubagentCallItemResource: OpenAIModel {
     /// The item type. Always `create_subagent_call`.
     public var type: String = "create_subagent_call"
     /// The ID of the tool call item.
@@ -2122,19 +3138,32 @@ public struct CreateSubagentCallItemResource: Codable, Hashable, Sendable {
         self.reasoningEffort = reasoningEffort
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case turnID = "turn_id"
-        case status
-        case agentID = "agent_id"
-        case content
-        case model
-        case reasoningEffort = "reasoning_effort"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "create_subagent_call"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.turnID = try container.decode(String.self, forKey: "turn_id")
+        self.status = try container.decode(FunctionCallStatusResource.self, forKey: "status")
+        self.agentID = try container.decode(String.self, forKey: "agent_id")
+        self.content = try container.decode([AgentContentResource].self, forKey: "content")
+        self.model = try container.decodeIfPresent(String.self, forKey: "model")
+        self.reasoningEffort = try container.decodeIfPresent(String.self, forKey: "reasoning_effort")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.turnID, forKey: "turn_id")
+        try container.encode(self.status, forKey: "status")
+        try container.encode(self.agentID, forKey: "agent_id")
+        try container.encode(self.content, forKey: "content")
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encodeIfPresent(self.reasoningEffort, forKey: "reasoning_effort")
     }
 }
 
-public struct CreateThreadAndRunRequest: Codable, Hashable, Sendable {
+public struct CreateThreadAndRunRequest: OpenAIModel {
     /// The ID of the [assistant](https://developers.openai.com/api/docs/assistants/migration) to use to execute this run.
     public var assistantID: String
     public var thread: CreateThreadRequest?
@@ -2200,23 +3229,44 @@ public struct CreateThreadAndRunRequest: Codable, Hashable, Sendable {
         self.responseFormat = responseFormat
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case assistantID = "assistant_id"
-        case thread
-        case model
-        case instructions
-        case tools
-        case toolResources = "tool_resources"
-        case metadata
-        case temperature
-        case topP = "top_p"
-        case stream
-        case maxPromptTokens = "max_prompt_tokens"
-        case maxCompletionTokens = "max_completion_tokens"
-        case truncationStrategy = "truncation_strategy"
-        case toolChoice = "tool_choice"
-        case parallelToolCalls = "parallel_tool_calls"
-        case responseFormat = "response_format"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.assistantID = try container.decode(String.self, forKey: "assistant_id")
+        self.thread = try container.decodeIfPresent(CreateThreadRequest.self, forKey: "thread")
+        self.model = try container.decodeIfPresent(CreateThreadAndRunRequest.Model.self, forKey: "model")
+        self.instructions = try container.decodeIfPresent(String.self, forKey: "instructions")
+        self.tools = try container.decodeIfPresent([CreateThreadAndRunRequest.Tool].self, forKey: "tools")
+        self.toolResources = try container.decodeIfPresent(CreateThreadAndRunRequest.ToolResources.self, forKey: "tool_resources")
+        self.metadata = try container.decodeIfPresent(Metadata.self, forKey: "metadata")
+        self.temperature = try container.decodeIfPresent(Double.self, forKey: "temperature")
+        self.topP = try container.decodeIfPresent(Double.self, forKey: "top_p")
+        self.stream = try container.decodeIfPresent(Bool.self, forKey: "stream")
+        self.maxPromptTokens = try container.decodeIfPresent(Int.self, forKey: "max_prompt_tokens")
+        self.maxCompletionTokens = try container.decodeIfPresent(Int.self, forKey: "max_completion_tokens")
+        self.truncationStrategy = try container.decodeIfPresent(JSONValue.self, forKey: "truncation_strategy")
+        self.toolChoice = try container.decodeIfPresent(JSONValue.self, forKey: "tool_choice")
+        self.parallelToolCalls = try container.decodeIfPresent(ParallelToolCalls.self, forKey: "parallel_tool_calls")
+        self.responseFormat = try container.decodeIfPresent(AssistantsApiResponseFormatOption.self, forKey: "response_format")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.assistantID, forKey: "assistant_id")
+        try container.encodeIfPresent(self.thread, forKey: "thread")
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encodeIfPresent(self.instructions, forKey: "instructions")
+        try container.encodeIfPresent(self.tools, forKey: "tools")
+        try container.encodeIfPresent(self.toolResources, forKey: "tool_resources")
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
+        try container.encodeIfPresent(self.temperature, forKey: "temperature")
+        try container.encodeIfPresent(self.topP, forKey: "top_p")
+        try container.encodeIfPresent(self.stream, forKey: "stream")
+        try container.encodeIfPresent(self.maxPromptTokens, forKey: "max_prompt_tokens")
+        try container.encodeIfPresent(self.maxCompletionTokens, forKey: "max_completion_tokens")
+        try container.encodeIfPresent(self.truncationStrategy, forKey: "truncation_strategy")
+        try container.encodeIfPresent(self.toolChoice, forKey: "tool_choice")
+        try container.encodeIfPresent(self.parallelToolCalls, forKey: "parallel_tool_calls")
+        try container.encodeIfPresent(self.responseFormat, forKey: "response_format")
     }
 
     /// The ID of the [Model](https://developers.openai.com/api/reference/resources/models) to be used to execute this run. If a value is provided here, it will override the model associated with the assistant. If not, the model associated with the assistant will be used.
@@ -2274,7 +3324,7 @@ public struct CreateThreadAndRunRequest: Codable, Hashable, Sendable {
     }
 
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Tool: Codable, Hashable, Sendable {
+    public indirect enum Tool: OpenAIModel {
         /// `type`: `code_interpreter`
         case codeInterpreter(AssistantToolsCode)
         /// `type`: `file_search`
@@ -2321,7 +3371,7 @@ public struct CreateThreadAndRunRequest: Codable, Hashable, Sendable {
     }
 
     /// A set of resources that are used by the assistant's tools. The resources are specific to the type of tool. For example, the `code_interpreter` tool requires a list of file IDs, while the `file_search` tool requires a list of vector store IDs.
-    public struct ToolResources: Codable, Hashable, Sendable {
+    public struct ToolResources: OpenAIModel {
         public var codeInterpreter: CreateThreadAndRunRequest.ToolResources.CodeInterpreter?
         public var fileSearch: CreateThreadAndRunRequest.ToolResources.FileSearch?
 
@@ -2330,12 +3380,19 @@ public struct CreateThreadAndRunRequest: Codable, Hashable, Sendable {
             self.fileSearch = fileSearch
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case codeInterpreter = "code_interpreter"
-            case fileSearch = "file_search"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.codeInterpreter = try container.decodeIfPresent(CreateThreadAndRunRequest.ToolResources.CodeInterpreter.self, forKey: "code_interpreter")
+            self.fileSearch = try container.decodeIfPresent(CreateThreadAndRunRequest.ToolResources.FileSearch.self, forKey: "file_search")
         }
 
-        public struct CodeInterpreter: Codable, Hashable, Sendable {
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.codeInterpreter, forKey: "code_interpreter")
+            try container.encodeIfPresent(self.fileSearch, forKey: "file_search")
+        }
+
+        public struct CodeInterpreter: OpenAIModel {
             /// A list of [file](https://developers.openai.com/api/reference/resources/files) IDs made available to the `code_interpreter` tool. There can be a maximum of 20 files associated with the tool.
             public var fileIDs: [String]?
 
@@ -2343,12 +3400,18 @@ public struct CreateThreadAndRunRequest: Codable, Hashable, Sendable {
                 self.fileIDs = fileIDs
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case fileIDs = "file_ids"
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.fileIDs = try container.decodeIfPresent([String].self, forKey: "file_ids")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.fileIDs, forKey: "file_ids")
             }
         }
 
-        public struct FileSearch: Codable, Hashable, Sendable {
+        public struct FileSearch: OpenAIModel {
             /// The ID of the [vector store](https://developers.openai.com/api/reference/resources/vector_stores) attached to this assistant. There can be a maximum of 1 vector store attached to the assistant.
             public var vectorStoreIDs: [String]?
 
@@ -2356,8 +3419,14 @@ public struct CreateThreadAndRunRequest: Codable, Hashable, Sendable {
                 self.vectorStoreIDs = vectorStoreIDs
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case vectorStoreIDs = "vector_store_ids"
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.vectorStoreIDs = try container.decodeIfPresent([String].self, forKey: "vector_store_ids")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.vectorStoreIDs, forKey: "vector_store_ids")
             }
         }
     }
@@ -2365,7 +3434,7 @@ public struct CreateThreadAndRunRequest: Codable, Hashable, Sendable {
 
 /// Options to create a new thread. If no thread is provided when running a
 /// request, an empty thread will be created.
-public struct CreateThreadRequest: Codable, Hashable, Sendable {
+public struct CreateThreadRequest: OpenAIModel {
     /// A list of [messages](https://developers.openai.com/api/docs/assistants/migration) to start the thread with.
     public var messages: [CreateMessageRequest]?
     public var toolResources: CreateThreadRequest.ToolResources?
@@ -2381,14 +3450,22 @@ public struct CreateThreadRequest: Codable, Hashable, Sendable {
         self.metadata = metadata
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case messages
-        case toolResources = "tool_resources"
-        case metadata
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.messages = try container.decodeIfPresent([CreateMessageRequest].self, forKey: "messages")
+        self.toolResources = try container.decodeIfPresent(CreateThreadRequest.ToolResources.self, forKey: "tool_resources")
+        self.metadata = try container.decodeIfPresent(Metadata.self, forKey: "metadata")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.messages, forKey: "messages")
+        try container.encodeIfPresent(self.toolResources, forKey: "tool_resources")
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
     }
 
     /// A set of resources that are made available to the assistant's tools in this thread. The resources are specific to the type of tool. For example, the `code_interpreter` tool requires a list of file IDs, while the `file_search` tool requires a list of vector store IDs.
-    public struct ToolResources: Codable, Hashable, Sendable {
+    public struct ToolResources: OpenAIModel {
         public var codeInterpreter: CreateThreadRequest.ToolResources.CodeInterpreter?
         public var fileSearch: CreateThreadRequest.ToolResources.FileSearch?
 
@@ -2397,12 +3474,19 @@ public struct CreateThreadRequest: Codable, Hashable, Sendable {
             self.fileSearch = fileSearch
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case codeInterpreter = "code_interpreter"
-            case fileSearch = "file_search"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.codeInterpreter = try container.decodeIfPresent(CreateThreadRequest.ToolResources.CodeInterpreter.self, forKey: "code_interpreter")
+            self.fileSearch = try container.decodeIfPresent(CreateThreadRequest.ToolResources.FileSearch.self, forKey: "file_search")
         }
 
-        public struct CodeInterpreter: Codable, Hashable, Sendable {
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.codeInterpreter, forKey: "code_interpreter")
+            try container.encodeIfPresent(self.fileSearch, forKey: "file_search")
+        }
+
+        public struct CodeInterpreter: OpenAIModel {
             /// A list of [file](https://developers.openai.com/api/reference/resources/files) IDs made available to the `code_interpreter` tool. There can be a maximum of 20 files associated with the tool.
             public var fileIDs: [String]?
 
@@ -2410,12 +3494,18 @@ public struct CreateThreadRequest: Codable, Hashable, Sendable {
                 self.fileIDs = fileIDs
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case fileIDs = "file_ids"
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.fileIDs = try container.decodeIfPresent([String].self, forKey: "file_ids")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.fileIDs, forKey: "file_ids")
             }
         }
 
-        public indirect enum FileSearch: Codable, Hashable, Sendable {
+        public indirect enum FileSearch: OpenAIModel {
             case json(JSONValue)
             case json2(JSONValue)
             /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
@@ -2441,7 +3531,7 @@ public struct CreateThreadRequest: Codable, Hashable, Sendable {
     }
 }
 
-public struct CreateTranscriptionRequest: Codable, Hashable, Sendable {
+public struct CreateTranscriptionRequest: OpenAIModel {
     /// The audio file object (not file name) to transcribe, in one of these formats: flac, mp3, mp4, mpeg, mpga, m4a, ogg, wav, or webm.
     /// The request must include enough format metadata for the file to be identified. We recommend an extension-bearing filename and an appropriate content type.
     public var file: FileUpload
@@ -2506,21 +3596,40 @@ public struct CreateTranscriptionRequest: Codable, Hashable, Sendable {
         self.knownSpeakerReferences = knownSpeakerReferences
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case file
-        case model
-        case language
-        case languages
-        case keywords
-        case prompt
-        case responseFormat = "response_format"
-        case temperature
-        case include
-        case timestampGranularities = "timestamp_granularities"
-        case stream
-        case chunkingStrategy = "chunking_strategy"
-        case knownSpeakerNames = "known_speaker_names"
-        case knownSpeakerReferences = "known_speaker_references"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.file = try container.decode(FileUpload.self, forKey: "file")
+        self.model = try container.decode(CreateTranscriptionRequest.Model.self, forKey: "model")
+        self.language = try container.decodeIfPresent(String.self, forKey: "language")
+        self.languages = try container.decodeIfPresent([String].self, forKey: "languages")
+        self.keywords = try container.decodeIfPresent([String].self, forKey: "keywords")
+        self.prompt = try container.decodeIfPresent(String.self, forKey: "prompt")
+        self.responseFormat = try container.decodeIfPresent(AudioResponseFormat.self, forKey: "response_format")
+        self.temperature = try container.decodeIfPresent(Double.self, forKey: "temperature")
+        self.include = try container.decodeIfPresent([TranscriptionInclude].self, forKey: "include")
+        self.timestampGranularities = try container.decodeIfPresent([CreateTranscriptionRequest.TimestampGranularity].self, forKey: "timestamp_granularities")
+        self.stream = try container.decodeIfPresent(Bool.self, forKey: "stream")
+        self.chunkingStrategy = try container.decodeIfPresent(CreateTranscriptionRequest.ChunkingStrategy.self, forKey: "chunking_strategy")
+        self.knownSpeakerNames = try container.decodeIfPresent([String].self, forKey: "known_speaker_names")
+        self.knownSpeakerReferences = try container.decodeIfPresent([String].self, forKey: "known_speaker_references")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.file, forKey: "file")
+        try container.encode(self.model, forKey: "model")
+        try container.encodeIfPresent(self.language, forKey: "language")
+        try container.encodeIfPresent(self.languages, forKey: "languages")
+        try container.encodeIfPresent(self.keywords, forKey: "keywords")
+        try container.encodeIfPresent(self.prompt, forKey: "prompt")
+        try container.encodeIfPresent(self.responseFormat, forKey: "response_format")
+        try container.encodeIfPresent(self.temperature, forKey: "temperature")
+        try container.encodeIfPresent(self.include, forKey: "include")
+        try container.encodeIfPresent(self.timestampGranularities, forKey: "timestamp_granularities")
+        try container.encodeIfPresent(self.stream, forKey: "stream")
+        try container.encodeIfPresent(self.chunkingStrategy, forKey: "chunking_strategy")
+        try container.encodeIfPresent(self.knownSpeakerNames, forKey: "known_speaker_names")
+        try container.encodeIfPresent(self.knownSpeakerReferences, forKey: "known_speaker_references")
     }
 
     /// ID of the model to use. The options are `gpt-transcribe`, `gpt-4o-transcribe`, `gpt-4o-mini-transcribe`, `gpt-4o-mini-transcribe-2025-12-15`, `whisper-1` (which is powered by our open source Whisper V2 model), and `gpt-4o-transcribe-diarize`.
@@ -2562,7 +3671,7 @@ public struct CreateTranscriptionRequest: Codable, Hashable, Sendable {
     }
 
     /// Controls how the audio is cut into chunks. When set to `"auto"`, the server first normalizes loudness and then uses voice activity detection (VAD) to choose boundaries. `server_vad` object can be provided to tweak VAD detection parameters manually. If unset, the audio is transcribed as a single block. Required when using `gpt-4o-transcribe-diarize` for inputs longer than 30 seconds.
-    public indirect enum ChunkingStrategy: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum ChunkingStrategy: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         /// Automatically set chunking parameters based on the audio. Must be set to `"auto"`.
         case string(String)
         case vadConfig(VadConfig)
@@ -2600,7 +3709,7 @@ public struct CreateTranscriptionRequest: Codable, Hashable, Sendable {
     }
 }
 
-public indirect enum CreateTranscriptionResponse: Codable, Hashable, Sendable {
+public indirect enum CreateTranscriptionResponse: OpenAIModel {
     case json(CreateTranscriptionResponseJson)
     case diarizedJson(CreateTranscriptionResponseDiarizedJson)
     case verboseJson(CreateTranscriptionResponseVerboseJson)
@@ -2640,7 +3749,7 @@ public indirect enum CreateTranscriptionResponse: Codable, Hashable, Sendable {
 }
 
 /// Represents a diarized transcription response returned by the model, including the combined transcript and speaker-segment annotations.
-public struct CreateTranscriptionResponseDiarizedJson: Codable, Hashable, Sendable {
+public struct CreateTranscriptionResponseDiarizedJson: OpenAIModel {
     /// The type of task that was run. Always `transcribe`.
     public var task: String = "transcribe"
     /// Duration of the input audio in seconds.
@@ -2664,18 +3773,28 @@ public struct CreateTranscriptionResponseDiarizedJson: Codable, Hashable, Sendab
         self.usage = usage
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case task
-        case duration
-        case text
-        case segments
-        case usage
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.task = try container.decodeIfPresent(String.self, forKey: "task") ?? "transcribe"
+        self.duration = try container.decode(Double.self, forKey: "duration")
+        self.text = try container.decode(String.self, forKey: "text")
+        self.segments = try container.decode([TranscriptionDiarizedSegment].self, forKey: "segments")
+        self.usage = try container.decodeIfPresent(CreateTranscriptionResponseDiarizedJson.Usage.self, forKey: "usage")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.task, forKey: "task")
+        try container.encode(self.duration, forKey: "duration")
+        try container.encode(self.text, forKey: "text")
+        try container.encode(self.segments, forKey: "segments")
+        try container.encodeIfPresent(self.usage, forKey: "usage")
     }
 
     /// Token or duration usage statistics for the request.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Usage: Codable, Hashable, Sendable {
+    public indirect enum Usage: OpenAIModel {
         /// `type`: `tokens`
         case tokens(TranscriptTextUsageTokens)
         /// `type`: `duration`
@@ -2716,7 +3835,7 @@ public struct CreateTranscriptionResponseDiarizedJson: Codable, Hashable, Sendab
 }
 
 /// Represents a transcription response returned by model, based on the provided input.
-public struct CreateTranscriptionResponseJson: Codable, Hashable, Sendable {
+public struct CreateTranscriptionResponseJson: OpenAIModel {
     /// The transcribed text.
     public var text: String
     /// The languages detected in the audio. Returned by `gpt-transcribe`. An empty array indicates that no language could be reliably detected.
@@ -2738,14 +3857,23 @@ public struct CreateTranscriptionResponseJson: Codable, Hashable, Sendable {
         self.usage = usage
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case text
-        case languages
-        case logprobs
-        case usage
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.text = try container.decode(String.self, forKey: "text")
+        self.languages = try container.decodeIfPresent([TranscriptionLanguage].self, forKey: "languages")
+        self.logprobs = try container.decodeIfPresent([CreateTranscriptionResponseJson.Logprob].self, forKey: "logprobs")
+        self.usage = try container.decodeIfPresent(CreateTranscriptionResponseJson.Usage.self, forKey: "usage")
     }
 
-    public struct Logprob: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.text, forKey: "text")
+        try container.encodeIfPresent(self.languages, forKey: "languages")
+        try container.encodeIfPresent(self.logprobs, forKey: "logprobs")
+        try container.encodeIfPresent(self.usage, forKey: "usage")
+    }
+
+    public struct Logprob: OpenAIModel {
         /// The token in the transcription.
         public var token: String?
         /// The log probability of the token.
@@ -2763,17 +3891,25 @@ public struct CreateTranscriptionResponseJson: Codable, Hashable, Sendable {
             self.bytes = bytes
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case token
-            case logprob
-            case bytes
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.token = try container.decodeIfPresent(String.self, forKey: "token")
+            self.logprob = try container.decodeIfPresent(Double.self, forKey: "logprob")
+            self.bytes = try container.decodeIfPresent([Double].self, forKey: "bytes")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.token, forKey: "token")
+            try container.encodeIfPresent(self.logprob, forKey: "logprob")
+            try container.encodeIfPresent(self.bytes, forKey: "bytes")
         }
     }
 
     /// Token usage statistics for the request.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Usage: Codable, Hashable, Sendable {
+    public indirect enum Usage: OpenAIModel {
         /// `type`: `tokens`
         case tokens(TranscriptTextUsageTokens)
         /// `type`: `duration`
@@ -2814,7 +3950,7 @@ public struct CreateTranscriptionResponseJson: Codable, Hashable, Sendable {
 }
 
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum CreateTranscriptionResponseStreamEvent: Codable, Hashable, Sendable {
+public indirect enum CreateTranscriptionResponseStreamEvent: OpenAIModel {
     /// `type`: `transcript.text.segment`
     case transcriptTextSegment(TranscriptTextSegmentEvent)
     /// `type`: `transcript.text.delta`
@@ -2861,7 +3997,7 @@ public indirect enum CreateTranscriptionResponseStreamEvent: Codable, Hashable, 
 }
 
 /// Represents a verbose json transcription response returned by model, based on the provided input.
-public struct CreateTranscriptionResponseVerboseJson: Codable, Hashable, Sendable {
+public struct CreateTranscriptionResponseVerboseJson: OpenAIModel {
     /// The language of the input audio.
     public var language: String
     /// The duration of the input audio.
@@ -2890,967 +4026,23 @@ public struct CreateTranscriptionResponseVerboseJson: Codable, Hashable, Sendabl
         self.usage = usage
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case language
-        case duration
-        case text
-        case words
-        case segments
-        case usage
-    }
-}
-
-public struct CreateTranslationRequest: Codable, Hashable, Sendable {
-    /// The audio file object (not file name) translate, in one of these formats: flac, mp3, mp4, mpeg, mpga, m4a, ogg, wav, or webm. The request must include enough format metadata for the file to be identified. We recommend an extension-bearing filename and an appropriate content type.
-    public var file: FileUpload
-    /// ID of the model to use. Only `whisper-1` (which is powered by our open source Whisper V2 model) is currently available.
-    public var model: CreateTranslationRequest.Model
-    /// An optional text to guide the model's style or continue a previous audio segment. The [prompt](https://developers.openai.com/api/docs/guides/speech-to-text#prompting) should be in English.
-    public var prompt: String?
-    /// The format of the output, in one of these options: `json`, `text`, `srt`, `verbose_json`, or `vtt`.
-    public var responseFormat: CreateTranslationRequest.ResponseFormat?
-    /// The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. If set to 0, the model will use [log probability](https://en.wikipedia.org/wiki/Log_probability) to automatically increase the temperature until certain thresholds are hit.
-    public var temperature: Double?
-
-    public init(
-        model: CreateTranslationRequest.Model,
-        file: FileUpload,
-        prompt: String? = nil,
-        responseFormat: CreateTranslationRequest.ResponseFormat? = nil,
-        temperature: Double? = nil
-    ) {
-        self.model = model
-        self.file = file
-        self.prompt = prompt
-        self.responseFormat = responseFormat
-        self.temperature = temperature
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case file
-        case model
-        case prompt
-        case responseFormat = "response_format"
-        case temperature
-    }
-
-    /// ID of the model to use. Only `whisper-1` (which is powered by our open source Whisper V2 model) is currently available.
-    ///
-    /// This type is open: it accepts values the spec does not list yet.
-    public struct Model: OpenAIStringEnum {
-        public let rawValue: String
-
-        public init(rawValue: String) {
-            self.rawValue = rawValue
-        }
-
-        public static let whisper1: Self = "whisper-1"
-
-        public static var knownValues: [Self] {
-            [.whisper1]
-        }
-    }
-
-    /// The format of the output, in one of these options: `json`, `text`, `srt`, `verbose_json`, or `vtt`.
-    ///
-    /// This type is open: it accepts values the spec does not list yet.
-    public struct ResponseFormat: OpenAIStringEnum {
-        public let rawValue: String
-
-        public init(rawValue: String) {
-            self.rawValue = rawValue
-        }
-
-        public static let json: Self = "json"
-        public static let text: Self = "text"
-        public static let srt: Self = "srt"
-        public static let verboseJson: Self = "verbose_json"
-        public static let vtt: Self = "vtt"
-
-        public static var knownValues: [Self] {
-            [.json, .text, .srt, .verboseJson, .vtt]
-        }
-    }
-}
-
-public indirect enum CreateTranslationResponse: Codable, Hashable, Sendable {
-    case json(CreateTranslationResponseJson)
-    case verboseJson(CreateTranslationResponseVerboseJson)
-    /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
-    case unknown(JSONValue)
-
     public init(from decoder: any Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        if let value = try? container.decode(CreateTranslationResponseJson.self) {
-            self = .json(value)
-            return
-        }
-        if let value = try? container.decode(CreateTranslationResponseVerboseJson.self) {
-            self = .verboseJson(value)
-            return
-        }
-        self = .unknown(try container.decode(JSONValue.self))
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.language = try container.decode(String.self, forKey: "language")
+        self.duration = try container.decode(Double.self, forKey: "duration")
+        self.text = try container.decode(String.self, forKey: "text")
+        self.words = try container.decodeIfPresent([TranscriptionWord].self, forKey: "words")
+        self.segments = try container.decodeIfPresent([TranscriptionSegment].self, forKey: "segments")
+        self.usage = try container.decodeIfPresent(TranscriptTextUsageDuration.self, forKey: "usage")
     }
 
     public func encode(to encoder: any Encoder) throws {
-        var container = encoder.singleValueContainer()
-        switch self {
-        case .json(let value):
-            try container.encode(value)
-        case .verboseJson(let value):
-            try container.encode(value)
-        case .unknown(let value):
-            try container.encode(value)
-        }
-    }
-}
-
-public struct CreateTranslationResponseJson: Codable, Hashable, Sendable {
-    public var text: String
-
-    public init(text: String) {
-        self.text = text
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case text
-    }
-}
-
-public struct CreateTranslationResponseVerboseJson: Codable, Hashable, Sendable {
-    /// The language of the output translation (always `english`).
-    public var language: String
-    /// The duration of the input audio.
-    public var duration: Double
-    /// The translated text.
-    public var text: String
-    /// Segments of the translated text and their corresponding details.
-    public var segments: [TranscriptionSegment]?
-
-    public init(
-        language: String,
-        duration: Double,
-        text: String,
-        segments: [TranscriptionSegment]? = nil
-    ) {
-        self.language = language
-        self.duration = duration
-        self.text = text
-        self.segments = segments
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case language
-        case duration
-        case text
-        case segments
-    }
-}
-
-public struct CreateUploadRequest: Codable, Hashable, Sendable {
-    /// The name of the file to upload.
-    public var filename: String
-    /// The intended purpose of the uploaded file.
-    ///
-    /// See the [documentation on File
-    /// purposes](https://developers.openai.com/api/reference/resources/files/methods/create#%28resource%29%20files%20%3E%20%28method%29%20create%20%3E%20%28params%29%200%20%3E%20%28param%29%20purpose%20%3E%20%28schema%29).
-    public var purpose: CreateUploadRequest.Purpose
-    /// The number of bytes in the file you are uploading.
-    public var bytes: Int
-    /// The MIME type of the file.
-    ///
-    ///
-    /// This must fall within the supported MIME types for your file purpose. See
-    /// the supported MIME types for assistants and vision.
-    public var mimeType: String
-    public var expiresAfter: FileExpirationAfter?
-
-    public init(
-        filename: String,
-        purpose: CreateUploadRequest.Purpose,
-        bytes: Int,
-        mimeType: String,
-        expiresAfter: FileExpirationAfter? = nil
-    ) {
-        self.filename = filename
-        self.purpose = purpose
-        self.bytes = bytes
-        self.mimeType = mimeType
-        self.expiresAfter = expiresAfter
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case filename
-        case purpose
-        case bytes
-        case mimeType = "mime_type"
-        case expiresAfter = "expires_after"
-    }
-
-    /// The intended purpose of the uploaded file.
-    ///
-    /// See the [documentation on File
-    /// purposes](https://developers.openai.com/api/reference/resources/files/methods/create#%28resource%29%20files%20%3E%20%28method%29%20create%20%3E%20%28params%29%200%20%3E%20%28param%29%20purpose%20%3E%20%28schema%29).
-    ///
-    /// This type is open: it accepts values the spec does not list yet.
-    public struct Purpose: OpenAIStringEnum {
-        public let rawValue: String
-
-        public init(rawValue: String) {
-            self.rawValue = rawValue
-        }
-
-        public static let assistants: Self = "assistants"
-        public static let batch: Self = "batch"
-        public static let fineTune: Self = "fine-tune"
-        public static let vision: Self = "vision"
-
-        public static var knownValues: [Self] {
-            [.assistants, .batch, .fineTune, .vision]
-        }
-    }
-}
-
-/// Authentication credentials for an MCP server or an OpenAI-hosted environment.
-///
-/// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum CreateVaultCredentialAuthParam: Codable, Hashable, Sendable {
-    /// `type`: `mcp_oauth`
-    case mcpOauth(CreateVaultCredentialAuthParamMcpOauth)
-    /// `type`: `static_bearer`
-    case staticBearer(CreateVaultCredentialAuthParamStaticBearer)
-    /// `type`: `environment_variable`
-    case environmentVariable(CreateVaultCredentialAuthParamEnvironmentVariable)
-    /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
-    case unknown(JSONValue)
-
-    public init(from decoder: any Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        if let keyed = try? decoder.container(keyedBy: OpenAIDynamicCodingKey.self),
-           let discriminator = try? keyed.decode(String.self, forKey: OpenAIDynamicCodingKey("type")) {
-            switch discriminator {
-            case "mcp_oauth":
-                self = .mcpOauth(try container.decode(CreateVaultCredentialAuthParamMcpOauth.self))
-                return
-            case "static_bearer":
-                self = .staticBearer(try container.decode(CreateVaultCredentialAuthParamStaticBearer.self))
-                return
-            case "environment_variable":
-                self = .environmentVariable(try container.decode(CreateVaultCredentialAuthParamEnvironmentVariable.self))
-                return
-            default:
-                break
-            }
-        }
-        self = .unknown(try container.decode(JSONValue.self))
-    }
-
-    public func encode(to encoder: any Encoder) throws {
-        var container = encoder.singleValueContainer()
-        switch self {
-        case .mcpOauth(let value):
-            try container.encode(value)
-        case .staticBearer(let value):
-            try container.encode(value)
-        case .environmentVariable(let value):
-            try container.encode(value)
-        case .unknown(let value):
-            try container.encode(value)
-        }
-    }
-}
-
-/// An HTTP credential for OpenAI-hosted environments only. The sandbox receives an environment variable containing a placeholder, not the secret. Use the placeholder unchanged in outgoing requests. The egress proxy replaces the placeholder with the secret for allowed HTTPS destinations on ports 443 and 8443. Sandbox code cannot read the real secret or use it for local computation, such as signing a request.
-public struct CreateVaultCredentialAuthParamEnvironmentVariable: Codable, Hashable, Sendable {
-    /// The type of the object. Always `environment_variable`.
-    public var type: String = "environment_variable"
-    /// The environment variable name that receives the placeholder, such as `SERVICE_API_KEY`. Use ASCII letters, digits, and underscores, starting with a letter or underscore. Names starting with `CODEX_` and managed proxy or certificate variable names are reserved.
-    public var secretName: String
-    /// The write-only secret to store. Never returned in credential resources or supplied directly to sandbox code. Must be nonempty and must not contain carriage returns, newlines, or NUL bytes.
-    public var secretValue: String
-    /// The destinations where the proxy can substitute this secret. The environment network policy must also allow them.
-    public var networking: VaultCredentialNetworkingParam
-
-    public init(
-        secretName: String,
-        secretValue: String,
-        networking: VaultCredentialNetworkingParam
-    ) {
-        self.secretName = secretName
-        self.secretValue = secretValue
-        self.networking = networking
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case secretName = "secret_name"
-        case secretValue = "secret_value"
-        case networking
-    }
-}
-
-/// An OAuth credential for an HTTPS MCP destination.
-public struct CreateVaultCredentialAuthParamMcpOauth: Codable, Hashable, Sendable {
-    /// The type of the object. Always `mcp_oauth`.
-    public var type: String = "mcp_oauth"
-    /// The HTTPS MCP server URL authorized by this credential.
-    public var mcpServerURL: String
-    /// A write-only OAuth access token; never returned by credential resources.
-    public var accessToken: String
-    /// When the OAuth access token expires, as an RFC 3339 timestamp, if known.
-    public var expiresAt: String?
-    /// Optional refresh configuration for an HTTPS OAuth token endpoint.
-    public var refresh: CreateMcpOauthRefreshParam?
-
-    public init(
-        mcpServerURL: String,
-        accessToken: String,
-        expiresAt: String? = nil,
-        refresh: CreateMcpOauthRefreshParam? = nil
-    ) {
-        self.mcpServerURL = mcpServerURL
-        self.accessToken = accessToken
-        self.expiresAt = expiresAt
-        self.refresh = refresh
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case mcpServerURL = "mcp_server_url"
-        case accessToken = "access_token"
-        case expiresAt = "expires_at"
-        case refresh
-    }
-}
-
-/// A bearer token for an MCP server, without automatic OAuth refresh.
-public struct CreateVaultCredentialAuthParamStaticBearer: Codable, Hashable, Sendable {
-    /// The type of the object. Always `static_bearer`.
-    public var type: String = "static_bearer"
-    /// The HTTPS MCP server URL authorized by this credential.
-    public var mcpServerURL: String
-    /// The bearer token to store. This secret is never returned in credential resources.
-    public var token: String
-
-    public init(mcpServerURL: String, token: String) {
-        self.mcpServerURL = mcpServerURL
-        self.token = token
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case mcpServerURL = "mcp_server_url"
-        case token
-    }
-}
-
-/// Parameters for storing a credential for an MCP server or an OpenAI-hosted environment.
-public struct CreateVaultCredentialParams: Codable, Hashable, Sendable {
-    /// The name is trimmed before storage. It must contain 1 to 256 UTF-8 bytes after trimming.
-    public var name: String
-    /// The authentication method and write-only secret values to store.
-    public var auth: CreateVaultCredentialAuthParam
-    /// Up to 16 string key-value pairs, with keys up to 64 and values up to 512 characters. Defaults to an empty map.
-    public var metadata: [String: String]?
-
-    public init(
-        name: String,
-        auth: CreateVaultCredentialAuthParam,
-        metadata: [String: String]? = nil
-    ) {
-        self.name = name
-        self.auth = auth
-        self.metadata = metadata
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case name
-        case auth
-        case metadata
-    }
-}
-
-/// Parameters for creating a vault to store credentials used by agent tools.
-public struct CreateVaultParams: Codable, Hashable, Sendable {
-    /// The name is trimmed before storage. It must contain 1 to 256 UTF-8 bytes after trimming.
-    public var name: String?
-    /// Key-value pairs to associate with the vault, such as an application or team identifier.
-    public var metadata: [String: String]?
-
-    public init(name: String? = nil, metadata: [String: String]? = nil) {
-        self.name = name
-        self.metadata = metadata
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case name
-        case metadata
-    }
-}
-
-public indirect enum CreateVectorStoreFileBatchRequest: Codable, Hashable, Sendable {
-    case json(JSONValue)
-    case json2(JSONValue)
-    /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
-    case unknown(JSONValue)
-
-    public init(from decoder: any Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        self = .json(try container.decode(JSONValue.self))
-    }
-
-    public func encode(to encoder: any Encoder) throws {
-        var container = encoder.singleValueContainer()
-        switch self {
-        case .json(let value):
-            try container.encode(value)
-        case .json2(let value):
-            try container.encode(value)
-        case .unknown(let value):
-            try container.encode(value)
-        }
-    }
-}
-
-public struct CreateVectorStoreFileRequest: Codable, Hashable, Sendable {
-    /// A [File](https://developers.openai.com/api/reference/resources/files) ID that the vector store should use. Useful for tools like `file_search` that can access files. For multi-file ingestion, we recommend [`file_batches`](https://developers.openai.com/api/reference/resources/vector_stores/subresources/file_batches/methods/create) to minimize per-vector-store write requests.
-    public var fileID: String
-    public var chunkingStrategy: ChunkingStrategyRequestParam?
-    public var attributes: VectorStoreFileAttributes?
-
-    public init(
-        fileID: String,
-        chunkingStrategy: ChunkingStrategyRequestParam? = nil,
-        attributes: VectorStoreFileAttributes? = nil
-    ) {
-        self.fileID = fileID
-        self.chunkingStrategy = chunkingStrategy
-        self.attributes = attributes
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case fileID = "file_id"
-        case chunkingStrategy = "chunking_strategy"
-        case attributes
-    }
-}
-
-public struct CreateVectorStoreRequest: Codable, Hashable, Sendable {
-    /// A list of [File](https://developers.openai.com/api/reference/resources/files) IDs that the vector store should use. Useful for tools like `file_search` that can access files.
-    public var fileIDs: [String]?
-    /// The name of the vector store.
-    public var name: String?
-    /// A description for the vector store. Can be used to describe the vector store's purpose.
-    public var description: String?
-    public var expiresAfter: VectorStoreExpirationAfter?
-    /// The chunking strategy used to chunk the file(s). If not set, will use the `auto` strategy. Only applicable if `file_ids` is non-empty.
-    public var chunkingStrategy: CreateVectorStoreRequest.ChunkingStrategy?
-    public var metadata: Metadata?
-
-    public init(
-        fileIDs: [String]? = nil,
-        name: String? = nil,
-        description: String? = nil,
-        expiresAfter: VectorStoreExpirationAfter? = nil,
-        chunkingStrategy: CreateVectorStoreRequest.ChunkingStrategy? = nil,
-        metadata: Metadata? = nil
-    ) {
-        self.fileIDs = fileIDs
-        self.name = name
-        self.description = description
-        self.expiresAfter = expiresAfter
-        self.chunkingStrategy = chunkingStrategy
-        self.metadata = metadata
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case fileIDs = "file_ids"
-        case name
-        case description
-        case expiresAfter = "expires_after"
-        case chunkingStrategy = "chunking_strategy"
-        case metadata
-    }
-
-    /// The chunking strategy used to chunk the file(s). If not set, will use the `auto` strategy. Only applicable if `file_ids` is non-empty.
-    ///
-    /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum ChunkingStrategy: Codable, Hashable, Sendable {
-        /// `type`: `auto`
-        case auto(AutoChunkingStrategyRequestParam)
-        /// `type`: `static`
-        case `static`(StaticChunkingStrategyRequestParam)
-        /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
-        case unknown(JSONValue)
-
-        public init(from decoder: any Decoder) throws {
-            let container = try decoder.singleValueContainer()
-            if let keyed = try? decoder.container(keyedBy: OpenAIDynamicCodingKey.self),
-               let discriminator = try? keyed.decode(String.self, forKey: OpenAIDynamicCodingKey("type")) {
-                switch discriminator {
-                case "auto":
-                    self = .auto(try container.decode(AutoChunkingStrategyRequestParam.self))
-                    return
-                case "static":
-                    self = .`static`(try container.decode(StaticChunkingStrategyRequestParam.self))
-                    return
-                default:
-                    break
-                }
-            }
-            self = .unknown(try container.decode(JSONValue.self))
-        }
-
-        public func encode(to encoder: any Encoder) throws {
-            var container = encoder.singleValueContainer()
-            switch self {
-            case .auto(let value):
-                try container.encode(value)
-            case .`static`(let value):
-                try container.encode(value)
-            case .unknown(let value):
-                try container.encode(value)
-            }
-        }
-    }
-}
-
-/// Parameters for creating a character from an uploaded video.
-public struct CreateVideoCharacterBody: Codable, Hashable, Sendable {
-    /// Video file used to create a character.
-    public var video: FileUpload
-    /// Display name for this API character.
-    public var name: String
-
-    public init(video: FileUpload, name: String) {
-        self.video = video
-        self.name = name
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case video
-        case name
-    }
-}
-
-/// JSON parameters for editing an existing generated video.
-public struct CreateVideoEditJsonBody: Codable, Hashable, Sendable {
-    /// Reference to the completed video to edit.
-    public var video: VideoReferenceInputParam
-    /// Text prompt that describes how to edit the source video.
-    public var prompt: String
-
-    public init(prompt: String, video: VideoReferenceInputParam) {
-        self.prompt = prompt
-        self.video = video
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case video
-        case prompt
-    }
-}
-
-/// Parameters for editing an existing generated video.
-public struct CreateVideoEditMultipartBody: Codable, Hashable, Sendable {
-    public var video: CreateVideoEditMultipartBody.Video
-    /// Text prompt that describes how to edit the source video.
-    public var prompt: String
-
-    public init(prompt: String, video: CreateVideoEditMultipartBody.Video) {
-        self.prompt = prompt
-        self.video = video
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case video
-        case prompt
-    }
-
-    public indirect enum Video: Codable, Hashable, Sendable {
-        /// Reference to the completed video to edit.
-        case file(FileUpload)
-        case videoReferenceInputParam(VideoReferenceInputParam)
-        /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
-        case unknown(JSONValue)
-
-        public init(from decoder: any Decoder) throws {
-            let container = try decoder.singleValueContainer()
-            if let value = try? container.decode(FileUpload.self) {
-                self = .file(value)
-                return
-            }
-            if let value = try? container.decode(VideoReferenceInputParam.self) {
-                self = .videoReferenceInputParam(value)
-                return
-            }
-            self = .unknown(try container.decode(JSONValue.self))
-        }
-
-        public func encode(to encoder: any Encoder) throws {
-            var container = encoder.singleValueContainer()
-            switch self {
-            case .file(let value):
-                try container.encode(value)
-            case .videoReferenceInputParam(let value):
-                try container.encode(value)
-            case .unknown(let value):
-                try container.encode(value)
-            }
-        }
-    }
-}
-
-/// JSON parameters for extending an existing generated video.
-public struct CreateVideoExtendJsonBody: Codable, Hashable, Sendable {
-    /// Reference to the completed video to extend.
-    public var video: VideoReferenceInputParam
-    /// Updated text prompt that directs the extension generation.
-    public var prompt: String
-    /// Length of the newly generated extension segment in seconds (allowed values: 4, 8, 12, 16, 20).
-    public var seconds: VideoSeconds
-
-    public init(
-        prompt: String,
-        video: VideoReferenceInputParam,
-        seconds: VideoSeconds
-    ) {
-        self.prompt = prompt
-        self.video = video
-        self.seconds = seconds
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case video
-        case prompt
-        case seconds
-    }
-}
-
-/// Multipart parameters for extending an existing generated video.
-public struct CreateVideoExtendMultipartBody: Codable, Hashable, Sendable {
-    public var video: CreateVideoExtendMultipartBody.Video
-    /// Updated text prompt that directs the extension generation.
-    public var prompt: String
-    /// Length of the newly generated extension segment in seconds (allowed values: 4, 8, 12, 16, 20).
-    public var seconds: VideoSeconds
-
-    public init(
-        prompt: String,
-        video: CreateVideoExtendMultipartBody.Video,
-        seconds: VideoSeconds
-    ) {
-        self.prompt = prompt
-        self.video = video
-        self.seconds = seconds
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case video
-        case prompt
-        case seconds
-    }
-
-    public indirect enum Video: Codable, Hashable, Sendable {
-        case videoReferenceInputParam(VideoReferenceInputParam)
-        /// Reference to the completed video to extend.
-        case file(FileUpload)
-        /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
-        case unknown(JSONValue)
-
-        public init(from decoder: any Decoder) throws {
-            let container = try decoder.singleValueContainer()
-            if let value = try? container.decode(VideoReferenceInputParam.self) {
-                self = .videoReferenceInputParam(value)
-                return
-            }
-            if let value = try? container.decode(FileUpload.self) {
-                self = .file(value)
-                return
-            }
-            self = .unknown(try container.decode(JSONValue.self))
-        }
-
-        public func encode(to encoder: any Encoder) throws {
-            var container = encoder.singleValueContainer()
-            switch self {
-            case .videoReferenceInputParam(let value):
-                try container.encode(value)
-            case .file(let value):
-                try container.encode(value)
-            case .unknown(let value):
-                try container.encode(value)
-            }
-        }
-    }
-}
-
-/// JSON parameters for creating a new video generation job.
-public struct CreateVideoJsonBody: Codable, Hashable, Sendable {
-    /// The video generation model to use (allowed values: sora-2, sora-2-pro). Defaults to `sora-2`.
-    public var model: VideoModel?
-    /// Text prompt that describes the video to generate.
-    public var prompt: String
-    /// Optional reference object that guides generation. Provide exactly one of `image_url` or `file_id`.
-    public var inputReference: ImageRefParam2?
-    /// Clip duration in seconds (allowed values: 4, 8, 12). Defaults to 4 seconds.
-    public var seconds: VideoSeconds?
-    /// Output resolution formatted as width x height (allowed values: 720x1280, 1280x720, 1024x1792, 1792x1024). Defaults to 720x1280.
-    public var size: VideoSize?
-
-    public init(
-        prompt: String,
-        model: VideoModel? = nil,
-        inputReference: ImageRefParam2? = nil,
-        seconds: VideoSeconds? = nil,
-        size: VideoSize? = nil
-    ) {
-        self.prompt = prompt
-        self.model = model
-        self.inputReference = inputReference
-        self.seconds = seconds
-        self.size = size
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case model
-        case prompt
-        case inputReference = "input_reference"
-        case seconds
-        case size
-    }
-}
-
-/// Multipart parameters for creating a new video generation job.
-public struct CreateVideoMultipartBody: Codable, Hashable, Sendable {
-    /// The video generation model to use (allowed values: sora-2, sora-2-pro). Defaults to `sora-2`.
-    public var model: VideoModel?
-    /// Text prompt that describes the video to generate.
-    public var prompt: String
-    public var inputReference: CreateVideoMultipartBody.InputReference?
-    /// Clip duration in seconds (allowed values: 4, 8, 12). Defaults to 4 seconds.
-    public var seconds: VideoSeconds?
-    /// Output resolution formatted as width x height (allowed values: 720x1280, 1280x720, 1024x1792, 1792x1024). Defaults to 720x1280.
-    public var size: VideoSize?
-
-    public init(
-        prompt: String,
-        model: VideoModel? = nil,
-        inputReference: CreateVideoMultipartBody.InputReference? = nil,
-        seconds: VideoSeconds? = nil,
-        size: VideoSize? = nil
-    ) {
-        self.prompt = prompt
-        self.model = model
-        self.inputReference = inputReference
-        self.seconds = seconds
-        self.size = size
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case model
-        case prompt
-        case inputReference = "input_reference"
-        case seconds
-        case size
-    }
-
-    public indirect enum InputReference: Codable, Hashable, Sendable {
-        /// Optional reference asset upload or reference object that guides generation.
-        case file(FileUpload)
-        case imageRefParam2(ImageRefParam2)
-        /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
-        case unknown(JSONValue)
-
-        public init(from decoder: any Decoder) throws {
-            let container = try decoder.singleValueContainer()
-            if let value = try? container.decode(FileUpload.self) {
-                self = .file(value)
-                return
-            }
-            if let value = try? container.decode(ImageRefParam2.self) {
-                self = .imageRefParam2(value)
-                return
-            }
-            self = .unknown(try container.decode(JSONValue.self))
-        }
-
-        public func encode(to encoder: any Encoder) throws {
-            var container = encoder.singleValueContainer()
-            switch self {
-            case .file(let value):
-                try container.encode(value)
-            case .imageRefParam2(let value):
-                try container.encode(value)
-            case .unknown(let value):
-                try container.encode(value)
-            }
-        }
-    }
-}
-
-/// Parameters for remixing an existing generated video.
-public struct CreateVideoRemixBody: Codable, Hashable, Sendable {
-    /// Updated text prompt that directs the remix generation.
-    public var prompt: String
-
-    public init(prompt: String) {
-        self.prompt = prompt
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case prompt
-    }
-}
-
-public struct CreateVoiceConsentRequest: Codable, Hashable, Sendable {
-    /// The label to use for this consent recording.
-    public var name: String
-    /// The consent audio recording file. Maximum size is 10 MiB.
-    ///
-    /// Supported MIME types:
-    /// `audio/mpeg`, `audio/wav`, `audio/x-wav`, `audio/ogg`, `audio/aac`, `audio/flac`, `audio/webm`, `audio/mp4`.
-    public var recording: FileUpload
-    /// The BCP 47 language tag for the consent phrase (for example, `en-US`).
-    public var language: String
-
-    public init(
-        name: String,
-        recording: FileUpload,
-        language: String
-    ) {
-        self.name = name
-        self.recording = recording
-        self.language = language
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case name
-        case recording
-        case language
-    }
-}
-
-/// Creates a voice from a consent recording and an audio sample. Requires multipart/form-data.
-public struct CreateVoiceFromConsentRequest: Codable, Hashable, Sendable {
-    /// The voice creation method. Defaults to `audio_sample` when omitted.
-    public var type: String? = "audio_sample"
-    /// The name of the new voice.
-    public var name: String
-    /// The sample audio recording file. Maximum size is 10 MiB.
-    ///
-    /// Supported MIME types:
-    /// `audio/mpeg`, `audio/wav`, `audio/x-wav`, `audio/ogg`, `audio/aac`, `audio/flac`, `audio/webm`, `audio/mp4`.
-    public var audioSample: FileUpload
-    /// The consent recording ID (for example, `cons_1234`).
-    public var consent: String
-
-    public init(
-        name: String,
-        audioSample: FileUpload,
-        consent: String
-    ) {
-        self.name = name
-        self.audioSample = audioSample
-        self.consent = consent
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
-        case audioSample = "audio_sample"
-        case consent
-    }
-}
-
-/// Creates a synthetic voice from a text description. Supports application/json or multipart/form-data.
-public struct CreateVoicePromptRequest: Codable, Hashable, Sendable {
-    /// Set to `prompt` to create a voice from a text description.
-    public var type: String = "prompt"
-    /// The name of the new voice.
-    public var name: String
-    /// A description of the desired voice. Must not contain only whitespace.
-    public var prompt: String
-    /// Optional text for the voice to speak during creation. If omitted, a script is generated from the prompt. Must not be blank after trimming whitespace; scripts that are too short are rejected.
-    public var scriptHint: String?
-    /// The voice creation model to use. Defaults to `auto`.
-    public var model: CreateVoicePromptRequest.Model?
-
-    public init(
-        prompt: String,
-        name: String,
-        model: CreateVoicePromptRequest.Model? = nil,
-        scriptHint: String? = nil
-    ) {
-        self.prompt = prompt
-        self.name = name
-        self.model = model
-        self.scriptHint = scriptHint
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
-        case prompt
-        case scriptHint = "script_hint"
-        case model
-    }
-
-    /// The voice creation model to use. Defaults to `auto`.
-    ///
-    /// This type is open: it accepts values the spec does not list yet.
-    public struct Model: OpenAIStringEnum {
-        public let rawValue: String
-
-        public init(rawValue: String) {
-            self.rawValue = rawValue
-        }
-
-        public static let auto: Self = "auto"
-        public static let _2026_10_08: Self = "2026-10-08"
-
-        public static var knownValues: [Self] {
-            [.auto, ._2026_10_08]
-        }
-    }
-}
-
-/// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum CreateVoiceRequest: Codable, Hashable, Sendable {
-    /// `type`: `audio_sample`
-    case audioSample(CreateVoiceFromConsentRequest)
-    /// `type`: `prompt`
-    case prompt(CreateVoicePromptRequest)
-    /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
-    case unknown(JSONValue)
-
-    public init(from decoder: any Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        if let keyed = try? decoder.container(keyedBy: OpenAIDynamicCodingKey.self),
-           let discriminator = try? keyed.decode(String.self, forKey: OpenAIDynamicCodingKey("type")) {
-            switch discriminator {
-            case "audio_sample":
-                self = .audioSample(try container.decode(CreateVoiceFromConsentRequest.self))
-                return
-            case "prompt":
-                self = .prompt(try container.decode(CreateVoicePromptRequest.self))
-                return
-            default:
-                break
-            }
-        }
-        self = .unknown(try container.decode(JSONValue.self))
-    }
-
-    public func encode(to encoder: any Encoder) throws {
-        var container = encoder.singleValueContainer()
-        switch self {
-        case .audioSample(let value):
-            try container.encode(value)
-        case .prompt(let value):
-            try container.encode(value)
-        case .unknown(let value):
-            try container.encode(value)
-        }
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.language, forKey: "language")
+        try container.encode(self.duration, forKey: "duration")
+        try container.encode(self.text, forKey: "text")
+        try container.encodeIfPresent(self.words, forKey: "words")
+        try container.encodeIfPresent(self.segments, forKey: "segments")
+        try container.encodeIfPresent(self.usage, forKey: "usage")
     }
 }

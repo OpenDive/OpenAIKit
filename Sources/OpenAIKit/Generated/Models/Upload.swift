@@ -4,7 +4,7 @@
 import Foundation
 
 /// The Upload object can accept byte chunks in the form of Parts.
-public struct Upload: Codable, Hashable, Sendable {
+public struct Upload: OpenAIModel {
     /// The Upload unique identifier, which can be referenced in API endpoints.
     public var id: String
     /// The Unix timestamp (in seconds) for when the Upload was created.
@@ -44,16 +44,30 @@ public struct Upload: Codable, Hashable, Sendable {
         self.file = file
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case createdAt = "created_at"
-        case filename
-        case bytes
-        case purpose
-        case status
-        case expiresAt = "expires_at"
-        case object
-        case file
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.filename = try container.decode(String.self, forKey: "filename")
+        self.bytes = try container.decode(Int.self, forKey: "bytes")
+        self.purpose = try container.decode(String.self, forKey: "purpose")
+        self.status = try container.decode(Upload.Status.self, forKey: "status")
+        self.expiresAt = try container.decode(Int.self, forKey: "expires_at")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object")
+        self.file = try container.decodeIfPresent(OpenAIFile.self, forKey: "file")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.filename, forKey: "filename")
+        try container.encode(self.bytes, forKey: "bytes")
+        try container.encode(self.purpose, forKey: "purpose")
+        try container.encode(self.status, forKey: "status")
+        try container.encode(self.expiresAt, forKey: "expires_at")
+        try container.encodeIfPresent(self.object, forKey: "object")
+        try container.encodeIfPresent(self.file, forKey: "file")
     }
 
     /// The status of the Upload.
@@ -77,7 +91,7 @@ public struct Upload: Codable, Hashable, Sendable {
     }
 }
 
-public struct UploadCertificateRequest: Codable, Hashable, Sendable {
+public struct UploadCertificateRequest: OpenAIModel {
     /// An optional name for the certificate
     public var name: String?
     /// The certificate content in PEM format
@@ -88,14 +102,21 @@ public struct UploadCertificateRequest: Codable, Hashable, Sendable {
         self.name = name
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case name
-        case certificate
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.certificate = try container.decode(String.self, forKey: "certificate")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encode(self.certificate, forKey: "certificate")
     }
 }
 
 /// The upload Part represents a chunk of bytes we can add to an Upload object.
-public struct UploadPart: Codable, Hashable, Sendable {
+public struct UploadPart: OpenAIModel {
     /// The upload Part unique identifier, which can be referenced in API endpoints.
     public var id: String
     /// The Unix timestamp (in seconds) for when the Part was created.
@@ -115,10 +136,19 @@ public struct UploadPart: Codable, Hashable, Sendable {
         self.uploadID = uploadID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case createdAt = "created_at"
-        case uploadID = "upload_id"
-        case object
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.uploadID = try container.decode(String.self, forKey: "upload_id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "upload.part"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.uploadID, forKey: "upload_id")
+        try container.encode(self.object, forKey: "object")
     }
 }

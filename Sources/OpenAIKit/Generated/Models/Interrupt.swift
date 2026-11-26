@@ -4,7 +4,7 @@
 import Foundation
 
 /// A request to interrupt a subagent's current turn. The subagent remains available.
-public struct InterruptSubagentCallItemResource: Codable, Hashable, Sendable {
+public struct InterruptSubagentCallItemResource: OpenAIModel {
     /// The item type. Always `interrupt_subagent_call`.
     public var type: String = "interrupt_subagent_call"
     /// The ID of the tool call item.
@@ -32,12 +32,23 @@ public struct InterruptSubagentCallItemResource: Codable, Hashable, Sendable {
         self.recipientAgentID = recipientAgentID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case turnID = "turn_id"
-        case status
-        case senderAgentID = "sender_agent_id"
-        case recipientAgentID = "recipient_agent_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "interrupt_subagent_call"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.turnID = try container.decode(String.self, forKey: "turn_id")
+        self.status = try container.decode(FunctionCallStatusResource.self, forKey: "status")
+        self.senderAgentID = try container.decode(String.self, forKey: "sender_agent_id")
+        self.recipientAgentID = try container.decode(String.self, forKey: "recipient_agent_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.turnID, forKey: "turn_id")
+        try container.encode(self.status, forKey: "status")
+        try container.encode(self.senderAgentID, forKey: "sender_agent_id")
+        try container.encode(self.recipientAgentID, forKey: "recipient_agent_id")
     }
 }

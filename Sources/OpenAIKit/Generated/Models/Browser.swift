@@ -4,7 +4,7 @@
 import Foundation
 
 /// A control in a registered browser-login form.
-public struct BrowserAuthenticationFieldResource: Codable, Hashable, Sendable {
+public struct BrowserAuthenticationFieldResource: OpenAIModel {
     /// The field ID to submit as field_id in a fields entry.
     public var id: String
     /// The label to display beside the control.
@@ -26,16 +26,25 @@ public struct BrowserAuthenticationFieldResource: Codable, Hashable, Sendable {
         self.required = required
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case label
-        case type
-        case required
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.label = try container.decode(String.self, forKey: "label")
+        self.type = try container.decode(String.self, forKey: "type")
+        self.required = try container.decode(Bool.self, forKey: "required")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.label, forKey: "label")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.required, forKey: "required")
     }
 }
 
 /// One user-entered value, including non-password fields such as an email address.
-public struct BrowserAuthenticationFieldValueParam: Codable, Hashable, Sendable {
+public struct BrowserAuthenticationFieldValueParam: OpenAIModel {
     /// The field ID from the required action.
     public var fieldID: String
     /// The value to enter into the registered control.
@@ -46,16 +55,23 @@ public struct BrowserAuthenticationFieldValueParam: Codable, Hashable, Sendable 
         self.value = value
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case fieldID = "field_id"
-        case value
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.fieldID = try container.decode(String.self, forKey: "field_id")
+        self.value = try container.decode(String.self, forKey: "value")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.fieldID, forKey: "field_id")
+        try container.encode(self.value, forKey: "value")
     }
 }
 
 public typealias BrowserAuthenticationHistoryRequestKindResource = BrowserAuthenticationHistoryRequestKindResourceBrowserAuthentication
 
 /// A registered form awaiting the application's response.
-public struct BrowserAuthenticationHistoryRequestKindResourceBrowserAuthentication: Codable, Hashable, Sendable {
+public struct BrowserAuthenticationHistoryRequestKindResourceBrowserAuthentication: OpenAIModel {
     /// The type of the object. Always `browser_authentication`.
     public var type: String = "browser_authentication"
     /// Why the agent needs the user to sign in.
@@ -79,17 +95,27 @@ public struct BrowserAuthenticationHistoryRequestKindResourceBrowserAuthenticati
         self.credentialOrigin = credentialOrigin
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case reason
-        case credentialOrigin = "credential_origin"
-        case fields
-        case options
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "browser_authentication"
+        self.reason = try container.decodeIfPresent(String.self, forKey: "reason")
+        self.credentialOrigin = try container.decodeIfPresent(String.self, forKey: "credential_origin")
+        self.fields = try container.decode([BrowserAuthenticationFieldResource].self, forKey: "fields")
+        self.options = try container.decode([BrowserAuthenticationOptionResource].self, forKey: "options")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.reason, forKey: "reason")
+        try container.encodeIfPresent(self.credentialOrigin, forKey: "credential_origin")
+        try container.encode(self.fields, forKey: "fields")
+        try container.encode(self.options, forKey: "options")
     }
 }
 
 /// A sign-in method and the fields that belong to it.
-public struct BrowserAuthenticationOptionResource: Codable, Hashable, Sendable {
+public struct BrowserAuthenticationOptionResource: OpenAIModel {
     /// The option ID to submit as selected_option.
     public var id: String
     /// The method label to display.
@@ -107,15 +133,23 @@ public struct BrowserAuthenticationOptionResource: Codable, Hashable, Sendable {
         self.fieldIDs = fieldIDs
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case label
-        case fieldIDs = "field_ids"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.label = try container.decode(String.self, forKey: "label")
+        self.fieldIDs = try container.decode([String].self, forKey: "field_ids")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.label, forKey: "label")
+        try container.encode(self.fieldIDs, forKey: "field_ids")
     }
 }
 
 /// A credential-free history record of the emitted login request.
-public struct BrowserAuthenticationRequestItemResource: Codable, Hashable, Sendable {
+public struct BrowserAuthenticationRequestItemResource: OpenAIModel {
     public var turnID: String
     public var requestID: String
     public var request: BrowserAuthenticationHistoryRequestKindResource
@@ -136,12 +170,22 @@ public struct BrowserAuthenticationRequestItemResource: Codable, Hashable, Senda
         self.id = id
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case turnID = "turn_id"
-        case requestID = "request_id"
-        case request
-        case id
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.turnID = try container.decode(String.self, forKey: "turn_id")
+        self.requestID = try container.decode(String.self, forKey: "request_id")
+        self.request = try container.decode(BrowserAuthenticationHistoryRequestKindResource.self, forKey: "request")
+        self.id = try container.decode(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "computer_use_approval_request"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.turnID, forKey: "turn_id")
+        try container.encode(self.requestID, forKey: "request_id")
+        try container.encode(self.request, forKey: "request")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.type, forKey: "type")
     }
 }
 

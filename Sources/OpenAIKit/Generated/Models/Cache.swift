@@ -26,7 +26,7 @@ public struct CacheMissReasonTypeEnum: OpenAIStringEnum {
     }
 }
 
-public struct CacheWriteTokensDetails: Codable, Hashable, Sendable {
+public struct CacheWriteTokensDetails: OpenAIModel {
     /// The number of input tokens written with 30-minute retention.
     public var ttl30mTokens: Int
     /// The number of input tokens written with 12-hour retention.
@@ -37,8 +37,15 @@ public struct CacheWriteTokensDetails: Codable, Hashable, Sendable {
         self.ttl12hTokens = ttl12hTokens
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case ttl30mTokens = "ttl_30m_tokens"
-        case ttl12hTokens = "ttl_12h_tokens"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.ttl30mTokens = try container.decode(Int.self, forKey: "ttl_30m_tokens")
+        self.ttl12hTokens = try container.decode(Int.self, forKey: "ttl_12h_tokens")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.ttl30mTokens, forKey: "ttl_30m_tokens")
+        try container.encode(self.ttl12hTokens, forKey: "ttl_12h_tokens")
     }
 }

@@ -4,7 +4,7 @@
 import Foundation
 
 /// Workflow reference and overrides applied to the chat session.
-public struct WorkflowParam: Codable, Hashable, Sendable {
+public struct WorkflowParam: OpenAIModel {
     /// Identifier for the workflow invoked by the session.
     public var id: String
     /// Specific workflow version to run. Defaults to the latest deployed version.
@@ -26,14 +26,23 @@ public struct WorkflowParam: Codable, Hashable, Sendable {
         self.tracing = tracing
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case version
-        case stateVariables = "state_variables"
-        case tracing
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.version = try container.decodeIfPresent(String.self, forKey: "version")
+        self.stateVariables = try container.decodeIfPresent([String: WorkflowParam.StateVariable].self, forKey: "state_variables")
+        self.tracing = try container.decodeIfPresent(WorkflowTracingParam.self, forKey: "tracing")
     }
 
-    public indirect enum StateVariable: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encodeIfPresent(self.version, forKey: "version")
+        try container.encodeIfPresent(self.stateVariables, forKey: "state_variables")
+        try container.encodeIfPresent(self.tracing, forKey: "tracing")
+    }
+
+    public indirect enum StateVariable: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         case string(String)
         case integer(Int)
         case bool(Bool)
@@ -85,7 +94,7 @@ public struct WorkflowParam: Codable, Hashable, Sendable {
 }
 
 /// Controls diagnostic tracing during the session.
-public struct WorkflowTracingParam: Codable, Hashable, Sendable {
+public struct WorkflowTracingParam: OpenAIModel {
     /// Whether tracing is enabled during the session. Defaults to true.
     public var enabled: Bool?
 
@@ -93,7 +102,13 @@ public struct WorkflowTracingParam: Codable, Hashable, Sendable {
         self.enabled = enabled
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case enabled
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.enabled = try container.decodeIfPresent(Bool.self, forKey: "enabled")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.enabled, forKey: "enabled")
     }
 }

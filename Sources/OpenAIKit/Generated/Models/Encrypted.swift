@@ -4,7 +4,7 @@
 import Foundation
 
 /// Encrypted content exchanged between agents.
-public struct EncryptedContentResource: Codable, Hashable, Sendable {
+public struct EncryptedContentResource: OpenAIModel {
     /// The content type. Always `encrypted_content`.
     public var type: String = "encrypted_content"
     /// The encrypted content payload.
@@ -14,8 +14,15 @@ public struct EncryptedContentResource: Codable, Hashable, Sendable {
         self.encryptedContent = encryptedContent
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case encryptedContent = "encrypted_content"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "encrypted_content"
+        self.encryptedContent = try container.decode(String.self, forKey: "encrypted_content")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.encryptedContent, forKey: "encrypted_content")
     }
 }

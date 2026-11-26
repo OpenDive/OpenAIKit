@@ -8,7 +8,7 @@ import Foundation
 /// Use `images` (array of `ImageRefParam`) instead of multipart `image` uploads.
 /// You can reference images via external URLs, data URLs, or uploaded file IDs.
 /// JSON edits support GPT image models.
-public struct EditImageBodyJsonParam: Codable, Hashable, Sendable {
+public struct EditImageBodyJsonParam: OpenAIModel {
     public var frameCount: FrameCount?
     public var frameDurationMs: FrameDurationMs?
     public var complexity: Complexity?
@@ -105,28 +105,54 @@ public struct EditImageBodyJsonParam: Codable, Hashable, Sendable {
         self.partialImages = partialImages
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case frameCount = "frame_count"
-        case frameDurationMs = "frame_duration_ms"
-        case complexity
-        case model
-        case images
-        case mask
-        case markup
-        case prompt
-        case n
-        case quality
-        case inputFidelity = "input_fidelity"
-        case size
-        case safetyIdentifier = "safety_identifier"
-        case user
-        case outputFormat = "output_format"
-        case svg
-        case outputCompression = "output_compression"
-        case moderation
-        case background
-        case stream
-        case partialImages = "partial_images"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.frameCount = try container.decodeIfPresent(FrameCount.self, forKey: "frame_count")
+        self.frameDurationMs = try container.decodeIfPresent(FrameDurationMs.self, forKey: "frame_duration_ms")
+        self.complexity = try container.decodeIfPresent(Complexity.self, forKey: "complexity")
+        self.model = try container.decodeIfPresent(EditImageBodyJsonParam.Model.self, forKey: "model")
+        self.images = try container.decode([ImageRefParam].self, forKey: "images")
+        self.mask = try container.decodeIfPresent(ImageRefParam.self, forKey: "mask")
+        self.markup = try container.decodeIfPresent(ImageRefParam.self, forKey: "markup")
+        self.prompt = try container.decode(String.self, forKey: "prompt")
+        self.n = try container.decodeIfPresent(Int.self, forKey: "n")
+        self.quality = try container.decodeIfPresent(EditImageBodyJsonParam.Quality.self, forKey: "quality")
+        self.inputFidelity = try container.decodeIfPresent(EditImageBodyJsonParam.InputFidelity.self, forKey: "input_fidelity")
+        self.size = try container.decodeIfPresent(EditImageBodyJsonParam.Size.self, forKey: "size")
+        self.safetyIdentifier = try container.decodeIfPresent(String.self, forKey: "safety_identifier")
+        self.user = try container.decodeIfPresent(String.self, forKey: "user")
+        self.outputFormat = try container.decodeIfPresent(ImagesApiOutputFormat.self, forKey: "output_format")
+        self.svg = try container.decodeIfPresent(SvgParam.self, forKey: "svg")
+        self.outputCompression = try container.decodeIfPresent(Int.self, forKey: "output_compression")
+        self.moderation = try container.decodeIfPresent(EditImageBodyJsonParam.Moderation.self, forKey: "moderation")
+        self.background = try container.decodeIfPresent(EditImageBodyJsonParam.Background.self, forKey: "background")
+        self.stream = try container.decodeIfPresent(Bool.self, forKey: "stream")
+        self.partialImages = try container.decodeIfPresent(PartialImages.self, forKey: "partial_images")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.frameCount, forKey: "frame_count")
+        try container.encodeIfPresent(self.frameDurationMs, forKey: "frame_duration_ms")
+        try container.encodeIfPresent(self.complexity, forKey: "complexity")
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encode(self.images, forKey: "images")
+        try container.encodeIfPresent(self.mask, forKey: "mask")
+        try container.encodeIfPresent(self.markup, forKey: "markup")
+        try container.encode(self.prompt, forKey: "prompt")
+        try container.encodeIfPresent(self.n, forKey: "n")
+        try container.encodeIfPresent(self.quality, forKey: "quality")
+        try container.encodeIfPresent(self.inputFidelity, forKey: "input_fidelity")
+        try container.encodeIfPresent(self.size, forKey: "size")
+        try container.encodeIfPresent(self.safetyIdentifier, forKey: "safety_identifier")
+        try container.encodeIfPresent(self.user, forKey: "user")
+        try container.encodeIfPresent(self.outputFormat, forKey: "output_format")
+        try container.encodeIfPresent(self.svg, forKey: "svg")
+        try container.encodeIfPresent(self.outputCompression, forKey: "output_compression")
+        try container.encodeIfPresent(self.moderation, forKey: "moderation")
+        try container.encodeIfPresent(self.background, forKey: "background")
+        try container.encodeIfPresent(self.stream, forKey: "stream")
+        try container.encodeIfPresent(self.partialImages, forKey: "partial_images")
     }
 
     /// The GPT image model to use for image editing, including `gpt-image-2`, its dated

@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct AzureExternalKeyParams: Codable, Hashable, Sendable {
+public struct AzureExternalKeyParams: OpenAIModel {
     /// A friendly name to identify this config
     public var name: String
     public var type: String = "azure"
@@ -33,18 +33,30 @@ public struct AzureExternalKeyParams: Codable, Hashable, Sendable {
         self.keyVersion = keyVersion
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case name
-        case type
-        case tenantID = "tenant_id"
-        case vaultURI = "vault_uri"
-        case keyName = "key_name"
-        case purpose
-        case keyVersion = "key_version"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.name = try container.decode(String.self, forKey: "name")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "azure"
+        self.tenantID = try container.decode(String.self, forKey: "tenant_id")
+        self.vaultURI = try container.decode(String.self, forKey: "vault_uri")
+        self.keyName = try container.decode(String.self, forKey: "key_name")
+        self.purpose = try container.decodeIfPresent(ExternalKeyPurpose.self, forKey: "purpose")
+        self.keyVersion = try container.decodeIfPresent(String.self, forKey: "key_version")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.tenantID, forKey: "tenant_id")
+        try container.encode(self.vaultURI, forKey: "vault_uri")
+        try container.encode(self.keyName, forKey: "key_name")
+        try container.encodeIfPresent(self.purpose, forKey: "purpose")
+        try container.encodeIfPresent(self.keyVersion, forKey: "key_version")
     }
 }
 
-public struct AzureExternalStorageProviderParams: Codable, Hashable, Sendable {
+public struct AzureExternalStorageProviderParams: OpenAIModel {
     public var type: String = "azure"
     public var tenantID: String
     public var subscriptionID: String
@@ -66,17 +78,28 @@ public struct AzureExternalStorageProviderParams: Codable, Hashable, Sendable {
         self.container = container
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case tenantID = "tenant_id"
-        case subscriptionID = "subscription_id"
-        case resourceGroup = "resource_group"
-        case accountName = "account_name"
-        case container
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "azure"
+        self.tenantID = try container.decode(String.self, forKey: "tenant_id")
+        self.subscriptionID = try container.decode(String.self, forKey: "subscription_id")
+        self.resourceGroup = try container.decode(String.self, forKey: "resource_group")
+        self.accountName = try container.decode(String.self, forKey: "account_name")
+        self.container = try container.decode(String.self, forKey: "container")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.tenantID, forKey: "tenant_id")
+        try container.encode(self.subscriptionID, forKey: "subscription_id")
+        try container.encode(self.resourceGroup, forKey: "resource_group")
+        try container.encode(self.accountName, forKey: "account_name")
+        try container.encode(self.container, forKey: "container")
     }
 }
 
-public struct AzureExternalStorageProviderResponse: Codable, Hashable, Sendable {
+public struct AzureExternalStorageProviderResponse: OpenAIModel {
     public var type: String = "azure"
     public var tenantID: String
     public var subscriptionID: String
@@ -101,13 +124,25 @@ public struct AzureExternalStorageProviderResponse: Codable, Hashable, Sendable 
         self.region = region
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case tenantID = "tenant_id"
-        case subscriptionID = "subscription_id"
-        case resourceGroup = "resource_group"
-        case accountName = "account_name"
-        case container
-        case region
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "azure"
+        self.tenantID = try container.decode(String.self, forKey: "tenant_id")
+        self.subscriptionID = try container.decode(String.self, forKey: "subscription_id")
+        self.resourceGroup = try container.decode(String.self, forKey: "resource_group")
+        self.accountName = try container.decode(String.self, forKey: "account_name")
+        self.container = try container.decode(String.self, forKey: "container")
+        self.region = try container.decode(String.self, forKey: "region")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.tenantID, forKey: "tenant_id")
+        try container.encode(self.subscriptionID, forKey: "subscription_id")
+        try container.encode(self.resourceGroup, forKey: "resource_group")
+        try container.encode(self.accountName, forKey: "account_name")
+        try container.encode(self.container, forKey: "container")
+        try container.encode(self.region, forKey: "region")
     }
 }

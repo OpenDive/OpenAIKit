@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct PermissionErrorResponse: Codable, Hashable, Sendable {
+public struct PermissionErrorResponse: OpenAIModel {
     /// Details about the permission error.
     public var error: PermissionErrorResponse.ErrorValue
 
@@ -11,12 +11,18 @@ public struct PermissionErrorResponse: Codable, Hashable, Sendable {
         self.error = error
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case error
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.error = try container.decode(PermissionErrorResponse.ErrorValue.self, forKey: "error")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.error, forKey: "error")
     }
 
     /// Details about the permission error.
-    public indirect enum ErrorValue: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum ErrorValue: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         case errorObject(ErrorObject)
         /// An explanation of the missing API permissions.
         case string(String)

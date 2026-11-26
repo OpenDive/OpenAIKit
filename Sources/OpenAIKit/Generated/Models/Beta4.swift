@@ -3,8 +3,2057 @@
 
 import Foundation
 
+/// A description of the chain of thought used by a reasoning model while generating
+/// a response. Be sure to include these items in your `input` to the Responses API
+/// for subsequent turns of a conversation if you are manually
+/// [managing context](https://developers.openai.com/api/docs/guides/conversation-state).
+public struct BetaReasoningItem: OpenAIModel {
+    /// The agent that produced this item.
+    public var agent: BetaAgentTag?
+    /// The type of the object. Always `reasoning`.
+    public var type: String = "reasoning"
+    /// The unique identifier of the reasoning content.
+    public var id: String
+    public var encryptedContent: String?
+    /// Reasoning summary content.
+    public var summary: [BetaSummaryTextContent]
+    /// Reasoning text content.
+    public var content: [BetaReasoningTextContent]?
+    /// The status of the item. One of `in_progress`, `completed`, or
+    /// `incomplete`. Populated when items are returned via API.
+    public var status: BetaReasoningItem.Status?
+
+    public init(
+        id: String,
+        summary: [BetaSummaryTextContent],
+        agent: BetaAgentTag? = nil,
+        encryptedContent: String? = nil,
+        content: [BetaReasoningTextContent]? = nil,
+        status: BetaReasoningItem.Status? = nil
+    ) {
+        self.id = id
+        self.summary = summary
+        self.agent = agent
+        self.encryptedContent = encryptedContent
+        self.content = content
+        self.status = status
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "reasoning"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.encryptedContent = try container.decodeIfPresent(String.self, forKey: "encrypted_content")
+        self.summary = try container.decode([BetaSummaryTextContent].self, forKey: "summary")
+        self.content = try container.decodeIfPresent([BetaReasoningTextContent].self, forKey: "content")
+        self.status = try container.decodeIfPresent(BetaReasoningItem.Status.self, forKey: "status")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encodeIfPresent(self.encryptedContent, forKey: "encrypted_content")
+        try container.encode(self.summary, forKey: "summary")
+        try container.encodeIfPresent(self.content, forKey: "content")
+        try container.encodeIfPresent(self.status, forKey: "status")
+    }
+
+    /// The status of the item. One of `in_progress`, `completed`, or
+    /// `incomplete`. Populated when items are returned via API.
+    ///
+    /// This type is open: it accepts values the spec does not list yet.
+    public struct Status: OpenAIStringEnum {
+        public let rawValue: String
+
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
+
+        public static let inProgress: Self = "in_progress"
+        public static let completed: Self = "completed"
+        public static let incomplete: Self = "incomplete"
+
+        public static var knownValues: [Self] {
+            [.inProgress, .completed, .incomplete]
+        }
+    }
+}
+
+/// This type is open: it accepts values the spec does not list yet.
+public struct BetaReasoningModeEnum: OpenAIStringEnum {
+    public let rawValue: String
+
+    public init(rawValue: String) {
+        self.rawValue = rawValue
+    }
+
+    public static let standard: Self = "standard"
+    public static let pro: Self = "pro"
+
+    public static var knownValues: [Self] {
+        [.standard, .pro]
+    }
+}
+
+/// Reasoning text from the model.
+public struct BetaReasoningTextContent: OpenAIModel {
+    /// The type of the reasoning text. Always `reasoning_text`.
+    public var type: String = "reasoning_text"
+    /// The reasoning text from the model.
+    public var text: String
+
+    public init(text: String) {
+        self.text = text
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "reasoning_text"
+        self.text = try container.decode(String.self, forKey: "text")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.text, forKey: "text")
+    }
+}
+
+/// A refusal from the model.
+public struct BetaRefusalContent: OpenAIModel {
+    /// The type of the refusal. Always `refusal`.
+    public var type: String = "refusal"
+    /// The refusal explanation from the model.
+    public var refusal: String
+
+    public init(refusal: String) {
+        self.refusal = refusal
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "refusal"
+        self.refusal = try container.decode(String.self, forKey: "refusal")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.refusal, forKey: "refusal")
+    }
+}
+
+/// This type is open: it accepts values the spec does not list yet.
+public struct BetaResolvedImageContextCompressionEnum: OpenAIStringEnum {
+    public let rawValue: String
+
+    public init(rawValue: String) {
+        self.rawValue = rawValue
+    }
+
+    public static let enabled: Self = "enabled"
+    public static let disabled: Self = "disabled"
+
+    public static var knownValues: [Self] {
+        [.enabled, .disabled]
+    }
+}
+
+public struct BetaResolvedImageOptions: OpenAIModel {
+    /// Effective image context optimization policy.
+    public var contextCompression: BetaResolvedImageContextCompressionEnum
+
+    public init(contextCompression: BetaResolvedImageContextCompressionEnum) {
+        self.contextCompression = contextCompression
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.contextCompression = try container.decode(BetaResolvedImageContextCompressionEnum.self, forKey: "context_compression")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.contextCompression, forKey: "context_compression")
+    }
+}
+
+public struct BetaResponse: OpenAIModel {
+    public var metadata: BetaMetadata?
+    public var topLogprobs: Int?
+    public var temperature: Double?
+    public var topP: Double?
+    /// This field is being replaced by `safety_identifier` and `prompt_cache_key`. Use `prompt_cache_key` instead to maintain caching optimizations.
+    /// A stable identifier for your end-users.
+    /// Used to boost cache hit rates by better bucketing similar requests and  to help OpenAI detect and prevent abuse. [Learn more](https://developers.openai.com/api/docs/guides/safety-best-practices#implement-safety-identifiers).
+    ///
+    /// - Note: Deprecated by OpenAI.
+    public var user: String?
+    public var safetyIdentifier: String?
+    public var promptCacheKey: String?
+    /// - Note: Deprecated by OpenAI.
+    public var promptCacheRetention: BetaResponse.PromptCacheRetention?
+    public var previousResponseID: String?
+    /// Model ID used to generate the response, like `gpt-6.2-astra`. OpenAI
+    /// offers a wide range of models with different capabilities, performance
+    /// characteristics, and price points. Refer to the [model guide](https://developers.openai.com/api/docs/models)
+    /// to browse and compare available models.
+    public var model: BetaModelIdsResponses
+    public var background: Bool?
+    public var maxToolCalls: Int?
+    public var text: BetaResponseTextParam?
+    public var tools: BetaToolsArray
+    public var toolChoice: BetaToolChoiceParam
+    public var prompt: BetaPrompt?
+    public var image: BetaResolvedImageOptions?
+    public var serviceTier: BetaServiceTierResponses?
+    public var truncation: BetaResponse.Truncation?
+    /// Unique identifier for this Response.
+    public var id: String
+    /// The object type of this resource - always set to `response`.
+    public var object: String = "response"
+    /// The status of the response generation. One of `completed`, `failed`,
+    /// `in_progress`, `cancelled`, `queued`, or `incomplete`.
+    public var status: BetaResponse.Status?
+    public var accessPrograms: BetaAccessProgramsBody?
+    /// Unix timestamp (in seconds) of when this Response was created.
+    public var createdAt: Double
+    public var completedAt: Double?
+    public var error: BetaResponseError?
+    public var incompleteDetails: BetaResponse.IncompleteDetails?
+    /// Reasoning inputs withheld from the model, in input order.
+    public var inputTransformations: [BetaReasoningInputTransformation]?
+    /// An array of content items generated by the model.
+    ///
+    /// - The length and order of items in the `output` array is dependent
+    ///   on the model's response.
+    /// - Rather than accessing the first item in the `output` array and
+    ///   assuming it's an `assistant` message with the content generated by
+    ///   the model, you might consider using the `output_text` property where
+    ///   supported in SDKs.
+    public var output: [BetaOutputItem]
+    public var reasoning: BetaReasoning?
+    public var instructions: BetaResponse.Instructions?
+    public var usage: BetaResponseUsage?
+    /// Usage reported by hosted tools, separate from base model `usage`. The field
+    /// can be omitted when tool usage is unavailable. When present, tool families
+    /// with no recorded usage have zero counts.
+    ///
+    /// `image_gen` sums available token counts across image generation calls.
+    /// Calls with missing or incomplete usage records may be skipped. Output
+    /// token details and cached input counts can be omitted. An omitted cache
+    /// count means cache usage is unknown.
+    ///
+    /// `web_search.num_requests` counts billable searches. Discounted searches
+    /// and actions such as opening a page are excluded. Use billing records to
+    /// reconcile final charges.
+    public var toolUsage: BetaResponseToolUsage?
+    public var promptCacheOptions: BetaPromptCacheOptions?
+    public var promptCacheDiagnostics: BetaPromptCacheDiagnostics?
+    public var moderation: BetaModeration?
+    /// Whether to allow the model to run tool calls in parallel.
+    public var parallelToolCalls: Bool
+    public var conversation: BetaResponseConversation?
+    public var maxOutputTokens: Int?
+
+    public init(
+        model: BetaModelIdsResponses,
+        tools: BetaToolsArray,
+        toolChoice: BetaToolChoiceParam,
+        id: String,
+        createdAt: Double,
+        output: [BetaOutputItem],
+        parallelToolCalls: Bool,
+        prompt: BetaPrompt? = nil,
+        instructions: BetaResponse.Instructions? = nil,
+        metadata: BetaMetadata? = nil,
+        topLogprobs: Int? = nil,
+        temperature: Double? = nil,
+        topP: Double? = nil,
+        user: String? = nil,
+        safetyIdentifier: String? = nil,
+        promptCacheKey: String? = nil,
+        promptCacheRetention: BetaResponse.PromptCacheRetention? = nil,
+        previousResponseID: String? = nil,
+        background: Bool? = nil,
+        maxToolCalls: Int? = nil,
+        text: BetaResponseTextParam? = nil,
+        image: BetaResolvedImageOptions? = nil,
+        serviceTier: BetaServiceTierResponses? = nil,
+        truncation: BetaResponse.Truncation? = nil,
+        status: BetaResponse.Status? = nil,
+        accessPrograms: BetaAccessProgramsBody? = nil,
+        completedAt: Double? = nil,
+        error: BetaResponseError? = nil,
+        incompleteDetails: BetaResponse.IncompleteDetails? = nil,
+        inputTransformations: [BetaReasoningInputTransformation]? = nil,
+        reasoning: BetaReasoning? = nil,
+        usage: BetaResponseUsage? = nil,
+        toolUsage: BetaResponseToolUsage? = nil,
+        promptCacheOptions: BetaPromptCacheOptions? = nil,
+        promptCacheDiagnostics: BetaPromptCacheDiagnostics? = nil,
+        moderation: BetaModeration? = nil,
+        conversation: BetaResponseConversation? = nil,
+        maxOutputTokens: Int? = nil
+    ) {
+        self.model = model
+        self.tools = tools
+        self.toolChoice = toolChoice
+        self.id = id
+        self.createdAt = createdAt
+        self.output = output
+        self.parallelToolCalls = parallelToolCalls
+        self.prompt = prompt
+        self.instructions = instructions
+        self.metadata = metadata
+        self.topLogprobs = topLogprobs
+        self.temperature = temperature
+        self.topP = topP
+        self.user = user
+        self.safetyIdentifier = safetyIdentifier
+        self.promptCacheKey = promptCacheKey
+        self.promptCacheRetention = promptCacheRetention
+        self.previousResponseID = previousResponseID
+        self.background = background
+        self.maxToolCalls = maxToolCalls
+        self.text = text
+        self.image = image
+        self.serviceTier = serviceTier
+        self.truncation = truncation
+        self.status = status
+        self.accessPrograms = accessPrograms
+        self.completedAt = completedAt
+        self.error = error
+        self.incompleteDetails = incompleteDetails
+        self.inputTransformations = inputTransformations
+        self.reasoning = reasoning
+        self.usage = usage
+        self.toolUsage = toolUsage
+        self.promptCacheOptions = promptCacheOptions
+        self.promptCacheDiagnostics = promptCacheDiagnostics
+        self.moderation = moderation
+        self.conversation = conversation
+        self.maxOutputTokens = maxOutputTokens
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.metadata = try container.decodeIfPresent(BetaMetadata.self, forKey: "metadata")
+        self.topLogprobs = try container.decodeIfPresent(Int.self, forKey: "top_logprobs")
+        self.temperature = try container.decodeIfPresent(Double.self, forKey: "temperature")
+        self.topP = try container.decodeIfPresent(Double.self, forKey: "top_p")
+        self.user = try container.decodeIfPresent(String.self, forKey: "user")
+        self.safetyIdentifier = try container.decodeIfPresent(String.self, forKey: "safety_identifier")
+        self.promptCacheKey = try container.decodeIfPresent(String.self, forKey: "prompt_cache_key")
+        self.promptCacheRetention = try container.decodeIfPresent(BetaResponse.PromptCacheRetention.self, forKey: "prompt_cache_retention")
+        self.previousResponseID = try container.decodeIfPresent(String.self, forKey: "previous_response_id")
+        self.model = try container.decode(BetaModelIdsResponses.self, forKey: "model")
+        self.background = try container.decodeIfPresent(Bool.self, forKey: "background")
+        self.maxToolCalls = try container.decodeIfPresent(Int.self, forKey: "max_tool_calls")
+        self.text = try container.decodeIfPresent(BetaResponseTextParam.self, forKey: "text")
+        self.tools = try container.decode(BetaToolsArray.self, forKey: "tools")
+        self.toolChoice = try container.decode(BetaToolChoiceParam.self, forKey: "tool_choice")
+        self.prompt = try container.decodeIfPresent(BetaPrompt.self, forKey: "prompt")
+        self.image = try container.decodeIfPresent(BetaResolvedImageOptions.self, forKey: "image")
+        self.serviceTier = try container.decodeIfPresent(BetaServiceTierResponses.self, forKey: "service_tier")
+        self.truncation = try container.decodeIfPresent(BetaResponse.Truncation.self, forKey: "truncation")
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "response"
+        self.status = try container.decodeIfPresent(BetaResponse.Status.self, forKey: "status")
+        self.accessPrograms = try container.decodeIfPresent(BetaAccessProgramsBody.self, forKey: "access_programs")
+        self.createdAt = try container.decode(Double.self, forKey: "created_at")
+        self.completedAt = try container.decodeIfPresent(Double.self, forKey: "completed_at")
+        self.error = try container.decodeIfPresent(BetaResponseError.self, forKey: "error")
+        self.incompleteDetails = try container.decodeIfPresent(BetaResponse.IncompleteDetails.self, forKey: "incomplete_details")
+        self.inputTransformations = try container.decodeIfPresent([BetaReasoningInputTransformation].self, forKey: "input_transformations")
+        self.output = try container.decode([BetaOutputItem].self, forKey: "output")
+        self.reasoning = try container.decodeIfPresent(BetaReasoning.self, forKey: "reasoning")
+        self.instructions = try container.decodeIfPresent(BetaResponse.Instructions.self, forKey: "instructions")
+        self.usage = try container.decodeIfPresent(BetaResponseUsage.self, forKey: "usage")
+        self.toolUsage = try container.decodeIfPresent(BetaResponseToolUsage.self, forKey: "tool_usage")
+        self.promptCacheOptions = try container.decodeIfPresent(BetaPromptCacheOptions.self, forKey: "prompt_cache_options")
+        self.promptCacheDiagnostics = try container.decodeIfPresent(BetaPromptCacheDiagnostics.self, forKey: "prompt_cache_diagnostics")
+        self.moderation = try container.decodeIfPresent(BetaModeration.self, forKey: "moderation")
+        self.parallelToolCalls = try container.decode(Bool.self, forKey: "parallel_tool_calls")
+        self.conversation = try container.decodeIfPresent(BetaResponseConversation.self, forKey: "conversation")
+        self.maxOutputTokens = try container.decodeIfPresent(Int.self, forKey: "max_output_tokens")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
+        try container.encodeIfPresent(self.topLogprobs, forKey: "top_logprobs")
+        try container.encodeIfPresent(self.temperature, forKey: "temperature")
+        try container.encodeIfPresent(self.topP, forKey: "top_p")
+        try container.encodeIfPresent(self.user, forKey: "user")
+        try container.encodeIfPresent(self.safetyIdentifier, forKey: "safety_identifier")
+        try container.encodeIfPresent(self.promptCacheKey, forKey: "prompt_cache_key")
+        try container.encodeIfPresent(self.promptCacheRetention, forKey: "prompt_cache_retention")
+        try container.encodeIfPresent(self.previousResponseID, forKey: "previous_response_id")
+        try container.encode(self.model, forKey: "model")
+        try container.encodeIfPresent(self.background, forKey: "background")
+        try container.encodeIfPresent(self.maxToolCalls, forKey: "max_tool_calls")
+        try container.encodeIfPresent(self.text, forKey: "text")
+        try container.encode(self.tools, forKey: "tools")
+        try container.encode(self.toolChoice, forKey: "tool_choice")
+        try container.encodeIfPresent(self.prompt, forKey: "prompt")
+        try container.encodeIfPresent(self.image, forKey: "image")
+        try container.encodeIfPresent(self.serviceTier, forKey: "service_tier")
+        try container.encodeIfPresent(self.truncation, forKey: "truncation")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encodeIfPresent(self.status, forKey: "status")
+        try container.encodeIfPresent(self.accessPrograms, forKey: "access_programs")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encodeIfPresent(self.completedAt, forKey: "completed_at")
+        try container.encodeIfPresent(self.error, forKey: "error")
+        try container.encodeIfPresent(self.incompleteDetails, forKey: "incomplete_details")
+        try container.encodeIfPresent(self.inputTransformations, forKey: "input_transformations")
+        try container.encode(self.output, forKey: "output")
+        try container.encodeIfPresent(self.reasoning, forKey: "reasoning")
+        try container.encodeIfPresent(self.instructions, forKey: "instructions")
+        try container.encodeIfPresent(self.usage, forKey: "usage")
+        try container.encodeIfPresent(self.toolUsage, forKey: "tool_usage")
+        try container.encodeIfPresent(self.promptCacheOptions, forKey: "prompt_cache_options")
+        try container.encodeIfPresent(self.promptCacheDiagnostics, forKey: "prompt_cache_diagnostics")
+        try container.encodeIfPresent(self.moderation, forKey: "moderation")
+        try container.encode(self.parallelToolCalls, forKey: "parallel_tool_calls")
+        try container.encodeIfPresent(self.conversation, forKey: "conversation")
+        try container.encodeIfPresent(self.maxOutputTokens, forKey: "max_output_tokens")
+    }
+
+    /// Deprecated. Use `prompt_cache_options.ttl` instead.
+    ///
+    /// The retention policy for the prompt cache. Set to `24h` to enable extended prompt caching, which keeps cached prefixes active for longer, up to a maximum of 24 hours. [Learn more](https://developers.openai.com/api/docs/guides/prompt-caching#prompt-cache-retention).
+    /// This field expresses a maximum retention policy, while
+    /// `prompt_cache_options.ttl` expresses a minimum cache lifetime. The two
+    /// fields are independent and do not interact.
+    /// For `gpt-5.5`, `gpt-5.5-pro`, and future models, only `24h` is supported.
+    ///
+    /// For older models that support both `in_memory` and `24h`, the default depends on your organization's data retention policy:
+    ///   - Organizations without ZDR enabled default to `24h`.
+    ///   - Organizations with ZDR enabled default to `in_memory` when `prompt_cache_retention` is not specified.
+    ///
+    /// This type is open: it accepts values the spec does not list yet.
+    public struct PromptCacheRetention: OpenAIStringEnum {
+        public let rawValue: String
+
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
+
+        public static let inMemory: Self = "in_memory"
+        public static let _24h: Self = "24h"
+
+        public static var knownValues: [Self] {
+            [.inMemory, ._24h]
+        }
+    }
+
+    /// The truncation strategy to use for the model response.
+    /// - `auto`: If the input to this Response exceeds
+    ///   the model's context window size, the model will truncate the
+    ///   response to fit the context window by dropping items from the beginning of the conversation.
+    ///   On some models, trimming can begin earlier because the API subtracts the model's
+    ///   maximum output allowance from its input limit, even if you set a lower `max_output_tokens`.
+    /// - `disabled` (default): If the input size will exceed the context window
+    ///   size for a model, the request will fail with a 400 error.
+    ///
+    /// This type is open: it accepts values the spec does not list yet.
+    public struct Truncation: OpenAIStringEnum {
+        public let rawValue: String
+
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
+
+        public static let auto: Self = "auto"
+        public static let disabled: Self = "disabled"
+
+        public static var knownValues: [Self] {
+            [.auto, .disabled]
+        }
+    }
+
+    /// The status of the response generation. One of `completed`, `failed`,
+    /// `in_progress`, `cancelled`, `queued`, or `incomplete`.
+    ///
+    /// This type is open: it accepts values the spec does not list yet.
+    public struct Status: OpenAIStringEnum {
+        public let rawValue: String
+
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
+
+        public static let completed: Self = "completed"
+        public static let failed: Self = "failed"
+        public static let inProgress: Self = "in_progress"
+        public static let cancelled: Self = "cancelled"
+        public static let queued: Self = "queued"
+        public static let incomplete: Self = "incomplete"
+
+        public static var knownValues: [Self] {
+            [.completed, .failed, .inProgress, .cancelled, .queued, .incomplete]
+        }
+    }
+
+    /// Details about why the response is incomplete.
+    public struct IncompleteDetails: OpenAIModel {
+        /// The reason why the response is incomplete. `steered` means
+        /// the response stopped at a safe output boundary after a
+        /// WebSocket `response.steer` event. The server can then create
+        /// a successor response automatically with the queued input.
+        public var reason: BetaResponse.IncompleteDetails.Reason?
+
+        public init(reason: BetaResponse.IncompleteDetails.Reason? = nil) {
+            self.reason = reason
+        }
+
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.reason = try container.decodeIfPresent(BetaResponse.IncompleteDetails.Reason.self, forKey: "reason")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.reason, forKey: "reason")
+        }
+
+        /// The reason why the response is incomplete. `steered` means
+        /// the response stopped at a safe output boundary after a
+        /// WebSocket `response.steer` event. The server can then create
+        /// a successor response automatically with the queued input.
+        ///
+        /// This type is open: it accepts values the spec does not list yet.
+        public struct Reason: OpenAIStringEnum {
+            public let rawValue: String
+
+            public init(rawValue: String) {
+                self.rawValue = rawValue
+            }
+
+            public static let maxOutputTokens: Self = "max_output_tokens"
+            public static let maxMessages: Self = "max_messages"
+            public static let contentFilter: Self = "content_filter"
+            public static let steered: Self = "steered"
+
+            public static var knownValues: [Self] {
+                [.maxOutputTokens, .maxMessages, .contentFilter, .steered]
+            }
+        }
+    }
+
+    /// A system (or developer) message inserted into the model's context.
+    ///
+    /// When using along with `previous_response_id`, the instructions from a previous
+    /// response will not be carried over to the next response. This makes it simple
+    /// to swap out system (or developer) messages in new responses.
+    public indirect enum Instructions: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+        /// A text input to the model, equivalent to a text input with the
+        /// `developer` role.
+        case string(String)
+        /// A list of one or many input items to the model, containing
+        /// different content types.
+        case inputItemList([BetaInputItem])
+        /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
+        case unknown(JSONValue)
+
+        public init(stringLiteral value: String) {
+            self = .string(value)
+        }
+
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            if let value = try? container.decode(String.self) {
+                self = .string(value)
+                return
+            }
+            if let value = try? container.decode([BetaInputItem].self) {
+                self = .inputItemList(value)
+                return
+            }
+            self = .unknown(try container.decode(JSONValue.self))
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.singleValueContainer()
+            switch self {
+            case .string(let value):
+                try container.encode(value)
+            case .inputItemList(let value):
+                try container.encode(value)
+            case .unknown(let value):
+                try container.encode(value)
+            }
+        }
+    }
+}
+
+/// Emitted when there is a partial audio response.
+public struct BetaResponseAudioDeltaEvent: OpenAIModel {
+    /// The agent that owns this multi-agent streaming event.
+    public var agent: BetaAgentTag?
+    /// The type of the event. Always `response.audio.delta`.
+    public var type: String = "response.audio.delta"
+    /// A sequence number for this chunk of the stream response.
+    public var sequenceNumber: Int
+    /// A chunk of Base64 encoded response audio bytes.
+    public var delta: String
+
+    public init(
+        sequenceNumber: Int,
+        delta: String,
+        agent: BetaAgentTag? = nil
+    ) {
+        self.sequenceNumber = sequenceNumber
+        self.delta = delta
+        self.agent = agent
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.audio.delta"
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+        self.delta = try container.decode(String.self, forKey: "delta")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+        try container.encode(self.delta, forKey: "delta")
+    }
+}
+
+/// Emitted when the audio response is complete.
+public struct BetaResponseAudioDoneEvent: OpenAIModel {
+    /// The agent that owns this multi-agent streaming event.
+    public var agent: BetaAgentTag?
+    /// The type of the event. Always `response.audio.done`.
+    public var type: String = "response.audio.done"
+    /// The sequence number of the delta.
+    public var sequenceNumber: Int
+
+    public init(sequenceNumber: Int, agent: BetaAgentTag? = nil) {
+        self.sequenceNumber = sequenceNumber
+        self.agent = agent
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.audio.done"
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+    }
+}
+
+/// Emitted when there is a partial transcript of audio.
+public struct BetaResponseAudioTranscriptDeltaEvent: OpenAIModel {
+    /// The agent that owns this multi-agent streaming event.
+    public var agent: BetaAgentTag?
+    /// The type of the event. Always `response.audio.transcript.delta`.
+    public var type: String = "response.audio.transcript.delta"
+    /// The partial transcript of the audio response.
+    public var delta: String
+    /// The sequence number of this event.
+    public var sequenceNumber: Int
+
+    public init(
+        delta: String,
+        sequenceNumber: Int,
+        agent: BetaAgentTag? = nil
+    ) {
+        self.delta = delta
+        self.sequenceNumber = sequenceNumber
+        self.agent = agent
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.audio.transcript.delta"
+        self.delta = try container.decode(String.self, forKey: "delta")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.delta, forKey: "delta")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+    }
+}
+
+/// Emitted when the full audio transcript is completed.
+public struct BetaResponseAudioTranscriptDoneEvent: OpenAIModel {
+    /// The agent that owns this multi-agent streaming event.
+    public var agent: BetaAgentTag?
+    /// The type of the event. Always `response.audio.transcript.done`.
+    public var type: String = "response.audio.transcript.done"
+    /// The sequence number of this event.
+    public var sequenceNumber: Int
+
+    public init(sequenceNumber: Int, agent: BetaAgentTag? = nil) {
+        self.sequenceNumber = sequenceNumber
+        self.agent = agent
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.audio.transcript.done"
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+    }
+}
+
+/// Emitted when a partial code snippet is streamed by the code interpreter.
+public struct BetaResponseCodeInterpreterCallCodeDeltaEvent: OpenAIModel {
+    /// The agent that owns this multi-agent streaming event.
+    public var agent: BetaAgentTag?
+    /// The type of the event. Always `response.code_interpreter_call_code.delta`.
+    public var type: String = "response.code_interpreter_call_code.delta"
+    /// The index of the output item in the response for which the code is being streamed.
+    public var outputIndex: Int
+    /// The unique identifier of the code interpreter tool call item.
+    public var itemID: String
+    /// The partial code snippet being streamed by the code interpreter.
+    public var delta: String
+    /// The sequence number of this event, used to order streaming events.
+    public var sequenceNumber: Int
+
+    public init(
+        outputIndex: Int,
+        itemID: String,
+        delta: String,
+        sequenceNumber: Int,
+        agent: BetaAgentTag? = nil
+    ) {
+        self.outputIndex = outputIndex
+        self.itemID = itemID
+        self.delta = delta
+        self.sequenceNumber = sequenceNumber
+        self.agent = agent
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.code_interpreter_call_code.delta"
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.delta = try container.decode(String.self, forKey: "delta")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.delta, forKey: "delta")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+    }
+}
+
+/// Emitted when the code snippet is finalized by the code interpreter.
+public struct BetaResponseCodeInterpreterCallCodeDoneEvent: OpenAIModel {
+    /// The agent that owns this multi-agent streaming event.
+    public var agent: BetaAgentTag?
+    /// The type of the event. Always `response.code_interpreter_call_code.done`.
+    public var type: String = "response.code_interpreter_call_code.done"
+    /// The index of the output item in the response for which the code is finalized.
+    public var outputIndex: Int
+    /// The unique identifier of the code interpreter tool call item.
+    public var itemID: String
+    /// The final code snippet output by the code interpreter.
+    public var code: String
+    /// The sequence number of this event, used to order streaming events.
+    public var sequenceNumber: Int
+
+    public init(
+        outputIndex: Int,
+        itemID: String,
+        code: String,
+        sequenceNumber: Int,
+        agent: BetaAgentTag? = nil
+    ) {
+        self.outputIndex = outputIndex
+        self.itemID = itemID
+        self.code = code
+        self.sequenceNumber = sequenceNumber
+        self.agent = agent
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.code_interpreter_call_code.done"
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.code = try container.decode(String.self, forKey: "code")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.code, forKey: "code")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+    }
+}
+
+/// Emitted when the code interpreter call is completed.
+public struct BetaResponseCodeInterpreterCallCompletedEvent: OpenAIModel {
+    /// The agent that owns this multi-agent streaming event.
+    public var agent: BetaAgentTag?
+    /// The type of the event. Always `response.code_interpreter_call.completed`.
+    public var type: String = "response.code_interpreter_call.completed"
+    /// The index of the output item in the response for which the code interpreter call is completed.
+    public var outputIndex: Int
+    /// The unique identifier of the code interpreter tool call item.
+    public var itemID: String
+    /// The sequence number of this event, used to order streaming events.
+    public var sequenceNumber: Int
+
+    public init(
+        outputIndex: Int,
+        itemID: String,
+        sequenceNumber: Int,
+        agent: BetaAgentTag? = nil
+    ) {
+        self.outputIndex = outputIndex
+        self.itemID = itemID
+        self.sequenceNumber = sequenceNumber
+        self.agent = agent
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.code_interpreter_call.completed"
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+    }
+}
+
+/// Emitted when a code interpreter call is in progress.
+public struct BetaResponseCodeInterpreterCallInProgressEvent: OpenAIModel {
+    /// The agent that owns this multi-agent streaming event.
+    public var agent: BetaAgentTag?
+    /// The type of the event. Always `response.code_interpreter_call.in_progress`.
+    public var type: String = "response.code_interpreter_call.in_progress"
+    /// The index of the output item in the response for which the code interpreter call is in progress.
+    public var outputIndex: Int
+    /// The unique identifier of the code interpreter tool call item.
+    public var itemID: String
+    /// The sequence number of this event, used to order streaming events.
+    public var sequenceNumber: Int
+
+    public init(
+        outputIndex: Int,
+        itemID: String,
+        sequenceNumber: Int,
+        agent: BetaAgentTag? = nil
+    ) {
+        self.outputIndex = outputIndex
+        self.itemID = itemID
+        self.sequenceNumber = sequenceNumber
+        self.agent = agent
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.code_interpreter_call.in_progress"
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+    }
+}
+
+/// Emitted when the code interpreter is actively interpreting the code snippet.
+public struct BetaResponseCodeInterpreterCallInterpretingEvent: OpenAIModel {
+    /// The agent that owns this multi-agent streaming event.
+    public var agent: BetaAgentTag?
+    /// The type of the event. Always `response.code_interpreter_call.interpreting`.
+    public var type: String = "response.code_interpreter_call.interpreting"
+    /// The index of the output item in the response for which the code interpreter is interpreting code.
+    public var outputIndex: Int
+    /// The unique identifier of the code interpreter tool call item.
+    public var itemID: String
+    /// The sequence number of this event, used to order streaming events.
+    public var sequenceNumber: Int
+
+    public init(
+        outputIndex: Int,
+        itemID: String,
+        sequenceNumber: Int,
+        agent: BetaAgentTag? = nil
+    ) {
+        self.outputIndex = outputIndex
+        self.itemID = itemID
+        self.sequenceNumber = sequenceNumber
+        self.agent = agent
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.code_interpreter_call.interpreting"
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+    }
+}
+
+/// Emitted when new summary content is sampled for a compaction trigger. Contains no summary content.
+public struct BetaResponseCompactionCompactingStreamingEvent: OpenAIModel {
+    /// The type of the event, always `response.compaction.compacting`.
+    public var type: String = "response.compaction.compacting"
+    /// The sequence number of the event that was emitted.
+    public var sequenceNumber: Int
+    /// The agent that owns this multi-agent streaming event.
+    public var agent: BetaAgentTag?
+    /// The index of the compaction output item.
+    public var outputIndex: Int
+    /// The ID of the compaction output item.
+    public var itemID: String
+
+    public init(
+        sequenceNumber: Int,
+        outputIndex: Int,
+        itemID: String,
+        agent: BetaAgentTag? = nil
+    ) {
+        self.sequenceNumber = sequenceNumber
+        self.outputIndex = outputIndex
+        self.itemID = itemID
+        self.agent = agent
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.compaction.compacting"
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.itemID, forKey: "item_id")
+    }
+}
+
+/// Emitted when the model response is complete.
+public struct BetaResponseCompletedEvent: OpenAIModel {
+    /// The agent that owns this multi-agent streaming event.
+    public var agent: BetaAgentTag?
+    /// The type of the event. Always `response.completed`.
+    public var type: String = "response.completed"
+    /// Properties of the completed response.
+    public var response: BetaResponse
+    /// The sequence number for this event.
+    public var sequenceNumber: Int
+
+    public init(
+        response: BetaResponse,
+        sequenceNumber: Int,
+        agent: BetaAgentTag? = nil
+    ) {
+        self.response = response
+        self.sequenceNumber = sequenceNumber
+        self.agent = agent
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.completed"
+        self.response = try container.decode(BetaResponse.self, forKey: "response")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.response, forKey: "response")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+    }
+}
+
+/// A configuration update for subsequent responses. Each setting stays in effect
+/// until a later update replaces that setting.
+public struct BetaResponseConfigurationUpdate: OpenAIModel {
+    /// The agent that produced this item.
+    public var agent: BetaAgentTag?
+    /// The unique ID of the configuration update item.
+    public var id: String
+    /// The item type. Always `configuration_update`.
+    public var type: String = "configuration_update"
+    /// The reasoning configuration applied by this update.
+    public var reasoning: BetaResponseConfigurationUpdate.Reasoning?
+    /// The text output configuration for subsequent responses.
+    public var text: BetaResponseConfigurationUpdate.TextValue?
+
+    public init(
+        id: String,
+        agent: BetaAgentTag? = nil,
+        reasoning: BetaResponseConfigurationUpdate.Reasoning? = nil,
+        text: BetaResponseConfigurationUpdate.TextValue? = nil
+    ) {
+        self.id = id
+        self.agent = agent
+        self.reasoning = reasoning
+        self.text = text
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.id = try container.decode(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "configuration_update"
+        self.reasoning = try container.decodeIfPresent(BetaResponseConfigurationUpdate.Reasoning.self, forKey: "reasoning")
+        self.text = try container.decodeIfPresent(BetaResponseConfigurationUpdate.TextValue.self, forKey: "text")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.reasoning, forKey: "reasoning")
+        try container.encodeIfPresent(self.text, forKey: "text")
+    }
+
+    /// The reasoning configuration applied by this update.
+    public struct Reasoning: OpenAIModel {
+        /// The reasoning effort used for subsequent responses until another
+        /// configuration update replaces it.
+        public var effort: BetaReasoningEffort?
+
+        public init(effort: BetaReasoningEffort? = nil) {
+            self.effort = effort
+        }
+
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.effort = try container.decodeIfPresent(BetaReasoningEffort.self, forKey: "effort")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.effort, forKey: "effort")
+        }
+    }
+
+    /// The text output configuration for subsequent responses.
+    public struct TextValue: OpenAIModel {
+        /// Use a JSON schema for structured output or text to return to plain text.
+        public var format: BetaResponseConfigurationUpdate.TextValue.Format
+
+        public init(format: BetaResponseConfigurationUpdate.TextValue.Format) {
+            self.format = format
+        }
+
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.format = try container.decode(BetaResponseConfigurationUpdate.TextValue.Format.self, forKey: "format")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.format, forKey: "format")
+        }
+
+        /// Use a JSON schema for structured output or text to return to plain text.
+        ///
+        /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
+        public indirect enum Format: OpenAIModel {
+            /// `type`: `text`
+            case text(BetaResponseFormatText)
+            /// `type`: `json_schema`
+            case jsonSchema(BetaTextResponseFormatJsonSchema)
+            /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
+            case unknown(JSONValue)
+
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.singleValueContainer()
+                if let keyed = try? decoder.container(keyedBy: OpenAIDynamicCodingKey.self),
+                   let discriminator = try? keyed.decode(String.self, forKey: OpenAIDynamicCodingKey("type")) {
+                    switch discriminator {
+                    case "text":
+                        self = .text(try container.decode(BetaResponseFormatText.self))
+                        return
+                    case "json_schema":
+                        self = .jsonSchema(try container.decode(BetaTextResponseFormatJsonSchema.self))
+                        return
+                    default:
+                        break
+                    }
+                }
+                self = .unknown(try container.decode(JSONValue.self))
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.singleValueContainer()
+                switch self {
+                case .text(let value):
+                    try container.encode(value)
+                case .jsonSchema(let value):
+                    try container.encode(value)
+                case .unknown(let value):
+                    try container.encode(value)
+                }
+            }
+        }
+    }
+}
+
+/// An update to the conversation's response configuration. Supply reasoning,
+/// text, or both. Each setting stays in effect until a later update replaces it.
+public struct BetaResponseConfigurationUpdateItemParam: OpenAIModel {
+    public var agent: BetaAgentTagParam?
+    public var id: String?
+    /// The item type. Always `configuration_update`.
+    public var type: String = "configuration_update"
+    /// Updates to reasoning configuration. Only effort is supported.
+    public var reasoning: BetaResponseConfigurationUpdateItemParam.Reasoning?
+    /// The text output configuration for subsequent responses.
+    public var text: BetaResponseConfigurationUpdateItemParam.TextValue?
+
+    public init(
+        agent: BetaAgentTagParam? = nil,
+        id: String? = nil,
+        reasoning: BetaResponseConfigurationUpdateItemParam.Reasoning? = nil,
+        text: BetaResponseConfigurationUpdateItemParam.TextValue? = nil
+    ) {
+        self.agent = agent
+        self.id = id
+        self.reasoning = reasoning
+        self.text = text
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTagParam.self, forKey: "agent")
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "configuration_update"
+        self.reasoning = try container.decodeIfPresent(BetaResponseConfigurationUpdateItemParam.Reasoning.self, forKey: "reasoning")
+        self.text = try container.decodeIfPresent(BetaResponseConfigurationUpdateItemParam.TextValue.self, forKey: "text")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.reasoning, forKey: "reasoning")
+        try container.encodeIfPresent(self.text, forKey: "text")
+    }
+
+    /// Updates to reasoning configuration. Only effort is supported.
+    public struct Reasoning: OpenAIModel {
+        /// The reasoning effort to use for subsequent responses until another
+        /// configuration update replaces it.
+        public var effort: BetaReasoningEffort?
+
+        public init(effort: BetaReasoningEffort? = nil) {
+            self.effort = effort
+        }
+
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.effort = try container.decodeIfPresent(BetaReasoningEffort.self, forKey: "effort")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.effort, forKey: "effort")
+        }
+    }
+
+    /// The text output configuration for subsequent responses.
+    public struct TextValue: OpenAIModel {
+        /// Use a JSON schema for structured output or text to return to plain text.
+        public var format: BetaResponseConfigurationUpdateItemParam.TextValue.Format
+
+        public init(format: BetaResponseConfigurationUpdateItemParam.TextValue.Format) {
+            self.format = format
+        }
+
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.format = try container.decode(BetaResponseConfigurationUpdateItemParam.TextValue.Format.self, forKey: "format")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.format, forKey: "format")
+        }
+
+        /// Use a JSON schema for structured output or text to return to plain text.
+        ///
+        /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
+        public indirect enum Format: OpenAIModel {
+            /// `type`: `text`
+            case text(BetaResponseFormatText)
+            /// `type`: `json_schema`
+            case jsonSchema(BetaTextResponseFormatJsonSchema)
+            /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
+            case unknown(JSONValue)
+
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.singleValueContainer()
+                if let keyed = try? decoder.container(keyedBy: OpenAIDynamicCodingKey.self),
+                   let discriminator = try? keyed.decode(String.self, forKey: OpenAIDynamicCodingKey("type")) {
+                    switch discriminator {
+                    case "text":
+                        self = .text(try container.decode(BetaResponseFormatText.self))
+                        return
+                    case "json_schema":
+                        self = .jsonSchema(try container.decode(BetaTextResponseFormatJsonSchema.self))
+                        return
+                    default:
+                        break
+                    }
+                }
+                self = .unknown(try container.decode(JSONValue.self))
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.singleValueContainer()
+                switch self {
+                case .text(let value):
+                    try container.encode(value)
+                case .jsonSchema(let value):
+                    try container.encode(value)
+                case .unknown(let value):
+                    try container.encode(value)
+                }
+            }
+        }
+    }
+}
+
+/// Emitted when a new content part is added.
+public struct BetaResponseContentPartAddedEvent: OpenAIModel {
+    /// The agent that owns this multi-agent streaming event.
+    public var agent: BetaAgentTag?
+    /// The type of the event. Always `response.content_part.added`.
+    public var type: String = "response.content_part.added"
+    /// The ID of the output item that the content part was added to.
+    public var itemID: String
+    /// The index of the output item that the content part was added to.
+    public var outputIndex: Int
+    /// The index of the content part that was added.
+    public var contentIndex: Int
+    /// The content part that was added.
+    public var part: BetaOutputContent
+    /// The sequence number of this event.
+    public var sequenceNumber: Int
+
+    public init(
+        itemID: String,
+        outputIndex: Int,
+        contentIndex: Int,
+        part: BetaOutputContent,
+        sequenceNumber: Int,
+        agent: BetaAgentTag? = nil
+    ) {
+        self.itemID = itemID
+        self.outputIndex = outputIndex
+        self.contentIndex = contentIndex
+        self.part = part
+        self.sequenceNumber = sequenceNumber
+        self.agent = agent
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.content_part.added"
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.contentIndex = try container.decode(Int.self, forKey: "content_index")
+        self.part = try container.decode(BetaOutputContent.self, forKey: "part")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.contentIndex, forKey: "content_index")
+        try container.encode(self.part, forKey: "part")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+    }
+}
+
+/// Emitted when a content part is done.
+public struct BetaResponseContentPartDoneEvent: OpenAIModel {
+    /// The agent that owns this multi-agent streaming event.
+    public var agent: BetaAgentTag?
+    /// The type of the event. Always `response.content_part.done`.
+    public var type: String = "response.content_part.done"
+    /// The ID of the output item that the content part was added to.
+    public var itemID: String
+    /// The index of the output item that the content part was added to.
+    public var outputIndex: Int
+    /// The index of the content part that is done.
+    public var contentIndex: Int
+    /// The sequence number of this event.
+    public var sequenceNumber: Int
+    /// The content part that is done.
+    public var part: BetaOutputContent
+
+    public init(
+        itemID: String,
+        outputIndex: Int,
+        contentIndex: Int,
+        sequenceNumber: Int,
+        part: BetaOutputContent,
+        agent: BetaAgentTag? = nil
+    ) {
+        self.itemID = itemID
+        self.outputIndex = outputIndex
+        self.contentIndex = contentIndex
+        self.sequenceNumber = sequenceNumber
+        self.part = part
+        self.agent = agent
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.content_part.done"
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.contentIndex = try container.decode(Int.self, forKey: "content_index")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+        self.part = try container.decode(BetaOutputContent.self, forKey: "part")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.contentIndex, forKey: "content_index")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+        try container.encode(self.part, forKey: "part")
+    }
+}
+
+/// The conversation that this response belonged to. Input items and output items from this response were automatically added to this conversation.
+public struct BetaResponseConversation: OpenAIModel {
+    /// The unique ID of the conversation that this response was associated with.
+    public var id: String
+
+    public init(id: String) {
+        self.id = id
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+    }
+}
+
+/// An event that is emitted when a response is created.
+public struct BetaResponseCreatedEvent: OpenAIModel {
+    /// The agent that owns this multi-agent streaming event.
+    public var agent: BetaAgentTag?
+    /// The type of the event. Always `response.created`.
+    public var type: String = "response.created"
+    /// The response that was created.
+    public var response: BetaResponse
+    /// The sequence number for this event.
+    public var sequenceNumber: Int
+
+    public init(
+        response: BetaResponse,
+        sequenceNumber: Int,
+        agent: BetaAgentTag? = nil
+    ) {
+        self.response = response
+        self.sequenceNumber = sequenceNumber
+        self.agent = agent
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.created"
+        self.response = try container.decode(BetaResponse.self, forKey: "response")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.response, forKey: "response")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+    }
+}
+
+/// Event representing a delta (partial update) to the input of a custom tool call.
+public struct BetaResponseCustomToolCallInputDeltaEvent: OpenAIModel {
+    /// The agent that owns this multi-agent streaming event.
+    public var agent: BetaAgentTag?
+    /// The event type identifier.
+    public var type: String = "response.custom_tool_call_input.delta"
+    /// The sequence number of this event.
+    public var sequenceNumber: Int
+    /// The index of the output this delta applies to.
+    public var outputIndex: Int
+    /// Unique identifier for the API item associated with this event.
+    public var itemID: String
+    /// The incremental input data (delta) for the custom tool call.
+    public var delta: String
+
+    public init(
+        sequenceNumber: Int,
+        outputIndex: Int,
+        itemID: String,
+        delta: String,
+        agent: BetaAgentTag? = nil
+    ) {
+        self.sequenceNumber = sequenceNumber
+        self.outputIndex = outputIndex
+        self.itemID = itemID
+        self.delta = delta
+        self.agent = agent
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.custom_tool_call_input.delta"
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.delta = try container.decode(String.self, forKey: "delta")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.delta, forKey: "delta")
+    }
+}
+
+/// Event indicating that input for a custom tool call is complete.
+public struct BetaResponseCustomToolCallInputDoneEvent: OpenAIModel {
+    /// The agent that owns this multi-agent streaming event.
+    public var agent: BetaAgentTag?
+    /// The event type identifier.
+    public var type: String = "response.custom_tool_call_input.done"
+    /// The sequence number of this event.
+    public var sequenceNumber: Int
+    /// The index of the output this event applies to.
+    public var outputIndex: Int
+    /// Unique identifier for the API item associated with this event.
+    public var itemID: String
+    /// The complete input data for the custom tool call.
+    public var input: String
+
+    public init(
+        input: String,
+        sequenceNumber: Int,
+        outputIndex: Int,
+        itemID: String,
+        agent: BetaAgentTag? = nil
+    ) {
+        self.input = input
+        self.sequenceNumber = sequenceNumber
+        self.outputIndex = outputIndex
+        self.itemID = itemID
+        self.agent = agent
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.custom_tool_call_input.done"
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.input = try container.decode(String.self, forKey: "input")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.input, forKey: "input")
+    }
+}
+
+/// An error object returned when the model fails to generate a Response.
+public struct BetaResponseError: OpenAIModel {
+    /// The original error type, or null if it was not recorded.
+    public var type: String?
+    /// The request parameter associated with the error, or null if none was recorded.
+    public var param: String?
+    public var code: BetaResponseErrorCode
+    /// A human-readable description of the error.
+    public var message: String
+    public var misalignment: BetaMisalignmentErrorDetailsResource?
+
+    public init(
+        code: BetaResponseErrorCode,
+        message: String,
+        type: String? = nil,
+        param: String? = nil,
+        misalignment: BetaMisalignmentErrorDetailsResource? = nil
+    ) {
+        self.code = code
+        self.message = message
+        self.type = type
+        self.param = param
+        self.misalignment = misalignment
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type")
+        self.param = try container.decodeIfPresent(String.self, forKey: "param")
+        self.code = try container.decode(BetaResponseErrorCode.self, forKey: "code")
+        self.message = try container.decode(String.self, forKey: "message")
+        self.misalignment = try container.decodeIfPresent(BetaMisalignmentErrorDetailsResource.self, forKey: "misalignment")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.type, forKey: "type")
+        try container.encodeIfPresent(self.param, forKey: "param")
+        try container.encode(self.code, forKey: "code")
+        try container.encode(self.message, forKey: "message")
+        try container.encodeIfPresent(self.misalignment, forKey: "misalignment")
+    }
+}
+
+/// The error code for the response.
+///
+/// This type is open: it accepts values the spec does not list yet.
+public struct BetaResponseErrorCode: OpenAIStringEnum {
+    public let rawValue: String
+
+    public init(rawValue: String) {
+        self.rawValue = rawValue
+    }
+
+    public static let serverError: Self = "server_error"
+    public static let rateLimitExceeded: Self = "rate_limit_exceeded"
+    public static let invalidPrompt: Self = "invalid_prompt"
+    public static let dataResidencyMismatch: Self = "data_residency_mismatch"
+    public static let bioPolicy: Self = "bio_policy"
+    public static let misalignmentPolicyViolation: Self = "misalignment_policy_violation"
+    public static let vectorStoreTimeout: Self = "vector_store_timeout"
+    public static let invalidImage: Self = "invalid_image"
+    public static let invalidImageFormat: Self = "invalid_image_format"
+    public static let invalidBase64Image: Self = "invalid_base64_image"
+    public static let invalidImageUrl: Self = "invalid_image_url"
+    public static let imageTooLarge: Self = "image_too_large"
+    public static let imageTooSmall: Self = "image_too_small"
+    public static let imageParseError: Self = "image_parse_error"
+    public static let imageContentPolicyViolation: Self = "image_content_policy_violation"
+    public static let invalidImageMode: Self = "invalid_image_mode"
+    public static let imageFileTooLarge: Self = "image_file_too_large"
+    public static let unsupportedImageMediaType: Self = "unsupported_image_media_type"
+    public static let emptyImageFile: Self = "empty_image_file"
+    public static let failedToDownloadImage: Self = "failed_to_download_image"
+    public static let imageFileNotFound: Self = "image_file_not_found"
+
+    public static var knownValues: [Self] {
+        [.serverError, .rateLimitExceeded, .invalidPrompt, .dataResidencyMismatch, .bioPolicy, .misalignmentPolicyViolation, .vectorStoreTimeout, .invalidImage, .invalidImageFormat, .invalidBase64Image, .invalidImageUrl, .imageTooLarge, .imageTooSmall, .imageParseError, .imageContentPolicyViolation, .invalidImageMode, .imageFileTooLarge, .unsupportedImageMediaType, .emptyImageFile, .failedToDownloadImage, .imageFileNotFound]
+    }
+}
+
+/// Emitted when an error occurs.
+public struct BetaResponseErrorEvent: OpenAIModel {
+    /// The agent that owns this multi-agent streaming event.
+    public var agent: BetaAgentTag?
+    /// The type of the event. Always `error`.
+    public var type: String = "error"
+    public var code: String?
+    /// The error message.
+    public var message: String
+    public var param: String?
+    /// The sequence number of this event.
+    public var sequenceNumber: Int
+
+    public init(
+        message: String,
+        sequenceNumber: Int,
+        agent: BetaAgentTag? = nil,
+        code: String? = nil,
+        param: String? = nil
+    ) {
+        self.message = message
+        self.sequenceNumber = sequenceNumber
+        self.agent = agent
+        self.code = code
+        self.param = param
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "error"
+        self.code = try container.decodeIfPresent(String.self, forKey: "code")
+        self.message = try container.decode(String.self, forKey: "message")
+        self.param = try container.decodeIfPresent(String.self, forKey: "param")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.code, forKey: "code")
+        try container.encode(self.message, forKey: "message")
+        try container.encodeIfPresent(self.param, forKey: "param")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+    }
+}
+
+/// An event that is emitted when a response fails.
+public struct BetaResponseFailedEvent: OpenAIModel {
+    /// The agent that owns this multi-agent streaming event.
+    public var agent: BetaAgentTag?
+    /// The type of the event. Always `response.failed`.
+    public var type: String = "response.failed"
+    /// The sequence number of this event.
+    public var sequenceNumber: Int
+    /// The response that failed.
+    public var response: BetaResponse
+
+    public init(
+        sequenceNumber: Int,
+        response: BetaResponse,
+        agent: BetaAgentTag? = nil
+    ) {
+        self.sequenceNumber = sequenceNumber
+        self.response = response
+        self.agent = agent
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.failed"
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+        self.response = try container.decode(BetaResponse.self, forKey: "response")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+        try container.encode(self.response, forKey: "response")
+    }
+}
+
+/// Emitted when a file search call is completed (results found).
+public struct BetaResponseFileSearchCallCompletedEvent: OpenAIModel {
+    /// The agent that owns this multi-agent streaming event.
+    public var agent: BetaAgentTag?
+    /// The type of the event. Always `response.file_search_call.completed`.
+    public var type: String = "response.file_search_call.completed"
+    /// The index of the output item that the file search call is initiated.
+    public var outputIndex: Int
+    /// The ID of the output item that the file search call is initiated.
+    public var itemID: String
+    /// The sequence number of this event.
+    public var sequenceNumber: Int
+
+    public init(
+        outputIndex: Int,
+        itemID: String,
+        sequenceNumber: Int,
+        agent: BetaAgentTag? = nil
+    ) {
+        self.outputIndex = outputIndex
+        self.itemID = itemID
+        self.sequenceNumber = sequenceNumber
+        self.agent = agent
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.file_search_call.completed"
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+    }
+}
+
+/// Emitted when a file search call is initiated.
+public struct BetaResponseFileSearchCallInProgressEvent: OpenAIModel {
+    /// The agent that owns this multi-agent streaming event.
+    public var agent: BetaAgentTag?
+    /// The type of the event. Always `response.file_search_call.in_progress`.
+    public var type: String = "response.file_search_call.in_progress"
+    /// The index of the output item that the file search call is initiated.
+    public var outputIndex: Int
+    /// The ID of the output item that the file search call is initiated.
+    public var itemID: String
+    /// The sequence number of this event.
+    public var sequenceNumber: Int
+
+    public init(
+        outputIndex: Int,
+        itemID: String,
+        sequenceNumber: Int,
+        agent: BetaAgentTag? = nil
+    ) {
+        self.outputIndex = outputIndex
+        self.itemID = itemID
+        self.sequenceNumber = sequenceNumber
+        self.agent = agent
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.file_search_call.in_progress"
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+    }
+}
+
+/// Emitted when a file search is currently searching.
+public struct BetaResponseFileSearchCallSearchingEvent: OpenAIModel {
+    /// The agent that owns this multi-agent streaming event.
+    public var agent: BetaAgentTag?
+    /// The type of the event. Always `response.file_search_call.searching`.
+    public var type: String = "response.file_search_call.searching"
+    /// The index of the output item that the file search call is searching.
+    public var outputIndex: Int
+    /// The ID of the output item that the file search call is initiated.
+    public var itemID: String
+    /// The sequence number of this event.
+    public var sequenceNumber: Int
+
+    public init(
+        outputIndex: Int,
+        itemID: String,
+        sequenceNumber: Int,
+        agent: BetaAgentTag? = nil
+    ) {
+        self.outputIndex = outputIndex
+        self.itemID = itemID
+        self.sequenceNumber = sequenceNumber
+        self.agent = agent
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.file_search_call.searching"
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+    }
+}
+
+/// JSON object response format. An older method of generating JSON responses.
+/// Using `json_schema` is recommended for models that support it. Note that the
+/// model will not generate JSON without a system or user message instructing it
+/// to do so.
+public struct BetaResponseFormatJsonObject: OpenAIModel {
+    /// The type of response format being defined. Always `json_object`.
+    public var type: String = "json_object"
+
+    public init() {
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "json_object"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+    }
+}
+
+/// The schema for the response format, described as a JSON Schema object.
+/// Learn how to build JSON schemas [here](https://json-schema.org/).
+public typealias BetaResponseFormatJsonSchemaSchema = JSONObject
+
+/// Default response format. Used to generate text responses.
+public struct BetaResponseFormatText: OpenAIModel {
+    /// The type of response format being defined. Always `text`.
+    public var type: String = "text"
+
+    public init() {
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "text"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+    }
+}
+
+/// Emitted when there is a partial function-call arguments delta.
+public struct BetaResponseFunctionCallArgumentsDeltaEvent: OpenAIModel {
+    /// The agent that owns this multi-agent streaming event.
+    public var agent: BetaAgentTag?
+    /// The type of the event. Always `response.function_call_arguments.delta`.
+    public var type: String = "response.function_call_arguments.delta"
+    /// The ID of the output item that the function-call arguments delta is added to.
+    public var itemID: String
+    /// The index of the output item that the function-call arguments delta is added to.
+    public var outputIndex: Int
+    /// The sequence number of this event.
+    public var sequenceNumber: Int
+    /// The function-call arguments delta that is added.
+    public var delta: String
+
+    public init(
+        itemID: String,
+        outputIndex: Int,
+        sequenceNumber: Int,
+        delta: String,
+        agent: BetaAgentTag? = nil
+    ) {
+        self.itemID = itemID
+        self.outputIndex = outputIndex
+        self.sequenceNumber = sequenceNumber
+        self.delta = delta
+        self.agent = agent
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.function_call_arguments.delta"
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+        self.delta = try container.decode(String.self, forKey: "delta")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+        try container.encode(self.delta, forKey: "delta")
+    }
+}
+
+/// Emitted when function-call arguments are finalized.
+public struct BetaResponseFunctionCallArgumentsDoneEvent: OpenAIModel {
+    /// The agent that owns this multi-agent streaming event.
+    public var agent: BetaAgentTag?
+    public var type: String = "response.function_call_arguments.done"
+    /// The ID of the item.
+    public var itemID: String
+    /// The index of the output item.
+    public var outputIndex: Int
+    /// The sequence number of this event.
+    public var sequenceNumber: Int
+    /// The function-call arguments.
+    public var arguments: String
+
+    public init(
+        itemID: String,
+        outputIndex: Int,
+        sequenceNumber: Int,
+        arguments: String,
+        agent: BetaAgentTag? = nil
+    ) {
+        self.itemID = itemID
+        self.outputIndex = outputIndex
+        self.sequenceNumber = sequenceNumber
+        self.arguments = arguments
+        self.agent = agent
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.function_call_arguments.done"
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+        self.arguments = try container.decode(String.self, forKey: "arguments")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+        try container.encode(self.arguments, forKey: "arguments")
+    }
+}
+
+/// Emitted when an image generation tool call has completed and the final image is available.
+public struct BetaResponseImageGenCallCompletedEvent: OpenAIModel {
+    /// The agent that owns this multi-agent streaming event.
+    public var agent: BetaAgentTag?
+    /// The type of the event. Always 'response.image_generation_call.completed'.
+    public var type: String = "response.image_generation_call.completed"
+    /// The index of the output item in the response's output array.
+    public var outputIndex: Int
+    /// The sequence number of this event.
+    public var sequenceNumber: Int
+    /// The unique identifier of the image generation item being processed.
+    public var itemID: String
+
+    public init(
+        outputIndex: Int,
+        sequenceNumber: Int,
+        itemID: String,
+        agent: BetaAgentTag? = nil
+    ) {
+        self.outputIndex = outputIndex
+        self.sequenceNumber = sequenceNumber
+        self.itemID = itemID
+        self.agent = agent
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.image_generation_call.completed"
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+        try container.encode(self.itemID, forKey: "item_id")
+    }
+}
+
 /// Emitted when an image generation tool call is actively generating an image (intermediate state).
-public struct BetaResponseImageGenCallGeneratingEvent: Codable, Hashable, Sendable {
+public struct BetaResponseImageGenCallGeneratingEvent: OpenAIModel {
     /// The agent that owns this multi-agent streaming event.
     public var agent: BetaAgentTag?
     /// The type of the event. Always 'response.image_generation_call.generating'.
@@ -28,17 +2077,27 @@ public struct BetaResponseImageGenCallGeneratingEvent: Codable, Hashable, Sendab
         self.agent = agent
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case outputIndex = "output_index"
-        case itemID = "item_id"
-        case sequenceNumber = "sequence_number"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.image_generation_call.generating"
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
     }
 }
 
 /// Emitted when an image generation tool call is in progress.
-public struct BetaResponseImageGenCallInProgressEvent: Codable, Hashable, Sendable {
+public struct BetaResponseImageGenCallInProgressEvent: OpenAIModel {
     /// The agent that owns this multi-agent streaming event.
     public var agent: BetaAgentTag?
     /// The type of the event. Always 'response.image_generation_call.in_progress'.
@@ -62,17 +2121,27 @@ public struct BetaResponseImageGenCallInProgressEvent: Codable, Hashable, Sendab
         self.agent = agent
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case outputIndex = "output_index"
-        case itemID = "item_id"
-        case sequenceNumber = "sequence_number"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.image_generation_call.in_progress"
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
     }
 }
 
 /// Emitted when a partial image is available during image generation streaming.
-public struct BetaResponseImageGenCallPartialImageEvent: Codable, Hashable, Sendable {
+public struct BetaResponseImageGenCallPartialImageEvent: OpenAIModel {
     /// The agent that owns this multi-agent streaming event.
     public var agent: BetaAgentTag?
     /// The type of the event. Always 'response.image_generation_call.partial_image'.
@@ -120,23 +2189,39 @@ public struct BetaResponseImageGenCallPartialImageEvent: Codable, Hashable, Send
         self.outputFormat = outputFormat
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case outputIndex = "output_index"
-        case itemID = "item_id"
-        case sequenceNumber = "sequence_number"
-        case partialImageIndex = "partial_image_index"
-        case partialImageB64 = "partial_image_b64"
-        case size
-        case quality
-        case background
-        case outputFormat = "output_format"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.image_generation_call.partial_image"
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+        self.partialImageIndex = try container.decode(Int.self, forKey: "partial_image_index")
+        self.partialImageB64 = try container.decode(String.self, forKey: "partial_image_b64")
+        self.size = try container.decodeIfPresent(String.self, forKey: "size")
+        self.quality = try container.decodeIfPresent(String.self, forKey: "quality")
+        self.background = try container.decodeIfPresent(String.self, forKey: "background")
+        self.outputFormat = try container.decodeIfPresent(String.self, forKey: "output_format")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+        try container.encode(self.partialImageIndex, forKey: "partial_image_index")
+        try container.encode(self.partialImageB64, forKey: "partial_image_b64")
+        try container.encodeIfPresent(self.size, forKey: "size")
+        try container.encodeIfPresent(self.quality, forKey: "quality")
+        try container.encodeIfPresent(self.background, forKey: "background")
+        try container.encodeIfPresent(self.outputFormat, forKey: "output_format")
     }
 }
 
 /// Emitted when the response is in progress.
-public struct BetaResponseInProgressEvent: Codable, Hashable, Sendable {
+public struct BetaResponseInProgressEvent: OpenAIModel {
     /// The agent that owns this multi-agent streaming event.
     public var agent: BetaAgentTag?
     /// The type of the event. Always `response.in_progress`.
@@ -156,11 +2241,20 @@ public struct BetaResponseInProgressEvent: Codable, Hashable, Sendable {
         self.agent = agent
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case response
-        case sequenceNumber = "sequence_number"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.in_progress"
+        self.response = try container.decode(BetaResponse.self, forKey: "response")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.response, forKey: "response")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
     }
 }
 
@@ -169,7 +2263,7 @@ public struct BetaResponseInProgressEvent: Codable, Hashable, Sendable {
 /// Over WebSocket, steering can finish a response with
 /// `response.incomplete_details.reason` set to `steered`, followed automatically
 /// by a successor `response.created` that commits the queued steering input.
-public struct BetaResponseIncompleteEvent: Codable, Hashable, Sendable {
+public struct BetaResponseIncompleteEvent: OpenAIModel {
     /// The agent that owns this multi-agent streaming event.
     public var agent: BetaAgentTag?
     /// The type of the event. Always `response.incomplete`.
@@ -189,17 +2283,26 @@ public struct BetaResponseIncompleteEvent: Codable, Hashable, Sendable {
         self.agent = agent
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case response
-        case sequenceNumber = "sequence_number"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.incomplete"
+        self.response = try container.decode(BetaResponse.self, forKey: "response")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.response, forKey: "response")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
     }
 }
 
 /// Emitted when all injected input items were validated and committed to the
 /// active response.
-public struct BetaResponseInjectCreatedEvent: Codable, Hashable, Sendable {
+public struct BetaResponseInjectCreatedEvent: OpenAIModel {
     /// The event discriminator. Always `response.inject.created`.
     public var type: String = "response.inject.created"
     /// The ID of the response that accepted the input.
@@ -220,18 +2323,27 @@ public struct BetaResponseInjectCreatedEvent: Codable, Hashable, Sendable {
         self.streamID = streamID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case responseID = "response_id"
-        case sequenceNumber = "sequence_number"
-        case streamID = "stream_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.inject.created"
+        self.responseID = try container.decode(String.self, forKey: "response_id")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+        self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.responseID, forKey: "response_id")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+        try container.encodeIfPresent(self.streamID, forKey: "stream_id")
     }
 }
 
 /// Injects input items into an active response over a WebSocket connection.
 /// The items are validated and committed atomically. Currently, the server
 /// accepts client-owned tool outputs that resume a waiting agent.
-public struct BetaResponseInjectEvent: Codable, Hashable, Sendable {
+public struct BetaResponseInjectEvent: OpenAIModel {
     /// The event discriminator. Always `response.inject`.
     public var type: String = "response.inject"
     /// The ID of the active response that should receive the input.
@@ -244,17 +2356,25 @@ public struct BetaResponseInjectEvent: Codable, Hashable, Sendable {
         self.responseID = responseID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case responseID = "response_id"
-        case input
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.inject"
+        self.responseID = try container.decode(String.self, forKey: "response_id")
+        self.input = try container.decode([BetaInputItem].self, forKey: "input")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.responseID, forKey: "response_id")
+        try container.encode(self.input, forKey: "input")
     }
 }
 
 /// Emitted when injected input could not be committed to a response. The event
 /// returns the uncommitted raw input so the client can retry it in another
 /// response when appropriate.
-public struct BetaResponseInjectFailedEvent: Codable, Hashable, Sendable {
+public struct BetaResponseInjectFailedEvent: OpenAIModel {
     /// The event discriminator. Always `response.inject.failed`.
     public var type: String = "response.inject.failed"
     /// The ID of the response that rejected the input.
@@ -283,17 +2403,28 @@ public struct BetaResponseInjectFailedEvent: Codable, Hashable, Sendable {
         self.streamID = streamID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case responseID = "response_id"
-        case input
-        case error
-        case sequenceNumber = "sequence_number"
-        case streamID = "stream_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.inject.failed"
+        self.responseID = try container.decode(String.self, forKey: "response_id")
+        self.input = try container.decode([BetaInputItem].self, forKey: "input")
+        self.error = try container.decode(BetaResponseInjectFailedEvent.ErrorValue.self, forKey: "error")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+        self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.responseID, forKey: "response_id")
+        try container.encode(self.input, forKey: "input")
+        try container.encode(self.error, forKey: "error")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+        try container.encodeIfPresent(self.streamID, forKey: "stream_id")
     }
 
     /// Information about why the input was not committed.
-    public struct ErrorValue: Codable, Hashable, Sendable {
+    public struct ErrorValue: OpenAIModel {
         /// A machine-readable error code.
         public var code: BetaResponseInjectFailedEvent.ErrorValue.Code
         /// A human-readable description of the error.
@@ -304,9 +2435,16 @@ public struct BetaResponseInjectFailedEvent: Codable, Hashable, Sendable {
             self.message = message
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case code
-            case message
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.code = try container.decode(BetaResponseInjectFailedEvent.ErrorValue.Code.self, forKey: "code")
+            self.message = try container.decode(String.self, forKey: "message")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.code, forKey: "code")
+            try container.encode(self.message, forKey: "message")
         }
 
         /// A machine-readable error code.
@@ -330,7 +2468,7 @@ public struct BetaResponseInjectFailedEvent: Codable, Hashable, Sendable {
 }
 
 /// A list of Response items.
-public struct BetaResponseItemList: Codable, Hashable, Sendable {
+public struct BetaResponseItemList: OpenAIModel {
     /// The type of object returned, must be `list`.
     public var object: String = "list"
     /// A list of items used to generate this response.
@@ -354,19 +2492,29 @@ public struct BetaResponseItemList: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case hasMore = "has_more"
-        case firstID = "first_id"
-        case lastID = "last_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([BetaItemResource].self, forKey: "data")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encode(self.hasMore, forKey: "has_more")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
     }
 }
 
 /// A logprob is the logarithmic probability that the model assigns to producing
 /// a particular token at a given position in the sequence. Less-negative (higher)
 /// logprob values indicate greater model confidence in that token choice.
-public struct BetaResponseLogProb: Codable, Hashable, Sendable {
+public struct BetaResponseLogProb: OpenAIModel {
     /// A possible text token.
     public var token: String
     /// The log probability of this token.
@@ -384,13 +2532,21 @@ public struct BetaResponseLogProb: Codable, Hashable, Sendable {
         self.topLogprobs = topLogprobs
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case token
-        case logprob
-        case topLogprobs = "top_logprobs"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.token = try container.decode(String.self, forKey: "token")
+        self.logprob = try container.decode(Double.self, forKey: "logprob")
+        self.topLogprobs = try container.decodeIfPresent([BetaResponseLogProb.TopLogprob].self, forKey: "top_logprobs")
     }
 
-    public struct TopLogprob: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.token, forKey: "token")
+        try container.encode(self.logprob, forKey: "logprob")
+        try container.encodeIfPresent(self.topLogprobs, forKey: "top_logprobs")
+    }
+
+    public struct TopLogprob: OpenAIModel {
         /// A possible text token.
         public var token: String?
         /// The log probability of this token.
@@ -401,15 +2557,22 @@ public struct BetaResponseLogProb: Codable, Hashable, Sendable {
             self.logprob = logprob
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case token
-            case logprob
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.token = try container.decodeIfPresent(String.self, forKey: "token")
+            self.logprob = try container.decodeIfPresent(Double.self, forKey: "logprob")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.token, forKey: "token")
+            try container.encodeIfPresent(self.logprob, forKey: "logprob")
         }
     }
 }
 
 /// Emitted when there is a delta (partial update) to the arguments of an MCP tool call.
-public struct BetaResponseMCPCallArgumentsDeltaEvent: Codable, Hashable, Sendable {
+public struct BetaResponseMCPCallArgumentsDeltaEvent: OpenAIModel {
     /// The agent that owns this multi-agent streaming event.
     public var agent: BetaAgentTag?
     /// The type of the event. Always 'response.mcp_call_arguments.delta'.
@@ -437,18 +2600,29 @@ public struct BetaResponseMCPCallArgumentsDeltaEvent: Codable, Hashable, Sendabl
         self.agent = agent
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case outputIndex = "output_index"
-        case itemID = "item_id"
-        case delta
-        case sequenceNumber = "sequence_number"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.mcp_call_arguments.delta"
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.delta = try container.decode(String.self, forKey: "delta")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.delta, forKey: "delta")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
     }
 }
 
 /// Emitted when the arguments for an MCP tool call are finalized.
-public struct BetaResponseMCPCallArgumentsDoneEvent: Codable, Hashable, Sendable {
+public struct BetaResponseMCPCallArgumentsDoneEvent: OpenAIModel {
     /// The agent that owns this multi-agent streaming event.
     public var agent: BetaAgentTag?
     /// The type of the event. Always 'response.mcp_call_arguments.done'.
@@ -476,18 +2650,29 @@ public struct BetaResponseMCPCallArgumentsDoneEvent: Codable, Hashable, Sendable
         self.agent = agent
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case outputIndex = "output_index"
-        case itemID = "item_id"
-        case arguments
-        case sequenceNumber = "sequence_number"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.mcp_call_arguments.done"
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.arguments = try container.decode(String.self, forKey: "arguments")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.arguments, forKey: "arguments")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
     }
 }
 
 /// Emitted when an MCP  tool call has completed successfully.
-public struct BetaResponseMCPCallCompletedEvent: Codable, Hashable, Sendable {
+public struct BetaResponseMCPCallCompletedEvent: OpenAIModel {
     /// The agent that owns this multi-agent streaming event.
     public var agent: BetaAgentTag?
     /// The type of the event. Always 'response.mcp_call.completed'.
@@ -511,17 +2696,27 @@ public struct BetaResponseMCPCallCompletedEvent: Codable, Hashable, Sendable {
         self.agent = agent
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case itemID = "item_id"
-        case outputIndex = "output_index"
-        case sequenceNumber = "sequence_number"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.mcp_call.completed"
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
     }
 }
 
 /// Emitted when an MCP  tool call has failed.
-public struct BetaResponseMCPCallFailedEvent: Codable, Hashable, Sendable {
+public struct BetaResponseMCPCallFailedEvent: OpenAIModel {
     /// The agent that owns this multi-agent streaming event.
     public var agent: BetaAgentTag?
     /// The type of the event. Always 'response.mcp_call.failed'.
@@ -545,17 +2740,27 @@ public struct BetaResponseMCPCallFailedEvent: Codable, Hashable, Sendable {
         self.agent = agent
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case itemID = "item_id"
-        case outputIndex = "output_index"
-        case sequenceNumber = "sequence_number"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.mcp_call.failed"
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
     }
 }
 
 /// Emitted when an MCP  tool call is in progress.
-public struct BetaResponseMCPCallInProgressEvent: Codable, Hashable, Sendable {
+public struct BetaResponseMCPCallInProgressEvent: OpenAIModel {
     /// The agent that owns this multi-agent streaming event.
     public var agent: BetaAgentTag?
     /// The type of the event. Always 'response.mcp_call.in_progress'.
@@ -579,17 +2784,27 @@ public struct BetaResponseMCPCallInProgressEvent: Codable, Hashable, Sendable {
         self.agent = agent
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case sequenceNumber = "sequence_number"
-        case outputIndex = "output_index"
-        case itemID = "item_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.mcp_call.in_progress"
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.itemID, forKey: "item_id")
     }
 }
 
 /// Emitted when the list of available MCP tools has been successfully retrieved.
-public struct BetaResponseMCPListToolsCompletedEvent: Codable, Hashable, Sendable {
+public struct BetaResponseMCPListToolsCompletedEvent: OpenAIModel {
     /// The agent that owns this multi-agent streaming event.
     public var agent: BetaAgentTag?
     /// The type of the event. Always 'response.mcp_list_tools.completed'.
@@ -613,17 +2828,27 @@ public struct BetaResponseMCPListToolsCompletedEvent: Codable, Hashable, Sendabl
         self.agent = agent
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case itemID = "item_id"
-        case outputIndex = "output_index"
-        case sequenceNumber = "sequence_number"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.mcp_list_tools.completed"
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
     }
 }
 
 /// Emitted when the attempt to list available MCP tools has failed.
-public struct BetaResponseMCPListToolsFailedEvent: Codable, Hashable, Sendable {
+public struct BetaResponseMCPListToolsFailedEvent: OpenAIModel {
     /// The agent that owns this multi-agent streaming event.
     public var agent: BetaAgentTag?
     /// The type of the event. Always 'response.mcp_list_tools.failed'.
@@ -647,17 +2872,27 @@ public struct BetaResponseMCPListToolsFailedEvent: Codable, Hashable, Sendable {
         self.agent = agent
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case itemID = "item_id"
-        case outputIndex = "output_index"
-        case sequenceNumber = "sequence_number"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.mcp_list_tools.failed"
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
     }
 }
 
 /// Emitted when the system is in the process of retrieving the list of available MCP tools.
-public struct BetaResponseMCPListToolsInProgressEvent: Codable, Hashable, Sendable {
+public struct BetaResponseMCPListToolsInProgressEvent: OpenAIModel {
     /// The agent that owns this multi-agent streaming event.
     public var agent: BetaAgentTag?
     /// The type of the event. Always 'response.mcp_list_tools.in_progress'.
@@ -681,17 +2916,27 @@ public struct BetaResponseMCPListToolsInProgressEvent: Codable, Hashable, Sendab
         self.agent = agent
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case itemID = "item_id"
-        case outputIndex = "output_index"
-        case sequenceNumber = "sequence_number"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.mcp_list_tools.in_progress"
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
     }
 }
 
 /// Emitted when a new output item is added.
-public struct BetaResponseOutputItemAddedEvent: Codable, Hashable, Sendable {
+public struct BetaResponseOutputItemAddedEvent: OpenAIModel {
     /// The agent that owns this multi-agent streaming event.
     public var agent: BetaAgentTag?
     /// The type of the event. Always `response.output_item.added`.
@@ -718,17 +2963,27 @@ public struct BetaResponseOutputItemAddedEvent: Codable, Hashable, Sendable {
         self.agent = agent
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case outputIndex = "output_index"
-        case sequenceNumber = "sequence_number"
-        case item
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.output_item.added"
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+        self.item = try container.decode(BetaOutputItem.self, forKey: "item")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+        try container.encode(self.item, forKey: "item")
     }
 }
 
 /// Emitted when an output item is marked done.
-public struct BetaResponseOutputItemDoneEvent: Codable, Hashable, Sendable {
+public struct BetaResponseOutputItemDoneEvent: OpenAIModel {
     /// The agent that owns this multi-agent streaming event.
     public var agent: BetaAgentTag?
     /// The type of the event. Always `response.output_item.done`.
@@ -752,17 +3007,27 @@ public struct BetaResponseOutputItemDoneEvent: Codable, Hashable, Sendable {
         self.agent = agent
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case outputIndex = "output_index"
-        case sequenceNumber = "sequence_number"
-        case item
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.output_item.done"
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+        self.item = try container.decode(BetaOutputItem.self, forKey: "item")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+        try container.encode(self.item, forKey: "item")
     }
 }
 
 /// Emitted when an annotation is added to output text content.
-public struct BetaResponseOutputTextAnnotationAddedEvent: Codable, Hashable, Sendable {
+public struct BetaResponseOutputTextAnnotationAddedEvent: OpenAIModel {
     /// The agent that owns this multi-agent streaming event.
     public var agent: BetaAgentTag?
     /// The type of the event. Always 'response.output_text.annotation.added'.
@@ -798,20 +3063,33 @@ public struct BetaResponseOutputTextAnnotationAddedEvent: Codable, Hashable, Sen
         self.annotation = annotation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case itemID = "item_id"
-        case outputIndex = "output_index"
-        case contentIndex = "content_index"
-        case annotationIndex = "annotation_index"
-        case sequenceNumber = "sequence_number"
-        case annotation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.output_text.annotation.added"
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.contentIndex = try container.decode(Int.self, forKey: "content_index")
+        self.annotationIndex = try container.decode(Int.self, forKey: "annotation_index")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+        self.annotation = try container.decodeIfPresent(BetaAnnotation.self, forKey: "annotation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.contentIndex, forKey: "content_index")
+        try container.encode(self.annotationIndex, forKey: "annotation_index")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+        try container.encodeIfPresent(self.annotation, forKey: "annotation")
     }
 }
 
 /// Options for prompt caching. Supported for `gpt-5.6` and later models. By default, OpenAI automatically chooses one implicit cache breakpoint. You can add explicit breakpoints to content blocks with `prompt_cache_breakpoint`. Each request can write up to four breakpoints. For cache matching, OpenAI considers up to the latest 80 breakpoints in the conversation, without a content-block lookback limit. Set `mode` to `explicit` to disable the implicit breakpoint. The `ttl` defaults to `30m`. Supported lifetimes depend on the API. See the [prompt caching guide](https://developers.openai.com/api/docs/guides/prompt-caching) for current details.
-public struct BetaResponsePromptCacheOptionsParam: Codable, Hashable, Sendable {
+public struct BetaResponsePromptCacheOptionsParam: OpenAIModel {
     /// The minimum lifetime applied to every implicit and explicit cache breakpoint written by the request. Supported values are `30m` (the default) and `12h`. The backend may retain cache entries for longer.
     public var ttl: BetaResponsePromptCacheOptionsParam.Ttl?
     /// Controls whether OpenAI automatically creates an implicit cache breakpoint. Defaults to `implicit`. With `implicit`, OpenAI creates one implicit breakpoint and writes up to the latest three explicit breakpoints in the request. With `explicit`, OpenAI does not create an implicit breakpoint and writes up to the latest four explicit breakpoints. If there are no explicit breakpoints, the request does not use prompt caching.
@@ -832,11 +3110,20 @@ public struct BetaResponsePromptCacheOptionsParam: Codable, Hashable, Sendable {
         self.comparisonResponseID = comparisonResponseID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case ttl
-        case mode
-        case prewarm
-        case comparisonResponseID = "comparison_response_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.ttl = try container.decodeIfPresent(BetaResponsePromptCacheOptionsParam.Ttl.self, forKey: "ttl")
+        self.mode = try container.decodeIfPresent(BetaPromptCacheModeEnum.self, forKey: "mode")
+        self.prewarm = try container.decodeIfPresent(Bool.self, forKey: "prewarm")
+        self.comparisonResponseID = try container.decodeIfPresent(String.self, forKey: "comparison_response_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.ttl, forKey: "ttl")
+        try container.encodeIfPresent(self.mode, forKey: "mode")
+        try container.encodeIfPresent(self.prewarm, forKey: "prewarm")
+        try container.encodeIfPresent(self.comparisonResponseID, forKey: "comparison_response_id")
     }
 
     /// The minimum lifetime applied to every implicit and explicit cache breakpoint written by the request. Supported values are `30m` (the default) and `12h`. The backend may retain cache entries for longer.
@@ -861,7 +3148,7 @@ public struct BetaResponsePromptCacheOptionsParam: Codable, Hashable, Sendable {
 public typealias BetaResponsePromptVariables = [String: BetaResponsePromptVariablesValueItem]
 
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum BetaResponsePromptVariablesValueItem: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+public indirect enum BetaResponsePromptVariablesValueItem: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
     case string(String)
     /// `type`: `input_text`
     case inputText(BetaInputTextContent)
@@ -918,7 +3205,7 @@ public indirect enum BetaResponsePromptVariablesValueItem: Codable, Hashable, Se
     }
 }
 
-public struct BetaResponseProperties: Codable, Hashable, Sendable {
+public struct BetaResponseProperties: OpenAIModel {
     public var previousResponseID: String?
     /// Model ID used to generate the response, like `gpt-6.2-astra`. OpenAI
     /// offers a wide range of models with different capabilities, performance
@@ -952,20 +3239,33 @@ public struct BetaResponseProperties: Codable, Hashable, Sendable {
         self.toolChoice = toolChoice
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case previousResponseID = "previous_response_id"
-        case model
-        case background
-        case maxToolCalls = "max_tool_calls"
-        case text
-        case tools
-        case toolChoice = "tool_choice"
-        case prompt
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.previousResponseID = try container.decodeIfPresent(String.self, forKey: "previous_response_id")
+        self.model = try container.decodeIfPresent(BetaModelIdsResponses.self, forKey: "model")
+        self.background = try container.decodeIfPresent(Bool.self, forKey: "background")
+        self.maxToolCalls = try container.decodeIfPresent(Int.self, forKey: "max_tool_calls")
+        self.text = try container.decodeIfPresent(BetaResponseTextParam.self, forKey: "text")
+        self.tools = try container.decodeIfPresent(BetaToolsArray.self, forKey: "tools")
+        self.toolChoice = try container.decodeIfPresent(BetaToolChoiceParam.self, forKey: "tool_choice")
+        self.prompt = try container.decodeIfPresent(BetaPrompt.self, forKey: "prompt")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.previousResponseID, forKey: "previous_response_id")
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encodeIfPresent(self.background, forKey: "background")
+        try container.encodeIfPresent(self.maxToolCalls, forKey: "max_tool_calls")
+        try container.encodeIfPresent(self.text, forKey: "text")
+        try container.encodeIfPresent(self.tools, forKey: "tools")
+        try container.encodeIfPresent(self.toolChoice, forKey: "tool_choice")
+        try container.encodeIfPresent(self.prompt, forKey: "prompt")
     }
 }
 
 /// Emitted when a response is queued and waiting to be processed.
-public struct BetaResponseQueuedEvent: Codable, Hashable, Sendable {
+public struct BetaResponseQueuedEvent: OpenAIModel {
     /// The agent that owns this multi-agent streaming event.
     public var agent: BetaAgentTag?
     /// The type of the event. Always 'response.queued'.
@@ -985,16 +3285,25 @@ public struct BetaResponseQueuedEvent: Codable, Hashable, Sendable {
         self.agent = agent
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case response
-        case sequenceNumber = "sequence_number"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.queued"
+        self.response = try container.decode(BetaResponse.self, forKey: "response")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.response, forKey: "response")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
     }
 }
 
 /// Emitted when a new reasoning summary part is added.
-public struct BetaResponseReasoningSummaryPartAddedEvent: Codable, Hashable, Sendable {
+public struct BetaResponseReasoningSummaryPartAddedEvent: OpenAIModel {
     /// The agent that owns this multi-agent streaming event.
     public var agent: BetaAgentTag?
     /// The type of the event. Always `response.reasoning_summary_part.added`.
@@ -1026,18 +3335,30 @@ public struct BetaResponseReasoningSummaryPartAddedEvent: Codable, Hashable, Sen
         self.agent = agent
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case itemID = "item_id"
-        case outputIndex = "output_index"
-        case summaryIndex = "summary_index"
-        case sequenceNumber = "sequence_number"
-        case part
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.reasoning_summary_part.added"
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.summaryIndex = try container.decode(Int.self, forKey: "summary_index")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+        self.part = try container.decode(BetaResponseReasoningSummaryPartAddedEvent.Part.self, forKey: "part")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.summaryIndex, forKey: "summary_index")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+        try container.encode(self.part, forKey: "part")
     }
 
     /// The summary part that was added.
-    public struct Part: Codable, Hashable, Sendable {
+    public struct Part: OpenAIModel {
         /// The type of the summary part. Always `summary_text`.
         public var type: String = "summary_text"
         /// The text of the summary part.
@@ -1047,15 +3368,22 @@ public struct BetaResponseReasoningSummaryPartAddedEvent: Codable, Hashable, Sen
             self.text = text
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case text
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "summary_text"
+            self.text = try container.decode(String.self, forKey: "text")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.text, forKey: "text")
         }
     }
 }
 
 /// Emitted when a reasoning summary part is completed.
-public struct BetaResponseReasoningSummaryPartDoneEvent: Codable, Hashable, Sendable {
+public struct BetaResponseReasoningSummaryPartDoneEvent: OpenAIModel {
     /// The agent that owns this multi-agent streaming event.
     public var agent: BetaAgentTag?
     /// The type of the event. Always `response.reasoning_summary_part.done`.
@@ -1090,19 +3418,32 @@ public struct BetaResponseReasoningSummaryPartDoneEvent: Codable, Hashable, Send
         self.agent = agent
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case itemID = "item_id"
-        case outputIndex = "output_index"
-        case summaryIndex = "summary_index"
-        case status
-        case sequenceNumber = "sequence_number"
-        case part
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.reasoning_summary_part.done"
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.summaryIndex = try container.decode(Int.self, forKey: "summary_index")
+        self.status = try container.decodeIfPresent(String.self, forKey: "status")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+        self.part = try container.decode(BetaResponseReasoningSummaryPartDoneEvent.Part.self, forKey: "part")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.summaryIndex, forKey: "summary_index")
+        try container.encodeIfPresent(self.status, forKey: "status")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+        try container.encode(self.part, forKey: "part")
     }
 
     /// The completed summary part.
-    public struct Part: Codable, Hashable, Sendable {
+    public struct Part: OpenAIModel {
         /// The type of the summary part. Always `summary_text`.
         public var type: String = "summary_text"
         /// The text of the summary part.
@@ -1112,15 +3453,22 @@ public struct BetaResponseReasoningSummaryPartDoneEvent: Codable, Hashable, Send
             self.text = text
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case text
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "summary_text"
+            self.text = try container.decode(String.self, forKey: "text")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.text, forKey: "text")
         }
     }
 }
 
 /// Emitted when a delta is added to a reasoning summary text.
-public struct BetaResponseReasoningSummaryTextDeltaEvent: Codable, Hashable, Sendable {
+public struct BetaResponseReasoningSummaryTextDeltaEvent: OpenAIModel {
     /// The agent that owns this multi-agent streaming event.
     public var agent: BetaAgentTag?
     /// The type of the event. Always `response.reasoning_summary_text.delta`.
@@ -1152,19 +3500,31 @@ public struct BetaResponseReasoningSummaryTextDeltaEvent: Codable, Hashable, Sen
         self.agent = agent
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case itemID = "item_id"
-        case outputIndex = "output_index"
-        case summaryIndex = "summary_index"
-        case delta
-        case sequenceNumber = "sequence_number"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.reasoning_summary_text.delta"
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.summaryIndex = try container.decode(Int.self, forKey: "summary_index")
+        self.delta = try container.decode(String.self, forKey: "delta")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.summaryIndex, forKey: "summary_index")
+        try container.encode(self.delta, forKey: "delta")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
     }
 }
 
 /// Emitted when a reasoning summary text is completed.
-public struct BetaResponseReasoningSummaryTextDoneEvent: Codable, Hashable, Sendable {
+public struct BetaResponseReasoningSummaryTextDoneEvent: OpenAIModel {
     /// The agent that owns this multi-agent streaming event.
     public var agent: BetaAgentTag?
     /// The type of the event. Always `response.reasoning_summary_text.done`.
@@ -1196,19 +3556,31 @@ public struct BetaResponseReasoningSummaryTextDoneEvent: Codable, Hashable, Send
         self.agent = agent
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case itemID = "item_id"
-        case outputIndex = "output_index"
-        case summaryIndex = "summary_index"
-        case text
-        case sequenceNumber = "sequence_number"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.reasoning_summary_text.done"
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.summaryIndex = try container.decode(Int.self, forKey: "summary_index")
+        self.text = try container.decode(String.self, forKey: "text")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.summaryIndex, forKey: "summary_index")
+        try container.encode(self.text, forKey: "text")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
     }
 }
 
 /// Emitted when a delta is added to a reasoning text.
-public struct BetaResponseReasoningTextDeltaEvent: Codable, Hashable, Sendable {
+public struct BetaResponseReasoningTextDeltaEvent: OpenAIModel {
     /// The agent that owns this multi-agent streaming event.
     public var agent: BetaAgentTag?
     /// The type of the event. Always `response.reasoning_text.delta`.
@@ -1240,19 +3612,31 @@ public struct BetaResponseReasoningTextDeltaEvent: Codable, Hashable, Sendable {
         self.agent = agent
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case itemID = "item_id"
-        case outputIndex = "output_index"
-        case contentIndex = "content_index"
-        case delta
-        case sequenceNumber = "sequence_number"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.reasoning_text.delta"
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.contentIndex = try container.decode(Int.self, forKey: "content_index")
+        self.delta = try container.decode(String.self, forKey: "delta")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.contentIndex, forKey: "content_index")
+        try container.encode(self.delta, forKey: "delta")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
     }
 }
 
 /// Emitted when a reasoning text is completed.
-public struct BetaResponseReasoningTextDoneEvent: Codable, Hashable, Sendable {
+public struct BetaResponseReasoningTextDoneEvent: OpenAIModel {
     /// The agent that owns this multi-agent streaming event.
     public var agent: BetaAgentTag?
     /// The type of the event. Always `response.reasoning_text.done`.
@@ -1284,19 +3668,31 @@ public struct BetaResponseReasoningTextDoneEvent: Codable, Hashable, Sendable {
         self.agent = agent
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case itemID = "item_id"
-        case outputIndex = "output_index"
-        case contentIndex = "content_index"
-        case text
-        case sequenceNumber = "sequence_number"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.reasoning_text.done"
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.contentIndex = try container.decode(Int.self, forKey: "content_index")
+        self.text = try container.decode(String.self, forKey: "text")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.contentIndex, forKey: "content_index")
+        try container.encode(self.text, forKey: "text")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
     }
 }
 
 /// Emitted when there is a partial refusal text.
-public struct BetaResponseRefusalDeltaEvent: Codable, Hashable, Sendable {
+public struct BetaResponseRefusalDeltaEvent: OpenAIModel {
     /// The agent that owns this multi-agent streaming event.
     public var agent: BetaAgentTag?
     /// The type of the event. Always `response.refusal.delta`.
@@ -1328,19 +3724,31 @@ public struct BetaResponseRefusalDeltaEvent: Codable, Hashable, Sendable {
         self.agent = agent
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case itemID = "item_id"
-        case outputIndex = "output_index"
-        case contentIndex = "content_index"
-        case delta
-        case sequenceNumber = "sequence_number"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.refusal.delta"
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.contentIndex = try container.decode(Int.self, forKey: "content_index")
+        self.delta = try container.decode(String.self, forKey: "delta")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.contentIndex, forKey: "content_index")
+        try container.encode(self.delta, forKey: "delta")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
     }
 }
 
 /// Emitted when refusal text is finalized.
-public struct BetaResponseRefusalDoneEvent: Codable, Hashable, Sendable {
+public struct BetaResponseRefusalDoneEvent: OpenAIModel {
     /// The agent that owns this multi-agent streaming event.
     public var agent: BetaAgentTag?
     /// The type of the event. Always `response.refusal.done`.
@@ -1372,19 +3780,31 @@ public struct BetaResponseRefusalDoneEvent: Codable, Hashable, Sendable {
         self.agent = agent
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case itemID = "item_id"
-        case outputIndex = "output_index"
-        case contentIndex = "content_index"
-        case refusal
-        case sequenceNumber = "sequence_number"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.refusal.done"
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.contentIndex = try container.decode(Int.self, forKey: "content_index")
+        self.refusal = try container.decode(String.self, forKey: "refusal")
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.contentIndex, forKey: "content_index")
+        try container.encode(self.refusal, forKey: "refusal")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
     }
 }
 
 /// A streaming event that indicated a shell command was added to a tool call.
-public struct BetaResponseShellCallCommandAddedStreamingEvent: Codable, Hashable, Sendable {
+public struct BetaResponseShellCallCommandAddedStreamingEvent: OpenAIModel {
     /// The type of the event, always `response.shell_call_command.added`.
     public var type: String = "response.shell_call_command.added"
     /// The sequence number of the event that was emitted.
@@ -1412,18 +3832,29 @@ public struct BetaResponseShellCallCommandAddedStreamingEvent: Codable, Hashable
         self.agent = agent
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case sequenceNumber = "sequence_number"
-        case agent
-        case outputIndex = "output_index"
-        case commandIndex = "command_index"
-        case command
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.shell_call_command.added"
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.commandIndex = try container.decode(Int.self, forKey: "command_index")
+        self.command = try container.decode(String.self, forKey: "command")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.commandIndex, forKey: "command_index")
+        try container.encode(self.command, forKey: "command")
     }
 }
 
 /// A streaming event that indicated a shell command was incrementally updated.
-public struct BetaResponseShellCallCommandDeltaStreamingEvent: Codable, Hashable, Sendable {
+public struct BetaResponseShellCallCommandDeltaStreamingEvent: OpenAIModel {
     /// The type of the event, always `response.shell_call_command.delta`.
     public var type: String = "response.shell_call_command.delta"
     /// The sequence number of the event that was emitted.
@@ -1455,19 +3886,31 @@ public struct BetaResponseShellCallCommandDeltaStreamingEvent: Codable, Hashable
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case sequenceNumber = "sequence_number"
-        case agent
-        case outputIndex = "output_index"
-        case commandIndex = "command_index"
-        case delta
-        case obfuscation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.shell_call_command.delta"
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.commandIndex = try container.decode(Int.self, forKey: "command_index")
+        self.delta = try container.decode(String.self, forKey: "delta")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.commandIndex, forKey: "command_index")
+        try container.encode(self.delta, forKey: "delta")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
     }
 }
 
 /// A streaming event that indicated a shell command was completed.
-public struct BetaResponseShellCallCommandDoneStreamingEvent: Codable, Hashable, Sendable {
+public struct BetaResponseShellCallCommandDoneStreamingEvent: OpenAIModel {
     /// The type of the event, always `response.shell_call_command.done`.
     public var type: String = "response.shell_call_command.done"
     /// The sequence number of the event that was emitted.
@@ -1495,18 +3938,29 @@ public struct BetaResponseShellCallCommandDoneStreamingEvent: Codable, Hashable,
         self.agent = agent
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case sequenceNumber = "sequence_number"
-        case agent
-        case outputIndex = "output_index"
-        case commandIndex = "command_index"
-        case command
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.shell_call_command.done"
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.commandIndex = try container.decode(Int.self, forKey: "command_index")
+        self.command = try container.decode(String.self, forKey: "command")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.commandIndex, forKey: "command_index")
+        try container.encode(self.command, forKey: "command")
     }
 }
 
 /// A streaming event that indicated shell call output was incrementally added.
-public struct BetaResponseShellCallOutputContentDeltaStreamingEvent: Codable, Hashable, Sendable {
+public struct BetaResponseShellCallOutputContentDeltaStreamingEvent: OpenAIModel {
     /// The type of the event, always `response.shell_call_output_content.delta`.
     public var type: String = "response.shell_call_output_content.delta"
     /// The sequence number of the event that was emitted.
@@ -1538,19 +3992,31 @@ public struct BetaResponseShellCallOutputContentDeltaStreamingEvent: Codable, Ha
         self.agent = agent
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case sequenceNumber = "sequence_number"
-        case agent
-        case itemID = "item_id"
-        case outputIndex = "output_index"
-        case commandIndex = "command_index"
-        case delta
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.shell_call_output_content.delta"
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.commandIndex = try container.decode(Int.self, forKey: "command_index")
+        self.delta = try container.decode(BetaShellCallOutputDelta.self, forKey: "delta")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.commandIndex, forKey: "command_index")
+        try container.encode(self.delta, forKey: "delta")
     }
 }
 
 /// A streaming event that indicated shell call output was completed.
-public struct BetaResponseShellCallOutputContentDoneStreamingEvent: Codable, Hashable, Sendable {
+public struct BetaResponseShellCallOutputContentDoneStreamingEvent: OpenAIModel {
     /// The type of the event, always `response.shell_call_output_content.done`.
     public var type: String = "response.shell_call_output_content.done"
     /// The sequence number of the event that was emitted.
@@ -1582,14 +4048,26 @@ public struct BetaResponseShellCallOutputContentDoneStreamingEvent: Codable, Has
         self.agent = agent
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case sequenceNumber = "sequence_number"
-        case agent
-        case itemID = "item_id"
-        case outputIndex = "output_index"
-        case commandIndex = "command_index"
-        case output
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.shell_call_output_content.done"
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.commandIndex = try container.decode(Int.self, forKey: "command_index")
+        self.output = try container.decode([BetaFunctionShellCallOutputContent].self, forKey: "output")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.commandIndex, forKey: "command_index")
+        try container.encode(self.output, forKey: "output")
     }
 }
 
@@ -1603,7 +4081,7 @@ public struct BetaResponseShellCallOutputContentDoneStreamingEvent: Codable, Has
 /// `response.completed`. Fill the pending event's `required_input` stubs with
 /// saved results and send one matching explicit `response.create` per parent.
 /// Do not resend accepted input while it is still queued.
-public struct BetaResponseSteerAcceptedEvent: Codable, Hashable, Sendable {
+public struct BetaResponseSteerAcceptedEvent: OpenAIModel {
     /// The event discriminator. Always `response.steer.accepted`.
     public var type: String = "response.steer.accepted"
     /// The sequence number for this event.
@@ -1624,15 +4102,24 @@ public struct BetaResponseSteerAcceptedEvent: Codable, Hashable, Sendable {
         self.streamID = streamID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case sequenceNumber = "sequence_number"
-        case steer
-        case streamID = "stream_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.steer.accepted"
+        self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+        self.steer = try container.decode(BetaResponseSteerAcceptedEvent.Steer.self, forKey: "steer")
+        self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.sequenceNumber, forKey: "sequence_number")
+        try container.encode(self.steer, forKey: "steer")
+        try container.encodeIfPresent(self.streamID, forKey: "stream_id")
     }
 
     /// The accepted steering submission.
-    public struct Steer: Codable, Hashable, Sendable {
+    public struct Steer: OpenAIModel {
         /// The ID assigned to the steering submission.
         public var id: String
         /// The ID of the response being steered.
@@ -1643,4929 +4130,16 @@ public struct BetaResponseSteerAcceptedEvent: Codable, Hashable, Sendable {
             self.previousResponseID = previousResponseID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case previousResponseID = "previous_response_id"
-        }
-    }
-}
-
-/// A machine-readable steering error code. Clients should handle unknown
-/// values because additional codes may be introduced. Known values include:
-/// - `response_not_found`: The target response is not available on this connection.
-/// - `invalid_input`: The event or input failed validation.
-/// - `steering_not_supported`: The model or response execution mode does not support steering.
-/// - `too_many_pending_steers`: Too much steering input is pending for the response.
-/// - `response_already_completed`: The response completed and is no longer accepting steering input.
-/// - `response_not_active`: The response is no longer accepting steering input.
-/// - `successor_creation_failed`: The successor response could not be created.
-///
-/// This type is open: it accepts values the spec does not list yet.
-public struct BetaResponseSteerErrorCode: OpenAIStringEnum {
-    public let rawValue: String
-
-    public init(rawValue: String) {
-        self.rawValue = rawValue
-    }
-
-    public static let responseNotFound: Self = "response_not_found"
-    public static let invalidInput: Self = "invalid_input"
-    public static let steeringNotSupported: Self = "steering_not_supported"
-    public static let tooManyPendingSteers: Self = "too_many_pending_steers"
-    public static let responseAlreadyCompleted: Self = "response_already_completed"
-    public static let responseNotActive: Self = "response_not_active"
-    public static let successorCreationFailed: Self = "successor_creation_failed"
-
-    public static var knownValues: [Self] {
-        [.responseNotFound, .invalidInput, .steeringNotSupported, .tooManyPendingSteers, .responseAlreadyCompleted, .responseNotActive, .successorCreationFailed]
-    }
-}
-
-/// Queues user input to steer a response on this WebSocket connection. Input
-/// can contain text, images, and files. Steering is supported only for
-/// single-agent responses on models and execution modes that support steering.
-/// Responses bound to a conversation or using automatic compaction do not
-/// support steering.
-///
-/// A `response.steer.accepted` event acknowledges that the server owns the
-/// queued input, not that it has been applied. The successor's `response.created`
-/// event is the commit point. Input that cannot be committed is returned in
-/// `response.steer.failed`.
-///
-/// Steering may cause the active response to finish at a safe output boundary
-/// with `response.incomplete` and `incomplete_details.reason` set to `steered`,
-/// followed automatically by a successor `response.created`. Normal completion
-/// can also be followed by an automatic successor. Automatic successors inherit
-/// the previous response's settings and continue from it with the queued input.
-///
-/// If the response stops for client-owned tool output or approval, accepted
-/// steering input remains queued and `response.steer.pending` is emitted after
-/// `response.completed`. Fill the `required_input` stubs from that event with
-/// saved tool results or approval decisions, and send one explicit
-/// `response.create` per parent with the same `previous_response_id` and
-/// WebSocket lane. Do not rerun tools or resend accepted steering input. The
-/// queued input is prepended in submission order to that request's input, and
-/// the explicit request retains its own settings.
-///
-/// This event accepts only `type`, `previous_response_id`, and `input`. Do not
-/// send `stream_id`; the target response determines the WebSocket lane.
-public struct BetaResponseSteerEvent: Codable, Hashable, Sendable {
-    /// The event discriminator. Always `response.steer`.
-    public var type: String = "response.steer"
-    /// The ID of the response to steer on this WebSocket connection.
-    public var previousResponseID: String
-    public var input: BetaResponseSteerInput
-
-    public init(input: BetaResponseSteerInput, previousResponseID: String) {
-        self.input = input
-        self.previousResponseID = previousResponseID
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case previousResponseID = "previous_response_id"
-        case input
-    }
-}
-
-/// Emitted when steering input is rejected or cannot be committed to a
-/// successor response. Returns the original, uncommitted input so the client
-/// can carry it into `response.create` when appropriate. Invalid input must
-/// be corrected before retrying.
-///
-/// Failures after acceptance include the same steering ID. Failures before an
-/// ID is allocated omit `steer.id`. A lost connection or missing acknowledgement
-/// leaves the outcome unknown; it is not proof that the input was rejected.
-public struct BetaResponseSteerFailedEvent: Codable, Hashable, Sendable {
-    /// The event discriminator. Always `response.steer.failed`.
-    public var type: String = "response.steer.failed"
-    /// The sequence number for this event.
-    public var sequenceNumber: Int
-    /// The steering submission that could not be committed.
-    public var steer: BetaResponseSteerFailedEvent.Steer
-    /// Information about why the input could not be committed.
-    public var error: BetaResponseSteerFailedEvent.ErrorValue
-    /// The WebSocket lane that emitted this event, when the target response is
-    /// available and its `response.create` event supplied a `stream_id`.
-    public var streamID: String?
-
-    public init(
-        sequenceNumber: Int,
-        steer: BetaResponseSteerFailedEvent.Steer,
-        error: BetaResponseSteerFailedEvent.ErrorValue,
-        streamID: String? = nil
-    ) {
-        self.sequenceNumber = sequenceNumber
-        self.steer = steer
-        self.error = error
-        self.streamID = streamID
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case sequenceNumber = "sequence_number"
-        case steer
-        case error
-        case streamID = "stream_id"
-    }
-
-    /// The steering submission that could not be committed.
-    public struct Steer: Codable, Hashable, Sendable {
-        /// The ID assigned to the steering submission, if one was allocated.
-        public var id: String?
-        /// The ID of the response that was targeted for steering.
-        public var previousResponseID: String
-        public var input: BetaResponseSteerInput
-
-        public init(
-            input: BetaResponseSteerInput,
-            previousResponseID: String,
-            id: String? = nil
-        ) {
-            self.input = input
-            self.previousResponseID = previousResponseID
-            self.id = id
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case previousResponseID = "previous_response_id"
-            case input
-        }
-    }
-
-    /// Information about why the input could not be committed.
-    public struct ErrorValue: Codable, Hashable, Sendable {
-        /// The error type. Always `invalid_request_error`.
-        public var type: String = "invalid_request_error"
-        public var code: BetaResponseSteerErrorCode
-        /// A human-readable description of the error.
-        public var message: String
-
-        public init(code: BetaResponseSteerErrorCode, message: String) {
-            self.code = code
-            self.message = message
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case code
-            case message
-        }
-    }
-}
-
-/// Input to queue for a continuation of the response. Uses the same string or
-/// input-item shape as `response.create.input`, with a non-empty array when
-/// supplying input items.
-///
-/// Steering accepts only messages with the `user` role. Each message may
-/// contain only `type`, `role`, and `content`, with `content` as a string or an
-/// array of `input_text`, `input_image`, and `input_file` parts. The optional
-/// `type` must be `message`. Other roles, tool outputs, and item types are not
-/// supported for steering.
-public indirect enum BetaResponseSteerInput: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
-    /// A text input, equivalent to a message with the `user` role.
-    case textInput(String)
-    case betaResponseSteerInputItemList(BetaResponseSteerInputItemList)
-    /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
-    case unknown(JSONValue)
-
-    public init(stringLiteral value: String) {
-        self = .textInput(value)
-    }
-
-    public init(from decoder: any Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        if let value = try? container.decode(String.self) {
-            self = .textInput(value)
-            return
-        }
-        if let value = try? container.decode(BetaResponseSteerInputItemList.self) {
-            self = .betaResponseSteerInputItemList(value)
-            return
-        }
-        self = .unknown(try container.decode(JSONValue.self))
-    }
-
-    public func encode(to encoder: any Encoder) throws {
-        var container = encoder.singleValueContainer()
-        switch self {
-        case .textInput(let value):
-            try container.encode(value)
-        case .betaResponseSteerInputItemList(let value):
-            try container.encode(value)
-        case .unknown(let value):
-            try container.encode(value)
-        }
-    }
-}
-
-/// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum BetaResponseSteerInputItem: Codable, Hashable, Sendable {
-    /// `type`: `message`
-    case message(BetaUserMessageItemParam)
-    /// `type`: `function_call_output`
-    case functionCallOutput(BetaFunctionCallOutputItemParam)
-    /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
-    case unknown(JSONValue)
-
-    public init(from decoder: any Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        if let keyed = try? decoder.container(keyedBy: OpenAIDynamicCodingKey.self),
-           let discriminator = try? keyed.decode(String.self, forKey: OpenAIDynamicCodingKey("type")) {
-            switch discriminator {
-            case "message":
-                self = .message(try container.decode(BetaUserMessageItemParam.self))
-                return
-            case "function_call_output":
-                self = .functionCallOutput(try container.decode(BetaFunctionCallOutputItemParam.self))
-                return
-            default:
-                break
-            }
-        }
-        self = .unknown(try container.decode(JSONValue.self))
-    }
-
-    public func encode(to encoder: any Encoder) throws {
-        var container = encoder.singleValueContainer()
-        switch self {
-        case .message(let value):
-            try container.encode(value)
-        case .functionCallOutput(let value):
-            try container.encode(value)
-        case .unknown(let value):
-            try container.encode(value)
-        }
-    }
-}
-
-/// A non-empty list of message inputs to queue for the response.
-public typealias BetaResponseSteerInputItemList = [BetaResponseSteerInputItem]
-
-/// Emitted when accepted steering input remains queued after the target
-/// response completes. The server still owns the input. Do not resend it.
-/// The successor's `response.created` event is the commit point.
-///
-/// When `reason` is `waiting_for_required_input`, this event follows
-/// `response.completed` while the response waits for the tool results or
-/// approval decisions identified by `required_input`. Copy those stubs, fill
-/// their result fields using the ordinary `response.create` input schemas,
-/// and submit one continuation per parent with the same `previous_response_id`
-/// and WebSocket lane. Use saved results without rerunning tools. The queued
-/// steering input is prepended in submission order to the continuation's
-/// input. That explicit request retains its own settings.
-///
-/// This notification is emitted at most once per steering submission. Multiple
-/// submissions for the same parent can report the same required inputs; they
-/// do not each require a separate continuation.
-public struct BetaResponseSteerPendingEvent: Codable, Hashable, Sendable {
-    /// The event discriminator. Always `response.steer.pending`.
-    public var type: String = "response.steer.pending"
-    /// The sequence number for this event.
-    public var sequenceNumber: Int
-    /// The steering submission that remains queued.
-    public var steer: BetaResponseSteerPendingEvent.Steer
-    public var reason: BetaResponseSteerPendingReason
-    /// Input stubs identifying outstanding client-owned tool results or
-    /// approval decisions. Each stub contains identifying fields only; the
-    /// client supplies the result before including it in `response.create`.
-    public var requiredInput: [BetaResponseSteerRequiredInput]
-    /// The WebSocket lane that emitted this event. This field is present when
-    /// the target response's `response.create` event supplied a `stream_id`.
-    public var streamID: String?
-
-    public init(
-        sequenceNumber: Int,
-        steer: BetaResponseSteerPendingEvent.Steer,
-        reason: BetaResponseSteerPendingReason,
-        requiredInput: [BetaResponseSteerRequiredInput],
-        streamID: String? = nil
-    ) {
-        self.sequenceNumber = sequenceNumber
-        self.steer = steer
-        self.reason = reason
-        self.requiredInput = requiredInput
-        self.streamID = streamID
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case sequenceNumber = "sequence_number"
-        case steer
-        case reason
-        case requiredInput = "required_input"
-        case streamID = "stream_id"
-    }
-
-    /// The steering submission that remains queued.
-    public struct Steer: Codable, Hashable, Sendable {
-        /// The ID assigned to the steering submission.
-        public var id: String
-        /// The ID of the response being steered.
-        public var previousResponseID: String
-
-        public init(id: String, previousResponseID: String) {
-            self.id = id
-            self.previousResponseID = previousResponseID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case previousResponseID = "previous_response_id"
-        }
-    }
-}
-
-/// An extensible enum describing why accepted steering input is still queued.
-/// Clients should handle unknown values because additional reasons may be
-/// introduced. Known values include:
-/// - `waiting_for_required_input`: The response is waiting for the tool results or approval decisions identified by `required_input`.
-///
-/// This type is open: it accepts values the spec does not list yet.
-public struct BetaResponseSteerPendingReason: OpenAIStringEnum {
-    public let rawValue: String
-
-    public init(rawValue: String) {
-        self.rawValue = rawValue
-    }
-
-    public static let waitingForRequiredInput: Self = "waiting_for_required_input"
-
-    public static var knownValues: [Self] {
-        [.waitingForRequiredInput]
-    }
-}
-
-/// An input stub identifying an outstanding client-owned tool result or
-/// approval decision. Copy the stub and fill the result fields using the
-/// corresponding `response.create` input schema. Use saved results without
-/// rerunning the tool. The server does not supply results, approval decisions,
-/// or safety acknowledgements in these stubs.
-///
-/// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum BetaResponseSteerRequiredInput: Codable, Hashable, Sendable {
-    /// Supply `output` using the function tool call output input schema.
-    ///
-    ///
-    /// `type`: `function_call_output`
-    case functionCallOutput(BetaResponseSteerRequiredInput.RequiredFunctionToolCallOutput)
-    /// Supply `output` using the custom tool call output input schema. The
-    /// original custom tool call supplies the tool's name.
-    ///
-    ///
-    /// `type`: `custom_tool_call_output`
-    case customToolCallOutput(BetaResponseSteerRequiredInput.RequiredCustomToolCallOutput)
-    /// Supply `output` using the computer tool call output input schema,
-    /// including any required `acknowledged_safety_checks`.
-    ///
-    ///
-    /// `type`: `computer_call_output`
-    case computerCallOutput(BetaResponseSteerRequiredInput.RequiredComputerToolCallOutput)
-    /// Supply `output` using the shell tool call output input schema. Each
-    /// output entry includes `stdout`, `stderr`, and `outcome`.
-    ///
-    ///
-    /// `type`: `shell_call_output`
-    case shellCallOutput(BetaResponseSteerRequiredInput.RequiredShellToolCallOutput)
-    /// Supply `status` and optional `output` using the apply patch tool call
-    /// output input schema.
-    ///
-    ///
-    /// `type`: `apply_patch_call_output`
-    case applyPatchCallOutput(BetaResponseSteerRequiredInput.RequiredApplyPatchToolCallOutput)
-    /// Supply `tools` using the tool search output input schema, retaining
-    /// `execution: "client"`.
-    ///
-    ///
-    /// `type`: `tool_search_output`
-    case toolSearchOutput(BetaResponseSteerRequiredInput.RequiredToolSearchOutput)
-    /// Supply `approve` using the MCP approval response input schema. An
-    /// optional `reason` can be supplied when denying the request. The original
-    /// approval request identifies the tool and server.
-    ///
-    ///
-    /// `type`: `mcp_approval_response`
-    case mcpApprovalResponse(BetaResponseSteerRequiredInput.RequiredMCPApprovalResponse)
-    /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
-    case unknown(JSONValue)
-
-    public init(from decoder: any Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        if let keyed = try? decoder.container(keyedBy: OpenAIDynamicCodingKey.self),
-           let discriminator = try? keyed.decode(String.self, forKey: OpenAIDynamicCodingKey("type")) {
-            switch discriminator {
-            case "function_call_output":
-                self = .functionCallOutput(try container.decode(BetaResponseSteerRequiredInput.RequiredFunctionToolCallOutput.self))
-                return
-            case "custom_tool_call_output":
-                self = .customToolCallOutput(try container.decode(BetaResponseSteerRequiredInput.RequiredCustomToolCallOutput.self))
-                return
-            case "computer_call_output":
-                self = .computerCallOutput(try container.decode(BetaResponseSteerRequiredInput.RequiredComputerToolCallOutput.self))
-                return
-            case "shell_call_output":
-                self = .shellCallOutput(try container.decode(BetaResponseSteerRequiredInput.RequiredShellToolCallOutput.self))
-                return
-            case "apply_patch_call_output":
-                self = .applyPatchCallOutput(try container.decode(BetaResponseSteerRequiredInput.RequiredApplyPatchToolCallOutput.self))
-                return
-            case "tool_search_output":
-                self = .toolSearchOutput(try container.decode(BetaResponseSteerRequiredInput.RequiredToolSearchOutput.self))
-                return
-            case "mcp_approval_response":
-                self = .mcpApprovalResponse(try container.decode(BetaResponseSteerRequiredInput.RequiredMCPApprovalResponse.self))
-                return
-            default:
-                break
-            }
-        }
-        self = .unknown(try container.decode(JSONValue.self))
-    }
-
-    public func encode(to encoder: any Encoder) throws {
-        var container = encoder.singleValueContainer()
-        switch self {
-        case .functionCallOutput(let value):
-            try container.encode(value)
-        case .customToolCallOutput(let value):
-            try container.encode(value)
-        case .computerCallOutput(let value):
-            try container.encode(value)
-        case .shellCallOutput(let value):
-            try container.encode(value)
-        case .applyPatchCallOutput(let value):
-            try container.encode(value)
-        case .toolSearchOutput(let value):
-            try container.encode(value)
-        case .mcpApprovalResponse(let value):
-            try container.encode(value)
-        case .unknown(let value):
-            try container.encode(value)
-        }
-    }
-
-    /// Supply `output` using the function tool call output input schema.
-    public struct RequiredFunctionToolCallOutput: Codable, Hashable, Sendable {
-        public var type: String = "function_call_output"
-        public var callID: String
-        public var name: String
-
-        public init(callID: String, name: String) {
-            self.callID = callID
-            self.name = name
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case callID = "call_id"
-            case name
-        }
-    }
-
-    /// Supply `output` using the custom tool call output input schema. The
-    /// original custom tool call supplies the tool's name.
-    public struct RequiredCustomToolCallOutput: Codable, Hashable, Sendable {
-        public var type: String = "custom_tool_call_output"
-        public var callID: String
-
-        public init(callID: String) {
-            self.callID = callID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case callID = "call_id"
-        }
-    }
-
-    /// Supply `output` using the computer tool call output input schema,
-    /// including any required `acknowledged_safety_checks`.
-    public struct RequiredComputerToolCallOutput: Codable, Hashable, Sendable {
-        public var type: String = "computer_call_output"
-        public var callID: String
-
-        public init(callID: String) {
-            self.callID = callID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case callID = "call_id"
-        }
-    }
-
-    /// Supply `output` using the shell tool call output input schema. Each
-    /// output entry includes `stdout`, `stderr`, and `outcome`.
-    public struct RequiredShellToolCallOutput: Codable, Hashable, Sendable {
-        public var type: String = "shell_call_output"
-        public var callID: String
-
-        public init(callID: String) {
-            self.callID = callID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case callID = "call_id"
-        }
-    }
-
-    /// Supply `status` and optional `output` using the apply patch tool call
-    /// output input schema.
-    public struct RequiredApplyPatchToolCallOutput: Codable, Hashable, Sendable {
-        public var type: String = "apply_patch_call_output"
-        public var callID: String
-
-        public init(callID: String) {
-            self.callID = callID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case callID = "call_id"
-        }
-    }
-
-    /// Supply `tools` using the tool search output input schema, retaining
-    /// `execution: "client"`.
-    public struct RequiredToolSearchOutput: Codable, Hashable, Sendable {
-        public var type: String = "tool_search_output"
-        public var callID: String
-        public var execution: String = "client"
-
-        public init(callID: String) {
-            self.callID = callID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case callID = "call_id"
-            case execution
-        }
-    }
-
-    /// Supply `approve` using the MCP approval response input schema. An
-    /// optional `reason` can be supplied when denying the request. The original
-    /// approval request identifies the tool and server.
-    public struct RequiredMCPApprovalResponse: Codable, Hashable, Sendable {
-        public var type: String = "mcp_approval_response"
-        public var approvalRequestID: String
-
-        public init(approvalRequestID: String) {
-            self.approvalRequestID = approvalRequestID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case approvalRequestID = "approval_request_id"
-        }
-    }
-}
-
-/// Event emitted while a response is streamed.
-///
-/// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum BetaResponseStreamEvent: Codable, Hashable, Sendable {
-    /// `type`: `response.audio.delta`
-    case responseAudioDelta(BetaResponseAudioDeltaEvent)
-    /// `type`: `response.audio.done`
-    case responseAudioDone(BetaResponseAudioDoneEvent)
-    /// `type`: `response.audio.transcript.delta`
-    case responseAudioTranscriptDelta(BetaResponseAudioTranscriptDeltaEvent)
-    /// `type`: `response.audio.transcript.done`
-    case responseAudioTranscriptDone(BetaResponseAudioTranscriptDoneEvent)
-    /// `type`: `response.code_interpreter_call_code.delta`
-    case responseCodeInterpreterCallCodeDelta(BetaResponseCodeInterpreterCallCodeDeltaEvent)
-    /// `type`: `response.code_interpreter_call_code.done`
-    case responseCodeInterpreterCallCodeDone(BetaResponseCodeInterpreterCallCodeDoneEvent)
-    /// `type`: `response.code_interpreter_call.completed`
-    case responseCodeInterpreterCallCompleted(BetaResponseCodeInterpreterCallCompletedEvent)
-    /// `type`: `response.code_interpreter_call.in_progress`
-    case responseCodeInterpreterCallInProgress(BetaResponseCodeInterpreterCallInProgressEvent)
-    /// `type`: `response.code_interpreter_call.interpreting`
-    case responseCodeInterpreterCallInterpreting(BetaResponseCodeInterpreterCallInterpretingEvent)
-    /// `type`: `response.compaction.compacting`
-    case responseCompactionCompacting(BetaResponseCompactionCompactingStreamingEvent)
-    /// `type`: `response.completed`
-    case responseCompleted(BetaResponseCompletedEvent)
-    /// `type`: `response.content_part.added`
-    case responseContentPartAdded(BetaResponseContentPartAddedEvent)
-    /// `type`: `response.content_part.done`
-    case responseContentPartDone(BetaResponseContentPartDoneEvent)
-    /// `type`: `response.created`
-    case responseCreated(BetaResponseCreatedEvent)
-    /// `type`: `error`
-    case error(BetaResponseErrorEvent)
-    /// `type`: `response.file_search_call.completed`
-    case responseFileSearchCallCompleted(BetaResponseFileSearchCallCompletedEvent)
-    /// `type`: `response.file_search_call.in_progress`
-    case responseFileSearchCallInProgress(BetaResponseFileSearchCallInProgressEvent)
-    /// `type`: `response.file_search_call.searching`
-    case responseFileSearchCallSearching(BetaResponseFileSearchCallSearchingEvent)
-    /// `type`: `response.function_call_arguments.delta`
-    case responseFunctionCallArgumentsDelta(BetaResponseFunctionCallArgumentsDeltaEvent)
-    /// `type`: `response.function_call_arguments.done`
-    case responseFunctionCallArgumentsDone(BetaResponseFunctionCallArgumentsDoneEvent)
-    /// `type`: `response.shell_call_command.added`
-    case responseShellCallCommandAdded(BetaResponseShellCallCommandAddedStreamingEvent)
-    /// `type`: `response.shell_call_command.delta`
-    case responseShellCallCommandDelta(BetaResponseShellCallCommandDeltaStreamingEvent)
-    /// `type`: `response.shell_call_command.done`
-    case responseShellCallCommandDone(BetaResponseShellCallCommandDoneStreamingEvent)
-    /// `type`: `response.shell_call_output_content.delta`
-    case responseShellCallOutputContentDelta(BetaResponseShellCallOutputContentDeltaStreamingEvent)
-    /// `type`: `response.shell_call_output_content.done`
-    case responseShellCallOutputContentDone(BetaResponseShellCallOutputContentDoneStreamingEvent)
-    /// `type`: `response.in_progress`
-    case responseInProgress(BetaResponseInProgressEvent)
-    /// `type`: `response.failed`
-    case responseFailed(BetaResponseFailedEvent)
-    /// `type`: `response.incomplete`
-    case responseIncomplete(BetaResponseIncompleteEvent)
-    /// `type`: `response.output_item.added`
-    case responseOutputItemAdded(BetaResponseOutputItemAddedEvent)
-    /// `type`: `response.output_item.done`
-    case responseOutputItemDone(BetaResponseOutputItemDoneEvent)
-    /// `type`: `response.reasoning_summary_part.added`
-    case responseReasoningSummaryPartAdded(BetaResponseReasoningSummaryPartAddedEvent)
-    /// `type`: `response.reasoning_summary_part.done`
-    case responseReasoningSummaryPartDone(BetaResponseReasoningSummaryPartDoneEvent)
-    /// `type`: `response.reasoning_summary_text.delta`
-    case responseReasoningSummaryTextDelta(BetaResponseReasoningSummaryTextDeltaEvent)
-    /// `type`: `response.reasoning_summary_text.done`
-    case responseReasoningSummaryTextDone(BetaResponseReasoningSummaryTextDoneEvent)
-    /// `type`: `response.reasoning_text.delta`
-    case responseReasoningTextDelta(BetaResponseReasoningTextDeltaEvent)
-    /// `type`: `response.reasoning_text.done`
-    case responseReasoningTextDone(BetaResponseReasoningTextDoneEvent)
-    /// `type`: `response.refusal.delta`
-    case responseRefusalDelta(BetaResponseRefusalDeltaEvent)
-    /// `type`: `response.refusal.done`
-    case responseRefusalDone(BetaResponseRefusalDoneEvent)
-    /// `type`: `response.output_text.delta`
-    case responseOutputTextDelta(BetaResponseTextDeltaEvent)
-    /// `type`: `response.output_text.done`
-    case responseOutputTextDone(BetaResponseTextDoneEvent)
-    /// `type`: `response.web_search_call.completed`
-    case responseWebSearchCallCompleted(BetaResponseWebSearchCallCompletedEvent)
-    /// `type`: `response.web_search_call.in_progress`
-    case responseWebSearchCallInProgress(BetaResponseWebSearchCallInProgressEvent)
-    /// `type`: `response.web_search_call.searching`
-    case responseWebSearchCallSearching(BetaResponseWebSearchCallSearchingEvent)
-    /// `type`: `response.image_generation_call.completed`
-    case responseImageGenerationCallCompleted(BetaResponseImageGenCallCompletedEvent)
-    /// `type`: `response.image_generation_call.generating`
-    case responseImageGenerationCallGenerating(BetaResponseImageGenCallGeneratingEvent)
-    /// `type`: `response.image_generation_call.in_progress`
-    case responseImageGenerationCallInProgress(BetaResponseImageGenCallInProgressEvent)
-    /// `type`: `response.image_generation_call.partial_image`
-    case responseImageGenerationCallPartialImage(BetaResponseImageGenCallPartialImageEvent)
-    /// `type`: `response.mcp_call_arguments.delta`
-    case responseMcpCallArgumentsDelta(BetaResponseMCPCallArgumentsDeltaEvent)
-    /// `type`: `response.mcp_call_arguments.done`
-    case responseMcpCallArgumentsDone(BetaResponseMCPCallArgumentsDoneEvent)
-    /// `type`: `response.mcp_call.completed`
-    case responseMcpCallCompleted(BetaResponseMCPCallCompletedEvent)
-    /// `type`: `response.mcp_call.failed`
-    case responseMcpCallFailed(BetaResponseMCPCallFailedEvent)
-    /// `type`: `response.mcp_call.in_progress`
-    case responseMcpCallInProgress(BetaResponseMCPCallInProgressEvent)
-    /// `type`: `response.mcp_list_tools.completed`
-    case responseMcpListToolsCompleted(BetaResponseMCPListToolsCompletedEvent)
-    /// `type`: `response.mcp_list_tools.failed`
-    case responseMcpListToolsFailed(BetaResponseMCPListToolsFailedEvent)
-    /// `type`: `response.mcp_list_tools.in_progress`
-    case responseMcpListToolsInProgress(BetaResponseMCPListToolsInProgressEvent)
-    /// `type`: `response.output_text.annotation.added`
-    case responseOutputTextAnnotationAdded(BetaResponseOutputTextAnnotationAddedEvent)
-    /// `type`: `response.queued`
-    case responseQueued(BetaResponseQueuedEvent)
-    /// `type`: `response.custom_tool_call_input.delta`
-    case responseCustomToolCallInputDelta(BetaResponseCustomToolCallInputDeltaEvent)
-    /// `type`: `response.custom_tool_call_input.done`
-    case responseCustomToolCallInputDone(BetaResponseCustomToolCallInputDoneEvent)
-    /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
-    case unknown(JSONValue)
-
-    public init(from decoder: any Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        if let keyed = try? decoder.container(keyedBy: OpenAIDynamicCodingKey.self),
-           let discriminator = try? keyed.decode(String.self, forKey: OpenAIDynamicCodingKey("type")) {
-            switch discriminator {
-            case "response.audio.delta":
-                self = .responseAudioDelta(try container.decode(BetaResponseAudioDeltaEvent.self))
-                return
-            case "response.audio.done":
-                self = .responseAudioDone(try container.decode(BetaResponseAudioDoneEvent.self))
-                return
-            case "response.audio.transcript.delta":
-                self = .responseAudioTranscriptDelta(try container.decode(BetaResponseAudioTranscriptDeltaEvent.self))
-                return
-            case "response.audio.transcript.done":
-                self = .responseAudioTranscriptDone(try container.decode(BetaResponseAudioTranscriptDoneEvent.self))
-                return
-            case "response.code_interpreter_call_code.delta":
-                self = .responseCodeInterpreterCallCodeDelta(try container.decode(BetaResponseCodeInterpreterCallCodeDeltaEvent.self))
-                return
-            case "response.code_interpreter_call_code.done":
-                self = .responseCodeInterpreterCallCodeDone(try container.decode(BetaResponseCodeInterpreterCallCodeDoneEvent.self))
-                return
-            case "response.code_interpreter_call.completed":
-                self = .responseCodeInterpreterCallCompleted(try container.decode(BetaResponseCodeInterpreterCallCompletedEvent.self))
-                return
-            case "response.code_interpreter_call.in_progress":
-                self = .responseCodeInterpreterCallInProgress(try container.decode(BetaResponseCodeInterpreterCallInProgressEvent.self))
-                return
-            case "response.code_interpreter_call.interpreting":
-                self = .responseCodeInterpreterCallInterpreting(try container.decode(BetaResponseCodeInterpreterCallInterpretingEvent.self))
-                return
-            case "response.compaction.compacting":
-                self = .responseCompactionCompacting(try container.decode(BetaResponseCompactionCompactingStreamingEvent.self))
-                return
-            case "response.completed":
-                self = .responseCompleted(try container.decode(BetaResponseCompletedEvent.self))
-                return
-            case "response.content_part.added":
-                self = .responseContentPartAdded(try container.decode(BetaResponseContentPartAddedEvent.self))
-                return
-            case "response.content_part.done":
-                self = .responseContentPartDone(try container.decode(BetaResponseContentPartDoneEvent.self))
-                return
-            case "response.created":
-                self = .responseCreated(try container.decode(BetaResponseCreatedEvent.self))
-                return
-            case "error":
-                self = .error(try container.decode(BetaResponseErrorEvent.self))
-                return
-            case "response.file_search_call.completed":
-                self = .responseFileSearchCallCompleted(try container.decode(BetaResponseFileSearchCallCompletedEvent.self))
-                return
-            case "response.file_search_call.in_progress":
-                self = .responseFileSearchCallInProgress(try container.decode(BetaResponseFileSearchCallInProgressEvent.self))
-                return
-            case "response.file_search_call.searching":
-                self = .responseFileSearchCallSearching(try container.decode(BetaResponseFileSearchCallSearchingEvent.self))
-                return
-            case "response.function_call_arguments.delta":
-                self = .responseFunctionCallArgumentsDelta(try container.decode(BetaResponseFunctionCallArgumentsDeltaEvent.self))
-                return
-            case "response.function_call_arguments.done":
-                self = .responseFunctionCallArgumentsDone(try container.decode(BetaResponseFunctionCallArgumentsDoneEvent.self))
-                return
-            case "response.shell_call_command.added":
-                self = .responseShellCallCommandAdded(try container.decode(BetaResponseShellCallCommandAddedStreamingEvent.self))
-                return
-            case "response.shell_call_command.delta":
-                self = .responseShellCallCommandDelta(try container.decode(BetaResponseShellCallCommandDeltaStreamingEvent.self))
-                return
-            case "response.shell_call_command.done":
-                self = .responseShellCallCommandDone(try container.decode(BetaResponseShellCallCommandDoneStreamingEvent.self))
-                return
-            case "response.shell_call_output_content.delta":
-                self = .responseShellCallOutputContentDelta(try container.decode(BetaResponseShellCallOutputContentDeltaStreamingEvent.self))
-                return
-            case "response.shell_call_output_content.done":
-                self = .responseShellCallOutputContentDone(try container.decode(BetaResponseShellCallOutputContentDoneStreamingEvent.self))
-                return
-            case "response.in_progress":
-                self = .responseInProgress(try container.decode(BetaResponseInProgressEvent.self))
-                return
-            case "response.failed":
-                self = .responseFailed(try container.decode(BetaResponseFailedEvent.self))
-                return
-            case "response.incomplete":
-                self = .responseIncomplete(try container.decode(BetaResponseIncompleteEvent.self))
-                return
-            case "response.output_item.added":
-                self = .responseOutputItemAdded(try container.decode(BetaResponseOutputItemAddedEvent.self))
-                return
-            case "response.output_item.done":
-                self = .responseOutputItemDone(try container.decode(BetaResponseOutputItemDoneEvent.self))
-                return
-            case "response.reasoning_summary_part.added":
-                self = .responseReasoningSummaryPartAdded(try container.decode(BetaResponseReasoningSummaryPartAddedEvent.self))
-                return
-            case "response.reasoning_summary_part.done":
-                self = .responseReasoningSummaryPartDone(try container.decode(BetaResponseReasoningSummaryPartDoneEvent.self))
-                return
-            case "response.reasoning_summary_text.delta":
-                self = .responseReasoningSummaryTextDelta(try container.decode(BetaResponseReasoningSummaryTextDeltaEvent.self))
-                return
-            case "response.reasoning_summary_text.done":
-                self = .responseReasoningSummaryTextDone(try container.decode(BetaResponseReasoningSummaryTextDoneEvent.self))
-                return
-            case "response.reasoning_text.delta":
-                self = .responseReasoningTextDelta(try container.decode(BetaResponseReasoningTextDeltaEvent.self))
-                return
-            case "response.reasoning_text.done":
-                self = .responseReasoningTextDone(try container.decode(BetaResponseReasoningTextDoneEvent.self))
-                return
-            case "response.refusal.delta":
-                self = .responseRefusalDelta(try container.decode(BetaResponseRefusalDeltaEvent.self))
-                return
-            case "response.refusal.done":
-                self = .responseRefusalDone(try container.decode(BetaResponseRefusalDoneEvent.self))
-                return
-            case "response.output_text.delta":
-                self = .responseOutputTextDelta(try container.decode(BetaResponseTextDeltaEvent.self))
-                return
-            case "response.output_text.done":
-                self = .responseOutputTextDone(try container.decode(BetaResponseTextDoneEvent.self))
-                return
-            case "response.web_search_call.completed":
-                self = .responseWebSearchCallCompleted(try container.decode(BetaResponseWebSearchCallCompletedEvent.self))
-                return
-            case "response.web_search_call.in_progress":
-                self = .responseWebSearchCallInProgress(try container.decode(BetaResponseWebSearchCallInProgressEvent.self))
-                return
-            case "response.web_search_call.searching":
-                self = .responseWebSearchCallSearching(try container.decode(BetaResponseWebSearchCallSearchingEvent.self))
-                return
-            case "response.image_generation_call.completed":
-                self = .responseImageGenerationCallCompleted(try container.decode(BetaResponseImageGenCallCompletedEvent.self))
-                return
-            case "response.image_generation_call.generating":
-                self = .responseImageGenerationCallGenerating(try container.decode(BetaResponseImageGenCallGeneratingEvent.self))
-                return
-            case "response.image_generation_call.in_progress":
-                self = .responseImageGenerationCallInProgress(try container.decode(BetaResponseImageGenCallInProgressEvent.self))
-                return
-            case "response.image_generation_call.partial_image":
-                self = .responseImageGenerationCallPartialImage(try container.decode(BetaResponseImageGenCallPartialImageEvent.self))
-                return
-            case "response.mcp_call_arguments.delta":
-                self = .responseMcpCallArgumentsDelta(try container.decode(BetaResponseMCPCallArgumentsDeltaEvent.self))
-                return
-            case "response.mcp_call_arguments.done":
-                self = .responseMcpCallArgumentsDone(try container.decode(BetaResponseMCPCallArgumentsDoneEvent.self))
-                return
-            case "response.mcp_call.completed":
-                self = .responseMcpCallCompleted(try container.decode(BetaResponseMCPCallCompletedEvent.self))
-                return
-            case "response.mcp_call.failed":
-                self = .responseMcpCallFailed(try container.decode(BetaResponseMCPCallFailedEvent.self))
-                return
-            case "response.mcp_call.in_progress":
-                self = .responseMcpCallInProgress(try container.decode(BetaResponseMCPCallInProgressEvent.self))
-                return
-            case "response.mcp_list_tools.completed":
-                self = .responseMcpListToolsCompleted(try container.decode(BetaResponseMCPListToolsCompletedEvent.self))
-                return
-            case "response.mcp_list_tools.failed":
-                self = .responseMcpListToolsFailed(try container.decode(BetaResponseMCPListToolsFailedEvent.self))
-                return
-            case "response.mcp_list_tools.in_progress":
-                self = .responseMcpListToolsInProgress(try container.decode(BetaResponseMCPListToolsInProgressEvent.self))
-                return
-            case "response.output_text.annotation.added":
-                self = .responseOutputTextAnnotationAdded(try container.decode(BetaResponseOutputTextAnnotationAddedEvent.self))
-                return
-            case "response.queued":
-                self = .responseQueued(try container.decode(BetaResponseQueuedEvent.self))
-                return
-            case "response.custom_tool_call_input.delta":
-                self = .responseCustomToolCallInputDelta(try container.decode(BetaResponseCustomToolCallInputDeltaEvent.self))
-                return
-            case "response.custom_tool_call_input.done":
-                self = .responseCustomToolCallInputDone(try container.decode(BetaResponseCustomToolCallInputDoneEvent.self))
-                return
-            default:
-                break
-            }
-        }
-        self = .unknown(try container.decode(JSONValue.self))
-    }
-
-    public func encode(to encoder: any Encoder) throws {
-        var container = encoder.singleValueContainer()
-        switch self {
-        case .responseAudioDelta(let value):
-            try container.encode(value)
-        case .responseAudioDone(let value):
-            try container.encode(value)
-        case .responseAudioTranscriptDelta(let value):
-            try container.encode(value)
-        case .responseAudioTranscriptDone(let value):
-            try container.encode(value)
-        case .responseCodeInterpreterCallCodeDelta(let value):
-            try container.encode(value)
-        case .responseCodeInterpreterCallCodeDone(let value):
-            try container.encode(value)
-        case .responseCodeInterpreterCallCompleted(let value):
-            try container.encode(value)
-        case .responseCodeInterpreterCallInProgress(let value):
-            try container.encode(value)
-        case .responseCodeInterpreterCallInterpreting(let value):
-            try container.encode(value)
-        case .responseCompactionCompacting(let value):
-            try container.encode(value)
-        case .responseCompleted(let value):
-            try container.encode(value)
-        case .responseContentPartAdded(let value):
-            try container.encode(value)
-        case .responseContentPartDone(let value):
-            try container.encode(value)
-        case .responseCreated(let value):
-            try container.encode(value)
-        case .error(let value):
-            try container.encode(value)
-        case .responseFileSearchCallCompleted(let value):
-            try container.encode(value)
-        case .responseFileSearchCallInProgress(let value):
-            try container.encode(value)
-        case .responseFileSearchCallSearching(let value):
-            try container.encode(value)
-        case .responseFunctionCallArgumentsDelta(let value):
-            try container.encode(value)
-        case .responseFunctionCallArgumentsDone(let value):
-            try container.encode(value)
-        case .responseShellCallCommandAdded(let value):
-            try container.encode(value)
-        case .responseShellCallCommandDelta(let value):
-            try container.encode(value)
-        case .responseShellCallCommandDone(let value):
-            try container.encode(value)
-        case .responseShellCallOutputContentDelta(let value):
-            try container.encode(value)
-        case .responseShellCallOutputContentDone(let value):
-            try container.encode(value)
-        case .responseInProgress(let value):
-            try container.encode(value)
-        case .responseFailed(let value):
-            try container.encode(value)
-        case .responseIncomplete(let value):
-            try container.encode(value)
-        case .responseOutputItemAdded(let value):
-            try container.encode(value)
-        case .responseOutputItemDone(let value):
-            try container.encode(value)
-        case .responseReasoningSummaryPartAdded(let value):
-            try container.encode(value)
-        case .responseReasoningSummaryPartDone(let value):
-            try container.encode(value)
-        case .responseReasoningSummaryTextDelta(let value):
-            try container.encode(value)
-        case .responseReasoningSummaryTextDone(let value):
-            try container.encode(value)
-        case .responseReasoningTextDelta(let value):
-            try container.encode(value)
-        case .responseReasoningTextDone(let value):
-            try container.encode(value)
-        case .responseRefusalDelta(let value):
-            try container.encode(value)
-        case .responseRefusalDone(let value):
-            try container.encode(value)
-        case .responseOutputTextDelta(let value):
-            try container.encode(value)
-        case .responseOutputTextDone(let value):
-            try container.encode(value)
-        case .responseWebSearchCallCompleted(let value):
-            try container.encode(value)
-        case .responseWebSearchCallInProgress(let value):
-            try container.encode(value)
-        case .responseWebSearchCallSearching(let value):
-            try container.encode(value)
-        case .responseImageGenerationCallCompleted(let value):
-            try container.encode(value)
-        case .responseImageGenerationCallGenerating(let value):
-            try container.encode(value)
-        case .responseImageGenerationCallInProgress(let value):
-            try container.encode(value)
-        case .responseImageGenerationCallPartialImage(let value):
-            try container.encode(value)
-        case .responseMcpCallArgumentsDelta(let value):
-            try container.encode(value)
-        case .responseMcpCallArgumentsDone(let value):
-            try container.encode(value)
-        case .responseMcpCallCompleted(let value):
-            try container.encode(value)
-        case .responseMcpCallFailed(let value):
-            try container.encode(value)
-        case .responseMcpCallInProgress(let value):
-            try container.encode(value)
-        case .responseMcpListToolsCompleted(let value):
-            try container.encode(value)
-        case .responseMcpListToolsFailed(let value):
-            try container.encode(value)
-        case .responseMcpListToolsInProgress(let value):
-            try container.encode(value)
-        case .responseOutputTextAnnotationAdded(let value):
-            try container.encode(value)
-        case .responseQueued(let value):
-            try container.encode(value)
-        case .responseCustomToolCallInputDelta(let value):
-            try container.encode(value)
-        case .responseCustomToolCallInputDone(let value):
-            try container.encode(value)
-        case .unknown(let value):
-            try container.encode(value)
-        }
-    }
-}
-
-/// Options for streaming responses. Only set this when you set `stream: true`.
-public struct BetaResponseStreamOptions: Codable, Hashable, Sendable {
-    /// When true, stream obfuscation will be enabled. Stream obfuscation adds
-    /// random characters to an `obfuscation` field on streaming delta events to
-    /// normalize payload sizes as a mitigation to certain side-channel attacks.
-    /// These obfuscation fields are included by default, but add a small amount
-    /// of overhead to the data stream. You can set `include_obfuscation` to
-    /// false to optimize for bandwidth if you trust the network links between
-    /// your application and the OpenAI API.
-    public var includeObfuscation: Bool?
-
-    public init(includeObfuscation: Bool? = nil) {
-        self.includeObfuscation = includeObfuscation
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case includeObfuscation = "include_obfuscation"
-    }
-}
-
-/// Emitted when there is an additional text delta.
-public struct BetaResponseTextDeltaEvent: Codable, Hashable, Sendable {
-    /// The agent that owns this multi-agent streaming event.
-    public var agent: BetaAgentTag?
-    /// The type of the event. Always `response.output_text.delta`.
-    public var type: String = "response.output_text.delta"
-    /// The ID of the output item that the text delta was added to.
-    public var itemID: String
-    /// The index of the output item that the text delta was added to.
-    public var outputIndex: Int
-    /// The index of the content part that the text delta was added to.
-    public var contentIndex: Int
-    /// The text delta that was added.
-    public var delta: String
-    /// The sequence number for this event.
-    public var sequenceNumber: Int
-    /// The log probabilities of the tokens in the delta.
-    public var logprobs: [BetaResponseLogProb]
-
-    public init(
-        itemID: String,
-        outputIndex: Int,
-        contentIndex: Int,
-        delta: String,
-        sequenceNumber: Int,
-        logprobs: [BetaResponseLogProb],
-        agent: BetaAgentTag? = nil
-    ) {
-        self.itemID = itemID
-        self.outputIndex = outputIndex
-        self.contentIndex = contentIndex
-        self.delta = delta
-        self.sequenceNumber = sequenceNumber
-        self.logprobs = logprobs
-        self.agent = agent
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case itemID = "item_id"
-        case outputIndex = "output_index"
-        case contentIndex = "content_index"
-        case delta
-        case sequenceNumber = "sequence_number"
-        case logprobs
-    }
-}
-
-/// Emitted when text content is finalized.
-public struct BetaResponseTextDoneEvent: Codable, Hashable, Sendable {
-    /// The agent that owns this multi-agent streaming event.
-    public var agent: BetaAgentTag?
-    /// The type of the event. Always `response.output_text.done`.
-    public var type: String = "response.output_text.done"
-    /// The ID of the output item that the text content is finalized.
-    public var itemID: String
-    /// The index of the output item that the text content is finalized.
-    public var outputIndex: Int
-    /// The index of the content part that the text content is finalized.
-    public var contentIndex: Int
-    /// The text content that is finalized.
-    public var text: String
-    /// The sequence number for this event.
-    public var sequenceNumber: Int
-    /// The log probabilities of the tokens in the delta.
-    public var logprobs: [BetaResponseLogProb]
-
-    public init(
-        itemID: String,
-        outputIndex: Int,
-        contentIndex: Int,
-        text: String,
-        sequenceNumber: Int,
-        logprobs: [BetaResponseLogProb],
-        agent: BetaAgentTag? = nil
-    ) {
-        self.itemID = itemID
-        self.outputIndex = outputIndex
-        self.contentIndex = contentIndex
-        self.text = text
-        self.sequenceNumber = sequenceNumber
-        self.logprobs = logprobs
-        self.agent = agent
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case itemID = "item_id"
-        case outputIndex = "output_index"
-        case contentIndex = "content_index"
-        case text
-        case sequenceNumber = "sequence_number"
-        case logprobs
-    }
-}
-
-/// Configuration options for a text response from the model. Can be plain
-/// text or structured JSON data. Learn more:
-/// - [Text inputs and outputs](https://developers.openai.com/api/docs/guides/text)
-/// - [Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs)
-public struct BetaResponseTextParam: Codable, Hashable, Sendable {
-    public var format: BetaTextResponseFormatConfiguration?
-    public var verbosity: BetaVerbosity?
-
-    public init(format: BetaTextResponseFormatConfiguration? = nil, verbosity: BetaVerbosity? = nil) {
-        self.format = format
-        self.verbosity = verbosity
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case format
-        case verbosity
-    }
-}
-
-/// Aggregated usage details for billable tools that ran while generating the response.
-public struct BetaResponseToolUsage: Codable, Hashable, Sendable {
-    /// Aggregated usage statistics for image generation tool calls.
-    public var imageGen: BetaImageGenToolUsage
-    /// Aggregated billable usage statistics for web search tool calls.
-    public var webSearch: BetaWebSearchUsage
-
-    public init(imageGen: BetaImageGenToolUsage, webSearch: BetaWebSearchUsage) {
-        self.imageGen = imageGen
-        self.webSearch = webSearch
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case imageGen = "image_gen"
-        case webSearch = "web_search"
-    }
-}
-
-/// Represents token usage details including input tokens, output tokens,
-/// a breakdown of output tokens, and the total tokens used.
-public struct BetaResponseUsage: Codable, Hashable, Sendable {
-    /// The number of input tokens.
-    public var inputTokens: Int
-    /// A detailed breakdown of the input tokens.
-    public var inputTokensDetails: BetaResponseUsage.InputTokensDetails
-    /// The number of output tokens.
-    public var outputTokens: Int
-    /// A detailed breakdown of the output tokens.
-    public var outputTokensDetails: BetaResponseUsage.OutputTokensDetails
-    /// The total number of tokens used.
-    public var totalTokens: Int
-
-    public init(
-        inputTokens: Int,
-        inputTokensDetails: BetaResponseUsage.InputTokensDetails,
-        outputTokens: Int,
-        outputTokensDetails: BetaResponseUsage.OutputTokensDetails,
-        totalTokens: Int
-    ) {
-        self.inputTokens = inputTokens
-        self.inputTokensDetails = inputTokensDetails
-        self.outputTokens = outputTokens
-        self.outputTokensDetails = outputTokensDetails
-        self.totalTokens = totalTokens
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case inputTokens = "input_tokens"
-        case inputTokensDetails = "input_tokens_details"
-        case outputTokens = "output_tokens"
-        case outputTokensDetails = "output_tokens_details"
-        case totalTokens = "total_tokens"
-    }
-
-    /// A detailed breakdown of the input tokens.
-    public struct InputTokensDetails: Codable, Hashable, Sendable {
-        /// The number of tokens that were retrieved from the cache.
-        /// [More on prompt caching](https://developers.openai.com/api/docs/guides/prompt-caching).
-        public var cachedTokens: Int
-        /// The number of input tokens that were written to the cache.
-        public var cacheWriteTokens: Int
-        public var cacheWriteTokensDetails: BetaCacheWriteTokensDetails?
-
-        public init(
-            cachedTokens: Int,
-            cacheWriteTokens: Int,
-            cacheWriteTokensDetails: BetaCacheWriteTokensDetails? = nil
-        ) {
-            self.cachedTokens = cachedTokens
-            self.cacheWriteTokens = cacheWriteTokens
-            self.cacheWriteTokensDetails = cacheWriteTokensDetails
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case cachedTokens = "cached_tokens"
-            case cacheWriteTokens = "cache_write_tokens"
-            case cacheWriteTokensDetails = "cache_write_tokens_details"
-        }
-    }
-
-    /// A detailed breakdown of the output tokens.
-    public struct OutputTokensDetails: Codable, Hashable, Sendable {
-        /// The number of reasoning tokens.
-        public var reasoningTokens: Int
-
-        public init(reasoningTokens: Int) {
-            self.reasoningTokens = reasoningTokens
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case reasoningTokens = "reasoning_tokens"
-        }
-    }
-}
-
-/// Emitted when a web search call is completed.
-public struct BetaResponseWebSearchCallCompletedEvent: Codable, Hashable, Sendable {
-    /// The agent that owns this multi-agent streaming event.
-    public var agent: BetaAgentTag?
-    /// The type of the event. Always `response.web_search_call.completed`.
-    public var type: String = "response.web_search_call.completed"
-    /// The index of the output item that the web search call is associated with.
-    public var outputIndex: Int
-    /// Unique ID for the output item associated with the web search call.
-    public var itemID: String
-    /// The sequence number of the web search call being processed.
-    public var sequenceNumber: Int
-
-    public init(
-        outputIndex: Int,
-        itemID: String,
-        sequenceNumber: Int,
-        agent: BetaAgentTag? = nil
-    ) {
-        self.outputIndex = outputIndex
-        self.itemID = itemID
-        self.sequenceNumber = sequenceNumber
-        self.agent = agent
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case outputIndex = "output_index"
-        case itemID = "item_id"
-        case sequenceNumber = "sequence_number"
-    }
-}
-
-/// Emitted when a web search call is initiated.
-public struct BetaResponseWebSearchCallInProgressEvent: Codable, Hashable, Sendable {
-    /// The agent that owns this multi-agent streaming event.
-    public var agent: BetaAgentTag?
-    /// The type of the event. Always `response.web_search_call.in_progress`.
-    public var type: String = "response.web_search_call.in_progress"
-    /// The index of the output item that the web search call is associated with.
-    public var outputIndex: Int
-    /// Unique ID for the output item associated with the web search call.
-    public var itemID: String
-    /// The sequence number of the web search call being processed.
-    public var sequenceNumber: Int
-
-    public init(
-        outputIndex: Int,
-        itemID: String,
-        sequenceNumber: Int,
-        agent: BetaAgentTag? = nil
-    ) {
-        self.outputIndex = outputIndex
-        self.itemID = itemID
-        self.sequenceNumber = sequenceNumber
-        self.agent = agent
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case outputIndex = "output_index"
-        case itemID = "item_id"
-        case sequenceNumber = "sequence_number"
-    }
-}
-
-/// Emitted when a web search call is executing.
-public struct BetaResponseWebSearchCallSearchingEvent: Codable, Hashable, Sendable {
-    /// The agent that owns this multi-agent streaming event.
-    public var agent: BetaAgentTag?
-    /// The type of the event. Always `response.web_search_call.searching`.
-    public var type: String = "response.web_search_call.searching"
-    /// The index of the output item that the web search call is associated with.
-    public var outputIndex: Int
-    /// Unique ID for the output item associated with the web search call.
-    public var itemID: String
-    /// The sequence number of the web search call being processed.
-    public var sequenceNumber: Int
-
-    public init(
-        outputIndex: Int,
-        itemID: String,
-        sequenceNumber: Int,
-        agent: BetaAgentTag? = nil
-    ) {
-        self.outputIndex = outputIndex
-        self.itemID = itemID
-        self.sequenceNumber = sequenceNumber
-        self.agent = agent
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case outputIndex = "output_index"
-        case itemID = "item_id"
-        case sequenceNumber = "sequence_number"
-    }
-}
-
-/// Emitted when an error occurs while processing a Responses WebSocket request.
-public struct BetaResponseWsError: Codable, Hashable, Sendable {
-    /// The agent that owns this multi-agent streaming event.
-    public var agent: BetaAgentTag?
-    /// The type of the event. Always `error`.
-    public var type: String = "error"
-    /// The HTTP status code associated with a WebSocket protocol error.
-    public var status: Int?
-    /// The sequence number of an error emitted by the response stream.
-    public var sequenceNumber: Int?
-    /// Details about the error.
-    public var error: BetaErrorPayload
-    /// The WebSocket lane that emitted this event. This field is present when the
-    /// originating `response.create` event supplied a `stream_id`.
-    public var streamID: String?
-
-    public init(
-        error: BetaErrorPayload,
-        agent: BetaAgentTag? = nil,
-        status: Int? = nil,
-        sequenceNumber: Int? = nil,
-        streamID: String? = nil
-    ) {
-        self.error = error
-        self.agent = agent
-        self.status = status
-        self.sequenceNumber = sequenceNumber
-        self.streamID = streamID
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case status
-        case sequenceNumber = "sequence_number"
-        case error
-        case streamID = "stream_id"
-    }
-}
-
-/// Client events accepted by the Responses WebSocket server.
-///
-/// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum BetaResponsesClientEvent: Codable, Hashable, Sendable {
-    /// `type`: `response.create`
-    case responseCreate(BetaResponsesClientEventResponseCreate)
-    /// `type`: `response.steer`
-    case responseSteer(BetaResponseSteerEvent)
-    /// `type`: `response.inject`
-    case responseInject(BetaResponseInjectEvent)
-    /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
-    case unknown(JSONValue)
-
-    public init(from decoder: any Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        if let keyed = try? decoder.container(keyedBy: OpenAIDynamicCodingKey.self),
-           let discriminator = try? keyed.decode(String.self, forKey: OpenAIDynamicCodingKey("type")) {
-            switch discriminator {
-            case "response.create":
-                self = .responseCreate(try container.decode(BetaResponsesClientEventResponseCreate.self))
-                return
-            case "response.steer":
-                self = .responseSteer(try container.decode(BetaResponseSteerEvent.self))
-                return
-            case "response.inject":
-                self = .responseInject(try container.decode(BetaResponseInjectEvent.self))
-                return
-            default:
-                break
-            }
-        }
-        self = .unknown(try container.decode(JSONValue.self))
-    }
-
-    public func encode(to encoder: any Encoder) throws {
-        var container = encoder.singleValueContainer()
-        switch self {
-        case .responseCreate(let value):
-            try container.encode(value)
-        case .responseSteer(let value):
-            try container.encode(value)
-        case .responseInject(let value):
-            try container.encode(value)
-        case .unknown(let value):
-            try container.encode(value)
-        }
-    }
-}
-
-/// Client event for creating a response over a persistent WebSocket connection.
-/// This payload uses the same top-level fields as `POST /v1/responses`, plus
-/// WebSocket-only envelope metadata.
-///
-/// Notes:
-/// - `stream` is implicit over WebSocket and should not be sent.
-/// - `background` is not supported over WebSocket.
-/// - `stream_id` is WebSocket-only and is not part of `POST /v1/responses`.
-public struct BetaResponsesClientEventResponseCreate: Codable, Hashable, Sendable {
-    /// The type of the client event. Always `response.create`.
-    public var type: String = "response.create"
-    /// Whether to generate output for this response. Defaults to true when omitted.
-    /// Set to false to prepare request state without model output; the response
-    /// ID can be used as previous_response_id on a later turn.
-    public var generate: Bool?
-    /// The WebSocket lane for this response. Requests with the same
-    /// `stream_id` are processed FIFO, and events for the response echo the
-    /// same `stream_id`.
-    ///
-    /// `stream_id` controls routing; `previous_response_id` controls
-    /// conversation lineage, so a new lane can fork from a response created
-    /// on another lane.
-    public var streamID: String?
-    public var metadata: BetaMetadata?
-    /// An integer between 0 and 20 specifying the maximum number of most likely
-    /// tokens to return at each token position, each with an associated log
-    /// probability. In some cases, the number of returned tokens may be fewer than
-    /// requested.
-    public var topLogprobs: Int?
-    public var temperature: Double?
-    public var topP: Double?
-    /// This field is being replaced by `safety_identifier` and `prompt_cache_key`. Use `prompt_cache_key` instead to maintain caching optimizations.
-    /// A stable identifier for your end-users.
-    /// Used to boost cache hit rates by better bucketing similar requests and  to help OpenAI detect and prevent abuse. [Learn more](https://developers.openai.com/api/docs/guides/safety-best-practices#implement-safety-identifiers).
-    ///
-    /// - Note: Deprecated by OpenAI.
-    public var user: String?
-    public var safetyIdentifier: String?
-    public var promptCacheKey: String?
-    /// - Note: Deprecated by OpenAI.
-    public var promptCacheRetention: BetaResponsesClientEventResponseCreate.PromptCacheRetention?
-    public var previousResponseID: String?
-    /// Model ID used to generate the response, like `gpt-6.2-astra`. OpenAI
-    /// offers a wide range of models with different capabilities, performance
-    /// characteristics, and price points. Refer to the [model guide](https://developers.openai.com/api/docs/models)
-    /// to browse and compare available models.
-    public var model: BetaModelIdsResponses?
-    public var background: Bool?
-    public var maxToolCalls: Int?
-    public var text: BetaResponseTextParam?
-    public var tools: BetaToolsArray?
-    public var toolChoice: BetaToolChoiceParam?
-    public var prompt: BetaPrompt?
-    public var accessPrograms: BetaAccessProgramsParam?
-    public var image: BetaImageOptionsParam?
-    public var promptCacheOptions: BetaResponsePromptCacheOptionsParam?
-    public var serviceTier: BetaServiceTierResponses?
-    /// - Note: Deprecated by OpenAI.
-    public var truncation: BetaResponsesClientEventResponseCreate.Truncation?
-    public var reasoning: BetaReasoning?
-    public var input: BetaInputParam?
-    public var include: [BetaIncludeEnum]?
-    public var parallelToolCalls: Bool?
-    public var store: Bool?
-    public var instructions: String?
-    public var moderation: BetaModerationParam?
-    /// Options for background execution on HTTP requests. The `2h` and `8h`
-    /// completion windows require `background: true`, Standard processing,
-    /// and `stream: false` or omitted.
-    public var backgroundOptions: BetaBackgroundOptionsParam?
-    public var stream: Bool?
-    public var streamOptions: BetaResponseStreamOptions?
-    public var conversation: BetaConversationParam?
-    public var contextManagement: [BetaContextManagementParam]?
-    public var maxOutputTokens: Int?
-    public var multiAgent: BetaMultiAgentParam?
-
-    public init(
-        model: BetaModelIdsResponses? = nil,
-        input: BetaInputParam? = nil,
-        prompt: BetaPrompt? = nil,
-        instructions: String? = nil,
-        generate: Bool? = nil,
-        streamID: String? = nil,
-        metadata: BetaMetadata? = nil,
-        topLogprobs: Int? = nil,
-        temperature: Double? = nil,
-        topP: Double? = nil,
-        user: String? = nil,
-        safetyIdentifier: String? = nil,
-        promptCacheKey: String? = nil,
-        promptCacheRetention: BetaResponsesClientEventResponseCreate.PromptCacheRetention? = nil,
-        previousResponseID: String? = nil,
-        background: Bool? = nil,
-        maxToolCalls: Int? = nil,
-        text: BetaResponseTextParam? = nil,
-        tools: BetaToolsArray? = nil,
-        toolChoice: BetaToolChoiceParam? = nil,
-        accessPrograms: BetaAccessProgramsParam? = nil,
-        image: BetaImageOptionsParam? = nil,
-        promptCacheOptions: BetaResponsePromptCacheOptionsParam? = nil,
-        serviceTier: BetaServiceTierResponses? = nil,
-        truncation: BetaResponsesClientEventResponseCreate.Truncation? = nil,
-        reasoning: BetaReasoning? = nil,
-        include: [BetaIncludeEnum]? = nil,
-        parallelToolCalls: Bool? = nil,
-        store: Bool? = nil,
-        moderation: BetaModerationParam? = nil,
-        backgroundOptions: BetaBackgroundOptionsParam? = nil,
-        stream: Bool? = nil,
-        streamOptions: BetaResponseStreamOptions? = nil,
-        conversation: BetaConversationParam? = nil,
-        contextManagement: [BetaContextManagementParam]? = nil,
-        maxOutputTokens: Int? = nil,
-        multiAgent: BetaMultiAgentParam? = nil
-    ) {
-        self.model = model
-        self.input = input
-        self.prompt = prompt
-        self.instructions = instructions
-        self.generate = generate
-        self.streamID = streamID
-        self.metadata = metadata
-        self.topLogprobs = topLogprobs
-        self.temperature = temperature
-        self.topP = topP
-        self.user = user
-        self.safetyIdentifier = safetyIdentifier
-        self.promptCacheKey = promptCacheKey
-        self.promptCacheRetention = promptCacheRetention
-        self.previousResponseID = previousResponseID
-        self.background = background
-        self.maxToolCalls = maxToolCalls
-        self.text = text
-        self.tools = tools
-        self.toolChoice = toolChoice
-        self.accessPrograms = accessPrograms
-        self.image = image
-        self.promptCacheOptions = promptCacheOptions
-        self.serviceTier = serviceTier
-        self.truncation = truncation
-        self.reasoning = reasoning
-        self.include = include
-        self.parallelToolCalls = parallelToolCalls
-        self.store = store
-        self.moderation = moderation
-        self.backgroundOptions = backgroundOptions
-        self.stream = stream
-        self.streamOptions = streamOptions
-        self.conversation = conversation
-        self.contextManagement = contextManagement
-        self.maxOutputTokens = maxOutputTokens
-        self.multiAgent = multiAgent
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case generate
-        case streamID = "stream_id"
-        case metadata
-        case topLogprobs = "top_logprobs"
-        case temperature
-        case topP = "top_p"
-        case user
-        case safetyIdentifier = "safety_identifier"
-        case promptCacheKey = "prompt_cache_key"
-        case promptCacheRetention = "prompt_cache_retention"
-        case previousResponseID = "previous_response_id"
-        case model
-        case background
-        case maxToolCalls = "max_tool_calls"
-        case text
-        case tools
-        case toolChoice = "tool_choice"
-        case prompt
-        case accessPrograms = "access_programs"
-        case image
-        case promptCacheOptions = "prompt_cache_options"
-        case serviceTier = "service_tier"
-        case truncation
-        case reasoning
-        case input
-        case include
-        case parallelToolCalls = "parallel_tool_calls"
-        case store
-        case instructions
-        case moderation
-        case backgroundOptions = "background_options"
-        case stream
-        case streamOptions = "stream_options"
-        case conversation
-        case contextManagement = "context_management"
-        case maxOutputTokens = "max_output_tokens"
-        case multiAgent = "multi_agent"
-    }
-
-    /// Deprecated. Use `prompt_cache_options.ttl` instead.
-    ///
-    /// The retention policy for the prompt cache. Set to `24h` to enable extended prompt caching, which keeps cached prefixes active for longer, up to a maximum of 24 hours. [Learn more](https://developers.openai.com/api/docs/guides/prompt-caching#prompt-cache-retention).
-    /// This field expresses a maximum retention policy, while
-    /// `prompt_cache_options.ttl` expresses a minimum cache lifetime. The two
-    /// fields are independent and do not interact.
-    /// For `gpt-5.5`, `gpt-5.5-pro`, and future models, only `24h` is supported.
-    ///
-    /// For older models that support both `in_memory` and `24h`, the default depends on your organization's data retention policy:
-    ///   - Organizations without ZDR enabled default to `24h`.
-    ///   - Organizations with ZDR enabled default to `in_memory` when `prompt_cache_retention` is not specified.
-    ///
-    /// This type is open: it accepts values the spec does not list yet.
-    public struct PromptCacheRetention: OpenAIStringEnum {
-        public let rawValue: String
-
-        public init(rawValue: String) {
-            self.rawValue = rawValue
-        }
-
-        public static let inMemory: Self = "in_memory"
-        public static let _24h: Self = "24h"
-
-        public static var knownValues: [Self] {
-            [.inMemory, ._24h]
-        }
-    }
-
-    /// The truncation strategy to use for the model response.
-    /// - `auto`: If the input to this Response exceeds
-    ///   the model's context window size, the model will truncate the
-    ///   response to fit the context window by dropping items from the beginning of the conversation.
-    ///   On some models, trimming can begin earlier because the API subtracts the model's
-    ///   maximum output allowance from its input limit, even if you set a lower `max_output_tokens`.
-    /// - `disabled` (default): If the input size will exceed the context window
-    ///   size for a model, the request will fail with a 400 error.
-    ///
-    /// This type is open: it accepts values the spec does not list yet.
-    public struct Truncation: OpenAIStringEnum {
-        public let rawValue: String
-
-        public init(rawValue: String) {
-            self.rawValue = rawValue
-        }
-
-        public static let auto: Self = "auto"
-        public static let disabled: Self = "disabled"
-
-        public static var knownValues: [Self] {
-            [.auto, .disabled]
-        }
-    }
-}
-
-/// Server events emitted by the Responses WebSocket server.
-///
-/// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum BetaResponsesServerEvent: Codable, Hashable, Sendable {
-    /// Emitted when there is a partial audio response.
-    ///
-    /// `type`: `response.audio.delta`
-    case responseAudioDelta(BetaResponsesServerEvent.BetaResponseAudioWsDelta)
-    /// Emitted when the audio response is complete.
-    ///
-    /// `type`: `response.audio.done`
-    case responseAudioDone(BetaResponsesServerEvent.BetaResponseAudioWsDone)
-    /// Emitted when there is a partial transcript of audio.
-    ///
-    /// `type`: `response.audio.transcript.delta`
-    case responseAudioTranscriptDelta(BetaResponsesServerEvent.BetaResponseAudioTranscriptWsDelta)
-    /// Emitted when the full audio transcript is completed.
-    ///
-    /// `type`: `response.audio.transcript.done`
-    case responseAudioTranscriptDone(BetaResponsesServerEvent.BetaResponseAudioTranscriptWsDone)
-    /// Emitted when a partial code snippet is streamed by the code interpreter.
-    ///
-    /// `type`: `response.code_interpreter_call_code.delta`
-    case responseCodeInterpreterCallCodeDelta(BetaResponsesServerEvent.BetaResponseCodeInterpreterCallCodeWsDelta)
-    /// Emitted when the code snippet is finalized by the code interpreter.
-    ///
-    /// `type`: `response.code_interpreter_call_code.done`
-    case responseCodeInterpreterCallCodeDone(BetaResponsesServerEvent.BetaResponseCodeInterpreterCallCodeWsDone)
-    /// Emitted when the code interpreter call is completed.
-    ///
-    /// `type`: `response.code_interpreter_call.completed`
-    case responseCodeInterpreterCallCompleted(BetaResponsesServerEvent.BetaResponseCodeInterpreterCallWsCompleted)
-    /// Emitted when a code interpreter call is in progress.
-    ///
-    /// `type`: `response.code_interpreter_call.in_progress`
-    case responseCodeInterpreterCallInProgress(BetaResponsesServerEvent.BetaResponseCodeInterpreterCallInWsProgress)
-    /// Emitted when the code interpreter is actively interpreting the code snippet.
-    ///
-    /// `type`: `response.code_interpreter_call.interpreting`
-    case responseCodeInterpreterCallInterpreting(BetaResponsesServerEvent.BetaResponseCodeInterpreterCallWsInterpreting)
-    /// Emitted when new summary content is sampled for a compaction trigger. Contains no summary content.
-    ///
-    /// `type`: `response.compaction.compacting`
-    case responseCompactionCompacting(BetaResponsesServerEvent.BetaResponseCompactionWsCompacting)
-    /// Emitted when the model response is complete.
-    ///
-    /// `type`: `response.completed`
-    case responseCompleted(BetaResponsesServerEvent.BetaResponseWsCompleted)
-    /// Emitted when a new content part is added.
-    ///
-    /// `type`: `response.content_part.added`
-    case responseContentPartAdded(BetaResponsesServerEvent.BetaResponseContentPartWsAdded)
-    /// Emitted when a content part is done.
-    ///
-    /// `type`: `response.content_part.done`
-    case responseContentPartDone(BetaResponsesServerEvent.BetaResponseContentPartWsDone)
-    /// An event that is emitted when a response is created.
-    ///
-    ///
-    /// `type`: `response.created`
-    case responseCreated(BetaResponsesServerEvent.BetaResponseWsCreated)
-    /// Emitted when a file search call is completed (results found).
-    ///
-    /// `type`: `response.file_search_call.completed`
-    case responseFileSearchCallCompleted(BetaResponsesServerEvent.BetaResponseFileSearchCallWsCompleted)
-    /// Emitted when a file search call is initiated.
-    ///
-    /// `type`: `response.file_search_call.in_progress`
-    case responseFileSearchCallInProgress(BetaResponsesServerEvent.BetaResponseFileSearchCallInWsProgress)
-    /// Emitted when a file search is currently searching.
-    ///
-    /// `type`: `response.file_search_call.searching`
-    case responseFileSearchCallSearching(BetaResponsesServerEvent.BetaResponseFileSearchCallWsSearching)
-    /// Emitted when there is a partial function-call arguments delta.
-    ///
-    /// `type`: `response.function_call_arguments.delta`
-    case responseFunctionCallArgumentsDelta(BetaResponsesServerEvent.BetaResponseFunctionCallArgumentsWsDelta)
-    /// Emitted when function-call arguments are finalized.
-    ///
-    /// `type`: `response.function_call_arguments.done`
-    case responseFunctionCallArgumentsDone(BetaResponsesServerEvent.BetaResponseFunctionCallArgumentsWsDone)
-    /// A streaming event that indicated a shell command was added to a tool call.
-    ///
-    /// `type`: `response.shell_call_command.added`
-    case responseShellCallCommandAdded(BetaResponsesServerEvent.BetaResponseShellCallCommandWsAdded)
-    /// A streaming event that indicated a shell command was incrementally updated.
-    ///
-    /// `type`: `response.shell_call_command.delta`
-    case responseShellCallCommandDelta(BetaResponsesServerEvent.BetaResponseShellCallCommandWsDelta)
-    /// A streaming event that indicated a shell command was completed.
-    ///
-    /// `type`: `response.shell_call_command.done`
-    case responseShellCallCommandDone(BetaResponsesServerEvent.BetaResponseShellCallCommandWsDone)
-    /// A streaming event that indicated shell call output was incrementally added.
-    ///
-    /// `type`: `response.shell_call_output_content.delta`
-    case responseShellCallOutputContentDelta(BetaResponsesServerEvent.BetaResponseShellCallOutputContentWsDelta)
-    /// A streaming event that indicated shell call output was completed.
-    ///
-    /// `type`: `response.shell_call_output_content.done`
-    case responseShellCallOutputContentDone(BetaResponsesServerEvent.BetaResponseShellCallOutputContentWsDone)
-    /// Emitted when the response is in progress.
-    ///
-    /// `type`: `response.in_progress`
-    case responseInProgress(BetaResponsesServerEvent.BetaResponseInWsProgress)
-    /// An event that is emitted when a response fails.
-    ///
-    ///
-    /// `type`: `response.failed`
-    case responseFailed(BetaResponsesServerEvent.BetaResponseWsFailed)
-    /// An event that is emitted when a response finishes as incomplete.
-    ///
-    /// Over WebSocket, steering can finish a response with
-    /// `response.incomplete_details.reason` set to `steered`, followed automatically
-    /// by a successor `response.created` that commits the queued steering input.
-    ///
-    ///
-    /// `type`: `response.incomplete`
-    case responseIncomplete(BetaResponsesServerEvent.BetaResponseWsIncomplete)
-    /// Emitted when a new output item is added.
-    ///
-    /// `type`: `response.output_item.added`
-    case responseOutputItemAdded(BetaResponsesServerEvent.BetaResponseOutputItemWsAdded)
-    /// Emitted when an output item is marked done.
-    ///
-    /// `type`: `response.output_item.done`
-    case responseOutputItemDone(BetaResponsesServerEvent.BetaResponseOutputItemWsDone)
-    /// Emitted when a new reasoning summary part is added.
-    ///
-    /// `type`: `response.reasoning_summary_part.added`
-    case responseReasoningSummaryPartAdded(BetaResponsesServerEvent.BetaResponseReasoningSummaryPartWsAdded)
-    /// Emitted when a reasoning summary part is completed.
-    ///
-    /// `type`: `response.reasoning_summary_part.done`
-    case responseReasoningSummaryPartDone(BetaResponsesServerEvent.BetaResponseReasoningSummaryPartWsDone)
-    /// Emitted when a delta is added to a reasoning summary text.
-    ///
-    /// `type`: `response.reasoning_summary_text.delta`
-    case responseReasoningSummaryTextDelta(BetaResponsesServerEvent.BetaResponseReasoningSummaryTextWsDelta)
-    /// Emitted when a reasoning summary text is completed.
-    ///
-    /// `type`: `response.reasoning_summary_text.done`
-    case responseReasoningSummaryTextDone(BetaResponsesServerEvent.BetaResponseReasoningSummaryTextWsDone)
-    /// Emitted when a delta is added to a reasoning text.
-    ///
-    /// `type`: `response.reasoning_text.delta`
-    case responseReasoningTextDelta(BetaResponsesServerEvent.BetaResponseReasoningTextWsDelta)
-    /// Emitted when a reasoning text is completed.
-    ///
-    /// `type`: `response.reasoning_text.done`
-    case responseReasoningTextDone(BetaResponsesServerEvent.BetaResponseReasoningTextWsDone)
-    /// Emitted when there is a partial refusal text.
-    ///
-    /// `type`: `response.refusal.delta`
-    case responseRefusalDelta(BetaResponsesServerEvent.BetaResponseRefusalWsDelta)
-    /// Emitted when refusal text is finalized.
-    ///
-    /// `type`: `response.refusal.done`
-    case responseRefusalDone(BetaResponsesServerEvent.BetaResponseRefusalWsDone)
-    /// Emitted when there is an additional text delta.
-    ///
-    /// `type`: `response.output_text.delta`
-    case responseOutputTextDelta(BetaResponsesServerEvent.BetaResponseTextWsDelta)
-    /// Emitted when text content is finalized.
-    ///
-    /// `type`: `response.output_text.done`
-    case responseOutputTextDone(BetaResponsesServerEvent.BetaResponseTextWsDone)
-    /// Emitted when a web search call is completed.
-    ///
-    /// `type`: `response.web_search_call.completed`
-    case responseWebSearchCallCompleted(BetaResponsesServerEvent.BetaResponseWebSearchCallWsCompleted)
-    /// Emitted when a web search call is initiated.
-    ///
-    /// `type`: `response.web_search_call.in_progress`
-    case responseWebSearchCallInProgress(BetaResponsesServerEvent.BetaResponseWebSearchCallInWsProgress)
-    /// Emitted when a web search call is executing.
-    ///
-    /// `type`: `response.web_search_call.searching`
-    case responseWebSearchCallSearching(BetaResponsesServerEvent.BetaResponseWebSearchCallWsSearching)
-    /// Emitted when an image generation tool call has completed and the final image is available.
-    ///
-    ///
-    /// `type`: `response.image_generation_call.completed`
-    case responseImageGenerationCallCompleted(BetaResponsesServerEvent.BetaResponseImageGenCallWsCompleted)
-    /// Emitted when an image generation tool call is actively generating an image (intermediate state).
-    ///
-    ///
-    /// `type`: `response.image_generation_call.generating`
-    case responseImageGenerationCallGenerating(BetaResponsesServerEvent.BetaResponseImageGenCallWsGenerating)
-    /// Emitted when an image generation tool call is in progress.
-    ///
-    ///
-    /// `type`: `response.image_generation_call.in_progress`
-    case responseImageGenerationCallInProgress(BetaResponsesServerEvent.BetaResponseImageGenCallInWsProgress)
-    /// Emitted when a partial image is available during image generation streaming.
-    ///
-    ///
-    /// `type`: `response.image_generation_call.partial_image`
-    case responseImageGenerationCallPartialImage(BetaResponsesServerEvent.BetaResponseImageGenCallPartialWsImage)
-    /// Emitted when there is a delta (partial update) to the arguments of an MCP tool call.
-    ///
-    ///
-    /// `type`: `response.mcp_call_arguments.delta`
-    case responseMcpCallArgumentsDelta(BetaResponsesServerEvent.BetaResponseMcpCallArgumentsWsDelta)
-    /// Emitted when the arguments for an MCP tool call are finalized.
-    ///
-    ///
-    /// `type`: `response.mcp_call_arguments.done`
-    case responseMcpCallArgumentsDone(BetaResponsesServerEvent.BetaResponseMcpCallArgumentsWsDone)
-    /// Emitted when an MCP  tool call has completed successfully.
-    ///
-    ///
-    /// `type`: `response.mcp_call.completed`
-    case responseMcpCallCompleted(BetaResponsesServerEvent.BetaResponseMcpCallWsCompleted)
-    /// Emitted when an MCP  tool call has failed.
-    ///
-    ///
-    /// `type`: `response.mcp_call.failed`
-    case responseMcpCallFailed(BetaResponsesServerEvent.BetaResponseMcpCallWsFailed)
-    /// Emitted when an MCP  tool call is in progress.
-    ///
-    ///
-    /// `type`: `response.mcp_call.in_progress`
-    case responseMcpCallInProgress(BetaResponsesServerEvent.BetaResponseMcpCallInWsProgress)
-    /// Emitted when the list of available MCP tools has been successfully retrieved.
-    ///
-    ///
-    /// `type`: `response.mcp_list_tools.completed`
-    case responseMcpListToolsCompleted(BetaResponsesServerEvent.BetaResponseMcpListToolsWsCompleted)
-    /// Emitted when the attempt to list available MCP tools has failed.
-    ///
-    ///
-    /// `type`: `response.mcp_list_tools.failed`
-    case responseMcpListToolsFailed(BetaResponsesServerEvent.BetaResponseMcpListToolsWsFailed)
-    /// Emitted when the system is in the process of retrieving the list of available MCP tools.
-    ///
-    ///
-    /// `type`: `response.mcp_list_tools.in_progress`
-    case responseMcpListToolsInProgress(BetaResponsesServerEvent.BetaResponseMcpListToolsInWsProgress)
-    /// Emitted when an annotation is added to output text content.
-    ///
-    ///
-    /// `type`: `response.output_text.annotation.added`
-    case responseOutputTextAnnotationAdded(BetaResponsesServerEvent.BetaResponseOutputTextAnnotationWsAdded)
-    /// Emitted when a response is queued and waiting to be processed.
-    ///
-    ///
-    /// `type`: `response.queued`
-    case responseQueued(BetaResponsesServerEvent.BetaResponseWsQueued)
-    /// Event representing a delta (partial update) to the input of a custom tool call.
-    ///
-    ///
-    /// `type`: `response.custom_tool_call_input.delta`
-    case responseCustomToolCallInputDelta(BetaResponsesServerEvent.BetaResponseCustomToolCallInputWsDelta)
-    /// Event indicating that input for a custom tool call is complete.
-    ///
-    ///
-    /// `type`: `response.custom_tool_call_input.done`
-    case responseCustomToolCallInputDone(BetaResponsesServerEvent.BetaResponseCustomToolCallInputWsDone)
-    /// `type`: `error`
-    case error(BetaResponseWsError)
-    /// `type`: `response.steer.accepted`
-    case responseSteerAccepted(BetaResponseSteerAcceptedEvent)
-    /// `type`: `response.steer.pending`
-    case responseSteerPending(BetaResponseSteerPendingEvent)
-    /// `type`: `response.steer.failed`
-    case responseSteerFailed(BetaResponseSteerFailedEvent)
-    /// `type`: `response.inject.created`
-    case responseInjectCreated(BetaResponseInjectCreatedEvent)
-    /// `type`: `response.inject.failed`
-    case responseInjectFailed(BetaResponseInjectFailedEvent)
-    /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
-    case unknown(JSONValue)
-
-    public init(from decoder: any Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        if let keyed = try? decoder.container(keyedBy: OpenAIDynamicCodingKey.self),
-           let discriminator = try? keyed.decode(String.self, forKey: OpenAIDynamicCodingKey("type")) {
-            switch discriminator {
-            case "response.audio.delta":
-                self = .responseAudioDelta(try container.decode(BetaResponsesServerEvent.BetaResponseAudioWsDelta.self))
-                return
-            case "response.audio.done":
-                self = .responseAudioDone(try container.decode(BetaResponsesServerEvent.BetaResponseAudioWsDone.self))
-                return
-            case "response.audio.transcript.delta":
-                self = .responseAudioTranscriptDelta(try container.decode(BetaResponsesServerEvent.BetaResponseAudioTranscriptWsDelta.self))
-                return
-            case "response.audio.transcript.done":
-                self = .responseAudioTranscriptDone(try container.decode(BetaResponsesServerEvent.BetaResponseAudioTranscriptWsDone.self))
-                return
-            case "response.code_interpreter_call_code.delta":
-                self = .responseCodeInterpreterCallCodeDelta(try container.decode(BetaResponsesServerEvent.BetaResponseCodeInterpreterCallCodeWsDelta.self))
-                return
-            case "response.code_interpreter_call_code.done":
-                self = .responseCodeInterpreterCallCodeDone(try container.decode(BetaResponsesServerEvent.BetaResponseCodeInterpreterCallCodeWsDone.self))
-                return
-            case "response.code_interpreter_call.completed":
-                self = .responseCodeInterpreterCallCompleted(try container.decode(BetaResponsesServerEvent.BetaResponseCodeInterpreterCallWsCompleted.self))
-                return
-            case "response.code_interpreter_call.in_progress":
-                self = .responseCodeInterpreterCallInProgress(try container.decode(BetaResponsesServerEvent.BetaResponseCodeInterpreterCallInWsProgress.self))
-                return
-            case "response.code_interpreter_call.interpreting":
-                self = .responseCodeInterpreterCallInterpreting(try container.decode(BetaResponsesServerEvent.BetaResponseCodeInterpreterCallWsInterpreting.self))
-                return
-            case "response.compaction.compacting":
-                self = .responseCompactionCompacting(try container.decode(BetaResponsesServerEvent.BetaResponseCompactionWsCompacting.self))
-                return
-            case "response.completed":
-                self = .responseCompleted(try container.decode(BetaResponsesServerEvent.BetaResponseWsCompleted.self))
-                return
-            case "response.content_part.added":
-                self = .responseContentPartAdded(try container.decode(BetaResponsesServerEvent.BetaResponseContentPartWsAdded.self))
-                return
-            case "response.content_part.done":
-                self = .responseContentPartDone(try container.decode(BetaResponsesServerEvent.BetaResponseContentPartWsDone.self))
-                return
-            case "response.created":
-                self = .responseCreated(try container.decode(BetaResponsesServerEvent.BetaResponseWsCreated.self))
-                return
-            case "response.file_search_call.completed":
-                self = .responseFileSearchCallCompleted(try container.decode(BetaResponsesServerEvent.BetaResponseFileSearchCallWsCompleted.self))
-                return
-            case "response.file_search_call.in_progress":
-                self = .responseFileSearchCallInProgress(try container.decode(BetaResponsesServerEvent.BetaResponseFileSearchCallInWsProgress.self))
-                return
-            case "response.file_search_call.searching":
-                self = .responseFileSearchCallSearching(try container.decode(BetaResponsesServerEvent.BetaResponseFileSearchCallWsSearching.self))
-                return
-            case "response.function_call_arguments.delta":
-                self = .responseFunctionCallArgumentsDelta(try container.decode(BetaResponsesServerEvent.BetaResponseFunctionCallArgumentsWsDelta.self))
-                return
-            case "response.function_call_arguments.done":
-                self = .responseFunctionCallArgumentsDone(try container.decode(BetaResponsesServerEvent.BetaResponseFunctionCallArgumentsWsDone.self))
-                return
-            case "response.shell_call_command.added":
-                self = .responseShellCallCommandAdded(try container.decode(BetaResponsesServerEvent.BetaResponseShellCallCommandWsAdded.self))
-                return
-            case "response.shell_call_command.delta":
-                self = .responseShellCallCommandDelta(try container.decode(BetaResponsesServerEvent.BetaResponseShellCallCommandWsDelta.self))
-                return
-            case "response.shell_call_command.done":
-                self = .responseShellCallCommandDone(try container.decode(BetaResponsesServerEvent.BetaResponseShellCallCommandWsDone.self))
-                return
-            case "response.shell_call_output_content.delta":
-                self = .responseShellCallOutputContentDelta(try container.decode(BetaResponsesServerEvent.BetaResponseShellCallOutputContentWsDelta.self))
-                return
-            case "response.shell_call_output_content.done":
-                self = .responseShellCallOutputContentDone(try container.decode(BetaResponsesServerEvent.BetaResponseShellCallOutputContentWsDone.self))
-                return
-            case "response.in_progress":
-                self = .responseInProgress(try container.decode(BetaResponsesServerEvent.BetaResponseInWsProgress.self))
-                return
-            case "response.failed":
-                self = .responseFailed(try container.decode(BetaResponsesServerEvent.BetaResponseWsFailed.self))
-                return
-            case "response.incomplete":
-                self = .responseIncomplete(try container.decode(BetaResponsesServerEvent.BetaResponseWsIncomplete.self))
-                return
-            case "response.output_item.added":
-                self = .responseOutputItemAdded(try container.decode(BetaResponsesServerEvent.BetaResponseOutputItemWsAdded.self))
-                return
-            case "response.output_item.done":
-                self = .responseOutputItemDone(try container.decode(BetaResponsesServerEvent.BetaResponseOutputItemWsDone.self))
-                return
-            case "response.reasoning_summary_part.added":
-                self = .responseReasoningSummaryPartAdded(try container.decode(BetaResponsesServerEvent.BetaResponseReasoningSummaryPartWsAdded.self))
-                return
-            case "response.reasoning_summary_part.done":
-                self = .responseReasoningSummaryPartDone(try container.decode(BetaResponsesServerEvent.BetaResponseReasoningSummaryPartWsDone.self))
-                return
-            case "response.reasoning_summary_text.delta":
-                self = .responseReasoningSummaryTextDelta(try container.decode(BetaResponsesServerEvent.BetaResponseReasoningSummaryTextWsDelta.self))
-                return
-            case "response.reasoning_summary_text.done":
-                self = .responseReasoningSummaryTextDone(try container.decode(BetaResponsesServerEvent.BetaResponseReasoningSummaryTextWsDone.self))
-                return
-            case "response.reasoning_text.delta":
-                self = .responseReasoningTextDelta(try container.decode(BetaResponsesServerEvent.BetaResponseReasoningTextWsDelta.self))
-                return
-            case "response.reasoning_text.done":
-                self = .responseReasoningTextDone(try container.decode(BetaResponsesServerEvent.BetaResponseReasoningTextWsDone.self))
-                return
-            case "response.refusal.delta":
-                self = .responseRefusalDelta(try container.decode(BetaResponsesServerEvent.BetaResponseRefusalWsDelta.self))
-                return
-            case "response.refusal.done":
-                self = .responseRefusalDone(try container.decode(BetaResponsesServerEvent.BetaResponseRefusalWsDone.self))
-                return
-            case "response.output_text.delta":
-                self = .responseOutputTextDelta(try container.decode(BetaResponsesServerEvent.BetaResponseTextWsDelta.self))
-                return
-            case "response.output_text.done":
-                self = .responseOutputTextDone(try container.decode(BetaResponsesServerEvent.BetaResponseTextWsDone.self))
-                return
-            case "response.web_search_call.completed":
-                self = .responseWebSearchCallCompleted(try container.decode(BetaResponsesServerEvent.BetaResponseWebSearchCallWsCompleted.self))
-                return
-            case "response.web_search_call.in_progress":
-                self = .responseWebSearchCallInProgress(try container.decode(BetaResponsesServerEvent.BetaResponseWebSearchCallInWsProgress.self))
-                return
-            case "response.web_search_call.searching":
-                self = .responseWebSearchCallSearching(try container.decode(BetaResponsesServerEvent.BetaResponseWebSearchCallWsSearching.self))
-                return
-            case "response.image_generation_call.completed":
-                self = .responseImageGenerationCallCompleted(try container.decode(BetaResponsesServerEvent.BetaResponseImageGenCallWsCompleted.self))
-                return
-            case "response.image_generation_call.generating":
-                self = .responseImageGenerationCallGenerating(try container.decode(BetaResponsesServerEvent.BetaResponseImageGenCallWsGenerating.self))
-                return
-            case "response.image_generation_call.in_progress":
-                self = .responseImageGenerationCallInProgress(try container.decode(BetaResponsesServerEvent.BetaResponseImageGenCallInWsProgress.self))
-                return
-            case "response.image_generation_call.partial_image":
-                self = .responseImageGenerationCallPartialImage(try container.decode(BetaResponsesServerEvent.BetaResponseImageGenCallPartialWsImage.self))
-                return
-            case "response.mcp_call_arguments.delta":
-                self = .responseMcpCallArgumentsDelta(try container.decode(BetaResponsesServerEvent.BetaResponseMcpCallArgumentsWsDelta.self))
-                return
-            case "response.mcp_call_arguments.done":
-                self = .responseMcpCallArgumentsDone(try container.decode(BetaResponsesServerEvent.BetaResponseMcpCallArgumentsWsDone.self))
-                return
-            case "response.mcp_call.completed":
-                self = .responseMcpCallCompleted(try container.decode(BetaResponsesServerEvent.BetaResponseMcpCallWsCompleted.self))
-                return
-            case "response.mcp_call.failed":
-                self = .responseMcpCallFailed(try container.decode(BetaResponsesServerEvent.BetaResponseMcpCallWsFailed.self))
-                return
-            case "response.mcp_call.in_progress":
-                self = .responseMcpCallInProgress(try container.decode(BetaResponsesServerEvent.BetaResponseMcpCallInWsProgress.self))
-                return
-            case "response.mcp_list_tools.completed":
-                self = .responseMcpListToolsCompleted(try container.decode(BetaResponsesServerEvent.BetaResponseMcpListToolsWsCompleted.self))
-                return
-            case "response.mcp_list_tools.failed":
-                self = .responseMcpListToolsFailed(try container.decode(BetaResponsesServerEvent.BetaResponseMcpListToolsWsFailed.self))
-                return
-            case "response.mcp_list_tools.in_progress":
-                self = .responseMcpListToolsInProgress(try container.decode(BetaResponsesServerEvent.BetaResponseMcpListToolsInWsProgress.self))
-                return
-            case "response.output_text.annotation.added":
-                self = .responseOutputTextAnnotationAdded(try container.decode(BetaResponsesServerEvent.BetaResponseOutputTextAnnotationWsAdded.self))
-                return
-            case "response.queued":
-                self = .responseQueued(try container.decode(BetaResponsesServerEvent.BetaResponseWsQueued.self))
-                return
-            case "response.custom_tool_call_input.delta":
-                self = .responseCustomToolCallInputDelta(try container.decode(BetaResponsesServerEvent.BetaResponseCustomToolCallInputWsDelta.self))
-                return
-            case "response.custom_tool_call_input.done":
-                self = .responseCustomToolCallInputDone(try container.decode(BetaResponsesServerEvent.BetaResponseCustomToolCallInputWsDone.self))
-                return
-            case "error":
-                self = .error(try container.decode(BetaResponseWsError.self))
-                return
-            case "response.steer.accepted":
-                self = .responseSteerAccepted(try container.decode(BetaResponseSteerAcceptedEvent.self))
-                return
-            case "response.steer.pending":
-                self = .responseSteerPending(try container.decode(BetaResponseSteerPendingEvent.self))
-                return
-            case "response.steer.failed":
-                self = .responseSteerFailed(try container.decode(BetaResponseSteerFailedEvent.self))
-                return
-            case "response.inject.created":
-                self = .responseInjectCreated(try container.decode(BetaResponseInjectCreatedEvent.self))
-                return
-            case "response.inject.failed":
-                self = .responseInjectFailed(try container.decode(BetaResponseInjectFailedEvent.self))
-                return
-            default:
-                break
-            }
-        }
-        self = .unknown(try container.decode(JSONValue.self))
-    }
-
-    public func encode(to encoder: any Encoder) throws {
-        var container = encoder.singleValueContainer()
-        switch self {
-        case .responseAudioDelta(let value):
-            try container.encode(value)
-        case .responseAudioDone(let value):
-            try container.encode(value)
-        case .responseAudioTranscriptDelta(let value):
-            try container.encode(value)
-        case .responseAudioTranscriptDone(let value):
-            try container.encode(value)
-        case .responseCodeInterpreterCallCodeDelta(let value):
-            try container.encode(value)
-        case .responseCodeInterpreterCallCodeDone(let value):
-            try container.encode(value)
-        case .responseCodeInterpreterCallCompleted(let value):
-            try container.encode(value)
-        case .responseCodeInterpreterCallInProgress(let value):
-            try container.encode(value)
-        case .responseCodeInterpreterCallInterpreting(let value):
-            try container.encode(value)
-        case .responseCompactionCompacting(let value):
-            try container.encode(value)
-        case .responseCompleted(let value):
-            try container.encode(value)
-        case .responseContentPartAdded(let value):
-            try container.encode(value)
-        case .responseContentPartDone(let value):
-            try container.encode(value)
-        case .responseCreated(let value):
-            try container.encode(value)
-        case .responseFileSearchCallCompleted(let value):
-            try container.encode(value)
-        case .responseFileSearchCallInProgress(let value):
-            try container.encode(value)
-        case .responseFileSearchCallSearching(let value):
-            try container.encode(value)
-        case .responseFunctionCallArgumentsDelta(let value):
-            try container.encode(value)
-        case .responseFunctionCallArgumentsDone(let value):
-            try container.encode(value)
-        case .responseShellCallCommandAdded(let value):
-            try container.encode(value)
-        case .responseShellCallCommandDelta(let value):
-            try container.encode(value)
-        case .responseShellCallCommandDone(let value):
-            try container.encode(value)
-        case .responseShellCallOutputContentDelta(let value):
-            try container.encode(value)
-        case .responseShellCallOutputContentDone(let value):
-            try container.encode(value)
-        case .responseInProgress(let value):
-            try container.encode(value)
-        case .responseFailed(let value):
-            try container.encode(value)
-        case .responseIncomplete(let value):
-            try container.encode(value)
-        case .responseOutputItemAdded(let value):
-            try container.encode(value)
-        case .responseOutputItemDone(let value):
-            try container.encode(value)
-        case .responseReasoningSummaryPartAdded(let value):
-            try container.encode(value)
-        case .responseReasoningSummaryPartDone(let value):
-            try container.encode(value)
-        case .responseReasoningSummaryTextDelta(let value):
-            try container.encode(value)
-        case .responseReasoningSummaryTextDone(let value):
-            try container.encode(value)
-        case .responseReasoningTextDelta(let value):
-            try container.encode(value)
-        case .responseReasoningTextDone(let value):
-            try container.encode(value)
-        case .responseRefusalDelta(let value):
-            try container.encode(value)
-        case .responseRefusalDone(let value):
-            try container.encode(value)
-        case .responseOutputTextDelta(let value):
-            try container.encode(value)
-        case .responseOutputTextDone(let value):
-            try container.encode(value)
-        case .responseWebSearchCallCompleted(let value):
-            try container.encode(value)
-        case .responseWebSearchCallInProgress(let value):
-            try container.encode(value)
-        case .responseWebSearchCallSearching(let value):
-            try container.encode(value)
-        case .responseImageGenerationCallCompleted(let value):
-            try container.encode(value)
-        case .responseImageGenerationCallGenerating(let value):
-            try container.encode(value)
-        case .responseImageGenerationCallInProgress(let value):
-            try container.encode(value)
-        case .responseImageGenerationCallPartialImage(let value):
-            try container.encode(value)
-        case .responseMcpCallArgumentsDelta(let value):
-            try container.encode(value)
-        case .responseMcpCallArgumentsDone(let value):
-            try container.encode(value)
-        case .responseMcpCallCompleted(let value):
-            try container.encode(value)
-        case .responseMcpCallFailed(let value):
-            try container.encode(value)
-        case .responseMcpCallInProgress(let value):
-            try container.encode(value)
-        case .responseMcpListToolsCompleted(let value):
-            try container.encode(value)
-        case .responseMcpListToolsFailed(let value):
-            try container.encode(value)
-        case .responseMcpListToolsInProgress(let value):
-            try container.encode(value)
-        case .responseOutputTextAnnotationAdded(let value):
-            try container.encode(value)
-        case .responseQueued(let value):
-            try container.encode(value)
-        case .responseCustomToolCallInputDelta(let value):
-            try container.encode(value)
-        case .responseCustomToolCallInputDone(let value):
-            try container.encode(value)
-        case .error(let value):
-            try container.encode(value)
-        case .responseSteerAccepted(let value):
-            try container.encode(value)
-        case .responseSteerPending(let value):
-            try container.encode(value)
-        case .responseSteerFailed(let value):
-            try container.encode(value)
-        case .responseInjectCreated(let value):
-            try container.encode(value)
-        case .responseInjectFailed(let value):
-            try container.encode(value)
-        case .unknown(let value):
-            try container.encode(value)
-        }
-    }
-
-    /// Emitted when there is a partial audio response.
-    public struct BetaResponseAudioWsDelta: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.audio.delta`.
-        public var type: String = "response.audio.delta"
-        /// A sequence number for this chunk of the stream response.
-        public var sequenceNumber: Int
-        /// A chunk of Base64 encoded response audio bytes.
-        public var delta: String
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            sequenceNumber: Int,
-            delta: String,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.sequenceNumber = sequenceNumber
-            self.delta = delta
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case sequenceNumber = "sequence_number"
-            case delta
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when the audio response is complete.
-    public struct BetaResponseAudioWsDone: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.audio.done`.
-        public var type: String = "response.audio.done"
-        /// The sequence number of the delta.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when there is a partial transcript of audio.
-    public struct BetaResponseAudioTranscriptWsDelta: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.audio.transcript.delta`.
-        public var type: String = "response.audio.transcript.delta"
-        /// The partial transcript of the audio response.
-        public var delta: String
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            delta: String,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.delta = delta
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case delta
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when the full audio transcript is completed.
-    public struct BetaResponseAudioTranscriptWsDone: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.audio.transcript.done`.
-        public var type: String = "response.audio.transcript.done"
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when a partial code snippet is streamed by the code interpreter.
-    public struct BetaResponseCodeInterpreterCallCodeWsDelta: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.code_interpreter_call_code.delta`.
-        public var type: String = "response.code_interpreter_call_code.delta"
-        /// The index of the output item in the response for which the code is being streamed.
-        public var outputIndex: Int
-        /// The unique identifier of the code interpreter tool call item.
-        public var itemID: String
-        /// The partial code snippet being streamed by the code interpreter.
-        public var delta: String
-        /// The sequence number of this event, used to order streaming events.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            outputIndex: Int,
-            itemID: String,
-            delta: String,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.outputIndex = outputIndex
-            self.itemID = itemID
-            self.delta = delta
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case delta
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when the code snippet is finalized by the code interpreter.
-    public struct BetaResponseCodeInterpreterCallCodeWsDone: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.code_interpreter_call_code.done`.
-        public var type: String = "response.code_interpreter_call_code.done"
-        /// The index of the output item in the response for which the code is finalized.
-        public var outputIndex: Int
-        /// The unique identifier of the code interpreter tool call item.
-        public var itemID: String
-        /// The final code snippet output by the code interpreter.
-        public var code: String
-        /// The sequence number of this event, used to order streaming events.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            outputIndex: Int,
-            itemID: String,
-            code: String,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.outputIndex = outputIndex
-            self.itemID = itemID
-            self.code = code
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case code
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when the code interpreter call is completed.
-    public struct BetaResponseCodeInterpreterCallWsCompleted: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.code_interpreter_call.completed`.
-        public var type: String = "response.code_interpreter_call.completed"
-        /// The index of the output item in the response for which the code interpreter call is completed.
-        public var outputIndex: Int
-        /// The unique identifier of the code interpreter tool call item.
-        public var itemID: String
-        /// The sequence number of this event, used to order streaming events.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            outputIndex: Int,
-            itemID: String,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.outputIndex = outputIndex
-            self.itemID = itemID
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when a code interpreter call is in progress.
-    public struct BetaResponseCodeInterpreterCallInWsProgress: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.code_interpreter_call.in_progress`.
-        public var type: String = "response.code_interpreter_call.in_progress"
-        /// The index of the output item in the response for which the code interpreter call is in progress.
-        public var outputIndex: Int
-        /// The unique identifier of the code interpreter tool call item.
-        public var itemID: String
-        /// The sequence number of this event, used to order streaming events.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            outputIndex: Int,
-            itemID: String,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.outputIndex = outputIndex
-            self.itemID = itemID
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when the code interpreter is actively interpreting the code snippet.
-    public struct BetaResponseCodeInterpreterCallWsInterpreting: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.code_interpreter_call.interpreting`.
-        public var type: String = "response.code_interpreter_call.interpreting"
-        /// The index of the output item in the response for which the code interpreter is interpreting code.
-        public var outputIndex: Int
-        /// The unique identifier of the code interpreter tool call item.
-        public var itemID: String
-        /// The sequence number of this event, used to order streaming events.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            outputIndex: Int,
-            itemID: String,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.outputIndex = outputIndex
-            self.itemID = itemID
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when new summary content is sampled for a compaction trigger. Contains no summary content.
-    public struct BetaResponseCompactionWsCompacting: Codable, Hashable, Sendable {
-        /// The type of the event, always `response.compaction.compacting`.
-        public var type: String = "response.compaction.compacting"
-        /// The sequence number of the event that was emitted.
-        public var sequenceNumber: Int
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The index of the compaction output item.
-        public var outputIndex: Int
-        /// The ID of the compaction output item.
-        public var itemID: String
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            sequenceNumber: Int,
-            outputIndex: Int,
-            itemID: String,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.sequenceNumber = sequenceNumber
-            self.outputIndex = outputIndex
-            self.itemID = itemID
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case sequenceNumber = "sequence_number"
-            case agent
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when the model response is complete.
-    public struct BetaResponseWsCompleted: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.completed`.
-        public var type: String = "response.completed"
-        /// Properties of the completed response.
-        public var response: BetaResponse
-        /// The sequence number for this event.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            response: BetaResponse,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.response = response
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case response
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when a new content part is added.
-    public struct BetaResponseContentPartWsAdded: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.content_part.added`.
-        public var type: String = "response.content_part.added"
-        /// The ID of the output item that the content part was added to.
-        public var itemID: String
-        /// The index of the output item that the content part was added to.
-        public var outputIndex: Int
-        /// The index of the content part that was added.
-        public var contentIndex: Int
-        /// The content part that was added.
-        public var part: BetaOutputContent
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            itemID: String,
-            outputIndex: Int,
-            contentIndex: Int,
-            part: BetaOutputContent,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.itemID = itemID
-            self.outputIndex = outputIndex
-            self.contentIndex = contentIndex
-            self.part = part
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case contentIndex = "content_index"
-            case part
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when a content part is done.
-    public struct BetaResponseContentPartWsDone: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.content_part.done`.
-        public var type: String = "response.content_part.done"
-        /// The ID of the output item that the content part was added to.
-        public var itemID: String
-        /// The index of the output item that the content part was added to.
-        public var outputIndex: Int
-        /// The index of the content part that is done.
-        public var contentIndex: Int
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The content part that is done.
-        public var part: BetaOutputContent
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            itemID: String,
-            outputIndex: Int,
-            contentIndex: Int,
-            sequenceNumber: Int,
-            part: BetaOutputContent,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.itemID = itemID
-            self.outputIndex = outputIndex
-            self.contentIndex = contentIndex
-            self.sequenceNumber = sequenceNumber
-            self.part = part
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case contentIndex = "content_index"
-            case sequenceNumber = "sequence_number"
-            case part
-            case streamID = "stream_id"
-        }
-    }
-
-    /// An event that is emitted when a response is created.
-    public struct BetaResponseWsCreated: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.created`.
-        public var type: String = "response.created"
-        /// The response that was created.
-        public var response: BetaResponse
-        /// The sequence number for this event.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            response: BetaResponse,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.response = response
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case response
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when a file search call is completed (results found).
-    public struct BetaResponseFileSearchCallWsCompleted: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.file_search_call.completed`.
-        public var type: String = "response.file_search_call.completed"
-        /// The index of the output item that the file search call is initiated.
-        public var outputIndex: Int
-        /// The ID of the output item that the file search call is initiated.
-        public var itemID: String
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            outputIndex: Int,
-            itemID: String,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.outputIndex = outputIndex
-            self.itemID = itemID
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when a file search call is initiated.
-    public struct BetaResponseFileSearchCallInWsProgress: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.file_search_call.in_progress`.
-        public var type: String = "response.file_search_call.in_progress"
-        /// The index of the output item that the file search call is initiated.
-        public var outputIndex: Int
-        /// The ID of the output item that the file search call is initiated.
-        public var itemID: String
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            outputIndex: Int,
-            itemID: String,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.outputIndex = outputIndex
-            self.itemID = itemID
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when a file search is currently searching.
-    public struct BetaResponseFileSearchCallWsSearching: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.file_search_call.searching`.
-        public var type: String = "response.file_search_call.searching"
-        /// The index of the output item that the file search call is searching.
-        public var outputIndex: Int
-        /// The ID of the output item that the file search call is initiated.
-        public var itemID: String
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            outputIndex: Int,
-            itemID: String,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.outputIndex = outputIndex
-            self.itemID = itemID
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when there is a partial function-call arguments delta.
-    public struct BetaResponseFunctionCallArgumentsWsDelta: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.function_call_arguments.delta`.
-        public var type: String = "response.function_call_arguments.delta"
-        /// The ID of the output item that the function-call arguments delta is added to.
-        public var itemID: String
-        /// The index of the output item that the function-call arguments delta is added to.
-        public var outputIndex: Int
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The function-call arguments delta that is added.
-        public var delta: String
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            itemID: String,
-            outputIndex: Int,
-            sequenceNumber: Int,
-            delta: String,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.itemID = itemID
-            self.outputIndex = outputIndex
-            self.sequenceNumber = sequenceNumber
-            self.delta = delta
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case sequenceNumber = "sequence_number"
-            case delta
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when function-call arguments are finalized.
-    public struct BetaResponseFunctionCallArgumentsWsDone: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        public var type: String = "response.function_call_arguments.done"
-        /// The ID of the item.
-        public var itemID: String
-        /// The index of the output item.
-        public var outputIndex: Int
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The function-call arguments.
-        public var arguments: String
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            itemID: String,
-            outputIndex: Int,
-            sequenceNumber: Int,
-            arguments: String,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.itemID = itemID
-            self.outputIndex = outputIndex
-            self.sequenceNumber = sequenceNumber
-            self.arguments = arguments
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case sequenceNumber = "sequence_number"
-            case arguments
-            case streamID = "stream_id"
-        }
-    }
-
-    /// A streaming event that indicated a shell command was added to a tool call.
-    public struct BetaResponseShellCallCommandWsAdded: Codable, Hashable, Sendable {
-        /// The type of the event, always `response.shell_call_command.added`.
-        public var type: String = "response.shell_call_command.added"
-        /// The sequence number of the event that was emitted.
-        public var sequenceNumber: Int
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The index of the output item that was updated.
-        public var outputIndex: Int
-        /// The index of the shell command that was added.
-        public var commandIndex: Int
-        /// The shell command that was added.
-        public var command: String
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            sequenceNumber: Int,
-            outputIndex: Int,
-            commandIndex: Int,
-            command: String,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.sequenceNumber = sequenceNumber
-            self.outputIndex = outputIndex
-            self.commandIndex = commandIndex
-            self.command = command
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case sequenceNumber = "sequence_number"
-            case agent
-            case outputIndex = "output_index"
-            case commandIndex = "command_index"
-            case command
-            case streamID = "stream_id"
-        }
-    }
-
-    /// A streaming event that indicated a shell command was incrementally updated.
-    public struct BetaResponseShellCallCommandWsDelta: Codable, Hashable, Sendable {
-        /// The type of the event, always `response.shell_call_command.delta`.
-        public var type: String = "response.shell_call_command.delta"
-        /// The sequence number of the event that was emitted.
-        public var sequenceNumber: Int
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The index of the output item that was updated.
-        public var outputIndex: Int
-        /// The index of the shell command that was updated.
-        public var commandIndex: Int
-        /// The shell command delta that was appended.
-        public var delta: String
-        /// An obfuscation string that was added to pad the event payload.
-        public var obfuscation: String?
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            sequenceNumber: Int,
-            outputIndex: Int,
-            commandIndex: Int,
-            delta: String,
-            agent: BetaAgentTag? = nil,
-            obfuscation: String? = nil,
-            streamID: String? = nil
-        ) {
-            self.sequenceNumber = sequenceNumber
-            self.outputIndex = outputIndex
-            self.commandIndex = commandIndex
-            self.delta = delta
-            self.agent = agent
-            self.obfuscation = obfuscation
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case sequenceNumber = "sequence_number"
-            case agent
-            case outputIndex = "output_index"
-            case commandIndex = "command_index"
-            case delta
-            case obfuscation
-            case streamID = "stream_id"
-        }
-    }
-
-    /// A streaming event that indicated a shell command was completed.
-    public struct BetaResponseShellCallCommandWsDone: Codable, Hashable, Sendable {
-        /// The type of the event, always `response.shell_call_command.done`.
-        public var type: String = "response.shell_call_command.done"
-        /// The sequence number of the event that was emitted.
-        public var sequenceNumber: Int
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The index of the output item that was updated.
-        public var outputIndex: Int
-        /// The index of the shell command that was completed.
-        public var commandIndex: Int
-        /// The final shell command that was emitted.
-        public var command: String
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            sequenceNumber: Int,
-            outputIndex: Int,
-            commandIndex: Int,
-            command: String,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.sequenceNumber = sequenceNumber
-            self.outputIndex = outputIndex
-            self.commandIndex = commandIndex
-            self.command = command
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case sequenceNumber = "sequence_number"
-            case agent
-            case outputIndex = "output_index"
-            case commandIndex = "command_index"
-            case command
-            case streamID = "stream_id"
-        }
-    }
-
-    /// A streaming event that indicated shell call output was incrementally added.
-    public struct BetaResponseShellCallOutputContentWsDelta: Codable, Hashable, Sendable {
-        /// The type of the event, always `response.shell_call_output_content.delta`.
-        public var type: String = "response.shell_call_output_content.delta"
-        /// The sequence number of the event that was emitted.
-        public var sequenceNumber: Int
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The ID of the output item that was updated.
-        public var itemID: String
-        /// The index of the output item that was updated.
-        public var outputIndex: Int
-        /// The index of the shell command that produced output.
-        public var commandIndex: Int
-        /// The stdout/stderr delta that was emitted.
-        public var delta: BetaShellCallOutputDelta
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            sequenceNumber: Int,
-            itemID: String,
-            outputIndex: Int,
-            commandIndex: Int,
-            delta: BetaShellCallOutputDelta,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.sequenceNumber = sequenceNumber
-            self.itemID = itemID
-            self.outputIndex = outputIndex
-            self.commandIndex = commandIndex
-            self.delta = delta
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case sequenceNumber = "sequence_number"
-            case agent
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case commandIndex = "command_index"
-            case delta
-            case streamID = "stream_id"
-        }
-    }
-
-    /// A streaming event that indicated shell call output was completed.
-    public struct BetaResponseShellCallOutputContentWsDone: Codable, Hashable, Sendable {
-        /// The type of the event, always `response.shell_call_output_content.done`.
-        public var type: String = "response.shell_call_output_content.done"
-        /// The sequence number of the event that was emitted.
-        public var sequenceNumber: Int
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The ID of the output item that was updated.
-        public var itemID: String
-        /// The index of the output item that was updated.
-        public var outputIndex: Int
-        /// The index of the shell command that produced output.
-        public var commandIndex: Int
-        /// The output contents emitted for the shell command.
-        public var output: [BetaFunctionShellCallOutputContent]
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            sequenceNumber: Int,
-            itemID: String,
-            outputIndex: Int,
-            commandIndex: Int,
-            output: [BetaFunctionShellCallOutputContent],
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.sequenceNumber = sequenceNumber
-            self.itemID = itemID
-            self.outputIndex = outputIndex
-            self.commandIndex = commandIndex
-            self.output = output
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case sequenceNumber = "sequence_number"
-            case agent
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case commandIndex = "command_index"
-            case output
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when the response is in progress.
-    public struct BetaResponseInWsProgress: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.in_progress`.
-        public var type: String = "response.in_progress"
-        /// The response that is in progress.
-        public var response: BetaResponse
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            response: BetaResponse,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.response = response
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case response
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// An event that is emitted when a response fails.
-    public struct BetaResponseWsFailed: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.failed`.
-        public var type: String = "response.failed"
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The response that failed.
-        public var response: BetaResponse
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            sequenceNumber: Int,
-            response: BetaResponse,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.sequenceNumber = sequenceNumber
-            self.response = response
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case sequenceNumber = "sequence_number"
-            case response
-            case streamID = "stream_id"
-        }
-    }
-
-    /// An event that is emitted when a response finishes as incomplete.
-    ///
-    /// Over WebSocket, steering can finish a response with
-    /// `response.incomplete_details.reason` set to `steered`, followed automatically
-    /// by a successor `response.created` that commits the queued steering input.
-    public struct BetaResponseWsIncomplete: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.incomplete`.
-        public var type: String = "response.incomplete"
-        /// The response that was incomplete.
-        public var response: BetaResponse
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            response: BetaResponse,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.response = response
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case response
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when a new output item is added.
-    public struct BetaResponseOutputItemWsAdded: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.output_item.added`.
-        public var type: String = "response.output_item.added"
-        /// The index of the output item that was added.
-        public var outputIndex: Int
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The output item that was added. For reasoning items, `encrypted_content`
-        /// may be incomplete while the item is in progress. Use the reasoning item
-        /// from the corresponding `response.output_item.done` event when passing it
-        /// as input to a subsequent request.
-        public var item: BetaOutputItem
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            outputIndex: Int,
-            sequenceNumber: Int,
-            item: BetaOutputItem,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.outputIndex = outputIndex
-            self.sequenceNumber = sequenceNumber
-            self.item = item
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case outputIndex = "output_index"
-            case sequenceNumber = "sequence_number"
-            case item
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when an output item is marked done.
-    public struct BetaResponseOutputItemWsDone: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.output_item.done`.
-        public var type: String = "response.output_item.done"
-        /// The index of the output item that was marked done.
-        public var outputIndex: Int
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The output item that was marked done.
-        public var item: BetaOutputItem
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            outputIndex: Int,
-            sequenceNumber: Int,
-            item: BetaOutputItem,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.outputIndex = outputIndex
-            self.sequenceNumber = sequenceNumber
-            self.item = item
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case outputIndex = "output_index"
-            case sequenceNumber = "sequence_number"
-            case item
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when a new reasoning summary part is added.
-    public struct BetaResponseReasoningSummaryPartWsAdded: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.reasoning_summary_part.added`.
-        public var type: String = "response.reasoning_summary_part.added"
-        /// The ID of the item this summary part is associated with.
-        public var itemID: String
-        /// The index of the output item this summary part is associated with.
-        public var outputIndex: Int
-        /// The index of the summary part within the reasoning summary.
-        public var summaryIndex: Int
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The summary part that was added.
-        public var part: BetaResponsesServerEvent.BetaResponseReasoningSummaryPartWsAdded.Part
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            itemID: String,
-            outputIndex: Int,
-            summaryIndex: Int,
-            sequenceNumber: Int,
-            part: BetaResponsesServerEvent.BetaResponseReasoningSummaryPartWsAdded.Part,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.itemID = itemID
-            self.outputIndex = outputIndex
-            self.summaryIndex = summaryIndex
-            self.sequenceNumber = sequenceNumber
-            self.part = part
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case summaryIndex = "summary_index"
-            case sequenceNumber = "sequence_number"
-            case part
-            case streamID = "stream_id"
-        }
-
-        /// The summary part that was added.
-        public struct Part: Codable, Hashable, Sendable {
-            /// The type of the summary part. Always `summary_text`.
-            public var type: String = "summary_text"
-            /// The text of the summary part.
-            public var text: String
-
-            public init(text: String) {
-                self.text = text
-            }
-
-            private enum CodingKeys: String, CodingKey {
-                case type
-                case text
-            }
-        }
-    }
-
-    /// Emitted when a reasoning summary part is completed.
-    public struct BetaResponseReasoningSummaryPartWsDone: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.reasoning_summary_part.done`.
-        public var type: String = "response.reasoning_summary_part.done"
-        /// The ID of the item this summary part is associated with.
-        public var itemID: String
-        /// The index of the output item this summary part is associated with.
-        public var outputIndex: Int
-        /// The index of the summary part within the reasoning summary.
-        public var summaryIndex: Int
-        /// The completion status of the summary part. Omitted when the part completed
-        /// normally and set to `incomplete` when generation was interrupted.
-        public var status: String? = "incomplete"
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The completed summary part.
-        public var part: BetaResponsesServerEvent.BetaResponseReasoningSummaryPartWsDone.Part
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            itemID: String,
-            outputIndex: Int,
-            summaryIndex: Int,
-            sequenceNumber: Int,
-            part: BetaResponsesServerEvent.BetaResponseReasoningSummaryPartWsDone.Part,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.itemID = itemID
-            self.outputIndex = outputIndex
-            self.summaryIndex = summaryIndex
-            self.sequenceNumber = sequenceNumber
-            self.part = part
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case summaryIndex = "summary_index"
-            case status
-            case sequenceNumber = "sequence_number"
-            case part
-            case streamID = "stream_id"
-        }
-
-        /// The completed summary part.
-        public struct Part: Codable, Hashable, Sendable {
-            /// The type of the summary part. Always `summary_text`.
-            public var type: String = "summary_text"
-            /// The text of the summary part.
-            public var text: String
-
-            public init(text: String) {
-                self.text = text
-            }
-
-            private enum CodingKeys: String, CodingKey {
-                case type
-                case text
-            }
-        }
-    }
-
-    /// Emitted when a delta is added to a reasoning summary text.
-    public struct BetaResponseReasoningSummaryTextWsDelta: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.reasoning_summary_text.delta`.
-        public var type: String = "response.reasoning_summary_text.delta"
-        /// The ID of the item this summary text delta is associated with.
-        public var itemID: String
-        /// The index of the output item this summary text delta is associated with.
-        public var outputIndex: Int
-        /// The index of the summary part within the reasoning summary.
-        public var summaryIndex: Int
-        /// The text delta that was added to the summary.
-        public var delta: String
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            itemID: String,
-            outputIndex: Int,
-            summaryIndex: Int,
-            delta: String,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.itemID = itemID
-            self.outputIndex = outputIndex
-            self.summaryIndex = summaryIndex
-            self.delta = delta
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case summaryIndex = "summary_index"
-            case delta
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when a reasoning summary text is completed.
-    public struct BetaResponseReasoningSummaryTextWsDone: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.reasoning_summary_text.done`.
-        public var type: String = "response.reasoning_summary_text.done"
-        /// The ID of the item this summary text is associated with.
-        public var itemID: String
-        /// The index of the output item this summary text is associated with.
-        public var outputIndex: Int
-        /// The index of the summary part within the reasoning summary.
-        public var summaryIndex: Int
-        /// The full text of the completed reasoning summary.
-        public var text: String
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            itemID: String,
-            outputIndex: Int,
-            summaryIndex: Int,
-            text: String,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.itemID = itemID
-            self.outputIndex = outputIndex
-            self.summaryIndex = summaryIndex
-            self.text = text
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case summaryIndex = "summary_index"
-            case text
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when a delta is added to a reasoning text.
-    public struct BetaResponseReasoningTextWsDelta: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.reasoning_text.delta`.
-        public var type: String = "response.reasoning_text.delta"
-        /// The ID of the item this reasoning text delta is associated with.
-        public var itemID: String
-        /// The index of the output item this reasoning text delta is associated with.
-        public var outputIndex: Int
-        /// The index of the reasoning content part this delta is associated with.
-        public var contentIndex: Int
-        /// The text delta that was added to the reasoning content.
-        public var delta: String
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            itemID: String,
-            outputIndex: Int,
-            contentIndex: Int,
-            delta: String,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.itemID = itemID
-            self.outputIndex = outputIndex
-            self.contentIndex = contentIndex
-            self.delta = delta
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case contentIndex = "content_index"
-            case delta
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when a reasoning text is completed.
-    public struct BetaResponseReasoningTextWsDone: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.reasoning_text.done`.
-        public var type: String = "response.reasoning_text.done"
-        /// The ID of the item this reasoning text is associated with.
-        public var itemID: String
-        /// The index of the output item this reasoning text is associated with.
-        public var outputIndex: Int
-        /// The index of the reasoning content part.
-        public var contentIndex: Int
-        /// The full text of the completed reasoning content.
-        public var text: String
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            itemID: String,
-            outputIndex: Int,
-            contentIndex: Int,
-            text: String,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.itemID = itemID
-            self.outputIndex = outputIndex
-            self.contentIndex = contentIndex
-            self.text = text
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case contentIndex = "content_index"
-            case text
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when there is a partial refusal text.
-    public struct BetaResponseRefusalWsDelta: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.refusal.delta`.
-        public var type: String = "response.refusal.delta"
-        /// The ID of the output item that the refusal text is added to.
-        public var itemID: String
-        /// The index of the output item that the refusal text is added to.
-        public var outputIndex: Int
-        /// The index of the content part that the refusal text is added to.
-        public var contentIndex: Int
-        /// The refusal text that is added.
-        public var delta: String
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            itemID: String,
-            outputIndex: Int,
-            contentIndex: Int,
-            delta: String,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.itemID = itemID
-            self.outputIndex = outputIndex
-            self.contentIndex = contentIndex
-            self.delta = delta
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case contentIndex = "content_index"
-            case delta
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when refusal text is finalized.
-    public struct BetaResponseRefusalWsDone: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.refusal.done`.
-        public var type: String = "response.refusal.done"
-        /// The ID of the output item that the refusal text is finalized.
-        public var itemID: String
-        /// The index of the output item that the refusal text is finalized.
-        public var outputIndex: Int
-        /// The index of the content part that the refusal text is finalized.
-        public var contentIndex: Int
-        /// The refusal text that is finalized.
-        public var refusal: String
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            itemID: String,
-            outputIndex: Int,
-            contentIndex: Int,
-            refusal: String,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.itemID = itemID
-            self.outputIndex = outputIndex
-            self.contentIndex = contentIndex
-            self.refusal = refusal
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case contentIndex = "content_index"
-            case refusal
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when there is an additional text delta.
-    public struct BetaResponseTextWsDelta: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.output_text.delta`.
-        public var type: String = "response.output_text.delta"
-        /// The ID of the output item that the text delta was added to.
-        public var itemID: String
-        /// The index of the output item that the text delta was added to.
-        public var outputIndex: Int
-        /// The index of the content part that the text delta was added to.
-        public var contentIndex: Int
-        /// The text delta that was added.
-        public var delta: String
-        /// The sequence number for this event.
-        public var sequenceNumber: Int
-        /// The log probabilities of the tokens in the delta.
-        public var logprobs: [BetaResponseLogProb]
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            itemID: String,
-            outputIndex: Int,
-            contentIndex: Int,
-            delta: String,
-            sequenceNumber: Int,
-            logprobs: [BetaResponseLogProb],
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.itemID = itemID
-            self.outputIndex = outputIndex
-            self.contentIndex = contentIndex
-            self.delta = delta
-            self.sequenceNumber = sequenceNumber
-            self.logprobs = logprobs
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case contentIndex = "content_index"
-            case delta
-            case sequenceNumber = "sequence_number"
-            case logprobs
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when text content is finalized.
-    public struct BetaResponseTextWsDone: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.output_text.done`.
-        public var type: String = "response.output_text.done"
-        /// The ID of the output item that the text content is finalized.
-        public var itemID: String
-        /// The index of the output item that the text content is finalized.
-        public var outputIndex: Int
-        /// The index of the content part that the text content is finalized.
-        public var contentIndex: Int
-        /// The text content that is finalized.
-        public var text: String
-        /// The sequence number for this event.
-        public var sequenceNumber: Int
-        /// The log probabilities of the tokens in the delta.
-        public var logprobs: [BetaResponseLogProb]
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            itemID: String,
-            outputIndex: Int,
-            contentIndex: Int,
-            text: String,
-            sequenceNumber: Int,
-            logprobs: [BetaResponseLogProb],
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.itemID = itemID
-            self.outputIndex = outputIndex
-            self.contentIndex = contentIndex
-            self.text = text
-            self.sequenceNumber = sequenceNumber
-            self.logprobs = logprobs
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case contentIndex = "content_index"
-            case text
-            case sequenceNumber = "sequence_number"
-            case logprobs
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when a web search call is completed.
-    public struct BetaResponseWebSearchCallWsCompleted: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.web_search_call.completed`.
-        public var type: String = "response.web_search_call.completed"
-        /// The index of the output item that the web search call is associated with.
-        public var outputIndex: Int
-        /// Unique ID for the output item associated with the web search call.
-        public var itemID: String
-        /// The sequence number of the web search call being processed.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            outputIndex: Int,
-            itemID: String,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.outputIndex = outputIndex
-            self.itemID = itemID
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when a web search call is initiated.
-    public struct BetaResponseWebSearchCallInWsProgress: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.web_search_call.in_progress`.
-        public var type: String = "response.web_search_call.in_progress"
-        /// The index of the output item that the web search call is associated with.
-        public var outputIndex: Int
-        /// Unique ID for the output item associated with the web search call.
-        public var itemID: String
-        /// The sequence number of the web search call being processed.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            outputIndex: Int,
-            itemID: String,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.outputIndex = outputIndex
-            self.itemID = itemID
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when a web search call is executing.
-    public struct BetaResponseWebSearchCallWsSearching: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always `response.web_search_call.searching`.
-        public var type: String = "response.web_search_call.searching"
-        /// The index of the output item that the web search call is associated with.
-        public var outputIndex: Int
-        /// Unique ID for the output item associated with the web search call.
-        public var itemID: String
-        /// The sequence number of the web search call being processed.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            outputIndex: Int,
-            itemID: String,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.outputIndex = outputIndex
-            self.itemID = itemID
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when an image generation tool call has completed and the final image is available.
-    public struct BetaResponseImageGenCallWsCompleted: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always 'response.image_generation_call.completed'.
-        public var type: String = "response.image_generation_call.completed"
-        /// The index of the output item in the response's output array.
-        public var outputIndex: Int
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The unique identifier of the image generation item being processed.
-        public var itemID: String
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            outputIndex: Int,
-            sequenceNumber: Int,
-            itemID: String,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.outputIndex = outputIndex
-            self.sequenceNumber = sequenceNumber
-            self.itemID = itemID
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case outputIndex = "output_index"
-            case sequenceNumber = "sequence_number"
-            case itemID = "item_id"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when an image generation tool call is actively generating an image (intermediate state).
-    public struct BetaResponseImageGenCallWsGenerating: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always 'response.image_generation_call.generating'.
-        public var type: String = "response.image_generation_call.generating"
-        /// The index of the output item in the response's output array.
-        public var outputIndex: Int
-        /// The unique identifier of the image generation item being processed.
-        public var itemID: String
-        /// The sequence number of the image generation item being processed.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            outputIndex: Int,
-            itemID: String,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.outputIndex = outputIndex
-            self.itemID = itemID
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when an image generation tool call is in progress.
-    public struct BetaResponseImageGenCallInWsProgress: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always 'response.image_generation_call.in_progress'.
-        public var type: String = "response.image_generation_call.in_progress"
-        /// The index of the output item in the response's output array.
-        public var outputIndex: Int
-        /// The unique identifier of the image generation item being processed.
-        public var itemID: String
-        /// The sequence number of the image generation item being processed.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            outputIndex: Int,
-            itemID: String,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.outputIndex = outputIndex
-            self.itemID = itemID
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when a partial image is available during image generation streaming.
-    public struct BetaResponseImageGenCallPartialWsImage: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always 'response.image_generation_call.partial_image'.
-        public var type: String = "response.image_generation_call.partial_image"
-        /// The index of the output item in the response's output array.
-        public var outputIndex: Int
-        /// The unique identifier of the image generation item being processed.
-        public var itemID: String
-        /// The sequence number of the image generation item being processed.
-        public var sequenceNumber: Int
-        /// 0-based index for the partial image (backend is 1-based, but this is 0-based for the user).
-        public var partialImageIndex: Int
-        /// Base64-encoded partial image data, suitable for rendering as an image.
-        public var partialImageB64: String
-        /// The image size that was used.
-        public var size: String?
-        /// The image quality that was used.
-        public var quality: String?
-        /// The background setting that was used.
-        public var background: String?
-        /// The output format that was used.
-        public var outputFormat: String?
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            outputIndex: Int,
-            itemID: String,
-            sequenceNumber: Int,
-            partialImageIndex: Int,
-            partialImageB64: String,
-            agent: BetaAgentTag? = nil,
-            size: String? = nil,
-            quality: String? = nil,
-            background: String? = nil,
-            outputFormat: String? = nil,
-            streamID: String? = nil
-        ) {
-            self.outputIndex = outputIndex
-            self.itemID = itemID
-            self.sequenceNumber = sequenceNumber
-            self.partialImageIndex = partialImageIndex
-            self.partialImageB64 = partialImageB64
-            self.agent = agent
-            self.size = size
-            self.quality = quality
-            self.background = background
-            self.outputFormat = outputFormat
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case sequenceNumber = "sequence_number"
-            case partialImageIndex = "partial_image_index"
-            case partialImageB64 = "partial_image_b64"
-            case size
-            case quality
-            case background
-            case outputFormat = "output_format"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when there is a delta (partial update) to the arguments of an MCP tool call.
-    public struct BetaResponseMcpCallArgumentsWsDelta: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always 'response.mcp_call_arguments.delta'.
-        public var type: String = "response.mcp_call_arguments.delta"
-        /// The index of the output item in the response's output array.
-        public var outputIndex: Int
-        /// The unique identifier of the MCP tool call item being processed.
-        public var itemID: String
-        /// A JSON string containing the partial update to the arguments for the MCP tool call.
-        public var delta: String
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            outputIndex: Int,
-            itemID: String,
-            delta: String,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.outputIndex = outputIndex
-            self.itemID = itemID
-            self.delta = delta
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case delta
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when the arguments for an MCP tool call are finalized.
-    public struct BetaResponseMcpCallArgumentsWsDone: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always 'response.mcp_call_arguments.done'.
-        public var type: String = "response.mcp_call_arguments.done"
-        /// The index of the output item in the response's output array.
-        public var outputIndex: Int
-        /// The unique identifier of the MCP tool call item being processed.
-        public var itemID: String
-        /// A JSON string containing the finalized arguments for the MCP tool call.
-        public var arguments: String
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            outputIndex: Int,
-            itemID: String,
-            arguments: String,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.outputIndex = outputIndex
-            self.itemID = itemID
-            self.arguments = arguments
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case arguments
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when an MCP  tool call has completed successfully.
-    public struct BetaResponseMcpCallWsCompleted: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always 'response.mcp_call.completed'.
-        public var type: String = "response.mcp_call.completed"
-        /// The ID of the MCP tool call item that completed.
-        public var itemID: String
-        /// The index of the output item that completed.
-        public var outputIndex: Int
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            itemID: String,
-            outputIndex: Int,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.itemID = itemID
-            self.outputIndex = outputIndex
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when an MCP  tool call has failed.
-    public struct BetaResponseMcpCallWsFailed: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always 'response.mcp_call.failed'.
-        public var type: String = "response.mcp_call.failed"
-        /// The ID of the MCP tool call item that failed.
-        public var itemID: String
-        /// The index of the output item that failed.
-        public var outputIndex: Int
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            itemID: String,
-            outputIndex: Int,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.itemID = itemID
-            self.outputIndex = outputIndex
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when an MCP  tool call is in progress.
-    public struct BetaResponseMcpCallInWsProgress: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always 'response.mcp_call.in_progress'.
-        public var type: String = "response.mcp_call.in_progress"
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The index of the output item in the response's output array.
-        public var outputIndex: Int
-        /// The unique identifier of the MCP tool call item being processed.
-        public var itemID: String
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            sequenceNumber: Int,
-            outputIndex: Int,
-            itemID: String,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.sequenceNumber = sequenceNumber
-            self.outputIndex = outputIndex
-            self.itemID = itemID
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case sequenceNumber = "sequence_number"
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when the list of available MCP tools has been successfully retrieved.
-    public struct BetaResponseMcpListToolsWsCompleted: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always 'response.mcp_list_tools.completed'.
-        public var type: String = "response.mcp_list_tools.completed"
-        /// The ID of the MCP tool call item that produced this output.
-        public var itemID: String
-        /// The index of the output item that was processed.
-        public var outputIndex: Int
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            itemID: String,
-            outputIndex: Int,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.itemID = itemID
-            self.outputIndex = outputIndex
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when the attempt to list available MCP tools has failed.
-    public struct BetaResponseMcpListToolsWsFailed: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always 'response.mcp_list_tools.failed'.
-        public var type: String = "response.mcp_list_tools.failed"
-        /// The ID of the MCP tool call item that failed.
-        public var itemID: String
-        /// The index of the output item that failed.
-        public var outputIndex: Int
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            itemID: String,
-            outputIndex: Int,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.itemID = itemID
-            self.outputIndex = outputIndex
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when the system is in the process of retrieving the list of available MCP tools.
-    public struct BetaResponseMcpListToolsInWsProgress: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always 'response.mcp_list_tools.in_progress'.
-        public var type: String = "response.mcp_list_tools.in_progress"
-        /// The ID of the MCP tool call item that is being processed.
-        public var itemID: String
-        /// The index of the output item that is being processed.
-        public var outputIndex: Int
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            itemID: String,
-            outputIndex: Int,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.itemID = itemID
-            self.outputIndex = outputIndex
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when an annotation is added to output text content.
-    public struct BetaResponseOutputTextAnnotationWsAdded: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always 'response.output_text.annotation.added'.
-        public var type: String = "response.output_text.annotation.added"
-        /// The unique identifier of the item to which the annotation is being added.
-        public var itemID: String
-        /// The index of the output item in the response's output array.
-        public var outputIndex: Int
-        /// The index of the content part within the output item.
-        public var contentIndex: Int
-        /// The index of the annotation within the content part.
-        public var annotationIndex: Int
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The annotation object being added. (See annotation schema for details.)
-        public var annotation: BetaAnnotation?
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            itemID: String,
-            outputIndex: Int,
-            contentIndex: Int,
-            annotationIndex: Int,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            annotation: BetaAnnotation? = nil,
-            streamID: String? = nil
-        ) {
-            self.itemID = itemID
-            self.outputIndex = outputIndex
-            self.contentIndex = contentIndex
-            self.annotationIndex = annotationIndex
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.annotation = annotation
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case contentIndex = "content_index"
-            case annotationIndex = "annotation_index"
-            case sequenceNumber = "sequence_number"
-            case annotation
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Emitted when a response is queued and waiting to be processed.
-    public struct BetaResponseWsQueued: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The type of the event. Always 'response.queued'.
-        public var type: String = "response.queued"
-        /// The full response object that is queued.
-        public var response: BetaResponse
-        /// The sequence number for this event.
-        public var sequenceNumber: Int
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            response: BetaResponse,
-            sequenceNumber: Int,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.response = response
-            self.sequenceNumber = sequenceNumber
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case response
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Event representing a delta (partial update) to the input of a custom tool call.
-    public struct BetaResponseCustomToolCallInputWsDelta: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The event type identifier.
-        public var type: String = "response.custom_tool_call_input.delta"
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The index of the output this delta applies to.
-        public var outputIndex: Int
-        /// Unique identifier for the API item associated with this event.
-        public var itemID: String
-        /// The incremental input data (delta) for the custom tool call.
-        public var delta: String
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            sequenceNumber: Int,
-            outputIndex: Int,
-            itemID: String,
-            delta: String,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.sequenceNumber = sequenceNumber
-            self.outputIndex = outputIndex
-            self.itemID = itemID
-            self.delta = delta
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case sequenceNumber = "sequence_number"
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case delta
-            case streamID = "stream_id"
-        }
-    }
-
-    /// Event indicating that input for a custom tool call is complete.
-    public struct BetaResponseCustomToolCallInputWsDone: Codable, Hashable, Sendable {
-        /// The agent that owns this multi-agent streaming event.
-        public var agent: BetaAgentTag?
-        /// The event type identifier.
-        public var type: String = "response.custom_tool_call_input.done"
-        /// The sequence number of this event.
-        public var sequenceNumber: Int
-        /// The index of the output this event applies to.
-        public var outputIndex: Int
-        /// Unique identifier for the API item associated with this event.
-        public var itemID: String
-        /// The complete input data for the custom tool call.
-        public var input: String
-        /// The WebSocket lane that emitted this event. This field is present
-        /// when the originating `response.create` event supplied a
-        /// `stream_id`.
-        public var streamID: String?
-
-        public init(
-            input: String,
-            sequenceNumber: Int,
-            outputIndex: Int,
-            itemID: String,
-            agent: BetaAgentTag? = nil,
-            streamID: String? = nil
-        ) {
-            self.input = input
-            self.sequenceNumber = sequenceNumber
-            self.outputIndex = outputIndex
-            self.itemID = itemID
-            self.agent = agent
-            self.streamID = streamID
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case agent
-            case type
-            case sequenceNumber = "sequence_number"
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case input
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decode(String.self, forKey: "id")
+            self.previousResponseID = try container.decode(String.self, forKey: "previous_response_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.id, forKey: "id")
+            try container.encode(self.previousResponseID, forKey: "previous_response_id")
         }
     }
 }

@@ -4,7 +4,7 @@
 import Foundation
 
 /// Annotation that references an uploaded file.
-public struct FileAnnotation: Codable, Hashable, Sendable {
+public struct FileAnnotation: OpenAIModel {
     /// Type discriminator that is always `file` for this annotation.
     public var type: String = "file"
     /// File attachment referenced by the annotation.
@@ -14,14 +14,21 @@ public struct FileAnnotation: Codable, Hashable, Sendable {
         self.source = source
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case source
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "file"
+        self.source = try container.decode(FileAnnotationSource.self, forKey: "source")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.source, forKey: "source")
     }
 }
 
 /// Attachment source referenced by an annotation.
-public struct FileAnnotationSource: Codable, Hashable, Sendable {
+public struct FileAnnotationSource: OpenAIModel {
     /// Type discriminator that is always `file`.
     public var type: String = "file"
     /// Filename referenced by the annotation.
@@ -31,14 +38,21 @@ public struct FileAnnotationSource: Codable, Hashable, Sendable {
         self.filename = filename
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case filename
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "file"
+        self.filename = try container.decode(String.self, forKey: "filename")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.filename, forKey: "filename")
     }
 }
 
 /// A citation to a file.
-public struct FileCitationBody: Codable, Hashable, Sendable {
+public struct FileCitationBody: OpenAIModel {
     /// The type of the file citation. Always `file_citation`.
     public var type: String = "file_citation"
     /// The ID of the file.
@@ -58,15 +72,24 @@ public struct FileCitationBody: Codable, Hashable, Sendable {
         self.filename = filename
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case fileID = "file_id"
-        case index
-        case filename
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "file_citation"
+        self.fileID = try container.decode(String.self, forKey: "file_id")
+        self.index = try container.decode(Int.self, forKey: "index")
+        self.filename = try container.decode(String.self, forKey: "filename")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.fileID, forKey: "file_id")
+        try container.encode(self.index, forKey: "index")
+        try container.encode(self.filename, forKey: "filename")
     }
 }
 
-public struct FileCitationParam: Codable, Hashable, Sendable {
+public struct FileCitationParam: OpenAIModel {
     /// The citation type. Always `file_citation`.
     public var type: String = "file_citation"
     /// The index of the file in the list of files.
@@ -86,11 +109,20 @@ public struct FileCitationParam: Codable, Hashable, Sendable {
         self.filename = filename
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case index
-        case fileID = "file_id"
-        case filename
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "file_citation"
+        self.index = try container.decode(Int.self, forKey: "index")
+        self.fileID = try container.decode(String.self, forKey: "file_id")
+        self.filename = try container.decode(String.self, forKey: "filename")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.index, forKey: "index")
+        try container.encode(self.fileID, forKey: "file_id")
+        try container.encode(self.filename, forKey: "filename")
     }
 }
 
@@ -112,7 +144,7 @@ public struct FileDetailEnum: OpenAIStringEnum {
 }
 
 /// The expiration policy for a file. By default, files with `purpose=batch` expire after 30 days and all other files are persisted until they are manually deleted.
-public struct FileExpirationAfter: Codable, Hashable, Sendable {
+public struct FileExpirationAfter: OpenAIModel {
     /// Anchor timestamp after which the expiration policy applies. Supported anchors: `created_at`.
     public var anchor: String = "created_at"
     /// The number of seconds after the anchor time that the file will expire. Must be between 3600 (1 hour) and 2592000 (30 days).
@@ -122,9 +154,16 @@ public struct FileExpirationAfter: Codable, Hashable, Sendable {
         self.seconds = seconds
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case anchor
-        case seconds
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.anchor = try container.decodeIfPresent(String.self, forKey: "anchor") ?? "created_at"
+        self.seconds = try container.decode(Int64.self, forKey: "seconds")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.anchor, forKey: "anchor")
+        try container.encode(self.seconds, forKey: "seconds")
     }
 }
 
@@ -146,7 +185,7 @@ public struct FileInputDetail: OpenAIStringEnum {
 }
 
 /// A path to a file.
-public struct FilePath: Codable, Hashable, Sendable {
+public struct FilePath: OpenAIModel {
     /// The type of the file path. Always `file_path`.
     public var type: String = "file_path"
     /// The ID of the file.
@@ -159,10 +198,18 @@ public struct FilePath: Codable, Hashable, Sendable {
         self.index = index
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case fileID = "file_id"
-        case index
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "file_path"
+        self.fileID = try container.decode(String.self, forKey: "file_id")
+        self.index = try container.decode(Int.self, forKey: "index")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.fileID, forKey: "file_id")
+        try container.encode(self.index, forKey: "index")
     }
 }
 
@@ -187,7 +234,7 @@ public struct FileSearchRanker: OpenAIStringEnum {
 /// The ranking options for the file search. If not specified, the file search tool will use the `auto` ranker and a score_threshold of 0.
 ///
 /// See the [file search tool documentation](https://developers.openai.com/api/docs/guides/tools-file-search#retrieval-customization) for more information.
-public struct FileSearchRankingOptions: Codable, Hashable, Sendable {
+public struct FileSearchRankingOptions: OpenAIModel {
     public var ranker: FileSearchRanker?
     /// The score threshold for the file search. All values must be a floating point number between 0 and 1.
     public var scoreThreshold: Double
@@ -197,14 +244,21 @@ public struct FileSearchRankingOptions: Codable, Hashable, Sendable {
         self.ranker = ranker
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case ranker
-        case scoreThreshold = "score_threshold"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.ranker = try container.decodeIfPresent(FileSearchRanker.self, forKey: "ranker")
+        self.scoreThreshold = try container.decode(Double.self, forKey: "score_threshold")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.ranker, forKey: "ranker")
+        try container.encode(self.scoreThreshold, forKey: "score_threshold")
     }
 }
 
 /// A tool that searches for relevant content from uploaded files. Learn more about the [file search tool](https://developers.openai.com/api/docs/guides/tools-file-search).
-public struct FileSearchTool: Codable, Hashable, Sendable {
+public struct FileSearchTool: OpenAIModel {
     /// The type of the file search tool. Always `file_search`.
     public var type: String = "file_search"
     /// The IDs of the vector stores to search.
@@ -227,18 +281,28 @@ public struct FileSearchTool: Codable, Hashable, Sendable {
         self.filters = filters
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case vectorStoreIDs = "vector_store_ids"
-        case maxNumResults = "max_num_results"
-        case rankingOptions = "ranking_options"
-        case filters
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "file_search"
+        self.vectorStoreIDs = try container.decode([String].self, forKey: "vector_store_ids")
+        self.maxNumResults = try container.decodeIfPresent(Int.self, forKey: "max_num_results")
+        self.rankingOptions = try container.decodeIfPresent(RankingOptions.self, forKey: "ranking_options")
+        self.filters = try container.decodeIfPresent(Filters.self, forKey: "filters")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.vectorStoreIDs, forKey: "vector_store_ids")
+        try container.encodeIfPresent(self.maxNumResults, forKey: "max_num_results")
+        try container.encodeIfPresent(self.rankingOptions, forKey: "ranking_options")
+        try container.encodeIfPresent(self.filters, forKey: "filters")
     }
 }
 
 /// The results of a file search tool call. See the
 /// [file search guide](https://developers.openai.com/api/docs/guides/tools-file-search) for more information.
-public struct FileSearchToolCall: Codable, Hashable, Sendable {
+public struct FileSearchToolCall: OpenAIModel {
     /// The unique ID of the file search tool call.
     public var id: String
     /// The type of the file search tool call. Always `file_search_call`.
@@ -262,12 +326,22 @@ public struct FileSearchToolCall: Codable, Hashable, Sendable {
         self.results = results
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case type
-        case status
-        case queries
-        case results
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "file_search_call"
+        self.status = try container.decode(FileSearchToolCall.Status.self, forKey: "status")
+        self.queries = try container.decode([String].self, forKey: "queries")
+        self.results = try container.decodeIfPresent([FileSearchToolCall.ResultValue].self, forKey: "results")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.status, forKey: "status")
+        try container.encode(self.queries, forKey: "queries")
+        try container.encodeIfPresent(self.results, forKey: "results")
     }
 
     /// The status of the file search tool call. One of `in_progress`,
@@ -292,7 +366,7 @@ public struct FileSearchToolCall: Codable, Hashable, Sendable {
         }
     }
 
-    public struct ResultValue: Codable, Hashable, Sendable {
+    public struct ResultValue: OpenAIModel {
         /// The unique ID of the file.
         public var fileID: String?
         /// The text that was retrieved from the file.
@@ -317,18 +391,28 @@ public struct FileSearchToolCall: Codable, Hashable, Sendable {
             self.score = score
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case fileID = "file_id"
-            case text
-            case filename
-            case attributes
-            case score
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.fileID = try container.decodeIfPresent(String.self, forKey: "file_id")
+            self.text = try container.decodeIfPresent(String.self, forKey: "text")
+            self.filename = try container.decodeIfPresent(String.self, forKey: "filename")
+            self.attributes = try container.decodeIfPresent(VectorStoreFileAttributes.self, forKey: "attributes")
+            self.score = try container.decodeIfPresent(Double.self, forKey: "score")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.fileID, forKey: "file_id")
+            try container.encodeIfPresent(self.text, forKey: "text")
+            try container.encodeIfPresent(self.filename, forKey: "filename")
+            try container.encodeIfPresent(self.attributes, forKey: "attributes")
+            try container.encodeIfPresent(self.score, forKey: "score")
         }
     }
 }
 
 /// Controls whether users can upload files.
-public struct FileUploadParam: Codable, Hashable, Sendable {
+public struct FileUploadParam: OpenAIModel {
     /// Enable uploads for this session. Defaults to false.
     public var enabled: Bool?
     /// Maximum size in megabytes for each uploaded file. Defaults to 512 MB, which is the maximum allowable size.
@@ -346,9 +430,17 @@ public struct FileUploadParam: Codable, Hashable, Sendable {
         self.maxFiles = maxFiles
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case enabled
-        case maxFileSize = "max_file_size"
-        case maxFiles = "max_files"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.enabled = try container.decodeIfPresent(Bool.self, forKey: "enabled")
+        self.maxFileSize = try container.decodeIfPresent(Int.self, forKey: "max_file_size")
+        self.maxFiles = try container.decodeIfPresent(Int.self, forKey: "max_files")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.enabled, forKey: "enabled")
+        try container.encodeIfPresent(self.maxFileSize, forKey: "max_file_size")
+        try container.encodeIfPresent(self.maxFiles, forKey: "max_files")
     }
 }

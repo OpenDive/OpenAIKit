@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct BetaAccessProgramsBody: Codable, Hashable, Sendable {
+public struct BetaAccessProgramsBody: OpenAIModel {
     /// The effective Cyber access program used for this response.
     public var cyber: BetaCyberAccessProgramEnum
 
@@ -11,13 +11,19 @@ public struct BetaAccessProgramsBody: Codable, Hashable, Sendable {
         self.cyber = cyber
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case cyber
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.cyber = try container.decode(BetaCyberAccessProgramEnum.self, forKey: "cyber")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.cyber, forKey: "cyber")
     }
 }
 
 /// Domain-specific access programs to use for this request.
-public struct BetaAccessProgramsParam: Codable, Hashable, Sendable {
+public struct BetaAccessProgramsParam: OpenAIModel {
     /// The Cyber access program to use for this request. Supported values are `standard`, `daybreak_blue`, and `daybreak_red`. If omitted, the API resolves the program from the model's Cyber tier and your organization and project access, subject to model-specific eligibility restrictions. By default, models without a Cyber tier use Standard. Blue-tier models use Daybreak Blue when authorized; otherwise they fall back to Standard unless the model requires Daybreak access. Red-tier models use Daybreak Red and require authorization. Requests that require unavailable Daybreak access return 403. An implicit Standard fallback is represented by null in the response's access_programs field, rather than an explicit Standard selection.
     public var cyber: BetaCyberAccessProgramEnum?
 
@@ -25,12 +31,18 @@ public struct BetaAccessProgramsParam: Codable, Hashable, Sendable {
         self.cyber = cyber
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case cyber
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.cyber = try container.decodeIfPresent(BetaCyberAccessProgramEnum.self, forKey: "cyber")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.cyber, forKey: "cyber")
     }
 }
 
-public struct BetaAdditionalTools: Codable, Hashable, Sendable {
+public struct BetaAdditionalTools: OpenAIModel {
     /// The agent that produced this item.
     public var agent: BetaAgentTag?
     /// The type of the item. Always `additional_tools`.
@@ -54,16 +66,26 @@ public struct BetaAdditionalTools: Codable, Hashable, Sendable {
         self.agent = agent
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case id
-        case role
-        case tools
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "additional_tools"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.role = try container.decode(BetaMessageRole.self, forKey: "role")
+        self.tools = try container.decode([BetaTool].self, forKey: "tools")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.role, forKey: "role")
+        try container.encode(self.tools, forKey: "tools")
     }
 }
 
-public struct BetaAdditionalToolsItemParam: Codable, Hashable, Sendable {
+public struct BetaAdditionalToolsItemParam: OpenAIModel {
     public var agent: BetaAgentTagParam?
     public var id: String?
     /// The item type. Always `additional_tools`.
@@ -83,16 +105,26 @@ public struct BetaAdditionalToolsItemParam: Codable, Hashable, Sendable {
         self.id = id
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case id
-        case type
-        case role
-        case tools
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTagParam.self, forKey: "agent")
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "additional_tools"
+        self.role = try container.decodeIfPresent(String.self, forKey: "role") ?? "developer"
+        self.tools = try container.decode([BetaTool].self, forKey: "tools")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.role, forKey: "role")
+        try container.encode(self.tools, forKey: "tools")
     }
 }
 
-public struct BetaAgentMessage: Codable, Hashable, Sendable {
+public struct BetaAgentMessage: OpenAIModel {
     /// The agent that produced this item.
     public var agent: BetaAgentTag?
     /// The type of the item. Always `agent_message`.
@@ -120,19 +152,30 @@ public struct BetaAgentMessage: Codable, Hashable, Sendable {
         self.agent = agent
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case id
-        case author
-        case recipient
-        case content
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent_message"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.author = try container.decode(String.self, forKey: "author")
+        self.recipient = try container.decode(String.self, forKey: "recipient")
+        self.content = try container.decode([BetaAgentMessage.ContentItem].self, forKey: "content")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.author, forKey: "author")
+        try container.encode(self.recipient, forKey: "recipient")
+        try container.encode(self.content, forKey: "content")
     }
 
     /// A content part that makes up an input or output item.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum ContentItem: Codable, Hashable, Sendable {
+    public indirect enum ContentItem: OpenAIModel {
         /// `type`: `input_text`
         case inputText(BetaInputTextContent)
         /// `type`: `output_text`
@@ -229,7 +272,7 @@ public struct BetaAgentMessage: Codable, Hashable, Sendable {
 }
 
 /// A message routed between agents.
-public struct BetaAgentMessageItemParam: Codable, Hashable, Sendable {
+public struct BetaAgentMessageItemParam: OpenAIModel {
     public var agent: BetaAgentTagParam?
     public var id: String?
     /// The item type. Always `agent_message`.
@@ -255,19 +298,30 @@ public struct BetaAgentMessageItemParam: Codable, Hashable, Sendable {
         self.id = id
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case id
-        case type
-        case author
-        case recipient
-        case content
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTagParam.self, forKey: "agent")
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent_message"
+        self.author = try container.decode(String.self, forKey: "author")
+        self.recipient = try container.decode(String.self, forKey: "recipient")
+        self.content = try container.decode([BetaAgentMessageItemParam.ContentItem].self, forKey: "content")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.author, forKey: "author")
+        try container.encode(self.recipient, forKey: "recipient")
+        try container.encode(self.content, forKey: "content")
     }
 
     /// A plaintext, image, or encrypted agent message content part.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum ContentItem: Codable, Hashable, Sendable {
+    public indirect enum ContentItem: OpenAIModel {
         /// `type`: `input_text`
         case inputText(BetaInputTextContentParam)
         /// `type`: `input_image`
@@ -314,7 +368,7 @@ public struct BetaAgentMessageItemParam: Codable, Hashable, Sendable {
     }
 }
 
-public struct BetaAgentTag: Codable, Hashable, Sendable {
+public struct BetaAgentTag: OpenAIModel {
     /// The canonical name of the agent that produced this item.
     public var agentName: String
 
@@ -322,13 +376,19 @@ public struct BetaAgentTag: Codable, Hashable, Sendable {
         self.agentName = agentName
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agentName = "agent_name"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agentName = try container.decode(String.self, forKey: "agent_name")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.agentName, forKey: "agent_name")
     }
 }
 
 /// The agent that produced this item.
-public struct BetaAgentTagParam: Codable, Hashable, Sendable {
+public struct BetaAgentTagParam: OpenAIModel {
     /// The canonical name of the agent that produced this item.
     public var agentName: String
 
@@ -336,15 +396,21 @@ public struct BetaAgentTagParam: Codable, Hashable, Sendable {
         self.agentName = agentName
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agentName = "agent_name"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agentName = try container.decode(String.self, forKey: "agent_name")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.agentName, forKey: "agent_name")
     }
 }
 
 /// An annotation that applies to a span of output text.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum BetaAnnotation: Codable, Hashable, Sendable {
+public indirect enum BetaAnnotation: OpenAIModel {
     /// `type`: `file_citation`
     case fileCitation(BetaFileCitationBody)
     /// `type`: `url_citation`
@@ -466,7 +532,7 @@ public struct BetaApplyPatchCallStatusParam: OpenAIStringEnum {
 }
 
 /// Instruction describing how to create a file via the apply_patch tool.
-public struct BetaApplyPatchCreateFileOperation: Codable, Hashable, Sendable {
+public struct BetaApplyPatchCreateFileOperation: OpenAIModel {
     /// Create a new file with the provided diff.
     public var type: String = "create_file"
     /// Path of the file to create.
@@ -479,15 +545,23 @@ public struct BetaApplyPatchCreateFileOperation: Codable, Hashable, Sendable {
         self.diff = diff
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case path
-        case diff
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "create_file"
+        self.path = try container.decode(String.self, forKey: "path")
+        self.diff = try container.decode(String.self, forKey: "diff")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.path, forKey: "path")
+        try container.encode(self.diff, forKey: "diff")
     }
 }
 
 /// Instruction for creating a new file via the apply_patch tool.
-public struct BetaApplyPatchCreateFileOperationParam: Codable, Hashable, Sendable {
+public struct BetaApplyPatchCreateFileOperationParam: OpenAIModel {
     /// The operation type. Always `create_file`.
     public var type: String = "create_file"
     /// Path of the file to create relative to the workspace root.
@@ -500,15 +574,23 @@ public struct BetaApplyPatchCreateFileOperationParam: Codable, Hashable, Sendabl
         self.diff = diff
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case path
-        case diff
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "create_file"
+        self.path = try container.decode(String.self, forKey: "path")
+        self.diff = try container.decode(String.self, forKey: "diff")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.path, forKey: "path")
+        try container.encode(self.diff, forKey: "diff")
     }
 }
 
 /// Instruction describing how to delete a file via the apply_patch tool.
-public struct BetaApplyPatchDeleteFileOperation: Codable, Hashable, Sendable {
+public struct BetaApplyPatchDeleteFileOperation: OpenAIModel {
     /// Delete the specified file.
     public var type: String = "delete_file"
     /// Path of the file to delete.
@@ -518,14 +600,21 @@ public struct BetaApplyPatchDeleteFileOperation: Codable, Hashable, Sendable {
         self.path = path
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case path
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "delete_file"
+        self.path = try container.decode(String.self, forKey: "path")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.path, forKey: "path")
     }
 }
 
 /// Instruction for deleting an existing file via the apply_patch tool.
-public struct BetaApplyPatchDeleteFileOperationParam: Codable, Hashable, Sendable {
+public struct BetaApplyPatchDeleteFileOperationParam: OpenAIModel {
     /// The operation type. Always `delete_file`.
     public var type: String = "delete_file"
     /// Path of the file to delete relative to the workspace root.
@@ -535,16 +624,23 @@ public struct BetaApplyPatchDeleteFileOperationParam: Codable, Hashable, Sendabl
         self.path = path
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case path
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "delete_file"
+        self.path = try container.decode(String.self, forKey: "path")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.path, forKey: "path")
     }
 }
 
 /// One of the create_file, delete_file, or update_file operations supplied to the apply_patch tool.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum BetaApplyPatchOperationParam: Codable, Hashable, Sendable {
+public indirect enum BetaApplyPatchOperationParam: OpenAIModel {
     /// `type`: `create_file`
     case createFile(BetaApplyPatchCreateFileOperationParam)
     /// `type`: `delete_file`
@@ -591,7 +687,7 @@ public indirect enum BetaApplyPatchOperationParam: Codable, Hashable, Sendable {
 }
 
 /// A tool call that applies file diffs by creating, deleting, or updating files.
-public struct BetaApplyPatchToolCall: Codable, Hashable, Sendable {
+public struct BetaApplyPatchToolCall: OpenAIModel {
     /// The agent that produced this item.
     public var agent: BetaAgentTag?
     /// The type of the item. Always `apply_patch_call`.
@@ -626,21 +722,34 @@ public struct BetaApplyPatchToolCall: Codable, Hashable, Sendable {
         self.createdBy = createdBy
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case id
-        case callID = "call_id"
-        case caller
-        case status
-        case operation
-        case createdBy = "created_by"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "apply_patch_call"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.caller = try container.decodeIfPresent(BetaToolCallCaller.self, forKey: "caller")
+        self.status = try container.decode(BetaApplyPatchCallStatus.self, forKey: "status")
+        self.operation = try container.decode(BetaApplyPatchToolCall.OperationValue.self, forKey: "operation")
+        self.createdBy = try container.decodeIfPresent(String.self, forKey: "created_by")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encodeIfPresent(self.caller, forKey: "caller")
+        try container.encode(self.status, forKey: "status")
+        try container.encode(self.operation, forKey: "operation")
+        try container.encodeIfPresent(self.createdBy, forKey: "created_by")
     }
 
     /// One of the create_file, delete_file, or update_file operations applied via apply_patch.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum OperationValue: Codable, Hashable, Sendable {
+    public indirect enum OperationValue: OpenAIModel {
         /// `type`: `create_file`
         case createFile(BetaApplyPatchCreateFileOperation)
         /// `type`: `delete_file`
@@ -688,7 +797,7 @@ public struct BetaApplyPatchToolCall: Codable, Hashable, Sendable {
 }
 
 /// A tool call representing a request to create, delete, or update files using diff patches.
-public struct BetaApplyPatchToolCallItemParam: Codable, Hashable, Sendable {
+public struct BetaApplyPatchToolCallItemParam: OpenAIModel {
     public var agent: BetaAgentTagParam?
     /// The type of the item. Always `apply_patch_call`.
     public var type: String = "apply_patch_call"
@@ -717,19 +826,31 @@ public struct BetaApplyPatchToolCallItemParam: Codable, Hashable, Sendable {
         self.caller = caller
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case id
-        case callID = "call_id"
-        case caller
-        case status
-        case operation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTagParam.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "apply_patch_call"
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.caller = try container.decodeIfPresent(BetaToolCallCallerParam.self, forKey: "caller")
+        self.status = try container.decode(BetaApplyPatchCallStatusParam.self, forKey: "status")
+        self.operation = try container.decode(BetaApplyPatchOperationParam.self, forKey: "operation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encodeIfPresent(self.caller, forKey: "caller")
+        try container.encode(self.status, forKey: "status")
+        try container.encode(self.operation, forKey: "operation")
     }
 }
 
 /// The output emitted by an apply patch tool call.
-public struct BetaApplyPatchToolCallOutput: Codable, Hashable, Sendable {
+public struct BetaApplyPatchToolCallOutput: OpenAIModel {
     /// The agent that produced this item.
     public var agent: BetaAgentTag?
     /// The type of the item. Always `apply_patch_call_output`.
@@ -763,20 +884,33 @@ public struct BetaApplyPatchToolCallOutput: Codable, Hashable, Sendable {
         self.createdBy = createdBy
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case id
-        case callID = "call_id"
-        case caller
-        case status
-        case output
-        case createdBy = "created_by"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "apply_patch_call_output"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.caller = try container.decodeIfPresent(BetaToolCallCaller.self, forKey: "caller")
+        self.status = try container.decode(BetaApplyPatchCallOutputStatus.self, forKey: "status")
+        self.output = try container.decodeIfPresent(String.self, forKey: "output")
+        self.createdBy = try container.decodeIfPresent(String.self, forKey: "created_by")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encodeIfPresent(self.caller, forKey: "caller")
+        try container.encode(self.status, forKey: "status")
+        try container.encodeIfPresent(self.output, forKey: "output")
+        try container.encodeIfPresent(self.createdBy, forKey: "created_by")
     }
 }
 
 /// The streamed output emitted by an apply patch tool call.
-public struct BetaApplyPatchToolCallOutputItemParam: Codable, Hashable, Sendable {
+public struct BetaApplyPatchToolCallOutputItemParam: OpenAIModel {
     public var agent: BetaAgentTagParam?
     /// The type of the item. Always `apply_patch_call_output`.
     public var type: String = "apply_patch_call_output"
@@ -804,19 +938,31 @@ public struct BetaApplyPatchToolCallOutputItemParam: Codable, Hashable, Sendable
         self.output = output
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case id
-        case callID = "call_id"
-        case caller
-        case status
-        case output
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTagParam.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "apply_patch_call_output"
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.caller = try container.decodeIfPresent(BetaToolCallCallerParam.self, forKey: "caller")
+        self.status = try container.decode(BetaApplyPatchCallOutputStatusParam.self, forKey: "status")
+        self.output = try container.decodeIfPresent(String.self, forKey: "output")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encodeIfPresent(self.caller, forKey: "caller")
+        try container.encode(self.status, forKey: "status")
+        try container.encodeIfPresent(self.output, forKey: "output")
     }
 }
 
 /// Allows the assistant to create, delete, or update files using unified diffs.
-public struct BetaApplyPatchToolParam: Codable, Hashable, Sendable {
+public struct BetaApplyPatchToolParam: OpenAIModel {
     /// The type of the tool. Always `apply_patch`.
     public var type: String = "apply_patch"
     public var allowedCallers: [BetaCallableToolAllowedCaller]?
@@ -825,14 +971,21 @@ public struct BetaApplyPatchToolParam: Codable, Hashable, Sendable {
         self.allowedCallers = allowedCallers
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case allowedCallers = "allowed_callers"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "apply_patch"
+        self.allowedCallers = try container.decodeIfPresent([BetaCallableToolAllowedCaller].self, forKey: "allowed_callers")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.allowedCallers, forKey: "allowed_callers")
     }
 }
 
 /// Instruction describing how to update a file via the apply_patch tool.
-public struct BetaApplyPatchUpdateFileOperation: Codable, Hashable, Sendable {
+public struct BetaApplyPatchUpdateFileOperation: OpenAIModel {
     /// Update an existing file with the provided diff.
     public var type: String = "update_file"
     /// Path of the file to update.
@@ -845,15 +998,23 @@ public struct BetaApplyPatchUpdateFileOperation: Codable, Hashable, Sendable {
         self.diff = diff
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case path
-        case diff
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "update_file"
+        self.path = try container.decode(String.self, forKey: "path")
+        self.diff = try container.decode(String.self, forKey: "diff")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.path, forKey: "path")
+        try container.encode(self.diff, forKey: "diff")
     }
 }
 
 /// Instruction for updating an existing file via the apply_patch tool.
-public struct BetaApplyPatchUpdateFileOperationParam: Codable, Hashable, Sendable {
+public struct BetaApplyPatchUpdateFileOperationParam: OpenAIModel {
     /// The operation type. Always `update_file`.
     public var type: String = "update_file"
     /// Path of the file to update relative to the workspace root.
@@ -866,14 +1027,22 @@ public struct BetaApplyPatchUpdateFileOperationParam: Codable, Hashable, Sendabl
         self.diff = diff
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case path
-        case diff
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "update_file"
+        self.path = try container.decode(String.self, forKey: "path")
+        self.diff = try container.decode(String.self, forKey: "diff")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.path, forKey: "path")
+        try container.encode(self.diff, forKey: "diff")
     }
 }
 
-public struct BetaApproximateLocation: Codable, Hashable, Sendable {
+public struct BetaApproximateLocation: OpenAIModel {
     /// The type of location approximation. Always `approximate`.
     public var type: String = "approximate"
     public var country: String?
@@ -893,17 +1062,27 @@ public struct BetaApproximateLocation: Codable, Hashable, Sendable {
         self.timezone = timezone
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case country
-        case region
-        case city
-        case timezone
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "approximate"
+        self.country = try container.decodeIfPresent(String.self, forKey: "country")
+        self.region = try container.decodeIfPresent(String.self, forKey: "region")
+        self.city = try container.decodeIfPresent(String.self, forKey: "city")
+        self.timezone = try container.decodeIfPresent(String.self, forKey: "timezone")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.country, forKey: "country")
+        try container.encodeIfPresent(self.region, forKey: "region")
+        try container.encodeIfPresent(self.city, forKey: "city")
+        try container.encodeIfPresent(self.timezone, forKey: "timezone")
     }
 }
 
 /// Configuration for a code interpreter container. Optionally specify the IDs of the files to run the code on.
-public struct BetaAutoCodeInterpreterToolParam: Codable, Hashable, Sendable {
+public struct BetaAutoCodeInterpreterToolParam: OpenAIModel {
     /// Always `auto`.
     public var type: String = "auto"
     /// An optional list of uploaded files to make available to your code.
@@ -922,17 +1101,26 @@ public struct BetaAutoCodeInterpreterToolParam: Codable, Hashable, Sendable {
         self.networkPolicy = networkPolicy
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case fileIDs = "file_ids"
-        case memoryLimit = "memory_limit"
-        case networkPolicy = "network_policy"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "auto"
+        self.fileIDs = try container.decodeIfPresent([String].self, forKey: "file_ids")
+        self.memoryLimit = try container.decodeIfPresent(BetaContainerMemoryLimit.self, forKey: "memory_limit")
+        self.networkPolicy = try container.decodeIfPresent(BetaAutoCodeInterpreterToolParam.NetworkPolicy.self, forKey: "network_policy")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.fileIDs, forKey: "file_ids")
+        try container.encodeIfPresent(self.memoryLimit, forKey: "memory_limit")
+        try container.encodeIfPresent(self.networkPolicy, forKey: "network_policy")
     }
 
     /// Network access policy for the container.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum NetworkPolicy: Codable, Hashable, Sendable {
+    public indirect enum NetworkPolicy: OpenAIModel {
         /// `type`: `disabled`
         case disabled(BetaContainerNetworkPolicyDisabledParam)
         /// `type`: `allowlist`
@@ -990,7 +1178,7 @@ public struct BetaBackgroundCompletionWindowEnum: OpenAIStringEnum {
 }
 
 /// Options for background execution.
-public struct BetaBackgroundOptionsParam: Codable, Hashable, Sendable {
+public struct BetaBackgroundOptionsParam: OpenAIModel {
     /// The completion window for background execution. Defaults to `soonest`; `2h` and `8h` select discounted background execution.
     public var completionWindow: BetaBackgroundCompletionWindowEnum?
     /// A customer-provided opaque identifier used to prioritize related background requests. It does not add prior history to the input.
@@ -1001,9 +1189,16 @@ public struct BetaBackgroundOptionsParam: Codable, Hashable, Sendable {
         self.continuationID = continuationID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case completionWindow = "completion_window"
-        case continuationID = "continuation_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.completionWindow = try container.decodeIfPresent(BetaBackgroundCompletionWindowEnum.self, forKey: "completion_window")
+        self.continuationID = try container.decodeIfPresent(String.self, forKey: "continuation_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.completionWindow, forKey: "completion_window")
+        try container.encodeIfPresent(self.continuationID, forKey: "continuation_id")
     }
 }
 
@@ -1030,7 +1225,7 @@ public struct BetaCacheMissReasonTypeEnum: OpenAIStringEnum {
     }
 }
 
-public struct BetaCacheWriteTokensDetails: Codable, Hashable, Sendable {
+public struct BetaCacheWriteTokensDetails: OpenAIModel {
     /// The number of input tokens written with 30-minute retention.
     public var ttl30mTokens: Int
     /// The number of input tokens written with 12-hour retention.
@@ -1041,13 +1236,20 @@ public struct BetaCacheWriteTokensDetails: Codable, Hashable, Sendable {
         self.ttl12hTokens = ttl12hTokens
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case ttl30mTokens = "ttl_30m_tokens"
-        case ttl12hTokens = "ttl_12h_tokens"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.ttl30mTokens = try container.decode(Int.self, forKey: "ttl_30m_tokens")
+        self.ttl12hTokens = try container.decode(Int.self, forKey: "ttl_12h_tokens")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.ttl30mTokens, forKey: "ttl_30m_tokens")
+        try container.encode(self.ttl12hTokens, forKey: "ttl_12h_tokens")
     }
 }
 
-public struct BetaCachedUsageDetails: Codable, Hashable, Sendable {
+public struct BetaCachedUsageDetails: OpenAIModel {
     public var cachedTextTokens: Int
     public var cachedImageTokens: Int
 
@@ -1056,9 +1258,16 @@ public struct BetaCachedUsageDetails: Codable, Hashable, Sendable {
         self.cachedImageTokens = cachedImageTokens
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case cachedTextTokens = "cached_text_tokens"
-        case cachedImageTokens = "cached_image_tokens"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.cachedTextTokens = try container.decode(Int.self, forKey: "cached_text_tokens")
+        self.cachedImageTokens = try container.decode(Int.self, forKey: "cached_image_tokens")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.cachedTextTokens, forKey: "cached_text_tokens")
+        try container.encode(self.cachedImageTokens, forKey: "cached_image_tokens")
     }
 }
 
@@ -1098,7 +1307,7 @@ public struct BetaClickButtonType: OpenAIStringEnum {
 }
 
 /// A click action.
-public struct BetaClickParam: Codable, Hashable, Sendable {
+public struct BetaClickParam: OpenAIModel {
     /// Specifies the event type. For a click action, this property is always `click`.
     public var type: String = "click"
     /// Indicates which mouse button was pressed during the click. One of `left`, `right`, `wheel`, `back`, or `forward`.
@@ -1121,17 +1330,27 @@ public struct BetaClickParam: Codable, Hashable, Sendable {
         self.keys = keys
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case button
-        case x
-        case y
-        case keys
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "click"
+        self.button = try container.decode(BetaClickButtonType.self, forKey: "button")
+        self.x = try container.decode(Int.self, forKey: "x")
+        self.y = try container.decode(Int.self, forKey: "y")
+        self.keys = try container.decodeIfPresent([String].self, forKey: "keys")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.button, forKey: "button")
+        try container.encode(self.x, forKey: "x")
+        try container.encode(self.y, forKey: "y")
+        try container.encodeIfPresent(self.keys, forKey: "keys")
     }
 }
 
 /// The image output from the code interpreter.
-public struct BetaCodeInterpreterOutputImage: Codable, Hashable, Sendable {
+public struct BetaCodeInterpreterOutputImage: OpenAIModel {
     /// The type of the output. Always `image`.
     public var type: String = "image"
     /// The URL of the image output from the code interpreter.
@@ -1141,14 +1360,21 @@ public struct BetaCodeInterpreterOutputImage: Codable, Hashable, Sendable {
         self.url = url
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case url
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "image"
+        self.url = try container.decode(String.self, forKey: "url")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.url, forKey: "url")
     }
 }
 
 /// The logs output from the code interpreter.
-public struct BetaCodeInterpreterOutputLogs: Codable, Hashable, Sendable {
+public struct BetaCodeInterpreterOutputLogs: OpenAIModel {
     /// The type of the output. Always `logs`.
     public var type: String = "logs"
     /// The logs output from the code interpreter.
@@ -1158,14 +1384,21 @@ public struct BetaCodeInterpreterOutputLogs: Codable, Hashable, Sendable {
         self.logs = logs
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case logs
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "logs"
+        self.logs = try container.decode(String.self, forKey: "logs")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.logs, forKey: "logs")
     }
 }
 
 /// A tool that runs Python code to help generate a response to a prompt.
-public struct BetaCodeInterpreterTool: Codable, Hashable, Sendable {
+public struct BetaCodeInterpreterTool: OpenAIModel {
     /// The type of the code interpreter tool. Always `code_interpreter`.
     public var type: String = "code_interpreter"
     /// The code interpreter container. Can be a container ID or an object that
@@ -1179,16 +1412,24 @@ public struct BetaCodeInterpreterTool: Codable, Hashable, Sendable {
         self.allowedCallers = allowedCallers
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case container
-        case allowedCallers = "allowed_callers"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "code_interpreter"
+        self.container = try container.decode(BetaCodeInterpreterTool.Container.self, forKey: "container")
+        self.allowedCallers = try container.decodeIfPresent([BetaCallableToolAllowedCaller].self, forKey: "allowed_callers")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.container, forKey: "container")
+        try container.encodeIfPresent(self.allowedCallers, forKey: "allowed_callers")
     }
 
     /// The code interpreter container. Can be a container ID or an object that
     /// specifies uploaded file IDs to make available to your code, along with an
     /// optional `memory_limit` setting.
-    public indirect enum Container: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum Container: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         /// The container ID.
         case string(String)
         case betaAutoCodeInterpreterToolParam(BetaAutoCodeInterpreterToolParam)
@@ -1227,7 +1468,7 @@ public struct BetaCodeInterpreterTool: Codable, Hashable, Sendable {
 }
 
 /// A tool call to run code.
-public struct BetaCodeInterpreterToolCall: Codable, Hashable, Sendable {
+public struct BetaCodeInterpreterToolCall: OpenAIModel {
     /// The agent that produced this item.
     public var agent: BetaAgentTag?
     /// The type of the code interpreter tool call. Always `code_interpreter_call`.
@@ -1257,14 +1498,26 @@ public struct BetaCodeInterpreterToolCall: Codable, Hashable, Sendable {
         self.outputs = outputs
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case id
-        case status
-        case containerID = "container_id"
-        case code
-        case outputs
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "code_interpreter_call"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.status = try container.decode(BetaCodeInterpreterToolCall.Status.self, forKey: "status")
+        self.containerID = try container.decode(String.self, forKey: "container_id")
+        self.code = try container.decodeIfPresent(String.self, forKey: "code")
+        self.outputs = try container.decodeIfPresent([BetaCodeInterpreterToolCall.Output].self, forKey: "outputs")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.status, forKey: "status")
+        try container.encode(self.containerID, forKey: "container_id")
+        try container.encodeIfPresent(self.code, forKey: "code")
+        try container.encodeIfPresent(self.outputs, forKey: "outputs")
     }
 
     /// The status of the code interpreter tool call. Valid values are `in_progress`, `completed`, `incomplete`, `interpreting`, and `failed`.
@@ -1289,7 +1542,7 @@ public struct BetaCodeInterpreterToolCall: Codable, Hashable, Sendable {
     }
 
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Output: Codable, Hashable, Sendable {
+    public indirect enum Output: OpenAIModel {
         /// `type`: `logs`
         case logs(BetaCodeInterpreterOutputLogs)
         /// `type`: `image`
@@ -1329,7 +1582,7 @@ public struct BetaCodeInterpreterToolCall: Codable, Hashable, Sendable {
     }
 }
 
-public struct BetaCompactResource: Codable, Hashable, Sendable {
+public struct BetaCompactResource: OpenAIModel {
     public var image: BetaResolvedImageOptions?
     /// The unique identifier for the compacted response.
     public var id: String
@@ -1363,19 +1616,32 @@ public struct BetaCompactResource: Codable, Hashable, Sendable {
         self.serviceTier = serviceTier
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case image
-        case id
-        case object
-        case safetyIdentifier = "safety_identifier"
-        case output
-        case createdAt = "created_at"
-        case serviceTier = "service_tier"
-        case usage
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.image = try container.decodeIfPresent(BetaResolvedImageOptions.self, forKey: "image")
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "response.compaction"
+        self.safetyIdentifier = try container.decodeIfPresent(String.self, forKey: "safety_identifier")
+        self.output = try container.decode([BetaItemField].self, forKey: "output")
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.serviceTier = try container.decodeIfPresent(String.self, forKey: "service_tier")
+        self.usage = try container.decode(BetaResponseUsage.self, forKey: "usage")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.image, forKey: "image")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encodeIfPresent(self.safetyIdentifier, forKey: "safety_identifier")
+        try container.encode(self.output, forKey: "output")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encodeIfPresent(self.serviceTier, forKey: "service_tier")
+        try container.encode(self.usage, forKey: "usage")
     }
 }
 
-public struct BetaCompactResponseMethodPublicBody: Codable, Hashable, Sendable {
+public struct BetaCompactResponseMethodPublicBody: OpenAIModel {
     public var model: BetaModelIdsCompaction?
     public var input: BetaCompactResponseMethodPublicBody.Input?
     public var previousResponseID: String?
@@ -1412,21 +1678,36 @@ public struct BetaCompactResponseMethodPublicBody: Codable, Hashable, Sendable {
         self.serviceTier = serviceTier
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case model
-        case input
-        case previousResponseID = "previous_response_id"
-        case instructions
-        case safetyIdentifier = "safety_identifier"
-        case image
-        case promptCacheKey = "prompt_cache_key"
-        case promptCacheRetention = "prompt_cache_retention"
-        case promptCacheOptions = "prompt_cache_options"
-        case serviceTier = "service_tier"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.model = try container.decodeIfPresent(BetaModelIdsCompaction.self, forKey: "model")
+        self.input = try container.decodeIfPresent(BetaCompactResponseMethodPublicBody.Input.self, forKey: "input")
+        self.previousResponseID = try container.decodeIfPresent(String.self, forKey: "previous_response_id")
+        self.instructions = try container.decodeIfPresent(String.self, forKey: "instructions")
+        self.safetyIdentifier = try container.decodeIfPresent(String.self, forKey: "safety_identifier")
+        self.image = try container.decodeIfPresent(BetaImageOptionsParam.self, forKey: "image")
+        self.promptCacheKey = try container.decodeIfPresent(String.self, forKey: "prompt_cache_key")
+        self.promptCacheRetention = try container.decodeIfPresent(BetaPromptCacheRetentionEnum.self, forKey: "prompt_cache_retention")
+        self.promptCacheOptions = try container.decodeIfPresent(BetaPromptCacheOptionsParam.self, forKey: "prompt_cache_options")
+        self.serviceTier = try container.decodeIfPresent(BetaServiceTierEnum.self, forKey: "service_tier")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encodeIfPresent(self.input, forKey: "input")
+        try container.encodeIfPresent(self.previousResponseID, forKey: "previous_response_id")
+        try container.encodeIfPresent(self.instructions, forKey: "instructions")
+        try container.encodeIfPresent(self.safetyIdentifier, forKey: "safety_identifier")
+        try container.encodeIfPresent(self.image, forKey: "image")
+        try container.encodeIfPresent(self.promptCacheKey, forKey: "prompt_cache_key")
+        try container.encodeIfPresent(self.promptCacheRetention, forKey: "prompt_cache_retention")
+        try container.encodeIfPresent(self.promptCacheOptions, forKey: "prompt_cache_options")
+        try container.encodeIfPresent(self.serviceTier, forKey: "service_tier")
     }
 
     /// Text, image, or file inputs to the model, used to generate a response
-    public indirect enum Input: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum Input: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         /// A text input to the model, equivalent to a text input with the `user` role.
         case string(String)
         /// A list of one or many input items to the model, containing different content types.
@@ -1466,7 +1747,7 @@ public struct BetaCompactResponseMethodPublicBody: Codable, Hashable, Sendable {
 }
 
 /// A compaction item generated by the [`v1/responses/compact` API](https://developers.openai.com/api/reference/resources/responses/methods/compact).
-public struct BetaCompactionBody: Codable, Hashable, Sendable {
+public struct BetaCompactionBody: OpenAIModel {
     /// The agent that produced this item.
     public var agent: BetaAgentTag?
     /// The type of the item. Always `compaction`.
@@ -1490,17 +1771,27 @@ public struct BetaCompactionBody: Codable, Hashable, Sendable {
         self.createdBy = createdBy
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case id
-        case encryptedContent = "encrypted_content"
-        case createdBy = "created_by"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "compaction"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.encryptedContent = try container.decode(String.self, forKey: "encrypted_content")
+        self.createdBy = try container.decodeIfPresent(String.self, forKey: "created_by")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.encryptedContent, forKey: "encrypted_content")
+        try container.encodeIfPresent(self.createdBy, forKey: "created_by")
     }
 }
 
 /// A compaction item generated by the [`v1/responses/compact` API](https://developers.openai.com/api/reference/resources/responses/methods/compact).
-public struct BetaCompactionSummaryItemParam: Codable, Hashable, Sendable {
+public struct BetaCompactionSummaryItemParam: OpenAIModel {
     public var agent: BetaAgentTagParam?
     public var id: String?
     /// The type of the item. Always `compaction`.
@@ -1518,16 +1809,25 @@ public struct BetaCompactionSummaryItemParam: Codable, Hashable, Sendable {
         self.id = id
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case id
-        case type
-        case encryptedContent = "encrypted_content"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTagParam.self, forKey: "agent")
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "compaction"
+        self.encryptedContent = try container.decode(String.self, forKey: "encrypted_content")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.encryptedContent, forKey: "encrypted_content")
     }
 }
 
 /// Compacts the current context. Must be the final input item.
-public struct BetaCompactionTriggerItemParam: Codable, Hashable, Sendable {
+public struct BetaCompactionTriggerItemParam: OpenAIModel {
     public var agent: BetaAgentTagParam?
     public var id: String?
     /// The type of the item. Always `compaction_trigger`.
@@ -1538,15 +1838,23 @@ public struct BetaCompactionTriggerItemParam: Codable, Hashable, Sendable {
         self.id = id
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case id
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTagParam.self, forKey: "agent")
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "compaction_trigger"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// A filter used to compare a specified attribute key to a given value using a defined comparison operation.
-public struct BetaComparisonFilter: Codable, Hashable, Sendable {
+public struct BetaComparisonFilter: OpenAIModel {
     /// Specifies the comparison operator: `eq`, `ne`, `gt`, `gte`, `lt`, `lte`, `in`, `nin`.
     /// - `eq`: equals
     /// - `ne`: not equal
@@ -1572,10 +1880,18 @@ public struct BetaComparisonFilter: Codable, Hashable, Sendable {
         self.value = value
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case key
-        case value
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decode(BetaComparisonFilter.Kind.self, forKey: "type")
+        self.key = try container.decode(String.self, forKey: "key")
+        self.value = try container.decode(BetaComparisonFilter.Value.self, forKey: "value")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.key, forKey: "key")
+        try container.encode(self.value, forKey: "value")
     }
 
     /// Specifies the comparison operator: `eq`, `ne`, `gt`, `gte`, `lt`, `lte`, `in`, `nin`.
@@ -1611,7 +1927,7 @@ public struct BetaComparisonFilter: Codable, Hashable, Sendable {
     }
 
     /// The value to compare against the attribute key; supports string, number, or boolean types.
-    public indirect enum Value: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum Value: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         case string(String)
         case number(Double)
         case bool(Bool)
@@ -1660,7 +1976,7 @@ public struct BetaComparisonFilter: Codable, Hashable, Sendable {
             }
         }
 
-        public indirect enum Item: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+        public indirect enum Item: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
             case string(String)
             case number(Double)
             /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
@@ -1699,7 +2015,7 @@ public struct BetaComparisonFilter: Codable, Hashable, Sendable {
 }
 
 /// Combine multiple filters using `and` or `or`.
-public struct BetaCompoundFilter: Codable, Hashable, Sendable {
+public struct BetaCompoundFilter: OpenAIModel {
     /// Type of operation: `and` or `or`.
     public var type: BetaCompoundFilter.Kind
     /// Array of filters to combine. Items can be `ComparisonFilter` or `CompoundFilter`.
@@ -1710,9 +2026,16 @@ public struct BetaCompoundFilter: Codable, Hashable, Sendable {
         self.filters = filters
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case filters
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decode(BetaCompoundFilter.Kind.self, forKey: "type")
+        self.filters = try container.decode([BetaCompoundFilter.Filter].self, forKey: "filters")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.filters, forKey: "filters")
     }
 
     /// Type of operation: `and` or `or`.
@@ -1734,7 +2057,7 @@ public struct BetaCompoundFilter: Codable, Hashable, Sendable {
     }
 
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Filter: Codable, Hashable, Sendable {
+    public indirect enum Filter: OpenAIModel {
         case comparison(BetaComparisonFilter)
         case compound(BetaCompoundFilter)
         /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
@@ -1768,7 +2091,7 @@ public struct BetaCompoundFilter: Codable, Hashable, Sendable {
 }
 
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum BetaComputerAction: Codable, Hashable, Sendable {
+public indirect enum BetaComputerAction: OpenAIModel {
     /// `type`: `click`
     case click(BetaClickParam)
     /// `type`: `double_click`
@@ -1861,7 +2184,7 @@ public indirect enum BetaComputerAction: Codable, Hashable, Sendable {
 public typealias BetaComputerActionList = [BetaComputerAction]
 
 /// The output of a computer tool call.
-public struct BetaComputerCallOutputItemParam: Codable, Hashable, Sendable {
+public struct BetaComputerCallOutputItemParam: OpenAIModel {
     public var agent: BetaAgentTagParam?
     public var id: String?
     /// The ID of the computer tool call that produced the output.
@@ -1888,14 +2211,26 @@ public struct BetaComputerCallOutputItemParam: Codable, Hashable, Sendable {
         self.status = status
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case id
-        case callID = "call_id"
-        case type
-        case output
-        case acknowledgedSafetyChecks = "acknowledged_safety_checks"
-        case status
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTagParam.self, forKey: "agent")
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "computer_call_output"
+        self.output = try container.decode(BetaComputerScreenshotImage.self, forKey: "output")
+        self.acknowledgedSafetyChecks = try container.decodeIfPresent([BetaComputerCallSafetyCheckParam].self, forKey: "acknowledged_safety_checks")
+        self.status = try container.decodeIfPresent(BetaFunctionCallItemStatus.self, forKey: "status")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.output, forKey: "output")
+        try container.encodeIfPresent(self.acknowledgedSafetyChecks, forKey: "acknowledged_safety_checks")
+        try container.encodeIfPresent(self.status, forKey: "status")
     }
 }
 
@@ -1917,7 +2252,7 @@ public struct BetaComputerCallOutputStatus: OpenAIStringEnum {
 }
 
 /// A pending safety check for the computer call.
-public struct BetaComputerCallSafetyCheckParam: Codable, Hashable, Sendable {
+public struct BetaComputerCallSafetyCheckParam: OpenAIModel {
     /// The ID of the pending safety check.
     public var id: String
     public var code: String?
@@ -1933,10 +2268,18 @@ public struct BetaComputerCallSafetyCheckParam: Codable, Hashable, Sendable {
         self.message = message
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case code
-        case message
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.code = try container.decodeIfPresent(String.self, forKey: "code")
+        self.message = try container.decodeIfPresent(String.self, forKey: "message")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encodeIfPresent(self.code, forKey: "code")
+        try container.encodeIfPresent(self.message, forKey: "message")
     }
 }
 
@@ -1960,7 +2303,7 @@ public struct BetaComputerEnvironment: OpenAIStringEnum {
 }
 
 /// A screenshot of a computer.
-public struct BetaComputerScreenshotContent: Codable, Hashable, Sendable {
+public struct BetaComputerScreenshotContent: OpenAIModel {
     /// Specifies the event type. For a computer screenshot, this property is always set to `computer_screenshot`.
     public var type: String = "computer_screenshot"
     public var imageURL: String?
@@ -1981,17 +2324,27 @@ public struct BetaComputerScreenshotContent: Codable, Hashable, Sendable {
         self.promptCacheBreakpoint = promptCacheBreakpoint
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case imageURL = "image_url"
-        case fileID = "file_id"
-        case detail
-        case promptCacheBreakpoint = "prompt_cache_breakpoint"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "computer_screenshot"
+        self.imageURL = try container.decodeIfPresent(String.self, forKey: "image_url")
+        self.fileID = try container.decodeIfPresent(String.self, forKey: "file_id")
+        self.detail = try container.decode(BetaImageDetail.self, forKey: "detail")
+        self.promptCacheBreakpoint = try container.decodeIfPresent(BetaPromptCacheBreakpointConfig.self, forKey: "prompt_cache_breakpoint")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.imageURL, forKey: "image_url")
+        try container.encodeIfPresent(self.fileID, forKey: "file_id")
+        try container.encode(self.detail, forKey: "detail")
+        try container.encodeIfPresent(self.promptCacheBreakpoint, forKey: "prompt_cache_breakpoint")
     }
 }
 
 /// A computer screenshot image used with the computer use tool.
-public struct BetaComputerScreenshotImage: Codable, Hashable, Sendable {
+public struct BetaComputerScreenshotImage: OpenAIModel {
     /// Specifies the event type. For a computer screenshot, this property is
     /// always set to `computer_screenshot`.
     public var type: String = "computer_screenshot"
@@ -2005,29 +2358,43 @@ public struct BetaComputerScreenshotImage: Codable, Hashable, Sendable {
         self.fileID = fileID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case imageURL = "image_url"
-        case fileID = "file_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "computer_screenshot"
+        self.imageURL = try container.decodeIfPresent(String.self, forKey: "image_url")
+        self.fileID = try container.decodeIfPresent(String.self, forKey: "file_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.imageURL, forKey: "image_url")
+        try container.encodeIfPresent(self.fileID, forKey: "file_id")
     }
 }
 
 /// A tool that controls a virtual computer. Learn more about the [computer tool](https://developers.openai.com/api/docs/guides/tools-computer-use).
-public struct BetaComputerTool: Codable, Hashable, Sendable {
+public struct BetaComputerTool: OpenAIModel {
     /// The type of the computer tool. Always `computer`.
     public var type: String = "computer"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "computer"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// A tool call to a computer use tool. See the
 /// [computer use guide](https://developers.openai.com/api/docs/guides/tools-computer-use) for more information.
-public struct BetaComputerToolCall: Codable, Hashable, Sendable {
+public struct BetaComputerToolCall: OpenAIModel {
     /// The agent that produced this item.
     public var agent: BetaAgentTag?
     /// The type of the computer call. Always `computer_call`.
@@ -2062,15 +2429,28 @@ public struct BetaComputerToolCall: Codable, Hashable, Sendable {
         self.actions = actions
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case id
-        case callID = "call_id"
-        case action
-        case actions
-        case pendingSafetyChecks = "pending_safety_checks"
-        case status
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "computer_call"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.action = try container.decodeIfPresent(BetaComputerAction.self, forKey: "action")
+        self.actions = try container.decodeIfPresent(BetaComputerActionList.self, forKey: "actions")
+        self.pendingSafetyChecks = try container.decode([BetaComputerCallSafetyCheckParam].self, forKey: "pending_safety_checks")
+        self.status = try container.decode(BetaComputerToolCall.Status.self, forKey: "status")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encodeIfPresent(self.action, forKey: "action")
+        try container.encodeIfPresent(self.actions, forKey: "actions")
+        try container.encode(self.pendingSafetyChecks, forKey: "pending_safety_checks")
+        try container.encode(self.status, forKey: "status")
     }
 
     /// The status of the item. One of `in_progress`, `completed`, or
@@ -2095,7 +2475,7 @@ public struct BetaComputerToolCall: Codable, Hashable, Sendable {
 }
 
 /// The output of a computer tool call.
-public struct BetaComputerToolCallOutput: Codable, Hashable, Sendable {
+public struct BetaComputerToolCallOutput: OpenAIModel {
     /// The agent that produced this item.
     public var agent: BetaAgentTag?
     /// The type of the computer tool call output. Always `computer_call_output`.
@@ -2128,14 +2508,26 @@ public struct BetaComputerToolCallOutput: Codable, Hashable, Sendable {
         self.status = status
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case id
-        case callID = "call_id"
-        case acknowledgedSafetyChecks = "acknowledged_safety_checks"
-        case output
-        case status
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "computer_call_output"
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.acknowledgedSafetyChecks = try container.decodeIfPresent([BetaComputerCallSafetyCheckParam].self, forKey: "acknowledged_safety_checks")
+        self.output = try container.decode(BetaComputerScreenshotImage.self, forKey: "output")
+        self.status = try container.decodeIfPresent(BetaComputerToolCallOutput.Status.self, forKey: "status")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encodeIfPresent(self.acknowledgedSafetyChecks, forKey: "acknowledged_safety_checks")
+        try container.encode(self.output, forKey: "output")
+        try container.encodeIfPresent(self.status, forKey: "status")
     }
 
     /// The status of the message input. One of `in_progress`, `completed`, or
@@ -2159,7 +2551,7 @@ public struct BetaComputerToolCallOutput: Codable, Hashable, Sendable {
     }
 }
 
-public struct BetaComputerToolCallOutputResource: Codable, Hashable, Sendable {
+public struct BetaComputerToolCallOutputResource: OpenAIModel {
     /// The agent that produced this item.
     public var agent: BetaAgentTag?
     /// The type of the computer tool call output. Always `computer_call_output`.
@@ -2196,20 +2588,33 @@ public struct BetaComputerToolCallOutputResource: Codable, Hashable, Sendable {
         self.createdBy = createdBy
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case id
-        case callID = "call_id"
-        case acknowledgedSafetyChecks = "acknowledged_safety_checks"
-        case output
-        case status
-        case createdBy = "created_by"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "computer_call_output"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.acknowledgedSafetyChecks = try container.decodeIfPresent([BetaComputerCallSafetyCheckParam].self, forKey: "acknowledged_safety_checks")
+        self.output = try container.decode(BetaComputerScreenshotImage.self, forKey: "output")
+        self.status = try container.decode(BetaComputerCallOutputStatus.self, forKey: "status")
+        self.createdBy = try container.decodeIfPresent(String.self, forKey: "created_by")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encodeIfPresent(self.acknowledgedSafetyChecks, forKey: "acknowledged_safety_checks")
+        try container.encode(self.output, forKey: "output")
+        try container.encode(self.status, forKey: "status")
+        try container.encodeIfPresent(self.createdBy, forKey: "created_by")
     }
 }
 
 /// A tool that controls a virtual computer. Learn more about the [computer tool](https://developers.openai.com/api/docs/guides/tools-computer-use).
-public struct BetaComputerUsePreviewTool: Codable, Hashable, Sendable {
+public struct BetaComputerUsePreviewTool: OpenAIModel {
     /// The type of the computer use tool. Always `computer_use_preview`.
     public var type: String = "computer_use_preview"
     /// The type of computer environment to control.
@@ -2229,15 +2634,24 @@ public struct BetaComputerUsePreviewTool: Codable, Hashable, Sendable {
         self.displayHeight = displayHeight
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case environment
-        case displayWidth = "display_width"
-        case displayHeight = "display_height"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "computer_use_preview"
+        self.environment = try container.decode(BetaComputerEnvironment.self, forKey: "environment")
+        self.displayWidth = try container.decode(Int.self, forKey: "display_width")
+        self.displayHeight = try container.decode(Int.self, forKey: "display_height")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.environment, forKey: "environment")
+        try container.encode(self.displayWidth, forKey: "display_width")
+        try container.encode(self.displayHeight, forKey: "display_height")
     }
 }
 
-public struct BetaContainerAutoParam: Codable, Hashable, Sendable {
+public struct BetaContainerAutoParam: OpenAIModel {
     /// Automatically creates a container for this request
     public var type: String = "container_auto"
     /// An optional list of uploaded files to make available to your code.
@@ -2260,18 +2674,28 @@ public struct BetaContainerAutoParam: Codable, Hashable, Sendable {
         self.skills = skills
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case fileIDs = "file_ids"
-        case memoryLimit = "memory_limit"
-        case networkPolicy = "network_policy"
-        case skills
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "container_auto"
+        self.fileIDs = try container.decodeIfPresent([String].self, forKey: "file_ids")
+        self.memoryLimit = try container.decodeIfPresent(BetaContainerMemoryLimit.self, forKey: "memory_limit")
+        self.networkPolicy = try container.decodeIfPresent(BetaContainerAutoParam.NetworkPolicy.self, forKey: "network_policy")
+        self.skills = try container.decodeIfPresent([BetaContainerAutoParam.Skill].self, forKey: "skills")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.fileIDs, forKey: "file_ids")
+        try container.encodeIfPresent(self.memoryLimit, forKey: "memory_limit")
+        try container.encodeIfPresent(self.networkPolicy, forKey: "network_policy")
+        try container.encodeIfPresent(self.skills, forKey: "skills")
     }
 
     /// Network access policy for the container.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum NetworkPolicy: Codable, Hashable, Sendable {
+    public indirect enum NetworkPolicy: OpenAIModel {
         /// `type`: `disabled`
         case disabled(BetaContainerNetworkPolicyDisabledParam)
         /// `type`: `allowlist`
@@ -2311,7 +2735,7 @@ public struct BetaContainerAutoParam: Codable, Hashable, Sendable {
     }
 
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Skill: Codable, Hashable, Sendable {
+    public indirect enum Skill: OpenAIModel {
         /// `type`: `skill_reference`
         case skillReference(BetaSkillReferenceParam)
         /// `type`: `inline`
@@ -2352,7 +2776,7 @@ public struct BetaContainerAutoParam: Codable, Hashable, Sendable {
 }
 
 /// A citation for a container file used to generate a model response.
-public struct BetaContainerFileCitationBody: Codable, Hashable, Sendable {
+public struct BetaContainerFileCitationBody: OpenAIModel {
     /// The type of the container file citation. Always `container_file_citation`.
     public var type: String = "container_file_citation"
     /// The ID of the container file.
@@ -2380,17 +2804,28 @@ public struct BetaContainerFileCitationBody: Codable, Hashable, Sendable {
         self.filename = filename
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case containerID = "container_id"
-        case fileID = "file_id"
-        case startIndex = "start_index"
-        case endIndex = "end_index"
-        case filename
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "container_file_citation"
+        self.containerID = try container.decode(String.self, forKey: "container_id")
+        self.fileID = try container.decode(String.self, forKey: "file_id")
+        self.startIndex = try container.decode(Int.self, forKey: "start_index")
+        self.endIndex = try container.decode(Int.self, forKey: "end_index")
+        self.filename = try container.decode(String.self, forKey: "filename")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.containerID, forKey: "container_id")
+        try container.encode(self.fileID, forKey: "file_id")
+        try container.encode(self.startIndex, forKey: "start_index")
+        try container.encode(self.endIndex, forKey: "end_index")
+        try container.encode(self.filename, forKey: "filename")
     }
 }
 
-public struct BetaContainerFileCitationParam: Codable, Hashable, Sendable {
+public struct BetaContainerFileCitationParam: OpenAIModel {
     /// The citation type. Always `container_file_citation`.
     public var type: String = "container_file_citation"
     /// The index of the first character of the citation in the message.
@@ -2418,13 +2853,24 @@ public struct BetaContainerFileCitationParam: Codable, Hashable, Sendable {
         self.filename = filename
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case startIndex = "start_index"
-        case endIndex = "end_index"
-        case containerID = "container_id"
-        case fileID = "file_id"
-        case filename
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "container_file_citation"
+        self.startIndex = try container.decode(Int.self, forKey: "start_index")
+        self.endIndex = try container.decode(Int.self, forKey: "end_index")
+        self.containerID = try container.decode(String.self, forKey: "container_id")
+        self.fileID = try container.decode(String.self, forKey: "file_id")
+        self.filename = try container.decode(String.self, forKey: "filename")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.startIndex, forKey: "start_index")
+        try container.encode(self.endIndex, forKey: "end_index")
+        try container.encode(self.containerID, forKey: "container_id")
+        try container.encode(self.fileID, forKey: "file_id")
+        try container.encode(self.filename, forKey: "filename")
     }
 }
 
@@ -2446,7 +2892,7 @@ public struct BetaContainerMemoryLimit: OpenAIStringEnum {
     }
 }
 
-public struct BetaContainerNetworkPolicyAllowlistParam: Codable, Hashable, Sendable {
+public struct BetaContainerNetworkPolicyAllowlistParam: OpenAIModel {
     /// Allow outbound network access only to specified domains. Always `allowlist`.
     public var type: String = "allowlist"
     /// A list of allowed domains when type is `allowlist`.
@@ -2459,26 +2905,40 @@ public struct BetaContainerNetworkPolicyAllowlistParam: Codable, Hashable, Senda
         self.domainSecrets = domainSecrets
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case allowedDomains = "allowed_domains"
-        case domainSecrets = "domain_secrets"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "allowlist"
+        self.allowedDomains = try container.decode([String].self, forKey: "allowed_domains")
+        self.domainSecrets = try container.decodeIfPresent([BetaContainerNetworkPolicyDomainSecretParam].self, forKey: "domain_secrets")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.allowedDomains, forKey: "allowed_domains")
+        try container.encodeIfPresent(self.domainSecrets, forKey: "domain_secrets")
     }
 }
 
-public struct BetaContainerNetworkPolicyDisabledParam: Codable, Hashable, Sendable {
+public struct BetaContainerNetworkPolicyDisabledParam: OpenAIModel {
     /// Disable outbound network access. Always `disabled`.
     public var type: String = "disabled"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "disabled"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
-public struct BetaContainerNetworkPolicyDomainSecretParam: Codable, Hashable, Sendable {
+public struct BetaContainerNetworkPolicyDomainSecretParam: OpenAIModel {
     /// The domain associated with the secret.
     public var domain: String
     /// The name of the secret to inject for the domain.
@@ -2496,14 +2956,22 @@ public struct BetaContainerNetworkPolicyDomainSecretParam: Codable, Hashable, Se
         self.value = value
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case domain
-        case name
-        case value
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.domain = try container.decode(String.self, forKey: "domain")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.value = try container.decode(String.self, forKey: "value")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.domain, forKey: "domain")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.value, forKey: "value")
     }
 }
 
-public struct BetaContainerReferenceParam: Codable, Hashable, Sendable {
+public struct BetaContainerReferenceParam: OpenAIModel {
     /// References a container created with the /v1/containers endpoint
     public var type: String = "container_reference"
     /// The ID of the referenced container.
@@ -2513,14 +2981,21 @@ public struct BetaContainerReferenceParam: Codable, Hashable, Sendable {
         self.containerID = containerID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case containerID = "container_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "container_reference"
+        self.containerID = try container.decode(String.self, forKey: "container_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.containerID, forKey: "container_id")
     }
 }
 
 /// Represents a container created with /v1/containers.
-public struct BetaContainerReferenceResource: Codable, Hashable, Sendable {
+public struct BetaContainerReferenceResource: OpenAIModel {
     /// The environment type. Always `container_reference`.
     public var type: String = "container_reference"
     public var containerID: String
@@ -2529,14 +3004,21 @@ public struct BetaContainerReferenceResource: Codable, Hashable, Sendable {
         self.containerID = containerID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case containerID = "container_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "container_reference"
+        self.containerID = try container.decode(String.self, forKey: "container_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.containerID, forKey: "container_id")
     }
 }
 
 /// Multi-modal input and output contents.
-public indirect enum BetaContent: Codable, Hashable, Sendable {
+public indirect enum BetaContent: OpenAIModel {
     case input(BetaInputContent)
     case output(BetaOutputContent)
     /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
@@ -2568,7 +3050,7 @@ public indirect enum BetaContent: Codable, Hashable, Sendable {
     }
 }
 
-public struct BetaContextManagementParam: Codable, Hashable, Sendable {
+public struct BetaContextManagementParam: OpenAIModel {
     /// The context management entry type. Currently only 'compaction' is supported.
     public var type: String
     public var compactThreshold: Int?
@@ -2578,15 +3060,22 @@ public struct BetaContextManagementParam: Codable, Hashable, Sendable {
         self.compactThreshold = compactThreshold
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case compactThreshold = "compact_threshold"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decode(String.self, forKey: "type")
+        self.compactThreshold = try container.decodeIfPresent(Int.self, forKey: "compact_threshold")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.compactThreshold, forKey: "compact_threshold")
     }
 }
 
 /// The conversation that this response belongs to. Items from this conversation are prepended to `input_items` for this response request.
 /// Input items and output items from this response are automatically added to this conversation after this response completes.
-public indirect enum BetaConversationParam: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+public indirect enum BetaConversationParam: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
     /// The unique ID of the conversation.
     case conversationID(String)
     case betaConversationParam2(BetaConversationParam2)
@@ -2624,7 +3113,7 @@ public indirect enum BetaConversationParam: Codable, Hashable, Sendable, Express
 }
 
 /// The conversation that this response belongs to.
-public struct BetaConversationParam2: Codable, Hashable, Sendable {
+public struct BetaConversationParam2: OpenAIModel {
     /// The unique ID of the conversation.
     public var id: String
 
@@ -2632,13 +3121,19 @@ public struct BetaConversationParam2: Codable, Hashable, Sendable {
         self.id = id
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
     }
 }
 
 /// An x/y coordinate pair, e.g. `{ x: 100, y: 200 }`.
-public struct BetaCoordParam: Codable, Hashable, Sendable {
+public struct BetaCoordParam: OpenAIModel {
     /// The x-coordinate.
     public var x: Int
     /// The y-coordinate.
@@ -2649,13 +3144,20 @@ public struct BetaCoordParam: Codable, Hashable, Sendable {
         self.y = y
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case x
-        case y
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.x = try container.decode(Int.self, forKey: "x")
+        self.y = try container.decode(Int.self, forKey: "y")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.x, forKey: "x")
+        try container.encode(self.y, forKey: "y")
     }
 }
 
-public struct BetaCreateModelResponseProperties: Codable, Hashable, Sendable {
+public struct BetaCreateModelResponseProperties: OpenAIModel {
     public var metadata: BetaMetadata?
     /// An integer between 0 and 20 specifying the maximum number of most likely
     /// tokens to return at each token position, each with an associated log
@@ -2695,15 +3197,28 @@ public struct BetaCreateModelResponseProperties: Codable, Hashable, Sendable {
         self.promptCacheRetention = promptCacheRetention
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case metadata
-        case topLogprobs = "top_logprobs"
-        case temperature
-        case topP = "top_p"
-        case user
-        case safetyIdentifier = "safety_identifier"
-        case promptCacheKey = "prompt_cache_key"
-        case promptCacheRetention = "prompt_cache_retention"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.metadata = try container.decodeIfPresent(BetaMetadata.self, forKey: "metadata")
+        self.topLogprobs = try container.decodeIfPresent(Int.self, forKey: "top_logprobs")
+        self.temperature = try container.decodeIfPresent(Double.self, forKey: "temperature")
+        self.topP = try container.decodeIfPresent(Double.self, forKey: "top_p")
+        self.user = try container.decodeIfPresent(String.self, forKey: "user")
+        self.safetyIdentifier = try container.decodeIfPresent(String.self, forKey: "safety_identifier")
+        self.promptCacheKey = try container.decodeIfPresent(String.self, forKey: "prompt_cache_key")
+        self.promptCacheRetention = try container.decodeIfPresent(BetaCreateModelResponseProperties.PromptCacheRetention.self, forKey: "prompt_cache_retention")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
+        try container.encodeIfPresent(self.topLogprobs, forKey: "top_logprobs")
+        try container.encodeIfPresent(self.temperature, forKey: "temperature")
+        try container.encodeIfPresent(self.topP, forKey: "top_p")
+        try container.encodeIfPresent(self.user, forKey: "user")
+        try container.encodeIfPresent(self.safetyIdentifier, forKey: "safety_identifier")
+        try container.encodeIfPresent(self.promptCacheKey, forKey: "prompt_cache_key")
+        try container.encodeIfPresent(self.promptCacheRetention, forKey: "prompt_cache_retention")
     }
 
     /// Deprecated. Use `prompt_cache_options.ttl` instead.
@@ -2735,7 +3250,7 @@ public struct BetaCreateModelResponseProperties: Codable, Hashable, Sendable {
     }
 }
 
-public struct BetaCreateResponse: Codable, Hashable, Sendable {
+public struct BetaCreateResponse: OpenAIModel {
     public var metadata: BetaMetadata?
     /// An integer between 0 and 20 specifying the maximum number of most likely
     /// tokens to return at each token position, each with an associated log
@@ -2864,42 +3379,82 @@ public struct BetaCreateResponse: Codable, Hashable, Sendable {
         self.multiAgent = multiAgent
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case metadata
-        case topLogprobs = "top_logprobs"
-        case temperature
-        case topP = "top_p"
-        case user
-        case safetyIdentifier = "safety_identifier"
-        case promptCacheKey = "prompt_cache_key"
-        case promptCacheRetention = "prompt_cache_retention"
-        case previousResponseID = "previous_response_id"
-        case model
-        case background
-        case maxToolCalls = "max_tool_calls"
-        case text
-        case tools
-        case toolChoice = "tool_choice"
-        case prompt
-        case accessPrograms = "access_programs"
-        case image
-        case promptCacheOptions = "prompt_cache_options"
-        case serviceTier = "service_tier"
-        case truncation
-        case reasoning
-        case input
-        case include
-        case parallelToolCalls = "parallel_tool_calls"
-        case store
-        case instructions
-        case moderation
-        case backgroundOptions = "background_options"
-        case stream
-        case streamOptions = "stream_options"
-        case conversation
-        case contextManagement = "context_management"
-        case maxOutputTokens = "max_output_tokens"
-        case multiAgent = "multi_agent"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.metadata = try container.decodeIfPresent(BetaMetadata.self, forKey: "metadata")
+        self.topLogprobs = try container.decodeIfPresent(Int.self, forKey: "top_logprobs")
+        self.temperature = try container.decodeIfPresent(Double.self, forKey: "temperature")
+        self.topP = try container.decodeIfPresent(Double.self, forKey: "top_p")
+        self.user = try container.decodeIfPresent(String.self, forKey: "user")
+        self.safetyIdentifier = try container.decodeIfPresent(String.self, forKey: "safety_identifier")
+        self.promptCacheKey = try container.decodeIfPresent(String.self, forKey: "prompt_cache_key")
+        self.promptCacheRetention = try container.decodeIfPresent(BetaCreateResponse.PromptCacheRetention.self, forKey: "prompt_cache_retention")
+        self.previousResponseID = try container.decodeIfPresent(String.self, forKey: "previous_response_id")
+        self.model = try container.decodeIfPresent(BetaModelIdsResponses.self, forKey: "model")
+        self.background = try container.decodeIfPresent(Bool.self, forKey: "background")
+        self.maxToolCalls = try container.decodeIfPresent(Int.self, forKey: "max_tool_calls")
+        self.text = try container.decodeIfPresent(BetaResponseTextParam.self, forKey: "text")
+        self.tools = try container.decodeIfPresent(BetaToolsArray.self, forKey: "tools")
+        self.toolChoice = try container.decodeIfPresent(BetaToolChoiceParam.self, forKey: "tool_choice")
+        self.prompt = try container.decodeIfPresent(BetaPrompt.self, forKey: "prompt")
+        self.accessPrograms = try container.decodeIfPresent(BetaAccessProgramsParam.self, forKey: "access_programs")
+        self.image = try container.decodeIfPresent(BetaImageOptionsParam.self, forKey: "image")
+        self.promptCacheOptions = try container.decodeIfPresent(BetaResponsePromptCacheOptionsParam.self, forKey: "prompt_cache_options")
+        self.serviceTier = try container.decodeIfPresent(BetaServiceTierResponses.self, forKey: "service_tier")
+        self.truncation = try container.decodeIfPresent(BetaCreateResponse.Truncation.self, forKey: "truncation")
+        self.reasoning = try container.decodeIfPresent(BetaReasoning.self, forKey: "reasoning")
+        self.input = try container.decodeIfPresent(BetaInputParam.self, forKey: "input")
+        self.include = try container.decodeIfPresent([BetaIncludeEnum].self, forKey: "include")
+        self.parallelToolCalls = try container.decodeIfPresent(Bool.self, forKey: "parallel_tool_calls")
+        self.store = try container.decodeIfPresent(Bool.self, forKey: "store")
+        self.instructions = try container.decodeIfPresent(String.self, forKey: "instructions")
+        self.moderation = try container.decodeIfPresent(BetaModerationParam.self, forKey: "moderation")
+        self.backgroundOptions = try container.decodeIfPresent(BetaBackgroundOptionsParam.self, forKey: "background_options")
+        self.stream = try container.decodeIfPresent(Bool.self, forKey: "stream")
+        self.streamOptions = try container.decodeIfPresent(BetaResponseStreamOptions.self, forKey: "stream_options")
+        self.conversation = try container.decodeIfPresent(BetaConversationParam.self, forKey: "conversation")
+        self.contextManagement = try container.decodeIfPresent([BetaContextManagementParam].self, forKey: "context_management")
+        self.maxOutputTokens = try container.decodeIfPresent(Int.self, forKey: "max_output_tokens")
+        self.multiAgent = try container.decodeIfPresent(BetaMultiAgentParam.self, forKey: "multi_agent")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
+        try container.encodeIfPresent(self.topLogprobs, forKey: "top_logprobs")
+        try container.encodeIfPresent(self.temperature, forKey: "temperature")
+        try container.encodeIfPresent(self.topP, forKey: "top_p")
+        try container.encodeIfPresent(self.user, forKey: "user")
+        try container.encodeIfPresent(self.safetyIdentifier, forKey: "safety_identifier")
+        try container.encodeIfPresent(self.promptCacheKey, forKey: "prompt_cache_key")
+        try container.encodeIfPresent(self.promptCacheRetention, forKey: "prompt_cache_retention")
+        try container.encodeIfPresent(self.previousResponseID, forKey: "previous_response_id")
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encodeIfPresent(self.background, forKey: "background")
+        try container.encodeIfPresent(self.maxToolCalls, forKey: "max_tool_calls")
+        try container.encodeIfPresent(self.text, forKey: "text")
+        try container.encodeIfPresent(self.tools, forKey: "tools")
+        try container.encodeIfPresent(self.toolChoice, forKey: "tool_choice")
+        try container.encodeIfPresent(self.prompt, forKey: "prompt")
+        try container.encodeIfPresent(self.accessPrograms, forKey: "access_programs")
+        try container.encodeIfPresent(self.image, forKey: "image")
+        try container.encodeIfPresent(self.promptCacheOptions, forKey: "prompt_cache_options")
+        try container.encodeIfPresent(self.serviceTier, forKey: "service_tier")
+        try container.encodeIfPresent(self.truncation, forKey: "truncation")
+        try container.encodeIfPresent(self.reasoning, forKey: "reasoning")
+        try container.encodeIfPresent(self.input, forKey: "input")
+        try container.encodeIfPresent(self.include, forKey: "include")
+        try container.encodeIfPresent(self.parallelToolCalls, forKey: "parallel_tool_calls")
+        try container.encodeIfPresent(self.store, forKey: "store")
+        try container.encodeIfPresent(self.instructions, forKey: "instructions")
+        try container.encodeIfPresent(self.moderation, forKey: "moderation")
+        try container.encodeIfPresent(self.backgroundOptions, forKey: "background_options")
+        try container.encodeIfPresent(self.stream, forKey: "stream")
+        try container.encodeIfPresent(self.streamOptions, forKey: "stream_options")
+        try container.encodeIfPresent(self.conversation, forKey: "conversation")
+        try container.encodeIfPresent(self.contextManagement, forKey: "context_management")
+        try container.encodeIfPresent(self.maxOutputTokens, forKey: "max_output_tokens")
+        try container.encodeIfPresent(self.multiAgent, forKey: "multi_agent")
     }
 
     /// Deprecated. Use `prompt_cache_options.ttl` instead.
@@ -2957,7 +3512,7 @@ public struct BetaCreateResponse: Codable, Hashable, Sendable {
 }
 
 /// A grammar defined by the user.
-public struct BetaCustomGrammarFormatParam: Codable, Hashable, Sendable {
+public struct BetaCustomGrammarFormatParam: OpenAIModel {
     /// Grammar format. Always `grammar`.
     public var type: String = "grammar"
     /// The syntax of the grammar definition. One of `lark` or `regex`.
@@ -2970,28 +3525,42 @@ public struct BetaCustomGrammarFormatParam: Codable, Hashable, Sendable {
         self.definition = definition
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case syntax
-        case definition
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "grammar"
+        self.syntax = try container.decode(BetaGrammarSyntax1.self, forKey: "syntax")
+        self.definition = try container.decode(String.self, forKey: "definition")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.syntax, forKey: "syntax")
+        try container.encode(self.definition, forKey: "definition")
     }
 }
 
 /// Unconstrained free-form text.
-public struct BetaCustomTextFormatParam: Codable, Hashable, Sendable {
+public struct BetaCustomTextFormatParam: OpenAIModel {
     /// Unconstrained text format. Always `text`.
     public var type: String = "text"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "text"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// A call to a custom tool created by the model.
-public struct BetaCustomToolCall: Codable, Hashable, Sendable {
+public struct BetaCustomToolCall: OpenAIModel {
     /// The agent that produced this item.
     public var agent: BetaAgentTag?
     /// The type of the custom tool call. Always `custom_tool_call`.
@@ -3030,21 +3599,35 @@ public struct BetaCustomToolCall: Codable, Hashable, Sendable {
         self.async = `async`
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case id
-        case callID = "call_id"
-        case caller
-        case namespace
-        case name
-        case input
-        case `async`
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "custom_tool_call"
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.caller = try container.decodeIfPresent(BetaToolCallCaller.self, forKey: "caller")
+        self.namespace = try container.decodeIfPresent(String.self, forKey: "namespace")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.input = try container.decode(String.self, forKey: "input")
+        self.async = try container.decodeIfPresent(Bool.self, forKey: "async")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encodeIfPresent(self.caller, forKey: "caller")
+        try container.encodeIfPresent(self.namespace, forKey: "namespace")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.input, forKey: "input")
+        try container.encodeIfPresent(self.async, forKey: "async")
     }
 }
 
 /// The output of a custom tool call from your code, being sent back to the model.
-public struct BetaCustomToolCallOutput: Codable, Hashable, Sendable {
+public struct BetaCustomToolCallOutput: OpenAIModel {
     /// The agent that produced this item.
     public var agent: BetaAgentTag?
     /// The type of the custom tool call output. Always `custom_tool_call_output`.
@@ -3072,18 +3655,29 @@ public struct BetaCustomToolCallOutput: Codable, Hashable, Sendable {
         self.caller = caller
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case id
-        case callID = "call_id"
-        case caller
-        case output
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "custom_tool_call_output"
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.caller = try container.decodeIfPresent(BetaToolCallCallerParam.self, forKey: "caller")
+        self.output = try container.decode(BetaCustomToolCallOutput.Output.self, forKey: "output")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encodeIfPresent(self.caller, forKey: "caller")
+        try container.encode(self.output, forKey: "output")
     }
 
     /// The output from the custom tool call generated by your code.
     /// Can be a string or an list of output content.
-    public indirect enum Output: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum Output: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         /// A string of the output of the custom tool call.
         case stringOutput(String)
         /// Text, image, or file output of the custom tool call.
@@ -3122,7 +3716,7 @@ public struct BetaCustomToolCallOutput: Codable, Hashable, Sendable {
     }
 }
 
-public struct BetaCustomToolCallOutputResource: Codable, Hashable, Sendable {
+public struct BetaCustomToolCallOutputResource: OpenAIModel {
     /// The agent that produced this item.
     public var agent: BetaAgentTag?
     /// The type of the custom tool call output. Always `custom_tool_call_output`.
@@ -3159,20 +3753,33 @@ public struct BetaCustomToolCallOutputResource: Codable, Hashable, Sendable {
         self.createdBy = createdBy
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case id
-        case callID = "call_id"
-        case caller
-        case output
-        case status
-        case createdBy = "created_by"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "custom_tool_call_output"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.caller = try container.decodeIfPresent(BetaToolCallCallerParam.self, forKey: "caller")
+        self.output = try container.decode(BetaCustomToolCallOutputResource.Output.self, forKey: "output")
+        self.status = try container.decode(BetaFunctionCallOutputStatusEnum.self, forKey: "status")
+        self.createdBy = try container.decodeIfPresent(String.self, forKey: "created_by")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encodeIfPresent(self.caller, forKey: "caller")
+        try container.encode(self.output, forKey: "output")
+        try container.encode(self.status, forKey: "status")
+        try container.encodeIfPresent(self.createdBy, forKey: "created_by")
     }
 
     /// The output from the custom tool call generated by your code.
     /// Can be a string or an list of output content.
-    public indirect enum Output: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum Output: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         /// A string of the output of the custom tool call.
         case stringOutput(String)
         /// Text, image, or file output of the custom tool call.
@@ -3211,7 +3818,7 @@ public struct BetaCustomToolCallOutputResource: Codable, Hashable, Sendable {
     }
 }
 
-public struct BetaCustomToolCallResource: Codable, Hashable, Sendable {
+public struct BetaCustomToolCallResource: OpenAIModel {
     /// The agent that produced this item.
     public var agent: BetaAgentTag?
     /// The type of the custom tool call. Always `custom_tool_call`.
@@ -3259,23 +3866,39 @@ public struct BetaCustomToolCallResource: Codable, Hashable, Sendable {
         self.createdBy = createdBy
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case type
-        case id
-        case callID = "call_id"
-        case caller
-        case namespace
-        case name
-        case input
-        case `async`
-        case status
-        case createdBy = "created_by"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.agent = try container.decodeIfPresent(BetaAgentTag.self, forKey: "agent")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "custom_tool_call"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.caller = try container.decodeIfPresent(BetaToolCallCaller.self, forKey: "caller")
+        self.namespace = try container.decodeIfPresent(String.self, forKey: "namespace")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.input = try container.decode(String.self, forKey: "input")
+        self.async = try container.decodeIfPresent(Bool.self, forKey: "async")
+        self.status = try container.decode(BetaFunctionCallStatus.self, forKey: "status")
+        self.createdBy = try container.decodeIfPresent(String.self, forKey: "created_by")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encodeIfPresent(self.caller, forKey: "caller")
+        try container.encodeIfPresent(self.namespace, forKey: "namespace")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.input, forKey: "input")
+        try container.encodeIfPresent(self.async, forKey: "async")
+        try container.encode(self.status, forKey: "status")
+        try container.encodeIfPresent(self.createdBy, forKey: "created_by")
     }
 }
 
 /// A custom tool that processes input using a specified format. Learn more about   [custom tools](https://developers.openai.com/api/docs/guides/function-calling#custom-tools)
-public struct BetaCustomToolParam: Codable, Hashable, Sendable {
+public struct BetaCustomToolParam: OpenAIModel {
     /// The type of the custom tool. Always `custom`.
     public var type: String = "custom"
     /// The name of the custom tool, used to identify it in tool calls.
@@ -3306,20 +3929,32 @@ public struct BetaCustomToolParam: Codable, Hashable, Sendable {
         self.allowedCallers = allowedCallers
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
-        case `async`
-        case description
-        case format
-        case deferLoading = "defer_loading"
-        case allowedCallers = "allowed_callers"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "custom"
+        self.name = try container.decode(String.self, forKey: "name")
+        self.async = try container.decodeIfPresent(Bool.self, forKey: "async")
+        self.description = try container.decodeIfPresent(String.self, forKey: "description")
+        self.format = try container.decodeIfPresent(BetaCustomToolParam.Format.self, forKey: "format")
+        self.deferLoading = try container.decodeIfPresent(Bool.self, forKey: "defer_loading")
+        self.allowedCallers = try container.decodeIfPresent([BetaCallableToolAllowedCaller].self, forKey: "allowed_callers")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.name, forKey: "name")
+        try container.encodeIfPresent(self.async, forKey: "async")
+        try container.encodeIfPresent(self.description, forKey: "description")
+        try container.encodeIfPresent(self.format, forKey: "format")
+        try container.encodeIfPresent(self.deferLoading, forKey: "defer_loading")
+        try container.encodeIfPresent(self.allowedCallers, forKey: "allowed_callers")
     }
 
     /// The input format for the custom tool. Default is unconstrained text.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Format: Codable, Hashable, Sendable {
+    public indirect enum Format: OpenAIModel {
         /// `type`: `text`
         case text(BetaCustomTextFormatParam)
         /// `type`: `grammar`
@@ -3376,7 +4011,7 @@ public struct BetaCyberAccessProgramEnum: OpenAIStringEnum {
     }
 }
 
-public struct BetaDeleteResponseResponse: Codable, Hashable, Sendable {
+public struct BetaDeleteResponseResponse: OpenAIModel {
     public var object: String = "response.deleted"
     public var deleted: Bool
     public var id: String
@@ -3386,10 +4021,18 @@ public struct BetaDeleteResponseResponse: Codable, Hashable, Sendable {
         self.id = id
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case deleted
-        case id
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "response.deleted"
+        self.deleted = try container.decode(Bool.self, forKey: "deleted")
+        self.id = try container.decode(String.self, forKey: "id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.deleted, forKey: "deleted")
+        try container.encode(self.id, forKey: "id")
     }
 }
 
@@ -3411,31 +4054,43 @@ public struct BetaDetailEnum: OpenAIStringEnum {
     }
 }
 
-public struct BetaDirectToolCallCaller: Codable, Hashable, Sendable {
+public struct BetaDirectToolCallCaller: OpenAIModel {
     public var type: String = "direct"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "direct"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
-public struct BetaDirectToolCallCallerParam: Codable, Hashable, Sendable {
+public struct BetaDirectToolCallCallerParam: OpenAIModel {
     /// The caller type. Always `direct`.
     public var type: String = "direct"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "direct"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// A double click action.
-public struct BetaDoubleClickAction: Codable, Hashable, Sendable {
+public struct BetaDoubleClickAction: OpenAIModel {
     /// Specifies the event type. For a double click action, this property is always set to `double_click`.
     public var type: String = "double_click"
     /// The x-coordinate where the double click occurred.
@@ -3454,718 +4109,19 @@ public struct BetaDoubleClickAction: Codable, Hashable, Sendable {
         self.keys = keys
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case x
-        case y
-        case keys
-    }
-}
-
-/// A drag action.
-public struct BetaDragParam: Codable, Hashable, Sendable {
-    /// Specifies the event type. For a drag action, this property is always set to `drag`.
-    public var type: String = "drag"
-    /// An array of coordinates representing the path of the drag action. Coordinates will appear as an array of objects, eg
-    /// ```
-    /// [
-    ///   { x: 100, y: 200 },
-    ///   { x: 200, y: 300 }
-    /// ]
-    /// ```
-    public var path: [BetaCoordParam]
-    public var keys: [String]?
-
-    public init(path: [BetaCoordParam], keys: [String]? = nil) {
-        self.path = path
-        self.keys = keys
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case path
-        case keys
-    }
-}
-
-/// A message input to the model with a role indicating instruction following
-/// hierarchy. Instructions given with the `developer` or `system` role take
-/// precedence over instructions given with the `user` role. Messages with the
-/// `assistant` role are presumed to have been generated by the model in previous
-/// interactions.
-public struct BetaEasyInputMessage: Codable, Hashable, Sendable {
-    /// The role of the message input. One of `user`, `assistant`, `system`, or
-    /// `developer`.
-    public var role: BetaEasyInputMessage.Role
-    /// Text, image, or audio input to the model, used to generate a response.
-    /// Can also contain previous assistant responses.
-    public var content: BetaEasyInputMessage.Content
-    public var phase: BetaMessagePhase?
-    /// The type of the message input. Always `message`.
-    public var type: String? = "message"
-
-    public init(
-        role: BetaEasyInputMessage.Role,
-        content: BetaEasyInputMessage.Content,
-        phase: BetaMessagePhase? = nil
-    ) {
-        self.role = role
-        self.content = content
-        self.phase = phase
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case role
-        case content
-        case phase
-        case type
-    }
-
-    /// The role of the message input. One of `user`, `assistant`, `system`, or
-    /// `developer`.
-    ///
-    /// This type is open: it accepts values the spec does not list yet.
-    public struct Role: OpenAIStringEnum {
-        public let rawValue: String
-
-        public init(rawValue: String) {
-            self.rawValue = rawValue
-        }
-
-        public static let user: Self = "user"
-        public static let assistant: Self = "assistant"
-        public static let system: Self = "system"
-        public static let developer: Self = "developer"
-
-        public static var knownValues: [Self] {
-            [.user, .assistant, .system, .developer]
-        }
-    }
-
-    /// Text, image, or audio input to the model, used to generate a response.
-    /// Can also contain previous assistant responses.
-    public indirect enum Content: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
-        /// A text input to the model.
-        case textInput(String)
-        case betaInputMessageContentList(BetaInputMessageContentList)
-        /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
-        case unknown(JSONValue)
-
-        public init(stringLiteral value: String) {
-            self = .textInput(value)
-        }
-
-        public init(from decoder: any Decoder) throws {
-            let container = try decoder.singleValueContainer()
-            if let value = try? container.decode(String.self) {
-                self = .textInput(value)
-                return
-            }
-            if let value = try? container.decode(BetaInputMessageContentList.self) {
-                self = .betaInputMessageContentList(value)
-                return
-            }
-            self = .unknown(try container.decode(JSONValue.self))
-        }
-
-        public func encode(to encoder: any Encoder) throws {
-            var container = encoder.singleValueContainer()
-            switch self {
-            case .textInput(let value):
-                try container.encode(value)
-            case .betaInputMessageContentList(let value):
-                try container.encode(value)
-            case .unknown(let value):
-                try container.encode(value)
-            }
-        }
-    }
-}
-
-public typealias BetaEmptyModelParam = JSONObject
-
-/// Opaque encrypted content that Responses API decrypts inside trusted model execution.
-public struct BetaEncryptedContent: Codable, Hashable, Sendable {
-    /// The type of the input item. Always `encrypted_content`.
-    public var type: String = "encrypted_content"
-    /// Opaque encrypted content.
-    public var encryptedContent: String
-
-    public init(encryptedContent: String) {
-        self.encryptedContent = encryptedContent
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case encryptedContent = "encrypted_content"
-    }
-}
-
-/// Opaque encrypted content that Responses API decrypts inside trusted model execution.
-public struct BetaEncryptedContentParam: Codable, Hashable, Sendable {
-    /// The type of the input item. Always `encrypted_content`.
-    public var type: String = "encrypted_content"
-    /// Opaque encrypted content.
-    public var encryptedContent: String
-
-    public init(encryptedContent: String) {
-        self.encryptedContent = encryptedContent
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case encryptedContent = "encrypted_content"
-    }
-}
-
-public struct BetaError: Codable, Hashable, Sendable {
-    public var code: String?
-    public var message: String
-    public var param: String?
-    public var type: String
-    public var misalignment: BetaMisalignmentErrorDetailsResource?
-
-    public init(
-        message: String,
-        type: String,
-        code: String? = nil,
-        param: String? = nil,
-        misalignment: BetaMisalignmentErrorDetailsResource? = nil
-    ) {
-        self.message = message
-        self.type = type
-        self.code = code
-        self.param = param
-        self.misalignment = misalignment
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case code
-        case message
-        case param
-        case type
-        case misalignment
-    }
-}
-
-/// An error payload that was emitted for a streaming error event.
-public struct BetaErrorPayload: Codable, Hashable, Sendable {
-    /// The error type that was emitted.
-    public var type: String
-    public var code: String?
-    /// The human-readable error message that was emitted.
-    public var message: String
-    public var param: String?
-    /// The response headers that were emitted with the error, if any.
-    public var headers: [String: String]?
-    public var misalignment: BetaMisalignmentErrorDetailsResource?
-
-    public init(
-        type: String,
-        message: String,
-        code: String? = nil,
-        param: String? = nil,
-        headers: [String: String]? = nil,
-        misalignment: BetaMisalignmentErrorDetailsResource? = nil
-    ) {
-        self.type = type
-        self.message = message
-        self.code = code
-        self.param = param
-        self.headers = headers
-        self.misalignment = misalignment
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case code
-        case message
-        case param
-        case headers
-        case misalignment
-    }
-}
-
-public struct BetaErrorResponse: Codable, Hashable, Sendable {
-    public var error: BetaError
-
-    public init(error: BetaError) {
-        self.error = error
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case error
-    }
-}
-
-/// A citation to a file.
-public struct BetaFileCitationBody: Codable, Hashable, Sendable {
-    /// The type of the file citation. Always `file_citation`.
-    public var type: String = "file_citation"
-    /// The ID of the file.
-    public var fileID: String
-    /// The index in the output text at which to insert the file citation.
-    public var index: Int
-    /// The filename of the file cited.
-    public var filename: String
-
-    public init(
-        fileID: String,
-        index: Int,
-        filename: String
-    ) {
-        self.fileID = fileID
-        self.index = index
-        self.filename = filename
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case fileID = "file_id"
-        case index
-        case filename
-    }
-}
-
-public struct BetaFileCitationParam: Codable, Hashable, Sendable {
-    /// The citation type. Always `file_citation`.
-    public var type: String = "file_citation"
-    /// The index of the file in the list of files.
-    public var index: Int
-    /// The ID of the file.
-    public var fileID: String
-    /// The filename of the file cited.
-    public var filename: String
-
-    public init(
-        index: Int,
-        fileID: String,
-        filename: String
-    ) {
-        self.index = index
-        self.fileID = fileID
-        self.filename = filename
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case index
-        case fileID = "file_id"
-        case filename
-    }
-}
-
-/// This type is open: it accepts values the spec does not list yet.
-public struct BetaFileDetailEnum: OpenAIStringEnum {
-    public let rawValue: String
-
-    public init(rawValue: String) {
-        self.rawValue = rawValue
-    }
-
-    public static let auto: Self = "auto"
-    public static let low: Self = "low"
-    public static let high: Self = "high"
-
-    public static var knownValues: [Self] {
-        [.auto, .low, .high]
-    }
-}
-
-/// This type is open: it accepts values the spec does not list yet.
-public struct BetaFileInputDetail: OpenAIStringEnum {
-    public let rawValue: String
-
-    public init(rawValue: String) {
-        self.rawValue = rawValue
-    }
-
-    public static let auto: Self = "auto"
-    public static let low: Self = "low"
-    public static let high: Self = "high"
-
-    public static var knownValues: [Self] {
-        [.auto, .low, .high]
-    }
-}
-
-/// A path to a file.
-public struct BetaFilePath: Codable, Hashable, Sendable {
-    /// The type of the file path. Always `file_path`.
-    public var type: String = "file_path"
-    /// The ID of the file.
-    public var fileID: String
-    /// The index of the file in the list of files.
-    public var index: Int
-
-    public init(fileID: String, index: Int) {
-        self.fileID = fileID
-        self.index = index
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case fileID = "file_id"
-        case index
-    }
-}
-
-/// A tool that searches for relevant content from uploaded files. Learn more about the [file search tool](https://developers.openai.com/api/docs/guides/tools-file-search).
-public struct BetaFileSearchTool: Codable, Hashable, Sendable {
-    /// The type of the file search tool. Always `file_search`.
-    public var type: String = "file_search"
-    /// The IDs of the vector stores to search.
-    public var vectorStoreIDs: [String]
-    /// The maximum number of results to return. This number should be between 1 and 50 inclusive.
-    public var maxNumResults: Int?
-    /// Ranking options for search.
-    public var rankingOptions: BetaRankingOptions?
-    public var filters: BetaFilters?
-
-    public init(
-        vectorStoreIDs: [String],
-        maxNumResults: Int? = nil,
-        rankingOptions: BetaRankingOptions? = nil,
-        filters: BetaFilters? = nil
-    ) {
-        self.vectorStoreIDs = vectorStoreIDs
-        self.maxNumResults = maxNumResults
-        self.rankingOptions = rankingOptions
-        self.filters = filters
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case vectorStoreIDs = "vector_store_ids"
-        case maxNumResults = "max_num_results"
-        case rankingOptions = "ranking_options"
-        case filters
-    }
-}
-
-/// The results of a file search tool call. See the
-/// [file search guide](https://developers.openai.com/api/docs/guides/tools-file-search) for more information.
-public struct BetaFileSearchToolCall: Codable, Hashable, Sendable {
-    /// The agent that produced this item.
-    public var agent: BetaAgentTag?
-    /// The unique ID of the file search tool call.
-    public var id: String
-    /// The type of the file search tool call. Always `file_search_call`.
-    public var type: String = "file_search_call"
-    /// The status of the file search tool call. One of `in_progress`,
-    /// `searching`, `incomplete` or `failed`,
-    public var status: BetaFileSearchToolCall.Status
-    /// The queries used to search for files.
-    public var queries: [String]
-    public var results: [BetaFileSearchToolCall.ResultValue]?
-
-    public init(
-        id: String,
-        status: BetaFileSearchToolCall.Status,
-        queries: [String],
-        agent: BetaAgentTag? = nil,
-        results: [BetaFileSearchToolCall.ResultValue]? = nil
-    ) {
-        self.id = id
-        self.status = status
-        self.queries = queries
-        self.agent = agent
-        self.results = results
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case id
-        case type
-        case status
-        case queries
-        case results
-    }
-
-    /// The status of the file search tool call. One of `in_progress`,
-    /// `searching`, `incomplete` or `failed`,
-    ///
-    /// This type is open: it accepts values the spec does not list yet.
-    public struct Status: OpenAIStringEnum {
-        public let rawValue: String
-
-        public init(rawValue: String) {
-            self.rawValue = rawValue
-        }
-
-        public static let inProgress: Self = "in_progress"
-        public static let searching: Self = "searching"
-        public static let completed: Self = "completed"
-        public static let incomplete: Self = "incomplete"
-        public static let failed: Self = "failed"
-
-        public static var knownValues: [Self] {
-            [.inProgress, .searching, .completed, .incomplete, .failed]
-        }
-    }
-
-    public struct ResultValue: Codable, Hashable, Sendable {
-        /// The unique ID of the file.
-        public var fileID: String?
-        /// The text that was retrieved from the file.
-        public var text: String?
-        /// The name of the file.
-        public var filename: String?
-        public var attributes: BetaVectorStoreFileAttributes?
-        /// The relevance score of the file - a value between 0 and 1.
-        public var score: Double?
-
-        public init(
-            fileID: String? = nil,
-            text: String? = nil,
-            filename: String? = nil,
-            attributes: BetaVectorStoreFileAttributes? = nil,
-            score: Double? = nil
-        ) {
-            self.fileID = fileID
-            self.text = text
-            self.filename = filename
-            self.attributes = attributes
-            self.score = score
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case fileID = "file_id"
-            case text
-            case filename
-            case attributes
-            case score
-        }
-    }
-}
-
-public indirect enum BetaFilters: Codable, Hashable, Sendable {
-    case comparison(BetaComparisonFilter)
-    case compound(BetaCompoundFilter)
-    /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
-    case unknown(JSONValue)
-
     public init(from decoder: any Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        if let value = try? container.decode(BetaComparisonFilter.self) {
-            self = .comparison(value)
-            return
-        }
-        if let value = try? container.decode(BetaCompoundFilter.self) {
-            self = .compound(value)
-            return
-        }
-        self = .unknown(try container.decode(JSONValue.self))
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "double_click"
+        self.x = try container.decode(Int.self, forKey: "x")
+        self.y = try container.decode(Int.self, forKey: "y")
+        self.keys = try container.decodeIfPresent([String].self, forKey: "keys")
     }
 
     public func encode(to encoder: any Encoder) throws {
-        var container = encoder.singleValueContainer()
-        switch self {
-        case .comparison(let value):
-            try container.encode(value)
-        case .compound(let value):
-            try container.encode(value)
-        case .unknown(let value):
-            try container.encode(value)
-        }
-    }
-}
-
-/// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum BetaFunctionAndCustomToolCallOutput: Codable, Hashable, Sendable {
-    /// `type`: `input_text`
-    case inputText(BetaInputTextContent)
-    /// `type`: `input_image`
-    case inputImage(BetaInputImageContent)
-    /// `type`: `input_file`
-    case inputFile(BetaInputFileContent)
-    /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
-    case unknown(JSONValue)
-
-    public init(from decoder: any Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        if let keyed = try? decoder.container(keyedBy: OpenAIDynamicCodingKey.self),
-           let discriminator = try? keyed.decode(String.self, forKey: OpenAIDynamicCodingKey("type")) {
-            switch discriminator {
-            case "input_text":
-                self = .inputText(try container.decode(BetaInputTextContent.self))
-                return
-            case "input_image":
-                self = .inputImage(try container.decode(BetaInputImageContent.self))
-                return
-            case "input_file":
-                self = .inputFile(try container.decode(BetaInputFileContent.self))
-                return
-            default:
-                break
-            }
-        }
-        self = .unknown(try container.decode(JSONValue.self))
-    }
-
-    public func encode(to encoder: any Encoder) throws {
-        var container = encoder.singleValueContainer()
-        switch self {
-        case .inputText(let value):
-            try container.encode(value)
-        case .inputImage(let value):
-            try container.encode(value)
-        case .inputFile(let value):
-            try container.encode(value)
-        case .unknown(let value):
-            try container.encode(value)
-        }
-    }
-}
-
-/// This type is open: it accepts values the spec does not list yet.
-public struct BetaFunctionCallItemStatus: OpenAIStringEnum {
-    public let rawValue: String
-
-    public init(rawValue: String) {
-        self.rawValue = rawValue
-    }
-
-    public static let inProgress: Self = "in_progress"
-    public static let completed: Self = "completed"
-    public static let incomplete: Self = "incomplete"
-
-    public static var knownValues: [Self] {
-        [.inProgress, .completed, .incomplete]
-    }
-}
-
-/// The output of a function tool call.
-public struct BetaFunctionCallOutputItemParam: Codable, Hashable, Sendable {
-    public var agent: BetaAgentTagParam?
-    public var id: String?
-    public var callID: String?
-    /// The type of the function tool call output. Always `function_call_output`.
-    public var type: String = "function_call_output"
-    /// Text, image, or file output of the function tool call.
-    public var output: BetaFunctionCallOutputItemParam.Output
-    public var name: String?
-    public var namespace: String?
-    public var caller: BetaToolCallCallerParam?
-    public var status: BetaFunctionCallItemStatus?
-
-    public init(
-        output: BetaFunctionCallOutputItemParam.Output,
-        agent: BetaAgentTagParam? = nil,
-        id: String? = nil,
-        callID: String? = nil,
-        name: String? = nil,
-        namespace: String? = nil,
-        caller: BetaToolCallCallerParam? = nil,
-        status: BetaFunctionCallItemStatus? = nil
-    ) {
-        self.output = output
-        self.agent = agent
-        self.id = id
-        self.callID = callID
-        self.name = name
-        self.namespace = namespace
-        self.caller = caller
-        self.status = status
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case agent
-        case id
-        case callID = "call_id"
-        case type
-        case output
-        case name
-        case namespace
-        case caller
-        case status
-    }
-
-    /// Text, image, or file output of the function tool call.
-    public indirect enum Output: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
-        /// A JSON string of the output of the function tool call.
-        case string(String)
-        /// An array of content outputs (text, image, file) for the function tool call.
-        case array([BetaFunctionCallOutputItemParam.Output.Item])
-        /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
-        case unknown(JSONValue)
-
-        public init(stringLiteral value: String) {
-            self = .string(value)
-        }
-
-        public init(from decoder: any Decoder) throws {
-            let container = try decoder.singleValueContainer()
-            if let value = try? container.decode(String.self) {
-                self = .string(value)
-                return
-            }
-            if let value = try? container.decode([BetaFunctionCallOutputItemParam.Output.Item].self) {
-                self = .array(value)
-                return
-            }
-            self = .unknown(try container.decode(JSONValue.self))
-        }
-
-        public func encode(to encoder: any Encoder) throws {
-            var container = encoder.singleValueContainer()
-            switch self {
-            case .string(let value):
-                try container.encode(value)
-            case .array(let value):
-                try container.encode(value)
-            case .unknown(let value):
-                try container.encode(value)
-            }
-        }
-
-        /// A piece of message content, such as text, an image, or a file.
-        ///
-        /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-        public indirect enum Item: Codable, Hashable, Sendable {
-            /// `type`: `input_text`
-            case inputText(BetaInputTextContentParam)
-            /// `type`: `input_image`
-            case inputImage(BetaInputImageContentParamAutoParam)
-            /// `type`: `input_file`
-            case inputFile(BetaInputFileContentParam)
-            /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
-            case unknown(JSONValue)
-
-            public init(from decoder: any Decoder) throws {
-                let container = try decoder.singleValueContainer()
-                if let keyed = try? decoder.container(keyedBy: OpenAIDynamicCodingKey.self),
-                   let discriminator = try? keyed.decode(String.self, forKey: OpenAIDynamicCodingKey("type")) {
-                    switch discriminator {
-                    case "input_text":
-                        self = .inputText(try container.decode(BetaInputTextContentParam.self))
-                        return
-                    case "input_image":
-                        self = .inputImage(try container.decode(BetaInputImageContentParamAutoParam.self))
-                        return
-                    case "input_file":
-                        self = .inputFile(try container.decode(BetaInputFileContentParam.self))
-                        return
-                    default:
-                        break
-                    }
-                }
-                self = .unknown(try container.decode(JSONValue.self))
-            }
-
-            public func encode(to encoder: any Encoder) throws {
-                var container = encoder.singleValueContainer()
-                switch self {
-                case .inputText(let value):
-                    try container.encode(value)
-                case .inputImage(let value):
-                    try container.encode(value)
-                case .inputFile(let value):
-                    try container.encode(value)
-                case .unknown(let value):
-                    try container.encode(value)
-                }
-            }
-        }
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.x, forKey: "x")
+        try container.encode(self.y, forKey: "y")
+        try container.encodeIfPresent(self.keys, forKey: "keys")
     }
 }

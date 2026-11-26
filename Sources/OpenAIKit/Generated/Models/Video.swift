@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct VideoCharacterResource: Codable, Hashable, Sendable {
+public struct VideoCharacterResource: OpenAIModel {
     public var id: String?
     public var name: String?
     /// Unix timestamp (in seconds) when the character was created.
@@ -19,10 +19,18 @@ public struct VideoCharacterResource: Codable, Hashable, Sendable {
         self.name = name
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case name
-        case createdAt = "created_at"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encode(self.createdAt, forKey: "created_at")
     }
 }
 
@@ -43,7 +51,7 @@ public struct VideoContentVariant: OpenAIStringEnum {
     }
 }
 
-public struct VideoListResource: Codable, Hashable, Sendable {
+public struct VideoListResource: OpenAIModel {
     /// The type of object returned, must be `list`.
     public var object: String = "list"
     /// A list of items
@@ -65,12 +73,22 @@ public struct VideoListResource: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([VideoResource].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
@@ -94,7 +112,7 @@ public struct VideoModel: OpenAIStringEnum {
 }
 
 /// Reference to the completed video.
-public struct VideoReferenceInputParam: Codable, Hashable, Sendable {
+public struct VideoReferenceInputParam: OpenAIModel {
     /// The identifier of the completed video.
     public var id: String
 
@@ -102,13 +120,19 @@ public struct VideoReferenceInputParam: Codable, Hashable, Sendable {
         self.id = id
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
     }
 }
 
 /// Structured information describing a generated video job.
-public struct VideoResource: Codable, Hashable, Sendable {
+public struct VideoResource: OpenAIModel {
     /// Unique identifier for the video job.
     public var id: String
     /// The object type, which is always `video`.
@@ -159,20 +183,38 @@ public struct VideoResource: Codable, Hashable, Sendable {
         self.error = error
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case model
-        case status
-        case progress
-        case createdAt = "created_at"
-        case completedAt = "completed_at"
-        case expiresAt = "expires_at"
-        case prompt
-        case size
-        case seconds
-        case remixedFromVideoID = "remixed_from_video_id"
-        case error
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "video"
+        self.model = try container.decode(VideoModel.self, forKey: "model")
+        self.status = try container.decode(VideoStatus.self, forKey: "status")
+        self.progress = try container.decode(Int.self, forKey: "progress")
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.completedAt = try container.decodeIfPresent(Int.self, forKey: "completed_at")
+        self.expiresAt = try container.decodeIfPresent(Int.self, forKey: "expires_at")
+        self.prompt = try container.decodeIfPresent(String.self, forKey: "prompt")
+        self.size = try container.decode(VideoSize.self, forKey: "size")
+        self.seconds = try container.decode(String.self, forKey: "seconds")
+        self.remixedFromVideoID = try container.decodeIfPresent(String.self, forKey: "remixed_from_video_id")
+        self.error = try container.decodeIfPresent(Error2.self, forKey: "error")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.model, forKey: "model")
+        try container.encode(self.status, forKey: "status")
+        try container.encode(self.progress, forKey: "progress")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encodeIfPresent(self.completedAt, forKey: "completed_at")
+        try container.encodeIfPresent(self.expiresAt, forKey: "expires_at")
+        try container.encodeIfPresent(self.prompt, forKey: "prompt")
+        try container.encode(self.size, forKey: "size")
+        try container.encode(self.seconds, forKey: "seconds")
+        try container.encodeIfPresent(self.remixedFromVideoID, forKey: "remixed_from_video_id")
+        try container.encodeIfPresent(self.error, forKey: "error")
     }
 }
 

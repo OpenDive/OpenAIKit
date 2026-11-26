@@ -20,7 +20,7 @@ public struct TruncationEnum: OpenAIStringEnum {
 }
 
 /// Controls for how a thread will be truncated prior to the run. Use this to control the initial context window of the run.
-public struct TruncationObject: Codable, Hashable, Sendable {
+public struct TruncationObject: OpenAIModel {
     /// The truncation strategy to use for the thread. The default is `auto`. If set to `last_messages`, the thread will be truncated to the n most recent messages in the thread. When set to `auto`, messages in the middle of the thread will be dropped to fit the context length of the model, `max_prompt_tokens`.
     public var type: TruncationObject.Kind
     public var lastMessages: Int?
@@ -30,9 +30,16 @@ public struct TruncationObject: Codable, Hashable, Sendable {
         self.lastMessages = lastMessages
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case lastMessages = "last_messages"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decode(TruncationObject.Kind.self, forKey: "type")
+        self.lastMessages = try container.decodeIfPresent(Int.self, forKey: "last_messages")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.lastMessages, forKey: "last_messages")
     }
 
     /// The truncation strategy to use for the thread. The default is `auto`. If set to `last_messages`, the thread will be truncated to the n most recent messages in the thread. When set to `auto`, messages in the middle of the thread will be dropped to fit the context length of the model, `max_prompt_tokens`.

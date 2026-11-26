@@ -5,7 +5,7 @@ import Foundation
 
 /// Static predicted output content, such as the content of a text file that is
 /// being regenerated.
-public struct PredictionContent: Codable, Hashable, Sendable {
+public struct PredictionContent: OpenAIModel {
     /// The type of the predicted content you want to provide. This type is
     /// currently always `content`.
     public var type: String = "content"
@@ -18,15 +18,22 @@ public struct PredictionContent: Codable, Hashable, Sendable {
         self.content = content
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case content
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "content"
+        self.content = try container.decode(PredictionContent.Content.self, forKey: "content")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.content, forKey: "content")
     }
 
     /// The content that should be matched when generating a model response.
     /// If generated tokens would match this content, the entire model response
     /// can be returned much more quickly.
-    public indirect enum Content: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum Content: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         /// The content used for a Predicted Output. This is often the
         /// text of a file you are regenerating with minor changes.
         case textContent(String)

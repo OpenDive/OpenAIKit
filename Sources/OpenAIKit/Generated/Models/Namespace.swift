@@ -4,7 +4,7 @@
 import Foundation
 
 /// Groups function/custom tools under a shared namespace.
-public struct NamespaceToolParam: Codable, Hashable, Sendable {
+public struct NamespaceToolParam: OpenAIModel {
     /// The type of the tool. Always `namespace`.
     public var type: String = "namespace"
     /// The namespace name used in tool calls (for example, `crm`).
@@ -24,17 +24,26 @@ public struct NamespaceToolParam: Codable, Hashable, Sendable {
         self.tools = tools
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
-        case description
-        case tools
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "namespace"
+        self.name = try container.decode(String.self, forKey: "name")
+        self.description = try container.decode(String.self, forKey: "description")
+        self.tools = try container.decode([NamespaceToolParam.Tool].self, forKey: "tools")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.description, forKey: "description")
+        try container.encode(self.tools, forKey: "tools")
     }
 
     /// A function or custom tool that belongs to a namespace.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Tool: Codable, Hashable, Sendable {
+    public indirect enum Tool: OpenAIModel {
         /// `type`: `function`
         case function(FunctionToolParam)
         /// `type`: `custom`

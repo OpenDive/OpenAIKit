@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct Transformation: Codable, Hashable, Sendable {
+public struct Transformation: OpenAIModel {
     public var attribute: String
     public var expression: String
 
@@ -12,13 +12,20 @@ public struct Transformation: Codable, Hashable, Sendable {
         self.expression = expression
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case attribute
-        case expression
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.attribute = try container.decode(String.self, forKey: "attribute")
+        self.expression = try container.decode(String.self, forKey: "expression")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.attribute, forKey: "attribute")
+        try container.encode(self.expression, forKey: "expression")
     }
 }
 
-public struct TransformationParam: Codable, Hashable, Sendable {
+public struct TransformationParam: OpenAIModel {
     public var attribute: String
     public var expression: String
 
@@ -27,8 +34,15 @@ public struct TransformationParam: Codable, Hashable, Sendable {
         self.expression = expression
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case attribute
-        case expression
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.attribute = try container.decode(String.self, forKey: "attribute")
+        self.expression = try container.decode(String.self, forKey: "expression")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.attribute, forKey: "attribute")
+        try container.encode(self.expression, forKey: "expression")
     }
 }

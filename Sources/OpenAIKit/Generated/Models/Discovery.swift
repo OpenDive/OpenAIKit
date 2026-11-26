@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct DiscoveryVerification: Codable, Hashable, Sendable {
+public struct DiscoveryVerification: OpenAIModel {
     public var type: String = "discovery"
     public var discoveryURL: String?
 
@@ -11,13 +11,20 @@ public struct DiscoveryVerification: Codable, Hashable, Sendable {
         self.discoveryURL = discoveryURL
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case discoveryURL = "discovery_url"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "discovery"
+        self.discoveryURL = try container.decodeIfPresent(String.self, forKey: "discovery_url")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.discoveryURL, forKey: "discovery_url")
     }
 }
 
-public struct DiscoveryVerificationParam: Codable, Hashable, Sendable {
+public struct DiscoveryVerificationParam: OpenAIModel {
     public var type: String = "discovery"
     public var discoveryURL: String?
 
@@ -25,8 +32,15 @@ public struct DiscoveryVerificationParam: Codable, Hashable, Sendable {
         self.discoveryURL = discoveryURL
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case discoveryURL = "discovery_url"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "discovery"
+        self.discoveryURL = try container.decodeIfPresent(String.self, forKey: "discovery_url")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.discoveryURL, forKey: "discovery_url")
     }
 }

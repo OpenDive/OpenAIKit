@@ -3,9 +3,1994 @@
 
 import Foundation
 
+/// Returned in `server_vad` mode when the server detects the end of speech in
+/// the audio buffer. The server will also send an `conversation.item.created`
+/// event with the user message item that is created from the audio buffer.
+public struct RealtimeServerEventInputAudioBufferSpeechStopped: OpenAIModel {
+    /// The unique ID of the server event.
+    public var eventID: String
+    /// The event type, must be `input_audio_buffer.speech_stopped`.
+    public var type: String = "input_audio_buffer.speech_stopped"
+    /// Milliseconds since the session started when speech stopped. This will
+    /// correspond to the end of audio sent to the model, and thus includes the
+    /// `min_silence_duration_ms` configured in the Session.
+    public var audioEndMs: Int
+    /// The ID of the user message item that will be created.
+    public var itemID: String
+
+    public init(
+        eventID: String,
+        audioEndMs: Int,
+        itemID: String
+    ) {
+        self.eventID = eventID
+        self.audioEndMs = audioEndMs
+        self.itemID = itemID
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "input_audio_buffer.speech_stopped"
+        self.audioEndMs = try container.decode(Int.self, forKey: "audio_end_ms")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.audioEndMs, forKey: "audio_end_ms")
+        try container.encode(self.itemID, forKey: "item_id")
+    }
+}
+
+/// Returned when the Server VAD timeout is triggered for the input audio buffer. This is configured
+/// with `idle_timeout_ms` in the `turn_detection` settings of the session, and it indicates that
+/// there hasn't been any speech detected for the configured duration.
+///
+/// The `audio_start_ms` and `audio_end_ms` fields indicate the segment of audio after the last
+/// model response up to the triggering time, as an offset from the beginning of audio written
+/// to the input audio buffer. This means it demarcates the segment of audio that was silent and
+/// the difference between the start and end values will roughly match the configured timeout.
+///
+/// The empty audio will be committed to the conversation as an `input_audio` item (there will be a
+/// `input_audio_buffer.committed` event) and a model response will be generated. There may be speech
+/// that didn't trigger VAD but is still detected by the model, so the model may respond with
+/// something relevant to the conversation or a prompt to continue speaking.
+public struct RealtimeServerEventInputAudioBufferTimeoutTriggered: OpenAIModel {
+    /// The unique ID of the server event.
+    public var eventID: String
+    /// The event type, must be `input_audio_buffer.timeout_triggered`.
+    public var type: String = "input_audio_buffer.timeout_triggered"
+    /// Millisecond offset of audio written to the input audio buffer that was after the playback time of the last model response.
+    public var audioStartMs: Int
+    /// Millisecond offset of audio written to the input audio buffer at the time the timeout was triggered.
+    public var audioEndMs: Int
+    /// The ID of the item associated with this segment.
+    public var itemID: String
+
+    public init(
+        eventID: String,
+        audioStartMs: Int,
+        audioEndMs: Int,
+        itemID: String
+    ) {
+        self.eventID = eventID
+        self.audioStartMs = audioStartMs
+        self.audioEndMs = audioEndMs
+        self.itemID = itemID
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "input_audio_buffer.timeout_triggered"
+        self.audioStartMs = try container.decode(Int.self, forKey: "audio_start_ms")
+        self.audioEndMs = try container.decode(Int.self, forKey: "audio_end_ms")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.audioStartMs, forKey: "audio_start_ms")
+        try container.encode(self.audioEndMs, forKey: "audio_end_ms")
+        try container.encode(self.itemID, forKey: "item_id")
+    }
+}
+
+/// Returned when listing MCP tools has completed for an item.
+public struct RealtimeServerEventMCPListToolsCompleted: OpenAIModel {
+    /// The unique ID of the server event.
+    public var eventID: String
+    /// The event type, must be `mcp_list_tools.completed`.
+    public var type: String = "mcp_list_tools.completed"
+    /// The ID of the MCP list tools item.
+    public var itemID: String
+
+    public init(eventID: String, itemID: String) {
+        self.eventID = eventID
+        self.itemID = itemID
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "mcp_list_tools.completed"
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.itemID, forKey: "item_id")
+    }
+}
+
+/// Returned when listing MCP tools has failed for an item.
+public struct RealtimeServerEventMCPListToolsFailed: OpenAIModel {
+    /// The unique ID of the server event.
+    public var eventID: String
+    /// The event type, must be `mcp_list_tools.failed`.
+    public var type: String = "mcp_list_tools.failed"
+    /// The ID of the MCP list tools item.
+    public var itemID: String
+
+    public init(eventID: String, itemID: String) {
+        self.eventID = eventID
+        self.itemID = itemID
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "mcp_list_tools.failed"
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.itemID, forKey: "item_id")
+    }
+}
+
+/// Returned when listing MCP tools is in progress for an item.
+public struct RealtimeServerEventMCPListToolsInProgress: OpenAIModel {
+    /// The unique ID of the server event.
+    public var eventID: String
+    /// The event type, must be `mcp_list_tools.in_progress`.
+    public var type: String = "mcp_list_tools.in_progress"
+    /// The ID of the MCP list tools item.
+    public var itemID: String
+
+    public init(eventID: String, itemID: String) {
+        self.eventID = eventID
+        self.itemID = itemID
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "mcp_list_tools.in_progress"
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.itemID, forKey: "item_id")
+    }
+}
+
+/// **WebRTC/SIP Only:** Emitted when the output audio buffer is cleared. This happens either in VAD
+/// mode when the user has interrupted (`input_audio_buffer.speech_started`),
+/// or when the client has emitted the `output_audio_buffer.clear` event to manually
+/// cut off the current audio response.
+/// [Learn more](https://developers.openai.com/api/docs/guides/realtime-conversations#client-and-server-events-for-audio-in-webrtc).
+public struct RealtimeServerEventOutputAudioBufferCleared: OpenAIModel {
+    /// The unique ID of the server event.
+    public var eventID: String
+    /// The event type, must be `output_audio_buffer.cleared`.
+    public var type: String = "output_audio_buffer.cleared"
+    /// The unique ID of the response that produced the audio.
+    public var responseID: String
+
+    public init(eventID: String, responseID: String) {
+        self.eventID = eventID
+        self.responseID = responseID
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "output_audio_buffer.cleared"
+        self.responseID = try container.decode(String.self, forKey: "response_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.responseID, forKey: "response_id")
+    }
+}
+
+/// **WebRTC/SIP Only:** Emitted when the server begins streaming audio to the client. This event is
+/// emitted after an audio content part has been added (`response.content_part.added`)
+/// to the response.
+/// [Learn more](https://developers.openai.com/api/docs/guides/realtime-conversations#client-and-server-events-for-audio-in-webrtc).
+public struct RealtimeServerEventOutputAudioBufferStarted: OpenAIModel {
+    /// The unique ID of the server event.
+    public var eventID: String
+    /// The event type, must be `output_audio_buffer.started`.
+    public var type: String = "output_audio_buffer.started"
+    /// The unique ID of the response that produced the audio.
+    public var responseID: String
+
+    public init(eventID: String, responseID: String) {
+        self.eventID = eventID
+        self.responseID = responseID
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "output_audio_buffer.started"
+        self.responseID = try container.decode(String.self, forKey: "response_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.responseID, forKey: "response_id")
+    }
+}
+
+/// **WebRTC/SIP Only:** Emitted when the output audio buffer has been completely drained on the server,
+/// and no more audio is forthcoming. This event is emitted after the full response
+/// data has been sent to the client (`response.done`).
+/// [Learn more](https://developers.openai.com/api/docs/guides/realtime-conversations#client-and-server-events-for-audio-in-webrtc).
+public struct RealtimeServerEventOutputAudioBufferStopped: OpenAIModel {
+    /// The unique ID of the server event.
+    public var eventID: String
+    /// The event type, must be `output_audio_buffer.stopped`.
+    public var type: String = "output_audio_buffer.stopped"
+    /// The unique ID of the response that produced the audio.
+    public var responseID: String
+
+    public init(eventID: String, responseID: String) {
+        self.eventID = eventID
+        self.responseID = responseID
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "output_audio_buffer.stopped"
+        self.responseID = try container.decode(String.self, forKey: "response_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.responseID, forKey: "response_id")
+    }
+}
+
+/// Emitted at the beginning of a Response to indicate the updated rate limits.
+/// When a Response is created some tokens will be "reserved" for the output
+/// tokens, the rate limits shown here reflect that reservation, which is then
+/// adjusted accordingly once the Response is completed.
+public struct RealtimeServerEventRateLimitsUpdated: OpenAIModel {
+    /// The unique ID of the server event.
+    public var eventID: String
+    /// The event type, must be `rate_limits.updated`.
+    public var type: String = "rate_limits.updated"
+    /// List of rate limit information.
+    public var rateLimits: [RealtimeServerEventRateLimitsUpdated.RateLimit]
+
+    public init(eventID: String, rateLimits: [RealtimeServerEventRateLimitsUpdated.RateLimit]) {
+        self.eventID = eventID
+        self.rateLimits = rateLimits
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "rate_limits.updated"
+        self.rateLimits = try container.decode([RealtimeServerEventRateLimitsUpdated.RateLimit].self, forKey: "rate_limits")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.rateLimits, forKey: "rate_limits")
+    }
+
+    public struct RateLimit: OpenAIModel {
+        /// The name of the rate limit (`requests`, `tokens`).
+        public var name: RealtimeServerEventRateLimitsUpdated.RateLimit.Name?
+        /// The maximum allowed value for the rate limit.
+        public var limit: Int?
+        /// The remaining value before the limit is reached.
+        public var remaining: Int?
+        /// Seconds until the rate limit resets.
+        public var resetSeconds: Double?
+
+        public init(
+            name: RealtimeServerEventRateLimitsUpdated.RateLimit.Name? = nil,
+            limit: Int? = nil,
+            remaining: Int? = nil,
+            resetSeconds: Double? = nil
+        ) {
+            self.name = name
+            self.limit = limit
+            self.remaining = remaining
+            self.resetSeconds = resetSeconds
+        }
+
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.name = try container.decodeIfPresent(RealtimeServerEventRateLimitsUpdated.RateLimit.Name.self, forKey: "name")
+            self.limit = try container.decodeIfPresent(Int.self, forKey: "limit")
+            self.remaining = try container.decodeIfPresent(Int.self, forKey: "remaining")
+            self.resetSeconds = try container.decodeIfPresent(Double.self, forKey: "reset_seconds")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.name, forKey: "name")
+            try container.encodeIfPresent(self.limit, forKey: "limit")
+            try container.encodeIfPresent(self.remaining, forKey: "remaining")
+            try container.encodeIfPresent(self.resetSeconds, forKey: "reset_seconds")
+        }
+
+        /// The name of the rate limit (`requests`, `tokens`).
+        ///
+        /// This type is open: it accepts values the spec does not list yet.
+        public struct Name: OpenAIStringEnum {
+            public let rawValue: String
+
+            public init(rawValue: String) {
+                self.rawValue = rawValue
+            }
+
+            public static let requests: Self = "requests"
+            public static let tokens: Self = "tokens"
+
+            public static var knownValues: [Self] {
+                [.requests, .tokens]
+            }
+        }
+    }
+}
+
+/// Returned when the model-generated audio is updated.
+public struct RealtimeServerEventResponseAudioDelta: OpenAIModel {
+    /// The unique ID of the server event.
+    public var eventID: String
+    /// The event type, must be `response.output_audio.delta`.
+    public var type: String = "response.output_audio.delta"
+    /// The ID of the response.
+    public var responseID: String
+    /// The ID of the item.
+    public var itemID: String
+    /// The index of the output item in the response.
+    public var outputIndex: Int
+    /// The index of the content part in the item's content array.
+    public var contentIndex: Int
+    /// Base64-encoded audio data delta.
+    public var delta: String
+
+    public init(
+        eventID: String,
+        responseID: String,
+        itemID: String,
+        outputIndex: Int,
+        contentIndex: Int,
+        delta: String
+    ) {
+        self.eventID = eventID
+        self.responseID = responseID
+        self.itemID = itemID
+        self.outputIndex = outputIndex
+        self.contentIndex = contentIndex
+        self.delta = delta
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.output_audio.delta"
+        self.responseID = try container.decode(String.self, forKey: "response_id")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.contentIndex = try container.decode(Int.self, forKey: "content_index")
+        self.delta = try container.decode(String.self, forKey: "delta")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.responseID, forKey: "response_id")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.contentIndex, forKey: "content_index")
+        try container.encode(self.delta, forKey: "delta")
+    }
+}
+
+/// Returned when the model-generated audio is done. Also emitted when a Response
+/// is interrupted, incomplete, or cancelled.
+public struct RealtimeServerEventResponseAudioDone: OpenAIModel {
+    /// The unique ID of the server event.
+    public var eventID: String
+    /// The event type, must be `response.output_audio.done`.
+    public var type: String = "response.output_audio.done"
+    /// The ID of the response.
+    public var responseID: String
+    /// The ID of the item.
+    public var itemID: String
+    /// The index of the output item in the response.
+    public var outputIndex: Int
+    /// The index of the content part in the item's content array.
+    public var contentIndex: Int
+
+    public init(
+        eventID: String,
+        responseID: String,
+        itemID: String,
+        outputIndex: Int,
+        contentIndex: Int
+    ) {
+        self.eventID = eventID
+        self.responseID = responseID
+        self.itemID = itemID
+        self.outputIndex = outputIndex
+        self.contentIndex = contentIndex
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.output_audio.done"
+        self.responseID = try container.decode(String.self, forKey: "response_id")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.contentIndex = try container.decode(Int.self, forKey: "content_index")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.responseID, forKey: "response_id")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.contentIndex, forKey: "content_index")
+    }
+}
+
+/// Returned when the model-generated transcription of audio output is updated.
+public struct RealtimeServerEventResponseAudioTranscriptDelta: OpenAIModel {
+    /// The unique ID of the server event.
+    public var eventID: String
+    /// The event type, must be `response.output_audio_transcript.delta`.
+    public var type: String = "response.output_audio_transcript.delta"
+    /// The ID of the response.
+    public var responseID: String
+    /// The ID of the item.
+    public var itemID: String
+    /// The index of the output item in the response.
+    public var outputIndex: Int
+    /// The index of the content part in the item's content array.
+    public var contentIndex: Int
+    /// The transcript delta.
+    public var delta: String
+
+    public init(
+        eventID: String,
+        responseID: String,
+        itemID: String,
+        outputIndex: Int,
+        contentIndex: Int,
+        delta: String
+    ) {
+        self.eventID = eventID
+        self.responseID = responseID
+        self.itemID = itemID
+        self.outputIndex = outputIndex
+        self.contentIndex = contentIndex
+        self.delta = delta
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.output_audio_transcript.delta"
+        self.responseID = try container.decode(String.self, forKey: "response_id")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.contentIndex = try container.decode(Int.self, forKey: "content_index")
+        self.delta = try container.decode(String.self, forKey: "delta")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.responseID, forKey: "response_id")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.contentIndex, forKey: "content_index")
+        try container.encode(self.delta, forKey: "delta")
+    }
+}
+
+/// Returned when the model-generated transcription of audio output is done
+/// streaming. Also emitted when a Response is interrupted, incomplete, or
+/// cancelled.
+public struct RealtimeServerEventResponseAudioTranscriptDone: OpenAIModel {
+    /// The unique ID of the server event.
+    public var eventID: String
+    /// The event type, must be `response.output_audio_transcript.done`.
+    public var type: String = "response.output_audio_transcript.done"
+    /// The ID of the response.
+    public var responseID: String
+    /// The ID of the item.
+    public var itemID: String
+    /// The index of the output item in the response.
+    public var outputIndex: Int
+    /// The index of the content part in the item's content array.
+    public var contentIndex: Int
+    /// The final transcript of the audio.
+    public var transcript: String
+
+    public init(
+        eventID: String,
+        responseID: String,
+        itemID: String,
+        outputIndex: Int,
+        contentIndex: Int,
+        transcript: String
+    ) {
+        self.eventID = eventID
+        self.responseID = responseID
+        self.itemID = itemID
+        self.outputIndex = outputIndex
+        self.contentIndex = contentIndex
+        self.transcript = transcript
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.output_audio_transcript.done"
+        self.responseID = try container.decode(String.self, forKey: "response_id")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.contentIndex = try container.decode(Int.self, forKey: "content_index")
+        self.transcript = try container.decode(String.self, forKey: "transcript")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.responseID, forKey: "response_id")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.contentIndex, forKey: "content_index")
+        try container.encode(self.transcript, forKey: "transcript")
+    }
+}
+
+/// Returned when a new content part is added to an assistant message item during
+/// response generation.
+public struct RealtimeServerEventResponseContentPartAdded: OpenAIModel {
+    /// The unique ID of the server event.
+    public var eventID: String
+    /// The event type, must be `response.content_part.added`.
+    public var type: String = "response.content_part.added"
+    /// The ID of the response.
+    public var responseID: String
+    /// The ID of the item to which the content part was added.
+    public var itemID: String
+    /// The index of the output item in the response.
+    public var outputIndex: Int
+    /// The index of the content part in the item's content array.
+    public var contentIndex: Int
+    /// The content part that was added.
+    public var part: RealtimeServerEventResponseContentPartAdded.Part
+
+    public init(
+        eventID: String,
+        responseID: String,
+        itemID: String,
+        outputIndex: Int,
+        contentIndex: Int,
+        part: RealtimeServerEventResponseContentPartAdded.Part
+    ) {
+        self.eventID = eventID
+        self.responseID = responseID
+        self.itemID = itemID
+        self.outputIndex = outputIndex
+        self.contentIndex = contentIndex
+        self.part = part
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.content_part.added"
+        self.responseID = try container.decode(String.self, forKey: "response_id")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.contentIndex = try container.decode(Int.self, forKey: "content_index")
+        self.part = try container.decode(RealtimeServerEventResponseContentPartAdded.Part.self, forKey: "part")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.responseID, forKey: "response_id")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.contentIndex, forKey: "content_index")
+        try container.encode(self.part, forKey: "part")
+    }
+
+    /// The content part that was added.
+    public struct Part: OpenAIModel {
+        /// The content type ("text", "audio").
+        public var type: RealtimeServerEventResponseContentPartAdded.Part.Kind?
+        /// The text content (if type is "text").
+        public var text: String?
+        /// Base64-encoded audio data (if type is "audio").
+        public var audio: String?
+        /// The transcript of the audio (if type is "audio").
+        public var transcript: String?
+
+        public init(
+            type: RealtimeServerEventResponseContentPartAdded.Part.Kind? = nil,
+            text: String? = nil,
+            audio: String? = nil,
+            transcript: String? = nil
+        ) {
+            self.type = type
+            self.text = text
+            self.audio = audio
+            self.transcript = transcript
+        }
+
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(RealtimeServerEventResponseContentPartAdded.Part.Kind.self, forKey: "type")
+            self.text = try container.decodeIfPresent(String.self, forKey: "text")
+            self.audio = try container.decodeIfPresent(String.self, forKey: "audio")
+            self.transcript = try container.decodeIfPresent(String.self, forKey: "transcript")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.type, forKey: "type")
+            try container.encodeIfPresent(self.text, forKey: "text")
+            try container.encodeIfPresent(self.audio, forKey: "audio")
+            try container.encodeIfPresent(self.transcript, forKey: "transcript")
+        }
+
+        /// The content type ("text", "audio").
+        ///
+        /// This type is open: it accepts values the spec does not list yet.
+        public struct Kind: OpenAIStringEnum {
+            public let rawValue: String
+
+            public init(rawValue: String) {
+                self.rawValue = rawValue
+            }
+
+            public static let audio: Self = "audio"
+            public static let text: Self = "text"
+
+            public static var knownValues: [Self] {
+                [.audio, .text]
+            }
+        }
+    }
+}
+
+/// Returned when a content part is done streaming in an assistant message item.
+/// Also emitted when a Response is interrupted, incomplete, or cancelled.
+public struct RealtimeServerEventResponseContentPartDone: OpenAIModel {
+    /// The unique ID of the server event.
+    public var eventID: String
+    /// The event type, must be `response.content_part.done`.
+    public var type: String = "response.content_part.done"
+    /// The ID of the response.
+    public var responseID: String
+    /// The ID of the item.
+    public var itemID: String
+    /// The index of the output item in the response.
+    public var outputIndex: Int
+    /// The index of the content part in the item's content array.
+    public var contentIndex: Int
+    /// The content part that is done.
+    public var part: RealtimeServerEventResponseContentPartDone.Part
+
+    public init(
+        eventID: String,
+        responseID: String,
+        itemID: String,
+        outputIndex: Int,
+        contentIndex: Int,
+        part: RealtimeServerEventResponseContentPartDone.Part
+    ) {
+        self.eventID = eventID
+        self.responseID = responseID
+        self.itemID = itemID
+        self.outputIndex = outputIndex
+        self.contentIndex = contentIndex
+        self.part = part
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.content_part.done"
+        self.responseID = try container.decode(String.self, forKey: "response_id")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.contentIndex = try container.decode(Int.self, forKey: "content_index")
+        self.part = try container.decode(RealtimeServerEventResponseContentPartDone.Part.self, forKey: "part")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.responseID, forKey: "response_id")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.contentIndex, forKey: "content_index")
+        try container.encode(self.part, forKey: "part")
+    }
+
+    /// The content part that is done.
+    public struct Part: OpenAIModel {
+        /// The content type ("text", "audio").
+        public var type: RealtimeServerEventResponseContentPartDone.Part.Kind?
+        /// The text content (if type is "text").
+        public var text: String?
+        /// Base64-encoded audio data (if type is "audio").
+        public var audio: String?
+        /// The transcript of the audio (if type is "audio").
+        public var transcript: String?
+
+        public init(
+            type: RealtimeServerEventResponseContentPartDone.Part.Kind? = nil,
+            text: String? = nil,
+            audio: String? = nil,
+            transcript: String? = nil
+        ) {
+            self.type = type
+            self.text = text
+            self.audio = audio
+            self.transcript = transcript
+        }
+
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(RealtimeServerEventResponseContentPartDone.Part.Kind.self, forKey: "type")
+            self.text = try container.decodeIfPresent(String.self, forKey: "text")
+            self.audio = try container.decodeIfPresent(String.self, forKey: "audio")
+            self.transcript = try container.decodeIfPresent(String.self, forKey: "transcript")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.type, forKey: "type")
+            try container.encodeIfPresent(self.text, forKey: "text")
+            try container.encodeIfPresent(self.audio, forKey: "audio")
+            try container.encodeIfPresent(self.transcript, forKey: "transcript")
+        }
+
+        /// The content type ("text", "audio").
+        ///
+        /// This type is open: it accepts values the spec does not list yet.
+        public struct Kind: OpenAIStringEnum {
+            public let rawValue: String
+
+            public init(rawValue: String) {
+                self.rawValue = rawValue
+            }
+
+            public static let audio: Self = "audio"
+            public static let text: Self = "text"
+
+            public static var knownValues: [Self] {
+                [.audio, .text]
+            }
+        }
+    }
+}
+
+/// Returned when a new Response is created. The first event of response creation,
+/// where the response is in an initial state of `in_progress`.
+public struct RealtimeServerEventResponseCreated: OpenAIModel {
+    /// The unique ID of the server event.
+    public var eventID: String
+    /// The event type, must be `response.created`.
+    public var type: String = "response.created"
+    public var response: RealtimeResponse
+
+    public init(eventID: String, response: RealtimeResponse) {
+        self.eventID = eventID
+        self.response = response
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.created"
+        self.response = try container.decode(RealtimeResponse.self, forKey: "response")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.response, forKey: "response")
+    }
+}
+
+/// Returned when a Response is done streaming. Always emitted, no matter the
+/// final state. The Response object included in the `response.done` event will
+/// include all output Items in the Response but will omit the raw audio data.
+///
+/// Clients should check the `status` field of the Response to determine if it was successful
+/// (`completed`) or if there was another outcome: `cancelled`, `failed`, or `incomplete`.
+///
+/// A response will contain all output items that were generated during the response, excluding
+/// any audio content.
+public struct RealtimeServerEventResponseDone: OpenAIModel {
+    /// The unique ID of the server event.
+    public var eventID: String
+    /// The event type, must be `response.done`.
+    public var type: String = "response.done"
+    public var response: RealtimeResponse
+
+    public init(eventID: String, response: RealtimeResponse) {
+        self.eventID = eventID
+        self.response = response
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.done"
+        self.response = try container.decode(RealtimeResponse.self, forKey: "response")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.response, forKey: "response")
+    }
+}
+
+/// Returned when the model-generated function call arguments are updated.
+public struct RealtimeServerEventResponseFunctionCallArgumentsDelta: OpenAIModel {
+    /// The unique ID of the server event.
+    public var eventID: String
+    /// The event type, must be `response.function_call_arguments.delta`.
+    public var type: String = "response.function_call_arguments.delta"
+    /// The ID of the response.
+    public var responseID: String
+    /// The ID of the function call item.
+    public var itemID: String
+    /// The index of the output item in the response.
+    public var outputIndex: Int
+    /// The ID of the function call.
+    public var callID: String
+    /// The arguments delta as a JSON string.
+    public var delta: String
+
+    public init(
+        eventID: String,
+        responseID: String,
+        itemID: String,
+        outputIndex: Int,
+        callID: String,
+        delta: String
+    ) {
+        self.eventID = eventID
+        self.responseID = responseID
+        self.itemID = itemID
+        self.outputIndex = outputIndex
+        self.callID = callID
+        self.delta = delta
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.function_call_arguments.delta"
+        self.responseID = try container.decode(String.self, forKey: "response_id")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.delta = try container.decode(String.self, forKey: "delta")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.responseID, forKey: "response_id")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encode(self.delta, forKey: "delta")
+    }
+}
+
+/// Returned when the model-generated function call arguments are done streaming.
+/// Also emitted when a Response is interrupted, incomplete, or cancelled.
+public struct RealtimeServerEventResponseFunctionCallArgumentsDone: OpenAIModel {
+    /// The unique ID of the server event.
+    public var eventID: String
+    /// The event type, must be `response.function_call_arguments.done`.
+    public var type: String = "response.function_call_arguments.done"
+    /// The ID of the response.
+    public var responseID: String
+    /// The ID of the function call item.
+    public var itemID: String
+    /// The index of the output item in the response.
+    public var outputIndex: Int
+    /// The ID of the function call.
+    public var callID: String
+    /// The name of the function that was called.
+    public var name: String
+    /// The final arguments as a JSON string.
+    public var arguments: String
+
+    public init(
+        eventID: String,
+        responseID: String,
+        itemID: String,
+        outputIndex: Int,
+        callID: String,
+        name: String,
+        arguments: String
+    ) {
+        self.eventID = eventID
+        self.responseID = responseID
+        self.itemID = itemID
+        self.outputIndex = outputIndex
+        self.callID = callID
+        self.name = name
+        self.arguments = arguments
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.function_call_arguments.done"
+        self.responseID = try container.decode(String.self, forKey: "response_id")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.arguments = try container.decode(String.self, forKey: "arguments")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.responseID, forKey: "response_id")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.arguments, forKey: "arguments")
+    }
+}
+
+/// Returned when MCP tool call arguments are updated during response generation.
+public struct RealtimeServerEventResponseMCPCallArgumentsDelta: OpenAIModel {
+    /// The unique ID of the server event.
+    public var eventID: String
+    /// The event type, must be `response.mcp_call_arguments.delta`.
+    public var type: String = "response.mcp_call_arguments.delta"
+    /// The ID of the response.
+    public var responseID: String
+    /// The ID of the MCP tool call item.
+    public var itemID: String
+    /// The index of the output item in the response.
+    public var outputIndex: Int
+    /// The JSON-encoded arguments delta.
+    public var delta: String
+    public var obfuscation: String?
+
+    public init(
+        eventID: String,
+        responseID: String,
+        itemID: String,
+        outputIndex: Int,
+        delta: String,
+        obfuscation: String? = nil
+    ) {
+        self.eventID = eventID
+        self.responseID = responseID
+        self.itemID = itemID
+        self.outputIndex = outputIndex
+        self.delta = delta
+        self.obfuscation = obfuscation
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.mcp_call_arguments.delta"
+        self.responseID = try container.decode(String.self, forKey: "response_id")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.delta = try container.decode(String.self, forKey: "delta")
+        self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.responseID, forKey: "response_id")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.delta, forKey: "delta")
+        try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
+    }
+}
+
+/// Returned when MCP tool call arguments are finalized during response generation.
+public struct RealtimeServerEventResponseMCPCallArgumentsDone: OpenAIModel {
+    /// The unique ID of the server event.
+    public var eventID: String
+    /// The event type, must be `response.mcp_call_arguments.done`.
+    public var type: String = "response.mcp_call_arguments.done"
+    /// The ID of the response.
+    public var responseID: String
+    /// The ID of the MCP tool call item.
+    public var itemID: String
+    /// The index of the output item in the response.
+    public var outputIndex: Int
+    /// The final JSON-encoded arguments string.
+    public var arguments: String
+
+    public init(
+        eventID: String,
+        responseID: String,
+        itemID: String,
+        outputIndex: Int,
+        arguments: String
+    ) {
+        self.eventID = eventID
+        self.responseID = responseID
+        self.itemID = itemID
+        self.outputIndex = outputIndex
+        self.arguments = arguments
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.mcp_call_arguments.done"
+        self.responseID = try container.decode(String.self, forKey: "response_id")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.arguments = try container.decode(String.self, forKey: "arguments")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.responseID, forKey: "response_id")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.arguments, forKey: "arguments")
+    }
+}
+
+/// Returned when an MCP tool call has completed successfully.
+public struct RealtimeServerEventResponseMCPCallCompleted: OpenAIModel {
+    /// The unique ID of the server event.
+    public var eventID: String
+    /// The event type, must be `response.mcp_call.completed`.
+    public var type: String = "response.mcp_call.completed"
+    /// The index of the output item in the response.
+    public var outputIndex: Int
+    /// The ID of the MCP tool call item.
+    public var itemID: String
+
+    public init(
+        eventID: String,
+        outputIndex: Int,
+        itemID: String
+    ) {
+        self.eventID = eventID
+        self.outputIndex = outputIndex
+        self.itemID = itemID
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.mcp_call.completed"
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.itemID, forKey: "item_id")
+    }
+}
+
+/// Returned when an MCP tool call has failed.
+public struct RealtimeServerEventResponseMCPCallFailed: OpenAIModel {
+    /// The unique ID of the server event.
+    public var eventID: String
+    /// The event type, must be `response.mcp_call.failed`.
+    public var type: String = "response.mcp_call.failed"
+    /// The index of the output item in the response.
+    public var outputIndex: Int
+    /// The ID of the MCP tool call item.
+    public var itemID: String
+
+    public init(
+        eventID: String,
+        outputIndex: Int,
+        itemID: String
+    ) {
+        self.eventID = eventID
+        self.outputIndex = outputIndex
+        self.itemID = itemID
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.mcp_call.failed"
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.itemID, forKey: "item_id")
+    }
+}
+
+/// Returned when an MCP tool call has started and is in progress.
+public struct RealtimeServerEventResponseMCPCallInProgress: OpenAIModel {
+    /// The unique ID of the server event.
+    public var eventID: String
+    /// The event type, must be `response.mcp_call.in_progress`.
+    public var type: String = "response.mcp_call.in_progress"
+    /// The index of the output item in the response.
+    public var outputIndex: Int
+    /// The ID of the MCP tool call item.
+    public var itemID: String
+
+    public init(
+        eventID: String,
+        outputIndex: Int,
+        itemID: String
+    ) {
+        self.eventID = eventID
+        self.outputIndex = outputIndex
+        self.itemID = itemID
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.mcp_call.in_progress"
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.itemID, forKey: "item_id")
+    }
+}
+
+/// Returned when a new Item is created during Response generation.
+public struct RealtimeServerEventResponseOutputItemAdded: OpenAIModel {
+    /// The unique ID of the server event.
+    public var eventID: String
+    /// The event type, must be `response.output_item.added`.
+    public var type: String = "response.output_item.added"
+    /// The ID of the Response to which the item belongs.
+    public var responseID: String
+    /// The index of the output item in the Response.
+    public var outputIndex: Int
+    public var item: RealtimeConversationItem
+
+    public init(
+        eventID: String,
+        responseID: String,
+        outputIndex: Int,
+        item: RealtimeConversationItem
+    ) {
+        self.eventID = eventID
+        self.responseID = responseID
+        self.outputIndex = outputIndex
+        self.item = item
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.output_item.added"
+        self.responseID = try container.decode(String.self, forKey: "response_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.item = try container.decode(RealtimeConversationItem.self, forKey: "item")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.responseID, forKey: "response_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.item, forKey: "item")
+    }
+}
+
+/// Returned when an Item is done streaming. Also emitted when a Response is
+/// interrupted, incomplete, or cancelled.
+public struct RealtimeServerEventResponseOutputItemDone: OpenAIModel {
+    /// The unique ID of the server event.
+    public var eventID: String
+    /// The event type, must be `response.output_item.done`.
+    public var type: String = "response.output_item.done"
+    /// The ID of the Response to which the item belongs.
+    public var responseID: String
+    /// The index of the output item in the Response.
+    public var outputIndex: Int
+    public var item: RealtimeConversationItem
+
+    public init(
+        eventID: String,
+        responseID: String,
+        outputIndex: Int,
+        item: RealtimeConversationItem
+    ) {
+        self.eventID = eventID
+        self.responseID = responseID
+        self.outputIndex = outputIndex
+        self.item = item
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.output_item.done"
+        self.responseID = try container.decode(String.self, forKey: "response_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.item = try container.decode(RealtimeConversationItem.self, forKey: "item")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.responseID, forKey: "response_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.item, forKey: "item")
+    }
+}
+
+/// Returned when the text value of an "output_text" content part is updated.
+public struct RealtimeServerEventResponseTextDelta: OpenAIModel {
+    /// The unique ID of the server event.
+    public var eventID: String
+    /// The event type, must be `response.output_text.delta`.
+    public var type: String = "response.output_text.delta"
+    /// The ID of the response.
+    public var responseID: String
+    /// The ID of the item.
+    public var itemID: String
+    /// The index of the output item in the response.
+    public var outputIndex: Int
+    /// The index of the content part in the item's content array.
+    public var contentIndex: Int
+    /// The text delta.
+    public var delta: String
+
+    public init(
+        eventID: String,
+        responseID: String,
+        itemID: String,
+        outputIndex: Int,
+        contentIndex: Int,
+        delta: String
+    ) {
+        self.eventID = eventID
+        self.responseID = responseID
+        self.itemID = itemID
+        self.outputIndex = outputIndex
+        self.contentIndex = contentIndex
+        self.delta = delta
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.output_text.delta"
+        self.responseID = try container.decode(String.self, forKey: "response_id")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.contentIndex = try container.decode(Int.self, forKey: "content_index")
+        self.delta = try container.decode(String.self, forKey: "delta")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.responseID, forKey: "response_id")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.contentIndex, forKey: "content_index")
+        try container.encode(self.delta, forKey: "delta")
+    }
+}
+
+/// Returned when the text value of an "output_text" content part is done streaming. Also
+/// emitted when a Response is interrupted, incomplete, or cancelled.
+public struct RealtimeServerEventResponseTextDone: OpenAIModel {
+    /// The unique ID of the server event.
+    public var eventID: String
+    /// The event type, must be `response.output_text.done`.
+    public var type: String = "response.output_text.done"
+    /// The ID of the response.
+    public var responseID: String
+    /// The ID of the item.
+    public var itemID: String
+    /// The index of the output item in the response.
+    public var outputIndex: Int
+    /// The index of the content part in the item's content array.
+    public var contentIndex: Int
+    /// The final text content.
+    public var text: String
+
+    public init(
+        eventID: String,
+        responseID: String,
+        itemID: String,
+        outputIndex: Int,
+        contentIndex: Int,
+        text: String
+    ) {
+        self.eventID = eventID
+        self.responseID = responseID
+        self.itemID = itemID
+        self.outputIndex = outputIndex
+        self.contentIndex = contentIndex
+        self.text = text
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.output_text.done"
+        self.responseID = try container.decode(String.self, forKey: "response_id")
+        self.itemID = try container.decode(String.self, forKey: "item_id")
+        self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+        self.contentIndex = try container.decode(Int.self, forKey: "content_index")
+        self.text = try container.decode(String.self, forKey: "text")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.responseID, forKey: "response_id")
+        try container.encode(self.itemID, forKey: "item_id")
+        try container.encode(self.outputIndex, forKey: "output_index")
+        try container.encode(self.contentIndex, forKey: "content_index")
+        try container.encode(self.text, forKey: "text")
+    }
+}
+
+/// Returned when a Session is created. Emitted automatically when a new
+/// connection is established as the first server event. This event will contain
+/// the default Session configuration.
+public struct RealtimeServerEventSessionCreated: OpenAIModel {
+    /// The unique ID of the server event.
+    public var eventID: String
+    /// The event type, must be `session.created`.
+    public var type: String = "session.created"
+    /// The session configuration.
+    public var session: RealtimeServerEventSessionCreated.Session
+
+    public init(eventID: String, session: RealtimeServerEventSessionCreated.Session) {
+        self.eventID = eventID
+        self.session = session
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "session.created"
+        self.session = try container.decode(RealtimeServerEventSessionCreated.Session.self, forKey: "session")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.session, forKey: "session")
+    }
+
+    /// The session configuration.
+    ///
+    /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
+    public indirect enum Session: OpenAIModel {
+        /// `type`: `realtime`
+        case realtime(RealtimeSessionCreateResponseGA)
+        /// `type`: `transcription`
+        case transcription(RealtimeTranscriptionSessionCreateResponseGA)
+        /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
+        case unknown(JSONValue)
+
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            if let keyed = try? decoder.container(keyedBy: OpenAIDynamicCodingKey.self),
+               let discriminator = try? keyed.decode(String.self, forKey: OpenAIDynamicCodingKey("type")) {
+                switch discriminator {
+                case "realtime":
+                    self = .realtime(try container.decode(RealtimeSessionCreateResponseGA.self))
+                    return
+                case "transcription":
+                    self = .transcription(try container.decode(RealtimeTranscriptionSessionCreateResponseGA.self))
+                    return
+                default:
+                    break
+                }
+            }
+            self = .unknown(try container.decode(JSONValue.self))
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.singleValueContainer()
+            switch self {
+            case .realtime(let value):
+                try container.encode(value)
+            case .transcription(let value):
+                try container.encode(value)
+            case .unknown(let value):
+                try container.encode(value)
+            }
+        }
+    }
+}
+
+/// Returned when a session is updated with a `session.update` event, unless
+/// there is an error.
+public struct RealtimeServerEventSessionUpdated: OpenAIModel {
+    /// The unique ID of the server event.
+    public var eventID: String
+    /// The event type, must be `session.updated`.
+    public var type: String = "session.updated"
+    /// The session configuration.
+    public var session: RealtimeServerEventSessionUpdated.Session
+
+    public init(eventID: String, session: RealtimeServerEventSessionUpdated.Session) {
+        self.eventID = eventID
+        self.session = session
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "session.updated"
+        self.session = try container.decode(RealtimeServerEventSessionUpdated.Session.self, forKey: "session")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.session, forKey: "session")
+    }
+
+    /// The session configuration.
+    ///
+    /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
+    public indirect enum Session: OpenAIModel {
+        /// `type`: `realtime`
+        case realtime(RealtimeSessionCreateResponseGA)
+        /// `type`: `transcription`
+        case transcription(RealtimeTranscriptionSessionCreateResponseGA)
+        /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
+        case unknown(JSONValue)
+
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            if let keyed = try? decoder.container(keyedBy: OpenAIDynamicCodingKey.self),
+               let discriminator = try? keyed.decode(String.self, forKey: OpenAIDynamicCodingKey("type")) {
+                switch discriminator {
+                case "realtime":
+                    self = .realtime(try container.decode(RealtimeSessionCreateResponseGA.self))
+                    return
+                case "transcription":
+                    self = .transcription(try container.decode(RealtimeTranscriptionSessionCreateResponseGA.self))
+                    return
+                default:
+                    break
+                }
+            }
+            self = .unknown(try container.decode(JSONValue.self))
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.singleValueContainer()
+            switch self {
+            case .realtime(let value):
+                try container.encode(value)
+            case .transcription(let value):
+                try container.encode(value)
+            case .unknown(let value):
+                try container.encode(value)
+            }
+        }
+    }
+}
+
+/// Returned when a transcription session is updated with a `transcription_session.update` event, unless
+/// there is an error.
+public struct RealtimeServerEventTranscriptionSessionUpdated: OpenAIModel {
+    /// The unique ID of the server event.
+    public var eventID: String
+    /// The event type, must be `transcription_session.updated`.
+    public var type: String = "transcription_session.updated"
+    public var session: RealtimeTranscriptionSessionCreateResponse
+
+    public init(eventID: String, session: RealtimeTranscriptionSessionCreateResponse) {
+        self.eventID = eventID
+        self.session = session
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.eventID = try container.decode(String.self, forKey: "event_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "transcription_session.updated"
+        self.session = try container.decode(RealtimeTranscriptionSessionCreateResponse.self, forKey: "session")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.eventID, forKey: "event_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.session, forKey: "session")
+    }
+}
+
+/// Realtime session object for the beta interface.
+public struct RealtimeSession: OpenAIModel {
+    /// Unique identifier for the session that looks like `sess_1234567890abcdef`.
+    public var id: String?
+    /// The object type. Always `realtime.session`.
+    public var object: String? = "realtime.session"
+    /// The set of modalities the model can respond with. To disable audio,
+    /// set this to ["text"].
+    public var modalities: [RealtimeSession.Modality]?
+    /// The Realtime model used for this session.
+    public var model: RealtimeSession.Model?
+    /// The default system instructions (i.e. system message) prepended to model
+    /// calls. This field allows the client to guide the model on desired
+    /// responses. The model can be instructed on response content and format,
+    /// (e.g. "be extremely succinct", "act friendly", "here are examples of good
+    /// responses") and on audio behavior (e.g. "talk quickly", "inject emotion
+    /// into your voice", "laugh frequently"). The instructions are not
+    /// guaranteed to be followed by the model, but they provide guidance to the
+    /// model on the desired behavior.
+    ///
+    ///
+    /// Note that the server sets default instructions which will be used if this
+    /// field is not set and are visible in the `session.created` event at the
+    /// start of the session.
+    public var instructions: String?
+    /// The voice the model uses to respond. Voice cannot be changed during the
+    /// session once the model has responded with audio at least once. Current
+    /// voice options are `alloy`, `ash`, `ballad`, `coral`, `echo`, `sage`,
+    /// `shimmer`, and `verse`.
+    public var voice: VoiceIdsShared?
+    /// The format of input audio. Options are `pcm16`, `g711_ulaw`, or `g711_alaw`.
+    /// For `pcm16`, input audio must be 16-bit PCM at a 24kHz sample rate,
+    /// single channel (mono), and little-endian byte order.
+    public var inputAudioFormat: RealtimeSession.InputAudioFormat?
+    /// The format of output audio. Options are `pcm16`, `g711_ulaw`, or `g711_alaw`.
+    /// For `pcm16`, output audio is sampled at a rate of 24kHz.
+    public var outputAudioFormat: RealtimeSession.OutputAudioFormat?
+    public var inputAudioTranscription: AudioTranscriptionResponse?
+    public var turnDetection: RealtimeTurnDetection?
+    /// Configuration for input audio noise reduction. This can be set to `null` to turn off.
+    /// Noise reduction filters audio added to the input audio buffer before it is sent to VAD and the model.
+    /// Filtering the audio can improve VAD and turn detection accuracy (reducing false positives) and model performance by improving perception of the input audio.
+    public var inputAudioNoiseReduction: RealtimeSession.InputAudioNoiseReduction?
+    /// The speed of the model's spoken response. 1.0 is the default speed. 0.25 is
+    /// the minimum speed. 1.5 is the maximum speed. This value can only be changed
+    /// in between model turns, not while a response is in progress.
+    public var speed: Double?
+    public var tracing: RealtimeSession.Tracing?
+    /// Tools (functions) available to the model.
+    public var tools: [RealtimeFunctionTool]?
+    /// How the model chooses tools. Options are `auto`, `none`, `required`, or
+    /// specify a function.
+    public var toolChoice: String?
+    /// Sampling temperature for the model, limited to [0.6, 1.2]. For audio models a temperature of 0.8 is highly recommended for best performance.
+    public var temperature: Double?
+    /// Maximum number of output tokens for a single assistant response,
+    /// inclusive of tool calls. Provide an integer between 1 and 4096 to
+    /// limit output tokens, or `inf` for the maximum available tokens for a
+    /// given model. Defaults to `inf`.
+    public var maxResponseOutputTokens: RealtimeSession.MaxResponseOutputTokens?
+    /// Expiration timestamp for the session, in seconds since epoch.
+    public var expiresAt: Int?
+    public var prompt: Prompt?
+    public var include: [String]?
+
+    public init(
+        model: RealtimeSession.Model? = nil,
+        prompt: Prompt? = nil,
+        instructions: String? = nil,
+        id: String? = nil,
+        modalities: [RealtimeSession.Modality]? = nil,
+        voice: VoiceIdsShared? = nil,
+        inputAudioFormat: RealtimeSession.InputAudioFormat? = nil,
+        outputAudioFormat: RealtimeSession.OutputAudioFormat? = nil,
+        inputAudioTranscription: AudioTranscriptionResponse? = nil,
+        turnDetection: RealtimeTurnDetection? = nil,
+        inputAudioNoiseReduction: RealtimeSession.InputAudioNoiseReduction? = nil,
+        speed: Double? = nil,
+        tracing: RealtimeSession.Tracing? = nil,
+        tools: [RealtimeFunctionTool]? = nil,
+        toolChoice: String? = nil,
+        temperature: Double? = nil,
+        maxResponseOutputTokens: RealtimeSession.MaxResponseOutputTokens? = nil,
+        expiresAt: Int? = nil,
+        include: [String]? = nil
+    ) {
+        self.model = model
+        self.prompt = prompt
+        self.instructions = instructions
+        self.id = id
+        self.modalities = modalities
+        self.voice = voice
+        self.inputAudioFormat = inputAudioFormat
+        self.outputAudioFormat = outputAudioFormat
+        self.inputAudioTranscription = inputAudioTranscription
+        self.turnDetection = turnDetection
+        self.inputAudioNoiseReduction = inputAudioNoiseReduction
+        self.speed = speed
+        self.tracing = tracing
+        self.tools = tools
+        self.toolChoice = toolChoice
+        self.temperature = temperature
+        self.maxResponseOutputTokens = maxResponseOutputTokens
+        self.expiresAt = expiresAt
+        self.include = include
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object")
+        self.modalities = try container.decodeIfPresent([RealtimeSession.Modality].self, forKey: "modalities")
+        self.model = try container.decodeIfPresent(RealtimeSession.Model.self, forKey: "model")
+        self.instructions = try container.decodeIfPresent(String.self, forKey: "instructions")
+        self.voice = try container.decodeIfPresent(VoiceIdsShared.self, forKey: "voice")
+        self.inputAudioFormat = try container.decodeIfPresent(RealtimeSession.InputAudioFormat.self, forKey: "input_audio_format")
+        self.outputAudioFormat = try container.decodeIfPresent(RealtimeSession.OutputAudioFormat.self, forKey: "output_audio_format")
+        self.inputAudioTranscription = try container.decodeIfPresent(AudioTranscriptionResponse.self, forKey: "input_audio_transcription")
+        self.turnDetection = try container.decodeIfPresent(RealtimeTurnDetection.self, forKey: "turn_detection")
+        self.inputAudioNoiseReduction = try container.decodeIfPresent(RealtimeSession.InputAudioNoiseReduction.self, forKey: "input_audio_noise_reduction")
+        self.speed = try container.decodeIfPresent(Double.self, forKey: "speed")
+        self.tracing = try container.decodeIfPresent(RealtimeSession.Tracing.self, forKey: "tracing")
+        self.tools = try container.decodeIfPresent([RealtimeFunctionTool].self, forKey: "tools")
+        self.toolChoice = try container.decodeIfPresent(String.self, forKey: "tool_choice")
+        self.temperature = try container.decodeIfPresent(Double.self, forKey: "temperature")
+        self.maxResponseOutputTokens = try container.decodeIfPresent(RealtimeSession.MaxResponseOutputTokens.self, forKey: "max_response_output_tokens")
+        self.expiresAt = try container.decodeIfPresent(Int.self, forKey: "expires_at")
+        self.prompt = try container.decodeIfPresent(Prompt.self, forKey: "prompt")
+        self.include = try container.decodeIfPresent([String].self, forKey: "include")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encodeIfPresent(self.object, forKey: "object")
+        try container.encodeIfPresent(self.modalities, forKey: "modalities")
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encodeIfPresent(self.instructions, forKey: "instructions")
+        try container.encodeIfPresent(self.voice, forKey: "voice")
+        try container.encodeIfPresent(self.inputAudioFormat, forKey: "input_audio_format")
+        try container.encodeIfPresent(self.outputAudioFormat, forKey: "output_audio_format")
+        try container.encodeIfPresent(self.inputAudioTranscription, forKey: "input_audio_transcription")
+        try container.encodeIfPresent(self.turnDetection, forKey: "turn_detection")
+        try container.encodeIfPresent(self.inputAudioNoiseReduction, forKey: "input_audio_noise_reduction")
+        try container.encodeIfPresent(self.speed, forKey: "speed")
+        try container.encodeIfPresent(self.tracing, forKey: "tracing")
+        try container.encodeIfPresent(self.tools, forKey: "tools")
+        try container.encodeIfPresent(self.toolChoice, forKey: "tool_choice")
+        try container.encodeIfPresent(self.temperature, forKey: "temperature")
+        try container.encodeIfPresent(self.maxResponseOutputTokens, forKey: "max_response_output_tokens")
+        try container.encodeIfPresent(self.expiresAt, forKey: "expires_at")
+        try container.encodeIfPresent(self.prompt, forKey: "prompt")
+        try container.encodeIfPresent(self.include, forKey: "include")
+    }
+
+    /// This type is open: it accepts values the spec does not list yet.
+    public struct Modality: OpenAIStringEnum {
+        public let rawValue: String
+
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
+
+        public static let text: Self = "text"
+        public static let audio: Self = "audio"
+
+        public static var knownValues: [Self] {
+            [.text, .audio]
+        }
+    }
+
+    /// The Realtime model used for this session.
+    ///
+    /// This type is open: it accepts values the spec does not list yet.
+    public struct Model: OpenAIStringEnum {
+        public let rawValue: String
+
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
+
+        public static let gptRealtime: Self = "gpt-realtime"
+        public static let gptRealtime1_5: Self = "gpt-realtime-1.5"
+        public static let gptRealtime2025_08_28: Self = "gpt-realtime-2025-08-28"
+        public static let gpt4oRealtimePreview: Self = "gpt-4o-realtime-preview"
+        public static let gpt4oRealtimePreview2024_10_01: Self = "gpt-4o-realtime-preview-2024-10-01"
+        public static let gpt4oRealtimePreview2024_12_17: Self = "gpt-4o-realtime-preview-2024-12-17"
+        public static let gpt4oRealtimePreview2025_06_03: Self = "gpt-4o-realtime-preview-2025-06-03"
+        public static let gpt4oMiniRealtimePreview: Self = "gpt-4o-mini-realtime-preview"
+        public static let gpt4oMiniRealtimePreview2024_12_17: Self = "gpt-4o-mini-realtime-preview-2024-12-17"
+        public static let gptRealtimeMini: Self = "gpt-realtime-mini"
+        public static let gptRealtimeMini2025_10_06: Self = "gpt-realtime-mini-2025-10-06"
+        public static let gptRealtimeMini2025_12_15: Self = "gpt-realtime-mini-2025-12-15"
+        public static let gptAudio1_5: Self = "gpt-audio-1.5"
+        public static let gptAudioMini: Self = "gpt-audio-mini"
+        public static let gptAudioMini2025_10_06: Self = "gpt-audio-mini-2025-10-06"
+        public static let gptAudioMini2025_12_15: Self = "gpt-audio-mini-2025-12-15"
+
+        public static var knownValues: [Self] {
+            [.gptRealtime, .gptRealtime1_5, .gptRealtime2025_08_28, .gpt4oRealtimePreview, .gpt4oRealtimePreview2024_10_01, .gpt4oRealtimePreview2024_12_17, .gpt4oRealtimePreview2025_06_03, .gpt4oMiniRealtimePreview, .gpt4oMiniRealtimePreview2024_12_17, .gptRealtimeMini, .gptRealtimeMini2025_10_06, .gptRealtimeMini2025_12_15, .gptAudio1_5, .gptAudioMini, .gptAudioMini2025_10_06, .gptAudioMini2025_12_15]
+        }
+    }
+
+    /// The format of input audio. Options are `pcm16`, `g711_ulaw`, or `g711_alaw`.
+    /// For `pcm16`, input audio must be 16-bit PCM at a 24kHz sample rate,
+    /// single channel (mono), and little-endian byte order.
+    ///
+    /// This type is open: it accepts values the spec does not list yet.
+    public struct InputAudioFormat: OpenAIStringEnum {
+        public let rawValue: String
+
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
+
+        public static let pcm16: Self = "pcm16"
+        public static let g711Ulaw: Self = "g711_ulaw"
+        public static let g711Alaw: Self = "g711_alaw"
+
+        public static var knownValues: [Self] {
+            [.pcm16, .g711Ulaw, .g711Alaw]
+        }
+    }
+
+    /// The format of output audio. Options are `pcm16`, `g711_ulaw`, or `g711_alaw`.
+    /// For `pcm16`, output audio is sampled at a rate of 24kHz.
+    ///
+    /// This type is open: it accepts values the spec does not list yet.
+    public struct OutputAudioFormat: OpenAIStringEnum {
+        public let rawValue: String
+
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
+
+        public static let pcm16: Self = "pcm16"
+        public static let g711Ulaw: Self = "g711_ulaw"
+        public static let g711Alaw: Self = "g711_alaw"
+
+        public static var knownValues: [Self] {
+            [.pcm16, .g711Ulaw, .g711Alaw]
+        }
+    }
+
+    /// Configuration for input audio noise reduction. This can be set to `null` to turn off.
+    /// Noise reduction filters audio added to the input audio buffer before it is sent to VAD and the model.
+    /// Filtering the audio can improve VAD and turn detection accuracy (reducing false positives) and model performance by improving perception of the input audio.
+    public struct InputAudioNoiseReduction: OpenAIModel {
+        public var type: NoiseReductionType?
+
+        public init(type: NoiseReductionType? = nil) {
+            self.type = type
+        }
+
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(NoiseReductionType.self, forKey: "type")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.type, forKey: "type")
+        }
+    }
+
+    /// Configuration options for tracing. Set to null to disable tracing. Once
+    /// tracing is enabled for a session, the configuration cannot be modified.
+    ///
+    /// `auto` will create a trace for the session with default values for the
+    /// workflow name, group id, and metadata.
+    public indirect enum Tracing: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+        /// Default tracing mode for the session.
+        case string(String)
+        /// Granular configuration for tracing.
+        case tracingConfiguration(RealtimeSession.Tracing.TracingConfiguration)
+        /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
+        case unknown(JSONValue)
+
+        public init(stringLiteral value: String) {
+            self = .string(value)
+        }
+
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            if let value = try? container.decode(String.self) {
+                self = .string(value)
+                return
+            }
+            if let value = try? container.decode(RealtimeSession.Tracing.TracingConfiguration.self) {
+                self = .tracingConfiguration(value)
+                return
+            }
+            self = .unknown(try container.decode(JSONValue.self))
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.singleValueContainer()
+            switch self {
+            case .string(let value):
+                try container.encode(value)
+            case .tracingConfiguration(let value):
+                try container.encode(value)
+            case .unknown(let value):
+                try container.encode(value)
+            }
+        }
+
+        /// Granular configuration for tracing.
+        public struct TracingConfiguration: OpenAIModel {
+            /// The name of the workflow to attach to this trace. This is used to
+            /// name the trace in the traces dashboard.
+            public var workflowName: String?
+            /// The group id to attach to this trace to enable filtering and
+            /// grouping in the traces dashboard.
+            public var groupID: String?
+            /// The arbitrary metadata to attach to this trace to enable
+            /// filtering in the traces dashboard.
+            public var metadata: JSONObject?
+
+            public init(
+                workflowName: String? = nil,
+                groupID: String? = nil,
+                metadata: JSONObject? = nil
+            ) {
+                self.workflowName = workflowName
+                self.groupID = groupID
+                self.metadata = metadata
+            }
+
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.workflowName = try container.decodeIfPresent(String.self, forKey: "workflow_name")
+                self.groupID = try container.decodeIfPresent(String.self, forKey: "group_id")
+                self.metadata = try container.decodeIfPresent(JSONObject.self, forKey: "metadata")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.workflowName, forKey: "workflow_name")
+                try container.encodeIfPresent(self.groupID, forKey: "group_id")
+                try container.encodeIfPresent(self.metadata, forKey: "metadata")
+            }
+        }
+    }
+
+    /// Maximum number of output tokens for a single assistant response,
+    /// inclusive of tool calls. Provide an integer between 1 and 4096 to
+    /// limit output tokens, or `inf` for the maximum available tokens for a
+    /// given model. Defaults to `inf`.
+    public indirect enum MaxResponseOutputTokens: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+        case integer(Int)
+        case string(String)
+        /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
+        case unknown(JSONValue)
+
+        public init(stringLiteral value: String) {
+            self = .string(value)
+        }
+
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            if let value = try? container.decode(Int.self) {
+                self = .integer(value)
+                return
+            }
+            if let value = try? container.decode(String.self) {
+                self = .string(value)
+                return
+            }
+            self = .unknown(try container.decode(JSONValue.self))
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.singleValueContainer()
+            switch self {
+            case .integer(let value):
+                try container.encode(value)
+            case .string(let value):
+                try container.encode(value)
+            case .unknown(let value):
+                try container.encode(value)
+            }
+        }
+    }
+}
+
 /// A new Realtime session configuration, with an ephemeral key. Default TTL
 /// for keys is one minute.
-public struct RealtimeSessionCreateRequest: Codable, Hashable, Sendable {
+public struct RealtimeSessionCreateRequest: OpenAIModel {
     /// Ephemeral key returned by the API.
     public var clientSecret: RealtimeSessionCreateRequest.ClientSecret?
     /// The set of modalities the model can respond with. To disable audio,
@@ -96,27 +2081,48 @@ public struct RealtimeSessionCreateRequest: Codable, Hashable, Sendable {
         self.truncation = truncation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case clientSecret = "client_secret"
-        case modalities
-        case instructions
-        case voice
-        case inputAudioFormat = "input_audio_format"
-        case outputAudioFormat = "output_audio_format"
-        case inputAudioTranscription = "input_audio_transcription"
-        case speed
-        case tracing
-        case turnDetection = "turn_detection"
-        case tools
-        case toolChoice = "tool_choice"
-        case temperature
-        case maxResponseOutputTokens = "max_response_output_tokens"
-        case truncation
-        case prompt
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.clientSecret = try container.decodeIfPresent(RealtimeSessionCreateRequest.ClientSecret.self, forKey: "client_secret")
+        self.modalities = try container.decodeIfPresent([RealtimeSessionCreateRequest.Modality].self, forKey: "modalities")
+        self.instructions = try container.decodeIfPresent(String.self, forKey: "instructions")
+        self.voice = try container.decodeIfPresent(VoiceIdsOrCustomVoice.self, forKey: "voice")
+        self.inputAudioFormat = try container.decodeIfPresent(String.self, forKey: "input_audio_format")
+        self.outputAudioFormat = try container.decodeIfPresent(String.self, forKey: "output_audio_format")
+        self.inputAudioTranscription = try container.decodeIfPresent(RealtimeSessionCreateRequest.InputAudioTranscription.self, forKey: "input_audio_transcription")
+        self.speed = try container.decodeIfPresent(Double.self, forKey: "speed")
+        self.tracing = try container.decodeIfPresent(RealtimeSessionCreateRequest.Tracing.self, forKey: "tracing")
+        self.turnDetection = try container.decodeIfPresent(RealtimeSessionCreateRequest.TurnDetection.self, forKey: "turn_detection")
+        self.tools = try container.decodeIfPresent([RealtimeSessionCreateRequest.Tool].self, forKey: "tools")
+        self.toolChoice = try container.decodeIfPresent(String.self, forKey: "tool_choice")
+        self.temperature = try container.decodeIfPresent(Double.self, forKey: "temperature")
+        self.maxResponseOutputTokens = try container.decodeIfPresent(RealtimeSessionCreateRequest.MaxResponseOutputTokens.self, forKey: "max_response_output_tokens")
+        self.truncation = try container.decodeIfPresent(RealtimeTruncation.self, forKey: "truncation")
+        self.prompt = try container.decodeIfPresent(Prompt.self, forKey: "prompt")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.clientSecret, forKey: "client_secret")
+        try container.encodeIfPresent(self.modalities, forKey: "modalities")
+        try container.encodeIfPresent(self.instructions, forKey: "instructions")
+        try container.encodeIfPresent(self.voice, forKey: "voice")
+        try container.encodeIfPresent(self.inputAudioFormat, forKey: "input_audio_format")
+        try container.encodeIfPresent(self.outputAudioFormat, forKey: "output_audio_format")
+        try container.encodeIfPresent(self.inputAudioTranscription, forKey: "input_audio_transcription")
+        try container.encodeIfPresent(self.speed, forKey: "speed")
+        try container.encodeIfPresent(self.tracing, forKey: "tracing")
+        try container.encodeIfPresent(self.turnDetection, forKey: "turn_detection")
+        try container.encodeIfPresent(self.tools, forKey: "tools")
+        try container.encodeIfPresent(self.toolChoice, forKey: "tool_choice")
+        try container.encodeIfPresent(self.temperature, forKey: "temperature")
+        try container.encodeIfPresent(self.maxResponseOutputTokens, forKey: "max_response_output_tokens")
+        try container.encodeIfPresent(self.truncation, forKey: "truncation")
+        try container.encodeIfPresent(self.prompt, forKey: "prompt")
     }
 
     /// Ephemeral key returned by the API.
-    public struct ClientSecret: Codable, Hashable, Sendable {
+    public struct ClientSecret: OpenAIModel {
         /// Ephemeral key usable in client environments to authenticate connections
         /// to the Realtime API. Use this in client-side environments rather than
         /// a standard API token, which should only be used server-side.
@@ -130,9 +2136,16 @@ public struct RealtimeSessionCreateRequest: Codable, Hashable, Sendable {
             self.expiresAt = expiresAt
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case value
-            case expiresAt = "expires_at"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.value = try container.decode(String.self, forKey: "value")
+            self.expiresAt = try container.decode(Int.self, forKey: "expires_at")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.value, forKey: "value")
+            try container.encode(self.expiresAt, forKey: "expires_at")
         }
     }
 
@@ -157,7 +2170,7 @@ public struct RealtimeSessionCreateRequest: Codable, Hashable, Sendable {
     /// to the model, since the model consumes audio directly. Transcription runs
     /// asynchronously and should be treated as rough guidance
     /// rather than the representation understood by the model.
-    public struct InputAudioTranscription: Codable, Hashable, Sendable {
+    public struct InputAudioTranscription: OpenAIModel {
         /// The model to use for transcription.
         public var model: String?
 
@@ -165,8 +2178,14 @@ public struct RealtimeSessionCreateRequest: Codable, Hashable, Sendable {
             self.model = model
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case model
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.model = try container.decodeIfPresent(String.self, forKey: "model")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.model, forKey: "model")
         }
     }
 
@@ -175,7 +2194,7 @@ public struct RealtimeSessionCreateRequest: Codable, Hashable, Sendable {
     ///
     /// `auto` will create a trace for the session with default values for the
     /// workflow name, group id, and metadata.
-    public indirect enum Tracing: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum Tracing: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         /// Default tracing mode for the session.
         case string(String)
         /// Granular configuration for tracing.
@@ -213,7 +2232,7 @@ public struct RealtimeSessionCreateRequest: Codable, Hashable, Sendable {
         }
 
         /// Granular configuration for tracing.
-        public struct TracingConfiguration: Codable, Hashable, Sendable {
+        public struct TracingConfiguration: OpenAIModel {
             /// The name of the workflow to attach to this trace. This is used to
             /// name the trace in the traces dashboard.
             public var workflowName: String?
@@ -234,10 +2253,18 @@ public struct RealtimeSessionCreateRequest: Codable, Hashable, Sendable {
                 self.metadata = metadata
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case workflowName = "workflow_name"
-                case groupID = "group_id"
-                case metadata
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.workflowName = try container.decodeIfPresent(String.self, forKey: "workflow_name")
+                self.groupID = try container.decodeIfPresent(String.self, forKey: "group_id")
+                self.metadata = try container.decodeIfPresent(JSONObject.self, forKey: "metadata")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.workflowName, forKey: "workflow_name")
+                try container.encodeIfPresent(self.groupID, forKey: "group_id")
+                try container.encodeIfPresent(self.metadata, forKey: "metadata")
             }
         }
     }
@@ -245,7 +2272,7 @@ public struct RealtimeSessionCreateRequest: Codable, Hashable, Sendable {
     /// Configuration for turn detection. Can be set to `null` to turn off. Server
     /// VAD means that the model will detect the start and end of speech based on
     /// audio volume and respond at the end of user speech.
-    public struct TurnDetection: Codable, Hashable, Sendable {
+    public struct TurnDetection: OpenAIModel {
         /// Type of turn detection, only `server_vad` is currently supported.
         public var type: String?
         /// Activation threshold for VAD (0.0 to 1.0), this defaults to 0.5. A
@@ -272,15 +2299,24 @@ public struct RealtimeSessionCreateRequest: Codable, Hashable, Sendable {
             self.silenceDurationMs = silenceDurationMs
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case threshold
-            case prefixPaddingMs = "prefix_padding_ms"
-            case silenceDurationMs = "silence_duration_ms"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type")
+            self.threshold = try container.decodeIfPresent(Double.self, forKey: "threshold")
+            self.prefixPaddingMs = try container.decodeIfPresent(Int.self, forKey: "prefix_padding_ms")
+            self.silenceDurationMs = try container.decodeIfPresent(Int.self, forKey: "silence_duration_ms")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.type, forKey: "type")
+            try container.encodeIfPresent(self.threshold, forKey: "threshold")
+            try container.encodeIfPresent(self.prefixPaddingMs, forKey: "prefix_padding_ms")
+            try container.encodeIfPresent(self.silenceDurationMs, forKey: "silence_duration_ms")
         }
     }
 
-    public struct Tool: Codable, Hashable, Sendable {
+    public struct Tool: OpenAIModel {
         /// The type of the tool, i.e. `function`.
         public var type: String? = "function"
         /// The name of the function.
@@ -302,11 +2338,20 @@ public struct RealtimeSessionCreateRequest: Codable, Hashable, Sendable {
             self.parameters = parameters
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case name
-            case description
-            case parameters
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type")
+            self.name = try container.decodeIfPresent(String.self, forKey: "name")
+            self.description = try container.decodeIfPresent(String.self, forKey: "description")
+            self.parameters = try container.decodeIfPresent(JSONObject.self, forKey: "parameters")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.type, forKey: "type")
+            try container.encodeIfPresent(self.name, forKey: "name")
+            try container.encodeIfPresent(self.description, forKey: "description")
+            try container.encodeIfPresent(self.parameters, forKey: "parameters")
         }
     }
 
@@ -314,7 +2359,7 @@ public struct RealtimeSessionCreateRequest: Codable, Hashable, Sendable {
     /// inclusive of tool calls. Provide an integer between 1 and 4096 to
     /// limit output tokens, or `inf` for the maximum available tokens for a
     /// given model. Defaults to `inf`.
-    public indirect enum MaxResponseOutputTokens: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum MaxResponseOutputTokens: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         case integer(Int)
         case string(String)
         /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
@@ -352,7 +2397,7 @@ public struct RealtimeSessionCreateRequest: Codable, Hashable, Sendable {
 }
 
 /// Realtime session object configuration.
-public struct RealtimeSessionCreateRequestGA: Codable, Hashable, Sendable {
+public struct RealtimeSessionCreateRequestGA: OpenAIModel {
     /// The type of session to create. Always `realtime` for the Realtime API.
     public var type: String = "realtime"
     /// The set of modalities the model can respond with. It defaults to `["audio"]`, indicating
@@ -424,21 +2469,40 @@ public struct RealtimeSessionCreateRequestGA: Codable, Hashable, Sendable {
         self.truncation = truncation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case outputModalities = "output_modalities"
-        case model
-        case instructions
-        case audio
-        case include
-        case tracing
-        case tools
-        case toolChoice = "tool_choice"
-        case parallelToolCalls = "parallel_tool_calls"
-        case reasoning
-        case maxOutputTokens = "max_output_tokens"
-        case truncation
-        case prompt
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "realtime"
+        self.outputModalities = try container.decodeIfPresent([RealtimeSessionCreateRequestGA.OutputModality].self, forKey: "output_modalities")
+        self.model = try container.decodeIfPresent(RealtimeSessionCreateRequestGA.Model.self, forKey: "model")
+        self.instructions = try container.decodeIfPresent(String.self, forKey: "instructions")
+        self.audio = try container.decodeIfPresent(RealtimeSessionCreateRequestGA.Audio.self, forKey: "audio")
+        self.include = try container.decodeIfPresent([String].self, forKey: "include")
+        self.tracing = try container.decodeIfPresent(RealtimeSessionCreateRequestGA.Tracing.self, forKey: "tracing")
+        self.tools = try container.decodeIfPresent([RealtimeSessionCreateRequestGA.Tool].self, forKey: "tools")
+        self.toolChoice = try container.decodeIfPresent(RealtimeSessionCreateRequestGA.ToolChoice.self, forKey: "tool_choice")
+        self.parallelToolCalls = try container.decodeIfPresent(Bool.self, forKey: "parallel_tool_calls")
+        self.reasoning = try container.decodeIfPresent(RealtimeReasoning.self, forKey: "reasoning")
+        self.maxOutputTokens = try container.decodeIfPresent(RealtimeSessionCreateRequestGA.MaxOutputTokens.self, forKey: "max_output_tokens")
+        self.truncation = try container.decodeIfPresent(RealtimeTruncation.self, forKey: "truncation")
+        self.prompt = try container.decodeIfPresent(Prompt.self, forKey: "prompt")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.outputModalities, forKey: "output_modalities")
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encodeIfPresent(self.instructions, forKey: "instructions")
+        try container.encodeIfPresent(self.audio, forKey: "audio")
+        try container.encodeIfPresent(self.include, forKey: "include")
+        try container.encodeIfPresent(self.tracing, forKey: "tracing")
+        try container.encodeIfPresent(self.tools, forKey: "tools")
+        try container.encodeIfPresent(self.toolChoice, forKey: "tool_choice")
+        try container.encodeIfPresent(self.parallelToolCalls, forKey: "parallel_tool_calls")
+        try container.encodeIfPresent(self.reasoning, forKey: "reasoning")
+        try container.encodeIfPresent(self.maxOutputTokens, forKey: "max_output_tokens")
+        try container.encodeIfPresent(self.truncation, forKey: "truncation")
+        try container.encodeIfPresent(self.prompt, forKey: "prompt")
     }
 
     /// This type is open: it accepts values the spec does not list yet.
@@ -493,7 +2557,7 @@ public struct RealtimeSessionCreateRequestGA: Codable, Hashable, Sendable {
     }
 
     /// Configuration for input and output audio.
-    public struct Audio: Codable, Hashable, Sendable {
+    public struct Audio: OpenAIModel {
         public var input: RealtimeSessionCreateRequestGA.Audio.Input?
         public var output: RealtimeSessionCreateRequestGA.Audio.Output?
 
@@ -502,12 +2566,19 @@ public struct RealtimeSessionCreateRequestGA: Codable, Hashable, Sendable {
             self.output = output
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case input
-            case output
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.input = try container.decodeIfPresent(RealtimeSessionCreateRequestGA.Audio.Input.self, forKey: "input")
+            self.output = try container.decodeIfPresent(RealtimeSessionCreateRequestGA.Audio.Output.self, forKey: "output")
         }
 
-        public struct Input: Codable, Hashable, Sendable {
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.input, forKey: "input")
+            try container.encodeIfPresent(self.output, forKey: "output")
+        }
+
+        public struct Input: OpenAIModel {
             /// The format of the input audio.
             public var format: RealtimeAudioFormats?
             /// Configuration for input audio transcription, defaults to off and can be set to `null` to turn off once on. Input audio transcription is not native to the model, since the model consumes audio directly. Transcription runs asynchronously through [the /audio/transcriptions endpoint](https://developers.openai.com/api/reference/resources/audio/subresources/transcriptions/methods/create) and should be treated as guidance of input audio content rather than precisely what the model heard. The client can optionally set the language and prompt for transcription, these offer additional guidance to the transcription service.
@@ -531,18 +2602,27 @@ public struct RealtimeSessionCreateRequestGA: Codable, Hashable, Sendable {
                 self.turnDetection = turnDetection
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case format
-                case transcription
-                case noiseReduction = "noise_reduction"
-                case turnDetection = "turn_detection"
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.format = try container.decodeIfPresent(RealtimeAudioFormats.self, forKey: "format")
+                self.transcription = try container.decodeIfPresent(AudioTranscription.self, forKey: "transcription")
+                self.noiseReduction = try container.decodeIfPresent(RealtimeSessionCreateRequestGA.Audio.Input.NoiseReduction.self, forKey: "noise_reduction")
+                self.turnDetection = try container.decodeIfPresent(RealtimeTurnDetection.self, forKey: "turn_detection")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.format, forKey: "format")
+                try container.encodeIfPresent(self.transcription, forKey: "transcription")
+                try container.encodeIfPresent(self.noiseReduction, forKey: "noise_reduction")
+                try container.encodeIfPresent(self.turnDetection, forKey: "turn_detection")
             }
 
             /// When you supply a `noise_reduction` object, you must set `type` to `near_field` or `far_field`.
             /// Set `noise_reduction` to `null` to turn off input audio noise reduction.
             /// Noise reduction filters audio added to the input audio buffer before it is sent to VAD and the model.
             /// Filtering the audio can improve VAD and turn detection accuracy (reducing false positives) and model performance by improving perception of the input audio.
-            public struct NoiseReduction: Codable, Hashable, Sendable {
+            public struct NoiseReduction: OpenAIModel {
                 public var type: NoiseReductionType?
                 public var strength: RealtimeNoiseReductionStrength?
 
@@ -551,14 +2631,21 @@ public struct RealtimeSessionCreateRequestGA: Codable, Hashable, Sendable {
                     self.strength = strength
                 }
 
-                private enum CodingKeys: String, CodingKey {
-                    case type
-                    case strength
+                public init(from decoder: any Decoder) throws {
+                    let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                    self.type = try container.decodeIfPresent(NoiseReductionType.self, forKey: "type")
+                    self.strength = try container.decodeIfPresent(RealtimeNoiseReductionStrength.self, forKey: "strength")
+                }
+
+                public func encode(to encoder: any Encoder) throws {
+                    var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                    try container.encodeIfPresent(self.type, forKey: "type")
+                    try container.encodeIfPresent(self.strength, forKey: "strength")
                 }
             }
         }
 
-        public struct Output: Codable, Hashable, Sendable {
+        public struct Output: OpenAIModel {
             /// The format of the output audio.
             public var format: RealtimeAudioFormats?
             /// The voice the model uses to respond. Supported built-in voices are
@@ -586,10 +2673,18 @@ public struct RealtimeSessionCreateRequestGA: Codable, Hashable, Sendable {
                 self.speed = speed
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case format
-                case voice
-                case speed
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.format = try container.decodeIfPresent(RealtimeAudioFormats.self, forKey: "format")
+                self.voice = try container.decodeIfPresent(VoiceIdsOrCustomVoice.self, forKey: "voice")
+                self.speed = try container.decodeIfPresent(Double.self, forKey: "speed")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.format, forKey: "format")
+                try container.encodeIfPresent(self.voice, forKey: "voice")
+                try container.encodeIfPresent(self.speed, forKey: "speed")
             }
         }
     }
@@ -599,7 +2694,7 @@ public struct RealtimeSessionCreateRequestGA: Codable, Hashable, Sendable {
     ///
     /// `auto` will create a trace for the session with default values for the
     /// workflow name, group id, and metadata.
-    public indirect enum Tracing: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum Tracing: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         /// Enables tracing and sets default values for tracing configuration options. Always `auto`.
         case auto(String)
         /// Granular configuration for tracing.
@@ -637,7 +2732,7 @@ public struct RealtimeSessionCreateRequestGA: Codable, Hashable, Sendable {
         }
 
         /// Granular configuration for tracing.
-        public struct TracingConfiguration: Codable, Hashable, Sendable {
+        public struct TracingConfiguration: OpenAIModel {
             /// The name of the workflow to attach to this trace. This is used to
             /// name the trace in the Traces Dashboard.
             public var workflowName: String?
@@ -658,16 +2753,24 @@ public struct RealtimeSessionCreateRequestGA: Codable, Hashable, Sendable {
                 self.metadata = metadata
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case workflowName = "workflow_name"
-                case groupID = "group_id"
-                case metadata
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.workflowName = try container.decodeIfPresent(String.self, forKey: "workflow_name")
+                self.groupID = try container.decodeIfPresent(String.self, forKey: "group_id")
+                self.metadata = try container.decodeIfPresent(JSONObject.self, forKey: "metadata")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.workflowName, forKey: "workflow_name")
+                try container.encodeIfPresent(self.groupID, forKey: "group_id")
+                try container.encodeIfPresent(self.metadata, forKey: "metadata")
             }
         }
     }
 
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Tool: Codable, Hashable, Sendable {
+    public indirect enum Tool: OpenAIModel {
         /// `type`: `function`
         case function(RealtimeFunctionTool)
         /// `type`: `mcp`
@@ -710,7 +2813,7 @@ public struct RealtimeSessionCreateRequestGA: Codable, Hashable, Sendable {
     /// function/MCP tool.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum ToolChoice: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum ToolChoice: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         case options(ToolChoiceOptions)
         /// `type`: `function`
         case function(ToolChoiceFunction)
@@ -764,7 +2867,7 @@ public struct RealtimeSessionCreateRequestGA: Codable, Hashable, Sendable {
     /// inclusive of tool calls. Provide an integer between 1 and 4096 to
     /// limit output tokens, or `inf` for the maximum available tokens for a
     /// given model. Defaults to `inf`.
-    public indirect enum MaxOutputTokens: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum MaxOutputTokens: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         case integer(Int)
         case string(String)
         /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
@@ -802,7 +2905,7 @@ public struct RealtimeSessionCreateRequestGA: Codable, Hashable, Sendable {
 }
 
 /// A Realtime session configuration object.
-public struct RealtimeSessionCreateResponse: Codable, Hashable, Sendable {
+public struct RealtimeSessionCreateResponse: OpenAIModel {
     /// Unique identifier for the session that looks like `sess_1234567890abcdef`.
     public var id: String?
     /// The object type. Always `realtime.session`.
@@ -883,24 +2986,42 @@ public struct RealtimeSessionCreateResponse: Codable, Hashable, Sendable {
         self.maxOutputTokens = maxOutputTokens
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case expiresAt = "expires_at"
-        case include
-        case model
-        case outputModalities = "output_modalities"
-        case instructions
-        case audio
-        case tracing
-        case turnDetection = "turn_detection"
-        case tools
-        case toolChoice = "tool_choice"
-        case maxOutputTokens = "max_output_tokens"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object")
+        self.expiresAt = try container.decodeIfPresent(Int.self, forKey: "expires_at")
+        self.include = try container.decodeIfPresent([String].self, forKey: "include")
+        self.model = try container.decodeIfPresent(String.self, forKey: "model")
+        self.outputModalities = try container.decodeIfPresent(JSONValue.self, forKey: "output_modalities")
+        self.instructions = try container.decodeIfPresent(String.self, forKey: "instructions")
+        self.audio = try container.decodeIfPresent(RealtimeSessionCreateResponse.Audio.self, forKey: "audio")
+        self.tracing = try container.decodeIfPresent(RealtimeSessionCreateResponse.Tracing.self, forKey: "tracing")
+        self.turnDetection = try container.decodeIfPresent(RealtimeSessionCreateResponse.TurnDetection.self, forKey: "turn_detection")
+        self.tools = try container.decodeIfPresent([RealtimeFunctionTool].self, forKey: "tools")
+        self.toolChoice = try container.decodeIfPresent(String.self, forKey: "tool_choice")
+        self.maxOutputTokens = try container.decodeIfPresent(RealtimeSessionCreateResponse.MaxOutputTokens.self, forKey: "max_output_tokens")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encodeIfPresent(self.object, forKey: "object")
+        try container.encodeIfPresent(self.expiresAt, forKey: "expires_at")
+        try container.encodeIfPresent(self.include, forKey: "include")
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encodeIfPresent(self.outputModalities, forKey: "output_modalities")
+        try container.encodeIfPresent(self.instructions, forKey: "instructions")
+        try container.encodeIfPresent(self.audio, forKey: "audio")
+        try container.encodeIfPresent(self.tracing, forKey: "tracing")
+        try container.encodeIfPresent(self.turnDetection, forKey: "turn_detection")
+        try container.encodeIfPresent(self.tools, forKey: "tools")
+        try container.encodeIfPresent(self.toolChoice, forKey: "tool_choice")
+        try container.encodeIfPresent(self.maxOutputTokens, forKey: "max_output_tokens")
     }
 
     /// Configuration for input and output audio for the session.
-    public struct Audio: Codable, Hashable, Sendable {
+    public struct Audio: OpenAIModel {
         public var input: RealtimeSessionCreateResponse.Audio.Input?
         public var output: RealtimeSessionCreateResponse.Audio.Output?
 
@@ -909,12 +3030,19 @@ public struct RealtimeSessionCreateResponse: Codable, Hashable, Sendable {
             self.output = output
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case input
-            case output
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.input = try container.decodeIfPresent(RealtimeSessionCreateResponse.Audio.Input.self, forKey: "input")
+            self.output = try container.decodeIfPresent(RealtimeSessionCreateResponse.Audio.Output.self, forKey: "output")
         }
 
-        public struct Input: Codable, Hashable, Sendable {
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.input, forKey: "input")
+            try container.encodeIfPresent(self.output, forKey: "output")
+        }
+
+        public struct Input: OpenAIModel {
             public var format: RealtimeAudioFormats?
             /// Configuration for input audio transcription.
             public var transcription: AudioTranscriptionResponse?
@@ -935,28 +3063,43 @@ public struct RealtimeSessionCreateResponse: Codable, Hashable, Sendable {
                 self.turnDetection = turnDetection
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case format
-                case transcription
-                case noiseReduction = "noise_reduction"
-                case turnDetection = "turn_detection"
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.format = try container.decodeIfPresent(RealtimeAudioFormats.self, forKey: "format")
+                self.transcription = try container.decodeIfPresent(AudioTranscriptionResponse.self, forKey: "transcription")
+                self.noiseReduction = try container.decodeIfPresent(RealtimeSessionCreateResponse.Audio.Input.NoiseReduction.self, forKey: "noise_reduction")
+                self.turnDetection = try container.decodeIfPresent(RealtimeSessionCreateResponse.Audio.Input.TurnDetection.self, forKey: "turn_detection")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.format, forKey: "format")
+                try container.encodeIfPresent(self.transcription, forKey: "transcription")
+                try container.encodeIfPresent(self.noiseReduction, forKey: "noise_reduction")
+                try container.encodeIfPresent(self.turnDetection, forKey: "turn_detection")
             }
 
             /// Configuration for input audio noise reduction.
-            public struct NoiseReduction: Codable, Hashable, Sendable {
+            public struct NoiseReduction: OpenAIModel {
                 public var type: NoiseReductionType?
 
                 public init(type: NoiseReductionType? = nil) {
                     self.type = type
                 }
 
-                private enum CodingKeys: String, CodingKey {
-                    case type
+                public init(from decoder: any Decoder) throws {
+                    let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                    self.type = try container.decodeIfPresent(NoiseReductionType.self, forKey: "type")
+                }
+
+                public func encode(to encoder: any Encoder) throws {
+                    var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                    try container.encodeIfPresent(self.type, forKey: "type")
                 }
             }
 
             /// Configuration for turn detection.
-            public struct TurnDetection: Codable, Hashable, Sendable {
+            public struct TurnDetection: OpenAIModel {
                 /// Type of turn detection, only `server_vad` is currently supported.
                 public var type: String?
                 public var threshold: Double?
@@ -975,16 +3118,25 @@ public struct RealtimeSessionCreateResponse: Codable, Hashable, Sendable {
                     self.silenceDurationMs = silenceDurationMs
                 }
 
-                private enum CodingKeys: String, CodingKey {
-                    case type
-                    case threshold
-                    case prefixPaddingMs = "prefix_padding_ms"
-                    case silenceDurationMs = "silence_duration_ms"
+                public init(from decoder: any Decoder) throws {
+                    let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                    self.type = try container.decodeIfPresent(String.self, forKey: "type")
+                    self.threshold = try container.decodeIfPresent(Double.self, forKey: "threshold")
+                    self.prefixPaddingMs = try container.decodeIfPresent(Int.self, forKey: "prefix_padding_ms")
+                    self.silenceDurationMs = try container.decodeIfPresent(Int.self, forKey: "silence_duration_ms")
+                }
+
+                public func encode(to encoder: any Encoder) throws {
+                    var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                    try container.encodeIfPresent(self.type, forKey: "type")
+                    try container.encodeIfPresent(self.threshold, forKey: "threshold")
+                    try container.encodeIfPresent(self.prefixPaddingMs, forKey: "prefix_padding_ms")
+                    try container.encodeIfPresent(self.silenceDurationMs, forKey: "silence_duration_ms")
                 }
             }
         }
 
-        public struct Output: Codable, Hashable, Sendable {
+        public struct Output: OpenAIModel {
             public var format: RealtimeAudioFormats?
             public var voice: VoiceIdsShared?
             public var speed: Double?
@@ -999,10 +3151,18 @@ public struct RealtimeSessionCreateResponse: Codable, Hashable, Sendable {
                 self.speed = speed
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case format
-                case voice
-                case speed
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.format = try container.decodeIfPresent(RealtimeAudioFormats.self, forKey: "format")
+                self.voice = try container.decodeIfPresent(VoiceIdsShared.self, forKey: "voice")
+                self.speed = try container.decodeIfPresent(Double.self, forKey: "speed")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.format, forKey: "format")
+                try container.encodeIfPresent(self.voice, forKey: "voice")
+                try container.encodeIfPresent(self.speed, forKey: "speed")
             }
         }
     }
@@ -1012,7 +3172,7 @@ public struct RealtimeSessionCreateResponse: Codable, Hashable, Sendable {
     ///
     /// `auto` will create a trace for the session with default values for the
     /// workflow name, group id, and metadata.
-    public indirect enum Tracing: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum Tracing: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         /// Default tracing mode for the session.
         case string(String)
         /// Granular configuration for tracing.
@@ -1050,7 +3210,7 @@ public struct RealtimeSessionCreateResponse: Codable, Hashable, Sendable {
         }
 
         /// Granular configuration for tracing.
-        public struct TracingConfiguration: Codable, Hashable, Sendable {
+        public struct TracingConfiguration: OpenAIModel {
             /// The name of the workflow to attach to this trace. This is used to
             /// name the trace in the traces dashboard.
             public var workflowName: String?
@@ -1071,10 +3231,18 @@ public struct RealtimeSessionCreateResponse: Codable, Hashable, Sendable {
                 self.metadata = metadata
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case workflowName = "workflow_name"
-                case groupID = "group_id"
-                case metadata
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.workflowName = try container.decodeIfPresent(String.self, forKey: "workflow_name")
+                self.groupID = try container.decodeIfPresent(String.self, forKey: "group_id")
+                self.metadata = try container.decodeIfPresent(JSONObject.self, forKey: "metadata")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.workflowName, forKey: "workflow_name")
+                try container.encodeIfPresent(self.groupID, forKey: "group_id")
+                try container.encodeIfPresent(self.metadata, forKey: "metadata")
             }
         }
     }
@@ -1082,7 +3250,7 @@ public struct RealtimeSessionCreateResponse: Codable, Hashable, Sendable {
     /// Configuration for turn detection. Can be set to `null` to turn off. Server
     /// VAD means that the model will detect the start and end of speech based on
     /// audio volume and respond at the end of user speech.
-    public struct TurnDetection: Codable, Hashable, Sendable {
+    public struct TurnDetection: OpenAIModel {
         /// Type of turn detection, only `server_vad` is currently supported.
         public var type: String?
         /// Activation threshold for VAD (0.0 to 1.0), this defaults to 0.5. A
@@ -1109,11 +3277,20 @@ public struct RealtimeSessionCreateResponse: Codable, Hashable, Sendable {
             self.silenceDurationMs = silenceDurationMs
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case threshold
-            case prefixPaddingMs = "prefix_padding_ms"
-            case silenceDurationMs = "silence_duration_ms"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type")
+            self.threshold = try container.decodeIfPresent(Double.self, forKey: "threshold")
+            self.prefixPaddingMs = try container.decodeIfPresent(Int.self, forKey: "prefix_padding_ms")
+            self.silenceDurationMs = try container.decodeIfPresent(Int.self, forKey: "silence_duration_ms")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.type, forKey: "type")
+            try container.encodeIfPresent(self.threshold, forKey: "threshold")
+            try container.encodeIfPresent(self.prefixPaddingMs, forKey: "prefix_padding_ms")
+            try container.encodeIfPresent(self.silenceDurationMs, forKey: "silence_duration_ms")
         }
     }
 
@@ -1121,7 +3298,7 @@ public struct RealtimeSessionCreateResponse: Codable, Hashable, Sendable {
     /// inclusive of tool calls. Provide an integer between 1 and 4096 to
     /// limit output tokens, or `inf` for the maximum available tokens for a
     /// given model. Defaults to `inf`.
-    public indirect enum MaxOutputTokens: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum MaxOutputTokens: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         case integer(Int)
         case string(String)
         /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
@@ -1159,7 +3336,7 @@ public struct RealtimeSessionCreateResponse: Codable, Hashable, Sendable {
 }
 
 /// A Realtime session configuration object.
-public struct RealtimeSessionCreateResponseGA: Codable, Hashable, Sendable {
+public struct RealtimeSessionCreateResponseGA: OpenAIModel {
     /// The type of session to create. Always `realtime` for the Realtime API.
     public var type: String = "realtime"
     /// Unique identifier for the session that looks like `sess_1234567890abcdef`.
@@ -1231,23 +3408,44 @@ public struct RealtimeSessionCreateResponseGA: Codable, Hashable, Sendable {
         self.truncation = truncation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case object
-        case expiresAt = "expires_at"
-        case outputModalities = "output_modalities"
-        case model
-        case instructions
-        case audio
-        case include
-        case tracing
-        case tools
-        case toolChoice = "tool_choice"
-        case reasoning
-        case maxOutputTokens = "max_output_tokens"
-        case truncation
-        case prompt
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "realtime"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "realtime.session"
+        self.expiresAt = try container.decodeIfPresent(Int.self, forKey: "expires_at")
+        self.outputModalities = try container.decodeIfPresent([RealtimeSessionCreateResponseGA.OutputModality].self, forKey: "output_modalities")
+        self.model = try container.decodeIfPresent(RealtimeSessionCreateResponseGA.Model.self, forKey: "model")
+        self.instructions = try container.decodeIfPresent(String.self, forKey: "instructions")
+        self.audio = try container.decodeIfPresent(RealtimeSessionCreateResponseGA.Audio.self, forKey: "audio")
+        self.include = try container.decodeIfPresent([String].self, forKey: "include")
+        self.tracing = try container.decodeIfPresent(RealtimeSessionCreateResponseGA.Tracing.self, forKey: "tracing")
+        self.tools = try container.decodeIfPresent([RealtimeSessionCreateResponseGA.Tool].self, forKey: "tools")
+        self.toolChoice = try container.decodeIfPresent(RealtimeSessionCreateResponseGA.ToolChoice.self, forKey: "tool_choice")
+        self.reasoning = try container.decodeIfPresent(RealtimeReasoning.self, forKey: "reasoning")
+        self.maxOutputTokens = try container.decodeIfPresent(RealtimeSessionCreateResponseGA.MaxOutputTokens.self, forKey: "max_output_tokens")
+        self.truncation = try container.decodeIfPresent(RealtimeTruncation.self, forKey: "truncation")
+        self.prompt = try container.decodeIfPresent(Prompt.self, forKey: "prompt")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encodeIfPresent(self.expiresAt, forKey: "expires_at")
+        try container.encodeIfPresent(self.outputModalities, forKey: "output_modalities")
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encodeIfPresent(self.instructions, forKey: "instructions")
+        try container.encodeIfPresent(self.audio, forKey: "audio")
+        try container.encodeIfPresent(self.include, forKey: "include")
+        try container.encodeIfPresent(self.tracing, forKey: "tracing")
+        try container.encodeIfPresent(self.tools, forKey: "tools")
+        try container.encodeIfPresent(self.toolChoice, forKey: "tool_choice")
+        try container.encodeIfPresent(self.reasoning, forKey: "reasoning")
+        try container.encodeIfPresent(self.maxOutputTokens, forKey: "max_output_tokens")
+        try container.encodeIfPresent(self.truncation, forKey: "truncation")
+        try container.encodeIfPresent(self.prompt, forKey: "prompt")
     }
 
     /// This type is open: it accepts values the spec does not list yet.
@@ -1302,7 +3500,7 @@ public struct RealtimeSessionCreateResponseGA: Codable, Hashable, Sendable {
     }
 
     /// Configuration for input and output audio.
-    public struct Audio: Codable, Hashable, Sendable {
+    public struct Audio: OpenAIModel {
         public var input: RealtimeSessionCreateResponseGA.Audio.Input?
         public var output: RealtimeSessionCreateResponseGA.Audio.Output?
 
@@ -1311,12 +3509,19 @@ public struct RealtimeSessionCreateResponseGA: Codable, Hashable, Sendable {
             self.output = output
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case input
-            case output
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.input = try container.decodeIfPresent(RealtimeSessionCreateResponseGA.Audio.Input.self, forKey: "input")
+            self.output = try container.decodeIfPresent(RealtimeSessionCreateResponseGA.Audio.Output.self, forKey: "output")
         }
 
-        public struct Input: Codable, Hashable, Sendable {
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.input, forKey: "input")
+            try container.encodeIfPresent(self.output, forKey: "output")
+        }
+
+        public struct Input: OpenAIModel {
             /// The format of the input audio.
             public var format: RealtimeAudioFormats?
             /// Configuration for input audio transcription, defaults to off and can be set to `null` to turn off once on. Input audio transcription is not native to the model, since the model consumes audio directly. Transcription runs asynchronously through [the /audio/transcriptions endpoint](https://developers.openai.com/api/reference/resources/audio/subresources/transcriptions/methods/create) and should be treated as guidance of input audio content rather than precisely what the model heard. The client can optionally set the language and prompt for transcription, these offer additional guidance to the transcription service.
@@ -1339,17 +3544,26 @@ public struct RealtimeSessionCreateResponseGA: Codable, Hashable, Sendable {
                 self.turnDetection = turnDetection
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case format
-                case transcription
-                case noiseReduction = "noise_reduction"
-                case turnDetection = "turn_detection"
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.format = try container.decodeIfPresent(RealtimeAudioFormats.self, forKey: "format")
+                self.transcription = try container.decodeIfPresent(AudioTranscriptionResponse.self, forKey: "transcription")
+                self.noiseReduction = try container.decodeIfPresent(RealtimeSessionCreateResponseGA.Audio.Input.NoiseReduction.self, forKey: "noise_reduction")
+                self.turnDetection = try container.decodeIfPresent(RealtimeTurnDetection.self, forKey: "turn_detection")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.format, forKey: "format")
+                try container.encodeIfPresent(self.transcription, forKey: "transcription")
+                try container.encodeIfPresent(self.noiseReduction, forKey: "noise_reduction")
+                try container.encodeIfPresent(self.turnDetection, forKey: "turn_detection")
             }
 
             /// Configuration for input audio noise reduction. This can be set to `null` to turn off.
             /// Noise reduction filters audio added to the input audio buffer before it is sent to VAD and the model.
             /// Filtering the audio can improve VAD and turn detection accuracy (reducing false positives) and model performance by improving perception of the input audio.
-            public struct NoiseReduction: Codable, Hashable, Sendable {
+            public struct NoiseReduction: OpenAIModel {
                 public var type: NoiseReductionType?
                 public var strength: RealtimeNoiseReductionStrength?
 
@@ -1358,14 +3572,21 @@ public struct RealtimeSessionCreateResponseGA: Codable, Hashable, Sendable {
                     self.strength = strength
                 }
 
-                private enum CodingKeys: String, CodingKey {
-                    case type
-                    case strength
+                public init(from decoder: any Decoder) throws {
+                    let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                    self.type = try container.decodeIfPresent(NoiseReductionType.self, forKey: "type")
+                    self.strength = try container.decodeIfPresent(RealtimeNoiseReductionStrength.self, forKey: "strength")
+                }
+
+                public func encode(to encoder: any Encoder) throws {
+                    var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                    try container.encodeIfPresent(self.type, forKey: "type")
+                    try container.encodeIfPresent(self.strength, forKey: "strength")
                 }
             }
         }
 
-        public struct Output: Codable, Hashable, Sendable {
+        public struct Output: OpenAIModel {
             /// The format of the output audio.
             public var format: RealtimeAudioFormats?
             /// The voice the model uses to respond. Voice cannot be changed during the
@@ -1391,10 +3612,18 @@ public struct RealtimeSessionCreateResponseGA: Codable, Hashable, Sendable {
                 self.speed = speed
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case format
-                case voice
-                case speed
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.format = try container.decodeIfPresent(RealtimeAudioFormats.self, forKey: "format")
+                self.voice = try container.decodeIfPresent(VoiceIdsShared.self, forKey: "voice")
+                self.speed = try container.decodeIfPresent(Double.self, forKey: "speed")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.format, forKey: "format")
+                try container.encodeIfPresent(self.voice, forKey: "voice")
+                try container.encodeIfPresent(self.speed, forKey: "speed")
             }
         }
     }
@@ -1404,7 +3633,7 @@ public struct RealtimeSessionCreateResponseGA: Codable, Hashable, Sendable {
     ///
     /// `auto` will create a trace for the session with default values for the
     /// workflow name, group id, and metadata.
-    public indirect enum Tracing: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum Tracing: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         /// Enables tracing and sets default values for tracing configuration options. Always `auto`.
         case auto(String)
         /// Granular configuration for tracing.
@@ -1442,7 +3671,7 @@ public struct RealtimeSessionCreateResponseGA: Codable, Hashable, Sendable {
         }
 
         /// Granular configuration for tracing.
-        public struct TracingConfiguration: Codable, Hashable, Sendable {
+        public struct TracingConfiguration: OpenAIModel {
             /// The name of the workflow to attach to this trace. This is used to
             /// name the trace in the Traces Dashboard.
             public var workflowName: String?
@@ -1463,16 +3692,24 @@ public struct RealtimeSessionCreateResponseGA: Codable, Hashable, Sendable {
                 self.metadata = metadata
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case workflowName = "workflow_name"
-                case groupID = "group_id"
-                case metadata
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.workflowName = try container.decodeIfPresent(String.self, forKey: "workflow_name")
+                self.groupID = try container.decodeIfPresent(String.self, forKey: "group_id")
+                self.metadata = try container.decodeIfPresent(JSONObject.self, forKey: "metadata")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.workflowName, forKey: "workflow_name")
+                try container.encodeIfPresent(self.groupID, forKey: "group_id")
+                try container.encodeIfPresent(self.metadata, forKey: "metadata")
             }
         }
     }
 
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Tool: Codable, Hashable, Sendable {
+    public indirect enum Tool: OpenAIModel {
         /// `type`: `function`
         case function(RealtimeFunctionTool)
         /// `type`: `mcp`
@@ -1515,7 +3752,7 @@ public struct RealtimeSessionCreateResponseGA: Codable, Hashable, Sendable {
     /// function/MCP tool.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum ToolChoice: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum ToolChoice: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         case options(ToolChoiceOptions)
         /// `type`: `function`
         case function(ToolChoiceFunction)
@@ -1569,7 +3806,7 @@ public struct RealtimeSessionCreateResponseGA: Codable, Hashable, Sendable {
     /// inclusive of tool calls. Provide an integer between 1 and 4096 to
     /// limit output tokens, or `inf` for the maximum available tokens for a
     /// given model. Defaults to `inf`.
-    public indirect enum MaxOutputTokens: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum MaxOutputTokens: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         case integer(Int)
         case string(String)
         /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
@@ -1607,7 +3844,7 @@ public struct RealtimeSessionCreateResponseGA: Codable, Hashable, Sendable {
 }
 
 /// Realtime transcription session object configuration.
-public struct RealtimeTranscriptionSessionCreateRequest: Codable, Hashable, Sendable {
+public struct RealtimeTranscriptionSessionCreateRequest: OpenAIModel {
     /// Configuration for turn detection. Can be set to `null` to turn off. Server VAD means that the model will detect the start and end of speech based on audio volume and respond at the end of user speech.
     public var turnDetection: RealtimeTranscriptionSessionCreateRequest.TurnDetection?
     /// Configuration for input audio noise reduction. This can be set to `null` to turn off.
@@ -1638,16 +3875,26 @@ public struct RealtimeTranscriptionSessionCreateRequest: Codable, Hashable, Send
         self.include = include
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case turnDetection = "turn_detection"
-        case inputAudioNoiseReduction = "input_audio_noise_reduction"
-        case inputAudioFormat = "input_audio_format"
-        case inputAudioTranscription = "input_audio_transcription"
-        case include
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.turnDetection = try container.decodeIfPresent(RealtimeTranscriptionSessionCreateRequest.TurnDetection.self, forKey: "turn_detection")
+        self.inputAudioNoiseReduction = try container.decodeIfPresent(RealtimeTranscriptionSessionCreateRequest.InputAudioNoiseReduction.self, forKey: "input_audio_noise_reduction")
+        self.inputAudioFormat = try container.decodeIfPresent(RealtimeTranscriptionSessionCreateRequest.InputAudioFormat.self, forKey: "input_audio_format")
+        self.inputAudioTranscription = try container.decodeIfPresent(AudioTranscription.self, forKey: "input_audio_transcription")
+        self.include = try container.decodeIfPresent([String].self, forKey: "include")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.turnDetection, forKey: "turn_detection")
+        try container.encodeIfPresent(self.inputAudioNoiseReduction, forKey: "input_audio_noise_reduction")
+        try container.encodeIfPresent(self.inputAudioFormat, forKey: "input_audio_format")
+        try container.encodeIfPresent(self.inputAudioTranscription, forKey: "input_audio_transcription")
+        try container.encodeIfPresent(self.include, forKey: "include")
     }
 
     /// Configuration for turn detection. Can be set to `null` to turn off. Server VAD means that the model will detect the start and end of speech based on audio volume and respond at the end of user speech.
-    public struct TurnDetection: Codable, Hashable, Sendable {
+    public struct TurnDetection: OpenAIModel {
         /// Type of turn detection. Only `server_vad` is currently supported for transcription sessions.
         public var type: String? = "server_vad"
         /// Activation threshold for VAD (0.0 to 1.0), this defaults to 0.5. A
@@ -1672,26 +3919,41 @@ public struct RealtimeTranscriptionSessionCreateRequest: Codable, Hashable, Send
             self.silenceDurationMs = silenceDurationMs
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case threshold
-            case prefixPaddingMs = "prefix_padding_ms"
-            case silenceDurationMs = "silence_duration_ms"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type")
+            self.threshold = try container.decodeIfPresent(Double.self, forKey: "threshold")
+            self.prefixPaddingMs = try container.decodeIfPresent(Int.self, forKey: "prefix_padding_ms")
+            self.silenceDurationMs = try container.decodeIfPresent(Int.self, forKey: "silence_duration_ms")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.type, forKey: "type")
+            try container.encodeIfPresent(self.threshold, forKey: "threshold")
+            try container.encodeIfPresent(self.prefixPaddingMs, forKey: "prefix_padding_ms")
+            try container.encodeIfPresent(self.silenceDurationMs, forKey: "silence_duration_ms")
         }
     }
 
     /// Configuration for input audio noise reduction. This can be set to `null` to turn off.
     /// Noise reduction filters audio added to the input audio buffer before it is sent to VAD and the model.
     /// Filtering the audio can improve VAD and turn detection accuracy (reducing false positives) and model performance by improving perception of the input audio.
-    public struct InputAudioNoiseReduction: Codable, Hashable, Sendable {
+    public struct InputAudioNoiseReduction: OpenAIModel {
         public var type: NoiseReductionType?
 
         public init(type: NoiseReductionType? = nil) {
             self.type = type
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(NoiseReductionType.self, forKey: "type")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.type, forKey: "type")
         }
     }
 
@@ -1718,7 +3980,7 @@ public struct RealtimeTranscriptionSessionCreateRequest: Codable, Hashable, Send
 }
 
 /// Realtime transcription session object configuration.
-public struct RealtimeTranscriptionSessionCreateRequestGA: Codable, Hashable, Sendable {
+public struct RealtimeTranscriptionSessionCreateRequestGA: OpenAIModel {
     /// The type of session to create. Always `transcription` for transcription sessions.
     public var type: String = "transcription"
     /// Configuration for input and output audio.
@@ -1733,25 +3995,39 @@ public struct RealtimeTranscriptionSessionCreateRequestGA: Codable, Hashable, Se
         self.include = include
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case audio
-        case include
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "transcription"
+        self.audio = try container.decodeIfPresent(RealtimeTranscriptionSessionCreateRequestGA.Audio.self, forKey: "audio")
+        self.include = try container.decodeIfPresent([String].self, forKey: "include")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.audio, forKey: "audio")
+        try container.encodeIfPresent(self.include, forKey: "include")
     }
 
     /// Configuration for input and output audio.
-    public struct Audio: Codable, Hashable, Sendable {
+    public struct Audio: OpenAIModel {
         public var input: RealtimeTranscriptionSessionCreateRequestGA.Audio.Input?
 
         public init(input: RealtimeTranscriptionSessionCreateRequestGA.Audio.Input? = nil) {
             self.input = input
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case input
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.input = try container.decodeIfPresent(RealtimeTranscriptionSessionCreateRequestGA.Audio.Input.self, forKey: "input")
         }
 
-        public struct Input: Codable, Hashable, Sendable {
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.input, forKey: "input")
+        }
+
+        public struct Input: OpenAIModel {
             public var format: RealtimeAudioFormats?
             /// Configuration for input audio transcription, defaults to off and can be set to `null` to turn off once on. Input audio transcription is not native to the model, since the model consumes audio directly. Transcription runs asynchronously through [the /audio/transcriptions endpoint](https://developers.openai.com/api/reference/resources/audio/subresources/transcriptions/methods/create) and should be treated as guidance of input audio content rather than precisely what the model heard. The client can optionally set the language and prompt for transcription, these offer additional guidance to the transcription service.
             public var transcription: AudioTranscription?
@@ -1773,17 +4049,26 @@ public struct RealtimeTranscriptionSessionCreateRequestGA: Codable, Hashable, Se
                 self.turnDetection = turnDetection
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case format
-                case transcription
-                case noiseReduction = "noise_reduction"
-                case turnDetection = "turn_detection"
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.format = try container.decodeIfPresent(RealtimeAudioFormats.self, forKey: "format")
+                self.transcription = try container.decodeIfPresent(AudioTranscription.self, forKey: "transcription")
+                self.noiseReduction = try container.decodeIfPresent(RealtimeTranscriptionSessionCreateRequestGA.Audio.Input.NoiseReduction.self, forKey: "noise_reduction")
+                self.turnDetection = try container.decodeIfPresent(RealtimeTurnDetection.self, forKey: "turn_detection")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.format, forKey: "format")
+                try container.encodeIfPresent(self.transcription, forKey: "transcription")
+                try container.encodeIfPresent(self.noiseReduction, forKey: "noise_reduction")
+                try container.encodeIfPresent(self.turnDetection, forKey: "turn_detection")
             }
 
             /// Configuration for input audio noise reduction. This can be set to `null` to turn off.
             /// Noise reduction filters audio added to the input audio buffer before it is sent to VAD and the model.
             /// Filtering the audio can improve VAD and turn detection accuracy (reducing false positives) and model performance by improving perception of the input audio.
-            public struct NoiseReduction: Codable, Hashable, Sendable {
+            public struct NoiseReduction: OpenAIModel {
                 public var type: NoiseReductionType?
                 public var strength: RealtimeNoiseReductionStrength?
 
@@ -1792,1250 +4077,17 @@ public struct RealtimeTranscriptionSessionCreateRequestGA: Codable, Hashable, Se
                     self.strength = strength
                 }
 
-                private enum CodingKeys: String, CodingKey {
-                    case type
-                    case strength
-                }
-            }
-        }
-    }
-}
-
-/// A new Realtime transcription session configuration.
-///
-/// When a session is created on the server via REST API, the session object
-/// also contains an ephemeral key. Default TTL for keys is 10 minutes. This
-/// property is not present when a session is updated via the WebSocket API.
-public struct RealtimeTranscriptionSessionCreateResponse: Codable, Hashable, Sendable {
-    /// Ephemeral key returned by the API. Only present when the session is
-    /// created on the server via REST API.
-    public var clientSecret: RealtimeTranscriptionSessionCreateResponse.ClientSecret?
-    /// The set of modalities the model can respond with. To disable audio,
-    /// set this to ["text"].
-    public var modalities: JSONValue?
-    /// The format of input audio. Options are `pcm16`, `g711_ulaw`, or `g711_alaw`.
-    public var inputAudioFormat: String?
-    /// Configuration of the transcription model.
-    public var inputAudioTranscription: AudioTranscriptionResponse?
-    /// Configuration for turn detection. Can be set to `null` to turn off. Server
-    /// VAD means that the model will detect the start and end of speech based on
-    /// audio volume and respond at the end of user speech.
-    public var turnDetection: RealtimeTranscriptionSessionCreateResponse.TurnDetection?
-
-    public init(
-        clientSecret: RealtimeTranscriptionSessionCreateResponse.ClientSecret? = nil,
-        modalities: JSONValue? = nil,
-        inputAudioFormat: String? = nil,
-        inputAudioTranscription: AudioTranscriptionResponse? = nil,
-        turnDetection: RealtimeTranscriptionSessionCreateResponse.TurnDetection? = nil
-    ) {
-        self.clientSecret = clientSecret
-        self.modalities = modalities
-        self.inputAudioFormat = inputAudioFormat
-        self.inputAudioTranscription = inputAudioTranscription
-        self.turnDetection = turnDetection
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case clientSecret = "client_secret"
-        case modalities
-        case inputAudioFormat = "input_audio_format"
-        case inputAudioTranscription = "input_audio_transcription"
-        case turnDetection = "turn_detection"
-    }
-
-    /// Ephemeral key returned by the API. Only present when the session is
-    /// created on the server via REST API.
-    public struct ClientSecret: Codable, Hashable, Sendable {
-        /// Ephemeral key usable in client environments to authenticate connections
-        /// to the Realtime API. Use this in client-side environments rather than
-        /// a standard API token, which should only be used server-side.
-        public var value: String
-        /// Timestamp for when the token expires. Currently, all tokens expire
-        /// after one minute.
-        public var expiresAt: Int
-
-        public init(value: String, expiresAt: Int) {
-            self.value = value
-            self.expiresAt = expiresAt
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case value
-            case expiresAt = "expires_at"
-        }
-    }
-
-    /// Configuration for turn detection. Can be set to `null` to turn off. Server
-    /// VAD means that the model will detect the start and end of speech based on
-    /// audio volume and respond at the end of user speech.
-    public struct TurnDetection: Codable, Hashable, Sendable {
-        /// Type of turn detection, only `server_vad` is currently supported.
-        public var type: String?
-        /// Activation threshold for VAD (0.0 to 1.0), this defaults to 0.5. A
-        /// higher threshold will require louder audio to activate the model, and
-        /// thus might perform better in noisy environments.
-        public var threshold: Double?
-        /// Amount of audio to include before the VAD detected speech (in
-        /// milliseconds). Defaults to 300ms.
-        public var prefixPaddingMs: Int?
-        /// Duration of silence to detect speech stop (in milliseconds). Defaults
-        /// to 500ms. With shorter values the model will respond more quickly,
-        /// but may jump in on short pauses from the user.
-        public var silenceDurationMs: Int?
-
-        public init(
-            type: String? = nil,
-            threshold: Double? = nil,
-            prefixPaddingMs: Int? = nil,
-            silenceDurationMs: Int? = nil
-        ) {
-            self.type = type
-            self.threshold = threshold
-            self.prefixPaddingMs = prefixPaddingMs
-            self.silenceDurationMs = silenceDurationMs
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case threshold
-            case prefixPaddingMs = "prefix_padding_ms"
-            case silenceDurationMs = "silence_duration_ms"
-        }
-    }
-}
-
-/// A Realtime transcription session configuration object.
-public struct RealtimeTranscriptionSessionCreateResponseGA: Codable, Hashable, Sendable {
-    /// The type of session. Always `transcription` for transcription sessions.
-    public var type: String = "transcription"
-    /// Unique identifier for the session that looks like `sess_1234567890abcdef`.
-    public var id: String
-    /// The object type. Always `realtime.transcription_session`.
-    public var object: String
-    /// Expiration timestamp for the session, in seconds since epoch.
-    public var expiresAt: Int?
-    /// Additional fields to include in server outputs.
-    /// - `item.input_audio_transcription.logprobs`: Include logprobs for input audio transcription.
-    public var include: [String]?
-    /// Configuration for input audio for the session.
-    public var audio: RealtimeTranscriptionSessionCreateResponseGA.Audio?
-
-    public init(
-        id: String,
-        object: String,
-        expiresAt: Int? = nil,
-        include: [String]? = nil,
-        audio: RealtimeTranscriptionSessionCreateResponseGA.Audio? = nil
-    ) {
-        self.id = id
-        self.object = object
-        self.expiresAt = expiresAt
-        self.include = include
-        self.audio = audio
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case object
-        case expiresAt = "expires_at"
-        case include
-        case audio
-    }
-
-    /// Configuration for input audio for the session.
-    public struct Audio: Codable, Hashable, Sendable {
-        public var input: RealtimeTranscriptionSessionCreateResponseGA.Audio.Input?
-
-        public init(input: RealtimeTranscriptionSessionCreateResponseGA.Audio.Input? = nil) {
-            self.input = input
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case input
-        }
-
-        public struct Input: Codable, Hashable, Sendable {
-            public var format: RealtimeAudioFormats?
-            /// Configuration of the transcription model.
-            public var transcription: AudioTranscriptionResponse?
-            /// Configuration for input audio noise reduction.
-            public var noiseReduction: RealtimeTranscriptionSessionCreateResponseGA.Audio.Input.NoiseReduction?
-            /// Configuration for turn detection. For `gpt-realtime-whisper`, this must be `null`; VAD is not supported.
-            public var turnDetection: RealtimeTranscriptionSessionCreateResponseGA.Audio.Input.TurnDetection?
-
-            public init(
-                format: RealtimeAudioFormats? = nil,
-                transcription: AudioTranscriptionResponse? = nil,
-                noiseReduction: RealtimeTranscriptionSessionCreateResponseGA.Audio.Input.NoiseReduction? = nil,
-                turnDetection: RealtimeTranscriptionSessionCreateResponseGA.Audio.Input.TurnDetection? = nil
-            ) {
-                self.format = format
-                self.transcription = transcription
-                self.noiseReduction = noiseReduction
-                self.turnDetection = turnDetection
-            }
-
-            private enum CodingKeys: String, CodingKey {
-                case format
-                case transcription
-                case noiseReduction = "noise_reduction"
-                case turnDetection = "turn_detection"
-            }
-
-            /// Configuration for input audio noise reduction.
-            public struct NoiseReduction: Codable, Hashable, Sendable {
-                public var type: NoiseReductionType?
-                public var strength: RealtimeNoiseReductionStrength?
-
-                public init(type: NoiseReductionType? = nil, strength: RealtimeNoiseReductionStrength? = nil) {
-                    self.type = type
-                    self.strength = strength
+                public init(from decoder: any Decoder) throws {
+                    let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                    self.type = try container.decodeIfPresent(NoiseReductionType.self, forKey: "type")
+                    self.strength = try container.decodeIfPresent(RealtimeNoiseReductionStrength.self, forKey: "strength")
                 }
 
-                private enum CodingKeys: String, CodingKey {
-                    case type
-                    case strength
+                public func encode(to encoder: any Encoder) throws {
+                    var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                    try container.encodeIfPresent(self.type, forKey: "type")
+                    try container.encodeIfPresent(self.strength, forKey: "strength")
                 }
-            }
-
-            /// Configuration for turn detection. Can be set to `null` to turn off. Server
-            /// VAD means that the model will detect the start and end of speech based on
-            /// audio volume and respond at the end of user speech. For `gpt-realtime-whisper`, this must be `null`; VAD is not supported.
-            public struct TurnDetection: Codable, Hashable, Sendable {
-                /// Type of turn detection, only `server_vad` is currently supported.
-                public var type: String?
-                /// Activation threshold for VAD (0.0 to 1.0), this defaults to 0.5. A
-                /// higher threshold will require louder audio to activate the model, and
-                /// thus might perform better in noisy environments.
-                public var threshold: Double?
-                /// Amount of audio to include before the VAD detected speech (in
-                /// milliseconds). Defaults to 300ms.
-                public var prefixPaddingMs: Int?
-                /// Duration of silence to detect speech stop (in milliseconds). Defaults
-                /// to 500ms. With shorter values the model will respond more quickly,
-                /// but may jump in on short pauses from the user.
-                public var silenceDurationMs: Int?
-
-                public init(
-                    type: String? = nil,
-                    threshold: Double? = nil,
-                    prefixPaddingMs: Int? = nil,
-                    silenceDurationMs: Int? = nil
-                ) {
-                    self.type = type
-                    self.threshold = threshold
-                    self.prefixPaddingMs = prefixPaddingMs
-                    self.silenceDurationMs = silenceDurationMs
-                }
-
-                private enum CodingKeys: String, CodingKey {
-                    case type
-                    case threshold
-                    case prefixPaddingMs = "prefix_padding_ms"
-                    case silenceDurationMs = "silence_duration_ms"
-                }
-            }
-        }
-    }
-}
-
-/// A Realtime translation client event.
-///
-/// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum RealtimeTranslationClientEvent: Codable, Hashable, Sendable {
-    /// `type`: `session.update`
-    case sessionUpdate(RealtimeTranslationClientEventSessionUpdate)
-    /// `type`: `session.input_audio_buffer.append`
-    case sessionInputAudioBufferAppend(RealtimeTranslationClientEventInputAudioBufferAppend)
-    /// `type`: `session.close`
-    case sessionClose(RealtimeTranslationClientEventSessionClose)
-    /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
-    case unknown(JSONValue)
-
-    public init(from decoder: any Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        if let keyed = try? decoder.container(keyedBy: OpenAIDynamicCodingKey.self),
-           let discriminator = try? keyed.decode(String.self, forKey: OpenAIDynamicCodingKey("type")) {
-            switch discriminator {
-            case "session.update":
-                self = .sessionUpdate(try container.decode(RealtimeTranslationClientEventSessionUpdate.self))
-                return
-            case "session.input_audio_buffer.append":
-                self = .sessionInputAudioBufferAppend(try container.decode(RealtimeTranslationClientEventInputAudioBufferAppend.self))
-                return
-            case "session.close":
-                self = .sessionClose(try container.decode(RealtimeTranslationClientEventSessionClose.self))
-                return
-            default:
-                break
-            }
-        }
-        self = .unknown(try container.decode(JSONValue.self))
-    }
-
-    public func encode(to encoder: any Encoder) throws {
-        var container = encoder.singleValueContainer()
-        switch self {
-        case .sessionUpdate(let value):
-            try container.encode(value)
-        case .sessionInputAudioBufferAppend(let value):
-            try container.encode(value)
-        case .sessionClose(let value):
-            try container.encode(value)
-        case .unknown(let value):
-            try container.encode(value)
-        }
-    }
-}
-
-/// Send this event to append audio bytes to the translation session input audio buffer.
-///
-/// WebSocket translation sessions accept base64-encoded 24 kHz PCM16 mono
-/// little-endian raw audio bytes. Unsupported websocket audio formats return a
-/// validation error because lower-quality audio materially degrades translation
-/// quality.
-///
-/// Translation consumes 200 ms engine frames. For best realtime behavior, append
-/// audio in 200 ms chunks. If a chunk is shorter, the server buffers it until it
-/// has enough audio for one frame. If a chunk is longer, the server splits it into
-/// 200 ms frames and enqueues them back-to-back.
-///
-/// Keep appending silence while the session is active. If a client stops sending
-/// audio and later resumes, model time treats the resumed audio as contiguous with
-/// the previous audio rather than as a real-world pause.
-public struct RealtimeTranslationClientEventInputAudioBufferAppend: Codable, Hashable, Sendable {
-    /// Optional client-generated ID used to identify this event.
-    public var eventID: String?
-    /// The event type, must be `session.input_audio_buffer.append`.
-    public var type: String = "session.input_audio_buffer.append"
-    /// Base64-encoded 24 kHz PCM16 mono audio bytes.
-    public var audio: String
-
-    public init(audio: String, eventID: String? = nil) {
-        self.audio = audio
-        self.eventID = eventID
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case type
-        case audio
-    }
-}
-
-/// Gracefully close the realtime translation session. The server flushes pending
-/// input audio and emits any remaining translated output before closing the
-/// session.
-public struct RealtimeTranslationClientEventSessionClose: Codable, Hashable, Sendable {
-    /// Optional client-generated ID used to identify this event.
-    public var eventID: String?
-    /// The event type, must be `session.close`.
-    public var type: String = "session.close"
-
-    public init(eventID: String? = nil) {
-        self.eventID = eventID
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case type
-    }
-}
-
-/// Send this event to update the translation session configuration. Translation
-/// sessions support updates to `audio.output.language`, `audio.input.transcription`,
-/// and `audio.input.noise_reduction`.
-public struct RealtimeTranslationClientEventSessionUpdate: Codable, Hashable, Sendable {
-    /// Optional client-generated ID used to identify this event.
-    public var eventID: String?
-    /// The event type, must be `session.update`.
-    public var type: String = "session.update"
-    /// Translation session fields to update. The session `type` and `model` are set
-    /// at creation and cannot be changed with `session.update`.
-    public var session: RealtimeTranslationSessionUpdateRequest
-
-    public init(session: RealtimeTranslationSessionUpdateRequest, eventID: String? = nil) {
-        self.session = session
-        self.eventID = eventID
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case type
-        case session
-    }
-}
-
-/// Create a translation session and client secret for the Realtime API.
-public struct RealtimeTranslationClientSecretCreateRequest: Codable, Hashable, Sendable {
-    /// Configuration for the client secret expiration. Expiration refers to the time after which
-    /// a client secret will no longer be valid for creating sessions. The session itself may
-    /// continue after that time once started. A secret can be used to create multiple sessions
-    /// until it expires.
-    public var expiresAfter: RealtimeTranslationClientSecretCreateRequest.ExpiresAfter?
-    public var session: RealtimeTranslationSessionCreateRequest
-
-    public init(session: RealtimeTranslationSessionCreateRequest, expiresAfter: RealtimeTranslationClientSecretCreateRequest.ExpiresAfter? = nil) {
-        self.session = session
-        self.expiresAfter = expiresAfter
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case expiresAfter = "expires_after"
-        case session
-    }
-
-    /// Configuration for the client secret expiration. Expiration refers to the time after which
-    /// a client secret will no longer be valid for creating sessions. The session itself may
-    /// continue after that time once started. A secret can be used to create multiple sessions
-    /// until it expires.
-    public struct ExpiresAfter: Codable, Hashable, Sendable {
-        /// The anchor point for the client secret expiration, meaning that `seconds` will be added to the `created_at` time of the client secret to produce an expiration timestamp. Only `created_at` is currently supported.
-        public var anchor: String? = "created_at"
-        /// The number of seconds from the anchor point to the expiration. Select a value between `10` and `7200` (2 hours). This default to 600 seconds (10 minutes) if not specified.
-        public var seconds: Int64?
-
-        public init(seconds: Int64? = nil) {
-            self.seconds = seconds
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case anchor
-            case seconds
-        }
-    }
-}
-
-/// Response from creating a translation session and client secret for the Realtime API.
-public struct RealtimeTranslationClientSecretCreateResponse: Codable, Hashable, Sendable {
-    /// The generated client secret value.
-    public var value: String
-    /// Expiration timestamp for the client secret, in seconds since epoch.
-    public var expiresAt: Int
-    public var session: RealtimeTranslationSession
-
-    public init(
-        value: String,
-        expiresAt: Int,
-        session: RealtimeTranslationSession
-    ) {
-        self.value = value
-        self.expiresAt = expiresAt
-        self.session = session
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case value
-        case expiresAt = "expires_at"
-        case session
-    }
-}
-
-public struct RealtimeTranslationConnectParams: Codable, Hashable, Sendable {
-    public var model: String
-
-    public init(model: String) {
-        self.model = model
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case model
-    }
-}
-
-/// A Realtime translation server event.
-///
-/// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum RealtimeTranslationServerEvent: Codable, Hashable, Sendable {
-    /// `type`: `error`
-    case error(RealtimeServerEventError)
-    /// `type`: `session.created`
-    case sessionCreated(RealtimeTranslationServerEventSessionCreated)
-    /// `type`: `session.updated`
-    case sessionUpdated(RealtimeTranslationServerEventSessionUpdated)
-    /// `type`: `session.closed`
-    case sessionClosed(RealtimeTranslationServerEventSessionClosed)
-    /// `type`: `session.input_transcript.delta`
-    case sessionInputTranscriptDelta(RealtimeTranslationServerEventSessionInputTranscriptDelta)
-    /// `type`: `session.output_transcript.delta`
-    case sessionOutputTranscriptDelta(RealtimeTranslationServerEventSessionOutputTranscriptDelta)
-    /// `type`: `session.output_audio.delta`
-    case sessionOutputAudioDelta(RealtimeTranslationServerEventSessionOutputAudioDelta)
-    /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
-    case unknown(JSONValue)
-
-    public init(from decoder: any Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        if let keyed = try? decoder.container(keyedBy: OpenAIDynamicCodingKey.self),
-           let discriminator = try? keyed.decode(String.self, forKey: OpenAIDynamicCodingKey("type")) {
-            switch discriminator {
-            case "error":
-                self = .error(try container.decode(RealtimeServerEventError.self))
-                return
-            case "session.created":
-                self = .sessionCreated(try container.decode(RealtimeTranslationServerEventSessionCreated.self))
-                return
-            case "session.updated":
-                self = .sessionUpdated(try container.decode(RealtimeTranslationServerEventSessionUpdated.self))
-                return
-            case "session.closed":
-                self = .sessionClosed(try container.decode(RealtimeTranslationServerEventSessionClosed.self))
-                return
-            case "session.input_transcript.delta":
-                self = .sessionInputTranscriptDelta(try container.decode(RealtimeTranslationServerEventSessionInputTranscriptDelta.self))
-                return
-            case "session.output_transcript.delta":
-                self = .sessionOutputTranscriptDelta(try container.decode(RealtimeTranslationServerEventSessionOutputTranscriptDelta.self))
-                return
-            case "session.output_audio.delta":
-                self = .sessionOutputAudioDelta(try container.decode(RealtimeTranslationServerEventSessionOutputAudioDelta.self))
-                return
-            default:
-                break
-            }
-        }
-        self = .unknown(try container.decode(JSONValue.self))
-    }
-
-    public func encode(to encoder: any Encoder) throws {
-        var container = encoder.singleValueContainer()
-        switch self {
-        case .error(let value):
-            try container.encode(value)
-        case .sessionCreated(let value):
-            try container.encode(value)
-        case .sessionUpdated(let value):
-            try container.encode(value)
-        case .sessionClosed(let value):
-            try container.encode(value)
-        case .sessionInputTranscriptDelta(let value):
-            try container.encode(value)
-        case .sessionOutputTranscriptDelta(let value):
-            try container.encode(value)
-        case .sessionOutputAudioDelta(let value):
-            try container.encode(value)
-        case .unknown(let value):
-            try container.encode(value)
-        }
-    }
-}
-
-/// Returned when a realtime translation session is closed.
-public struct RealtimeTranslationServerEventSessionClosed: Codable, Hashable, Sendable {
-    /// The unique ID of the server event.
-    public var eventID: String
-    /// The event type, must be `session.closed`.
-    public var type: String = "session.closed"
-
-    public init(eventID: String) {
-        self.eventID = eventID
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case type
-    }
-}
-
-/// Returned when a translation session is created. Emitted automatically when a
-/// new connection is established as the first server event. This event contains
-/// the default translation session configuration.
-public struct RealtimeTranslationServerEventSessionCreated: Codable, Hashable, Sendable {
-    /// The unique ID of the server event.
-    public var eventID: String
-    /// The event type, must be `session.created`.
-    public var type: String = "session.created"
-    /// The translation session configuration.
-    public var session: RealtimeTranslationSession
-
-    public init(eventID: String, session: RealtimeTranslationSession) {
-        self.eventID = eventID
-        self.session = session
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case type
-        case session
-    }
-}
-
-/// Returned when optional source-language transcript text is available. This event
-/// is emitted only when `audio.input.transcription` is configured.
-///
-/// Transcript deltas are append-only text fragments. Clients should not insert
-/// unconditional spaces between deltas.
-public struct RealtimeTranslationServerEventSessionInputTranscriptDelta: Codable, Hashable, Sendable {
-    /// The unique ID of the server event.
-    public var eventID: String
-    /// The event type, must be `session.input_transcript.delta`.
-    public var type: String = "session.input_transcript.delta"
-    /// Append-only source-language transcript text.
-    public var delta: String
-    public var elapsedMs: Int?
-
-    public init(
-        eventID: String,
-        delta: String,
-        elapsedMs: Int? = nil
-    ) {
-        self.eventID = eventID
-        self.delta = delta
-        self.elapsedMs = elapsedMs
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case type
-        case delta
-        case elapsedMs = "elapsed_ms"
-    }
-}
-
-/// Returned when translated output audio is available. The `delta` contains a
-/// PCM16 audio chunk whose length can vary. Clients should decode and queue the
-/// complete delta instead of assuming a fixed byte or sample count.
-public struct RealtimeTranslationServerEventSessionOutputAudioDelta: Codable, Hashable, Sendable {
-    /// The unique ID of the server event.
-    public var eventID: String
-    /// The event type, must be `session.output_audio.delta`.
-    public var type: String = "session.output_audio.delta"
-    /// Base64-encoded translated audio data.
-    public var delta: String
-    /// Sample rate of the audio delta.
-    public var sampleRate: Int?
-    /// Number of audio channels.
-    public var channels: Int?
-    /// Audio encoding for `delta`.
-    public var format: String? = "pcm16"
-    public var elapsedMs: Int?
-
-    public init(
-        eventID: String,
-        delta: String,
-        sampleRate: Int? = nil,
-        channels: Int? = nil,
-        elapsedMs: Int? = nil
-    ) {
-        self.eventID = eventID
-        self.delta = delta
-        self.sampleRate = sampleRate
-        self.channels = channels
-        self.elapsedMs = elapsedMs
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case type
-        case delta
-        case sampleRate = "sample_rate"
-        case channels
-        case format
-        case elapsedMs = "elapsed_ms"
-    }
-}
-
-/// Returned when translated transcript text is available.
-///
-/// Transcript deltas are append-only text fragments. Clients should not insert
-/// unconditional spaces between deltas.
-public struct RealtimeTranslationServerEventSessionOutputTranscriptDelta: Codable, Hashable, Sendable {
-    /// The unique ID of the server event.
-    public var eventID: String
-    /// The event type, must be `session.output_transcript.delta`.
-    public var type: String = "session.output_transcript.delta"
-    /// Append-only transcript text for the translated output audio.
-    public var delta: String
-    public var elapsedMs: Int?
-
-    public init(
-        eventID: String,
-        delta: String,
-        elapsedMs: Int? = nil
-    ) {
-        self.eventID = eventID
-        self.delta = delta
-        self.elapsedMs = elapsedMs
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case type
-        case delta
-        case elapsedMs = "elapsed_ms"
-    }
-}
-
-/// Returned when a translation session is updated with a `session.update` event,
-/// unless there is an error.
-public struct RealtimeTranslationServerEventSessionUpdated: Codable, Hashable, Sendable {
-    /// The unique ID of the server event.
-    public var eventID: String
-    /// The event type, must be `session.updated`.
-    public var type: String = "session.updated"
-    /// The translation session configuration.
-    public var session: RealtimeTranslationSession
-
-    public init(eventID: String, session: RealtimeTranslationSession) {
-        self.eventID = eventID
-        self.session = session
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "event_id"
-        case type
-        case session
-    }
-}
-
-/// A Realtime translation session. Translation sessions continuously translate input
-/// audio into the configured output language.
-public struct RealtimeTranslationSession: Codable, Hashable, Sendable {
-    /// Unique identifier for the session that looks like `sess_1234567890abcdef`.
-    public var id: String
-    /// The session type. Always `translation` for Realtime translation sessions.
-    public var type: String = "translation"
-    /// Expiration timestamp for the session, in seconds since epoch.
-    public var expiresAt: Int
-    /// The Realtime translation model used for this session. This field is set at
-    /// session creation and cannot be changed with `session.update`.
-    public var model: String
-    /// Configuration for translation input and output audio.
-    public var audio: RealtimeTranslationSession.Audio
-
-    public init(
-        model: String,
-        id: String,
-        expiresAt: Int,
-        audio: RealtimeTranslationSession.Audio
-    ) {
-        self.model = model
-        self.id = id
-        self.expiresAt = expiresAt
-        self.audio = audio
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case type
-        case expiresAt = "expires_at"
-        case model
-        case audio
-    }
-
-    /// Configuration for translation input and output audio.
-    public struct Audio: Codable, Hashable, Sendable {
-        public var input: RealtimeTranslationSession.Audio.Input?
-        public var output: RealtimeTranslationSession.Audio.Output?
-
-        public init(input: RealtimeTranslationSession.Audio.Input? = nil, output: RealtimeTranslationSession.Audio.Output? = nil) {
-            self.input = input
-            self.output = output
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case input
-            case output
-        }
-
-        public struct Input: Codable, Hashable, Sendable {
-            public var transcription: RealtimeTranslationSession.Audio.Input.Transcription?
-            public var noiseReduction: RealtimeTranslationSession.Audio.Input.NoiseReduction?
-
-            public init(transcription: RealtimeTranslationSession.Audio.Input.Transcription? = nil, noiseReduction: RealtimeTranslationSession.Audio.Input.NoiseReduction? = nil) {
-                self.transcription = transcription
-                self.noiseReduction = noiseReduction
-            }
-
-            private enum CodingKeys: String, CodingKey {
-                case transcription
-                case noiseReduction = "noise_reduction"
-            }
-
-            /// Optional source-language transcription. When configured, the server emits
-            /// `session.input_transcript.delta` events. Translation itself still runs from
-            /// the input audio stream.
-            public struct Transcription: Codable, Hashable, Sendable {
-                /// The transcription model used for source transcript deltas.
-                public var model: String
-
-                public init(model: String) {
-                    self.model = model
-                }
-
-                private enum CodingKeys: String, CodingKey {
-                    case model
-                }
-            }
-
-            /// Optional input noise reduction.
-            public struct NoiseReduction: Codable, Hashable, Sendable {
-                public var type: NoiseReductionType
-                public var strength: RealtimeNoiseReductionStrength?
-
-                public init(type: NoiseReductionType, strength: RealtimeNoiseReductionStrength? = nil) {
-                    self.type = type
-                    self.strength = strength
-                }
-
-                private enum CodingKeys: String, CodingKey {
-                    case type
-                    case strength
-                }
-            }
-        }
-
-        public struct Output: Codable, Hashable, Sendable {
-            /// Target language for translated output audio and transcript deltas.
-            public var language: String?
-
-            public init(language: String? = nil) {
-                self.language = language
-            }
-
-            private enum CodingKeys: String, CodingKey {
-                case language
-            }
-        }
-    }
-}
-
-/// Realtime translation session configuration. Translation sessions stream source
-/// audio in and translated audio plus transcript deltas out continuously.
-public struct RealtimeTranslationSessionCreateRequest: Codable, Hashable, Sendable {
-    /// The Realtime translation model used for this session.
-    public var model: String
-    /// Configuration for translation input and output audio.
-    public var audio: RealtimeTranslationSessionCreateRequest.Audio?
-
-    public init(model: String, audio: RealtimeTranslationSessionCreateRequest.Audio? = nil) {
-        self.model = model
-        self.audio = audio
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case model
-        case audio
-    }
-
-    /// Configuration for translation input and output audio.
-    public struct Audio: Codable, Hashable, Sendable {
-        public var input: RealtimeTranslationSessionCreateRequest.Audio.Input?
-        public var output: RealtimeTranslationSessionCreateRequest.Audio.Output?
-
-        public init(input: RealtimeTranslationSessionCreateRequest.Audio.Input? = nil, output: RealtimeTranslationSessionCreateRequest.Audio.Output? = nil) {
-            self.input = input
-            self.output = output
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case input
-            case output
-        }
-
-        public struct Input: Codable, Hashable, Sendable {
-            public var transcription: RealtimeTranslationSessionCreateRequest.Audio.Input.Transcription?
-            public var noiseReduction: RealtimeTranslationSessionCreateRequest.Audio.Input.NoiseReduction?
-
-            public init(transcription: RealtimeTranslationSessionCreateRequest.Audio.Input.Transcription? = nil, noiseReduction: RealtimeTranslationSessionCreateRequest.Audio.Input.NoiseReduction? = nil) {
-                self.transcription = transcription
-                self.noiseReduction = noiseReduction
-            }
-
-            private enum CodingKeys: String, CodingKey {
-                case transcription
-                case noiseReduction = "noise_reduction"
-            }
-
-            /// Optional source-language transcription. When configured, the server emits
-            /// `session.input_transcript.delta` events. Translation itself still runs from
-            /// the input audio stream.
-            public struct Transcription: Codable, Hashable, Sendable {
-                /// The transcription model to use for source transcript deltas.
-                public var model: String
-
-                public init(model: String) {
-                    self.model = model
-                }
-
-                private enum CodingKeys: String, CodingKey {
-                    case model
-                }
-            }
-
-            /// Optional input noise reduction. Set to `null` to disable it.
-            public struct NoiseReduction: Codable, Hashable, Sendable {
-                public var type: NoiseReductionType
-                public var strength: RealtimeNoiseReductionStrength?
-
-                public init(type: NoiseReductionType, strength: RealtimeNoiseReductionStrength? = nil) {
-                    self.type = type
-                    self.strength = strength
-                }
-
-                private enum CodingKeys: String, CodingKey {
-                    case type
-                    case strength
-                }
-            }
-        }
-
-        public struct Output: Codable, Hashable, Sendable {
-            /// Target language for translated output audio and transcript deltas.
-            public var language: String?
-
-            public init(language: String? = nil) {
-                self.language = language
-            }
-
-            private enum CodingKeys: String, CodingKey {
-                case language
-            }
-        }
-    }
-}
-
-/// Realtime translation session fields that can be updated with `session.update`.
-public struct RealtimeTranslationSessionUpdateRequest: Codable, Hashable, Sendable {
-    /// Configuration for translation input and output audio.
-    public var audio: RealtimeTranslationSessionUpdateRequest.Audio?
-
-    public init(audio: RealtimeTranslationSessionUpdateRequest.Audio? = nil) {
-        self.audio = audio
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case audio
-    }
-
-    /// Configuration for translation input and output audio.
-    public struct Audio: Codable, Hashable, Sendable {
-        public var input: RealtimeTranslationSessionUpdateRequest.Audio.Input?
-        public var output: RealtimeTranslationSessionUpdateRequest.Audio.Output?
-
-        public init(input: RealtimeTranslationSessionUpdateRequest.Audio.Input? = nil, output: RealtimeTranslationSessionUpdateRequest.Audio.Output? = nil) {
-            self.input = input
-            self.output = output
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case input
-            case output
-        }
-
-        public struct Input: Codable, Hashable, Sendable {
-            public var transcription: RealtimeTranslationSessionUpdateRequest.Audio.Input.Transcription?
-            public var noiseReduction: RealtimeTranslationSessionUpdateRequest.Audio.Input.NoiseReduction?
-
-            public init(transcription: RealtimeTranslationSessionUpdateRequest.Audio.Input.Transcription? = nil, noiseReduction: RealtimeTranslationSessionUpdateRequest.Audio.Input.NoiseReduction? = nil) {
-                self.transcription = transcription
-                self.noiseReduction = noiseReduction
-            }
-
-            private enum CodingKeys: String, CodingKey {
-                case transcription
-                case noiseReduction = "noise_reduction"
-            }
-
-            /// Optional source-language transcription. When configured, the server emits
-            /// `session.input_transcript.delta` events. Translation itself still runs from
-            /// the input audio stream.
-            public struct Transcription: Codable, Hashable, Sendable {
-                /// The transcription model to use for source transcript deltas.
-                public var model: String
-
-                public init(model: String) {
-                    self.model = model
-                }
-
-                private enum CodingKeys: String, CodingKey {
-                    case model
-                }
-            }
-
-            /// Optional input noise reduction. Set to `null` to disable it.
-            public struct NoiseReduction: Codable, Hashable, Sendable {
-                public var type: NoiseReductionType
-                public var strength: RealtimeNoiseReductionStrength?
-
-                public init(type: NoiseReductionType, strength: RealtimeNoiseReductionStrength? = nil) {
-                    self.type = type
-                    self.strength = strength
-                }
-
-                private enum CodingKeys: String, CodingKey {
-                    case type
-                    case strength
-                }
-            }
-        }
-
-        public struct Output: Codable, Hashable, Sendable {
-            /// Target language for translated output audio and transcript deltas.
-            public var language: String?
-
-            public init(language: String? = nil) {
-                self.language = language
-            }
-
-            private enum CodingKeys: String, CodingKey {
-                case language
-            }
-        }
-    }
-}
-
-/// When the number of tokens in a conversation exceeds the model's input token limit, the conversation be truncated, meaning messages (starting from the oldest) will not be included in the model's context. A 32k context model with 4,096 max output tokens can only include 28,224 tokens in the context before truncation occurs.
-///
-/// Clients can configure truncation behavior to truncate with a lower max token limit, which is an effective way to control token usage and cost.
-///
-/// Truncation will reduce the number of cached tokens on the next turn (busting the cache), since messages are dropped from the beginning of the context. However, clients can also configure truncation to retain messages up to a fraction of the maximum context size, which will reduce the need for future truncations and thus improve the cache rate.
-///
-/// Truncation can be disabled entirely, which means the server will never truncate but would instead return an error if the conversation exceeds the model's input token limit.
-public indirect enum RealtimeTruncation: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
-    /// The truncation strategy to use for the session. `auto` is the default truncation strategy. `disabled` will disable truncation and emit errors when the conversation exceeds the input token limit.
-    case string(RealtimeTruncation.StringValue)
-    /// Retain a fraction of the conversation tokens when the conversation exceeds the input token limit. This allows you to amortize truncations across multiple turns, which can help improve cached token usage.
-    case retentionRatioTruncation(RealtimeTruncation.RetentionRatioTruncation)
-    /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
-    case unknown(JSONValue)
-
-    public init(stringLiteral value: String) {
-        self = .string(RealtimeTruncation.StringValue(rawValue: value))
-    }
-
-    public init(from decoder: any Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        if let value = try? container.decode(RealtimeTruncation.StringValue.self) {
-            self = .string(value)
-            return
-        }
-        if let value = try? container.decode(RealtimeTruncation.RetentionRatioTruncation.self) {
-            self = .retentionRatioTruncation(value)
-            return
-        }
-        self = .unknown(try container.decode(JSONValue.self))
-    }
-
-    public func encode(to encoder: any Encoder) throws {
-        var container = encoder.singleValueContainer()
-        switch self {
-        case .string(let value):
-            try container.encode(value)
-        case .retentionRatioTruncation(let value):
-            try container.encode(value)
-        case .unknown(let value):
-            try container.encode(value)
-        }
-    }
-
-    /// The truncation strategy to use for the session. `auto` is the default truncation strategy. `disabled` will disable truncation and emit errors when the conversation exceeds the input token limit.
-    ///
-    /// This type is open: it accepts values the spec does not list yet.
-    public struct StringValue: OpenAIStringEnum {
-        public let rawValue: String
-
-        public init(rawValue: String) {
-            self.rawValue = rawValue
-        }
-
-        public static let auto: Self = "auto"
-        public static let disabled: Self = "disabled"
-
-        public static var knownValues: [Self] {
-            [.auto, .disabled]
-        }
-    }
-
-    /// Retain a fraction of the conversation tokens when the conversation exceeds the input token limit. This allows you to amortize truncations across multiple turns, which can help improve cached token usage.
-    public struct RetentionRatioTruncation: Codable, Hashable, Sendable {
-        /// Use retention ratio truncation.
-        public var type: String = "retention_ratio"
-        /// Fraction of post-instruction conversation tokens to retain (`0.0` - `1.0`) when the conversation exceeds the input token limit. Setting this to `0.8` means that messages will be dropped until 80% of the maximum allowed tokens are used. This helps reduce the frequency of truncations and improve cache rates.
-        public var retentionRatio: Double
-        /// Optional custom token limits for this truncation strategy. If not provided, the model's default token limits will be used.
-        public var tokenLimits: RealtimeTruncation.RetentionRatioTruncation.TokenLimits?
-
-        public init(retentionRatio: Double, tokenLimits: RealtimeTruncation.RetentionRatioTruncation.TokenLimits? = nil) {
-            self.retentionRatio = retentionRatio
-            self.tokenLimits = tokenLimits
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case retentionRatio = "retention_ratio"
-            case tokenLimits = "token_limits"
-        }
-
-        /// Optional custom token limits for this truncation strategy. If not provided, the model's default token limits will be used.
-        public struct TokenLimits: Codable, Hashable, Sendable {
-            /// Maximum tokens allowed in the conversation after instructions (which including tool definitions). For example, setting this to 5,000 would mean that truncation would occur when the conversation exceeds 5,000 tokens after instructions. This cannot be higher than the model's context window size minus the maximum output tokens.
-            public var postInstructions: Int?
-
-            public init(postInstructions: Int? = nil) {
-                self.postInstructions = postInstructions
-            }
-
-            private enum CodingKeys: String, CodingKey {
-                case postInstructions = "post_instructions"
-            }
-        }
-    }
-}
-
-/// Configuration for turn detection, ether Server VAD or Semantic VAD. This can be set to `null` to turn off, in which case the client must manually trigger model response.
-///
-/// Server VAD means that the model will detect the start and end of speech based on audio volume and respond at the end of user speech.
-///
-/// Semantic VAD is more advanced and uses a turn detection model (in conjunction with VAD) to semantically estimate whether the user has finished speaking, then dynamically sets a timeout based on this probability. For example, if user audio trails off with "uhhm", the model will score a low probability of turn end and wait longer for the user to continue speaking. This can be useful for more natural conversations, but may have a higher latency.
-///
-/// For `gpt-realtime-whisper` transcription sessions, turn detection must be
-/// set to `null`; VAD is not supported.
-///
-/// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum RealtimeTurnDetection: Codable, Hashable, Sendable {
-    /// Server-side voice activity detection (VAD) which flips on when user speech is detected and off after a period of silence.
-    ///
-    /// `type`: `server_vad`
-    case serverVad(RealtimeTurnDetection.ServerVAD)
-    /// Server-side semantic turn detection which uses a model to determine when the user has finished speaking.
-    ///
-    /// `type`: `semantic_vad`
-    case semanticVad(RealtimeTurnDetection.SemanticVAD)
-    /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
-    case unknown(JSONValue)
-
-    public init(from decoder: any Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        if let keyed = try? decoder.container(keyedBy: OpenAIDynamicCodingKey.self),
-           let discriminator = try? keyed.decode(String.self, forKey: OpenAIDynamicCodingKey("type")) {
-            switch discriminator {
-            case "server_vad":
-                self = .serverVad(try container.decode(RealtimeTurnDetection.ServerVAD.self))
-                return
-            case "semantic_vad":
-                self = .semanticVad(try container.decode(RealtimeTurnDetection.SemanticVAD.self))
-                return
-            default:
-                break
-            }
-        }
-        self = .unknown(try container.decode(JSONValue.self))
-    }
-
-    public func encode(to encoder: any Encoder) throws {
-        var container = encoder.singleValueContainer()
-        switch self {
-        case .serverVad(let value):
-            try container.encode(value)
-        case .semanticVad(let value):
-            try container.encode(value)
-        case .unknown(let value):
-            try container.encode(value)
-        }
-    }
-
-    /// Server-side voice activity detection (VAD) which flips on when user speech is detected and off after a period of silence.
-    public struct ServerVAD: Codable, Hashable, Sendable {
-        /// Type of turn detection, `server_vad` to turn on simple Server VAD.
-        public var type: String = "server_vad"
-        /// Used only for `server_vad` mode. Activation threshold for VAD (0.0 to 1.0), this defaults to 0.5. A
-        /// higher threshold will require louder audio to activate the model, and
-        /// thus might perform better in noisy environments.
-        public var threshold: Double?
-        /// Used only for `server_vad` mode. Amount of audio to include before the VAD detected speech (in
-        /// milliseconds). Defaults to 300ms.
-        public var prefixPaddingMs: Int?
-        /// Used only for `server_vad` mode. Duration of silence to detect speech stop (in milliseconds). Defaults
-        /// to 500ms. With shorter values the model will respond more quickly,
-        /// but may jump in on short pauses from the user.
-        public var silenceDurationMs: Int?
-        /// Whether or not to automatically generate a response when a VAD stop event occurs. If `interrupt_response` is set to `false` this may fail to create a response if the model is already responding.
-        ///
-        /// If both `create_response` and `interrupt_response` are set to `false`, the model will never respond automatically but VAD events will still be emitted.
-        public var createResponse: Bool?
-        /// Whether or not to automatically interrupt (cancel) any ongoing response with output to the default
-        /// conversation (i.e. `conversation` of `auto`) when a VAD start event occurs. If `true` then the response will be cancelled, otherwise it will continue until complete.
-        ///
-        /// If both `create_response` and `interrupt_response` are set to `false`, the model will never respond automatically but VAD events will still be emitted.
-        public var interruptResponse: Bool?
-        public var idleTimeoutMs: Int?
-
-        public init(
-            threshold: Double? = nil,
-            prefixPaddingMs: Int? = nil,
-            silenceDurationMs: Int? = nil,
-            createResponse: Bool? = nil,
-            interruptResponse: Bool? = nil,
-            idleTimeoutMs: Int? = nil
-        ) {
-            self.threshold = threshold
-            self.prefixPaddingMs = prefixPaddingMs
-            self.silenceDurationMs = silenceDurationMs
-            self.createResponse = createResponse
-            self.interruptResponse = interruptResponse
-            self.idleTimeoutMs = idleTimeoutMs
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case threshold
-            case prefixPaddingMs = "prefix_padding_ms"
-            case silenceDurationMs = "silence_duration_ms"
-            case createResponse = "create_response"
-            case interruptResponse = "interrupt_response"
-            case idleTimeoutMs = "idle_timeout_ms"
-        }
-    }
-
-    /// Server-side semantic turn detection which uses a model to determine when the user has finished speaking.
-    public struct SemanticVAD: Codable, Hashable, Sendable {
-        /// Type of turn detection, `semantic_vad` to turn on Semantic VAD.
-        public var type: String = "semantic_vad"
-        /// Used only for `semantic_vad` mode. The eagerness of the model to respond. `low` will wait longer for the user to continue speaking, `high` will respond more quickly. `auto` is the default and is equivalent to `medium`. `low`, `medium`, and `high` have max timeouts of 8s, 4s, and 2s respectively.
-        public var eagerness: RealtimeTurnDetection.SemanticVAD.Eagerness?
-        /// Whether or not to automatically generate a response when a VAD stop event occurs.
-        public var createResponse: Bool?
-        /// Whether or not to automatically interrupt any ongoing response with output to the default
-        /// conversation (i.e. `conversation` of `auto`) when a VAD start event occurs.
-        public var interruptResponse: Bool?
-
-        public init(
-            eagerness: RealtimeTurnDetection.SemanticVAD.Eagerness? = nil,
-            createResponse: Bool? = nil,
-            interruptResponse: Bool? = nil
-        ) {
-            self.eagerness = eagerness
-            self.createResponse = createResponse
-            self.interruptResponse = interruptResponse
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case eagerness
-            case createResponse = "create_response"
-            case interruptResponse = "interrupt_response"
-        }
-
-        /// Used only for `semantic_vad` mode. The eagerness of the model to respond. `low` will wait longer for the user to continue speaking, `high` will respond more quickly. `auto` is the default and is equivalent to `medium`. `low`, `medium`, and `high` have max timeouts of 8s, 4s, and 2s respectively.
-        ///
-        /// This type is open: it accepts values the spec does not list yet.
-        public struct Eagerness: OpenAIStringEnum {
-            public let rawValue: String
-
-            public init(rawValue: String) {
-                self.rawValue = rawValue
-            }
-
-            public static let low: Self = "low"
-            public static let medium: Self = "medium"
-            public static let high: Self = "high"
-            public static let auto: Self = "auto"
-
-            public static var knownValues: [Self] {
-                [.low, .medium, .high, .auto]
             }
         }
     }

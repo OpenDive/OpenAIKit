@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct RestrictedPermissions: Codable, Hashable, Sendable {
+public struct RestrictedPermissions: OpenAIModel {
     public var type: String = "restricted"
     public var scopes: [String]
 
@@ -11,13 +11,20 @@ public struct RestrictedPermissions: Codable, Hashable, Sendable {
         self.scopes = scopes
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case scopes
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "restricted"
+        self.scopes = try container.decode([String].self, forKey: "scopes")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.scopes, forKey: "scopes")
     }
 }
 
-public struct RestrictedPermissionsParam: Codable, Hashable, Sendable {
+public struct RestrictedPermissionsParam: OpenAIModel {
     public var type: String = "restricted"
     public var scopes: [String]
 
@@ -25,8 +32,15 @@ public struct RestrictedPermissionsParam: Codable, Hashable, Sendable {
         self.scopes = scopes
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case scopes
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "restricted"
+        self.scopes = try container.decode([String].self, forKey: "scopes")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.scopes, forKey: "scopes")
     }
 }

@@ -4,7 +4,7 @@
 import Foundation
 
 /// Fields to replace on an existing reusable agent.
-public struct UpdateAgentParams: Codable, Hashable, Sendable {
+public struct UpdateAgentParams: OpenAIModel {
     /// Experimental settings to merge by key. Omitted settings keep their current values.
     public var experimental: ExperimentalConfigOverridesParam?
     /// The model to use for the agent. The requested model name is preserved.
@@ -54,23 +54,39 @@ public struct UpdateAgentParams: Codable, Hashable, Sendable {
         self.tools = tools
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case experimental
-        case model
-        case reasoning
-        case text
-        case serviceTier = "service_tier"
-        case instructions
-        case multiAgent = "multi_agent"
-        case compaction
-        case metadata
-        case name
-        case tools
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.experimental = try container.decodeIfPresent(ExperimentalConfigOverridesParam.self, forKey: "experimental")
+        self.model = try container.decodeIfPresent(String.self, forKey: "model")
+        self.reasoning = try container.decodeIfPresent(ReasoningParam.self, forKey: "reasoning")
+        self.text = try container.decodeIfPresent(TextParam.self, forKey: "text")
+        self.serviceTier = try container.decodeIfPresent(ServiceTierParam.self, forKey: "service_tier")
+        self.instructions = try container.decodeIfPresent(String.self, forKey: "instructions")
+        self.multiAgent = try container.decodeIfPresent(MultiAgentConfigCurrentParam.self, forKey: "multi_agent")
+        self.compaction = try container.decodeIfPresent(CompactionParam.self, forKey: "compaction")
+        self.metadata = try container.decodeIfPresent([String: String].self, forKey: "metadata")
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.tools = try container.decodeIfPresent([PersistedAgentToolConfigParam].self, forKey: "tools")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.experimental, forKey: "experimental")
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encodeIfPresent(self.reasoning, forKey: "reasoning")
+        try container.encodeIfPresent(self.text, forKey: "text")
+        try container.encodeIfPresent(self.serviceTier, forKey: "service_tier")
+        try container.encodeIfPresent(self.instructions, forKey: "instructions")
+        try container.encodeIfPresent(self.multiAgent, forKey: "multi_agent")
+        try container.encodeIfPresent(self.compaction, forKey: "compaction")
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encodeIfPresent(self.tools, forKey: "tools")
     }
 }
 
 /// Fields to update on an existing session.
-public struct UpdateAgentSessionParams: Codable, Hashable, Sendable {
+public struct UpdateAgentSessionParams: OpenAIModel {
     /// Default prompt cache lifetime for future turns. Send null to clear the session default.
     public var promptCacheOptions: PromptCacheOptionsParam2?
     /// Replaces the session's referenced vaults. Omit to retain them; null or [] clears them.
@@ -100,18 +116,29 @@ public struct UpdateAgentSessionParams: Codable, Hashable, Sendable {
         self.metadata = metadata
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case promptCacheOptions = "prompt_cache_options"
-        case vaultIDs = "vault_ids"
-        case review
-        case spendControl = "spend_control"
-        case agent
-        case metadata
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.promptCacheOptions = try container.decodeIfPresent(PromptCacheOptionsParam2.self, forKey: "prompt_cache_options")
+        self.vaultIDs = try container.decodeIfPresent([String].self, forKey: "vault_ids")
+        self.review = try container.decodeIfPresent(SessionReviewParam.self, forKey: "review")
+        self.spendControl = try container.decodeIfPresent(SessionBudgetControlParams.self, forKey: "spend_control")
+        self.agent = try container.decodeIfPresent(UpdateSessionAgentParam.self, forKey: "agent")
+        self.metadata = try container.decodeIfPresent([String: String].self, forKey: "metadata")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.promptCacheOptions, forKey: "prompt_cache_options")
+        try container.encodeIfPresent(self.vaultIDs, forKey: "vault_ids")
+        try container.encodeIfPresent(self.review, forKey: "review")
+        try container.encodeIfPresent(self.spendControl, forKey: "spend_control")
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
     }
 }
 
 /// Updates configuration; timing fields must match the stored automation type.
-public struct UpdateAutomationParams: Codable, Hashable, Sendable {
+public struct UpdateAutomationParams: OpenAIModel {
     public var name: String?
     /// Replaces the complete target, retaining its type and any creator session.
     public var target: AutomationTargetParam?
@@ -140,29 +167,46 @@ public struct UpdateAutomationParams: Codable, Hashable, Sendable {
         self.runAt = runAt
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case name
-        case target
-        case metadata
-        case expression
-        case timezone
-        case runAt = "run_at"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.target = try container.decodeIfPresent(AutomationTargetParam.self, forKey: "target")
+        self.metadata = try container.decodeIfPresent([String: String].self, forKey: "metadata")
+        self.expression = try container.decodeIfPresent(String.self, forKey: "expression")
+        self.timezone = try container.decodeIfPresent(String.self, forKey: "timezone")
+        self.runAt = try container.decodeIfPresent(Int64.self, forKey: "run_at")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encodeIfPresent(self.target, forKey: "target")
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
+        try container.encodeIfPresent(self.expression, forKey: "expression")
+        try container.encodeIfPresent(self.timezone, forKey: "timezone")
+        try container.encodeIfPresent(self.runAt, forKey: "run_at")
     }
 }
 
-public struct UpdateChatCompletionRequest: Codable, Hashable, Sendable {
+public struct UpdateChatCompletionRequest: OpenAIModel {
     public var metadata: Metadata?
 
     public init(metadata: Metadata? = nil) {
         self.metadata = metadata
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case metadata
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.metadata = try container.decodeIfPresent(Metadata.self, forKey: "metadata")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
     }
 }
 
-public struct UpdateConversationBody: Codable, Hashable, Sendable {
+public struct UpdateConversationBody: OpenAIModel {
     /// Set of 16 key-value pairs that can be attached to an object. This can be         useful for storing additional information about the object in a structured         format, and querying for objects via API or the dashboard.
     ///         Keys are strings with a maximum length of 64 characters. Values are strings         with a maximum length of 512 characters.
     public var metadata: Metadata?
@@ -171,13 +215,19 @@ public struct UpdateConversationBody: Codable, Hashable, Sendable {
         self.metadata = metadata
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case metadata
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.metadata = try container.decodeIfPresent(Metadata.self, forKey: "metadata")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
     }
 }
 
 /// Fields to replace on an existing reusable OpenAI-hosted environment template.
-public struct UpdateEnvironmentTemplateParams: Codable, Hashable, Sendable {
+public struct UpdateEnvironmentTemplateParams: OpenAIModel {
     /// A replacement human-readable display name, or `null` to clear the name.
     public var name: String?
     /// Packages installed before the runtime network policy applies.
@@ -223,21 +273,36 @@ public struct UpdateEnvironmentTemplateParams: Codable, Hashable, Sendable {
         self.files = files
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case name
-        case packages
-        case setupCommands = "setup_commands"
-        case network
-        case desktop
-        case env
-        case capabilityDirectories = "capability_directories"
-        case skills
-        case plugins
-        case files
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.packages = try container.decodeIfPresent(EnvironmentPackagesParam.self, forKey: "packages")
+        self.setupCommands = try container.decodeIfPresent([SetupCommandParam].self, forKey: "setup_commands")
+        self.network = try container.decodeIfPresent(NetworkPolicyParam.self, forKey: "network")
+        self.desktop = try container.decodeIfPresent(DesktopParam.self, forKey: "desktop")
+        self.env = try container.decodeIfPresent([String: String].self, forKey: "env")
+        self.capabilityDirectories = try container.decodeIfPresent([String].self, forKey: "capability_directories")
+        self.skills = try container.decodeIfPresent([HostedSkillParam].self, forKey: "skills")
+        self.plugins = try container.decodeIfPresent([HostedPluginParam].self, forKey: "plugins")
+        self.files = try container.decodeIfPresent([HostedEnvironmentFileParam].self, forKey: "files")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encodeIfPresent(self.packages, forKey: "packages")
+        try container.encodeIfPresent(self.setupCommands, forKey: "setup_commands")
+        try container.encodeIfPresent(self.network, forKey: "network")
+        try container.encodeIfPresent(self.desktop, forKey: "desktop")
+        try container.encodeIfPresent(self.env, forKey: "env")
+        try container.encodeIfPresent(self.capabilityDirectories, forKey: "capability_directories")
+        try container.encodeIfPresent(self.skills, forKey: "skills")
+        try container.encodeIfPresent(self.plugins, forKey: "plugins")
+        try container.encodeIfPresent(self.files, forKey: "files")
     }
 }
 
-public struct UpdateEvalRequest: Codable, Hashable, Sendable {
+public struct UpdateEvalRequest: OpenAIModel {
     /// Rename the evaluation.
     public var name: String?
     public var metadata: Metadata?
@@ -247,14 +312,21 @@ public struct UpdateEvalRequest: Codable, Hashable, Sendable {
         self.metadata = metadata
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case name
-        case metadata
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.metadata = try container.decodeIfPresent(Metadata.self, forKey: "metadata")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
     }
 }
 
 /// Request payload for updating the details of an existing group.
-public struct UpdateGroupBody: Codable, Hashable, Sendable {
+public struct UpdateGroupBody: OpenAIModel {
     /// New display name for the group.
     public var name: String
 
@@ -262,13 +334,19 @@ public struct UpdateGroupBody: Codable, Hashable, Sendable {
         self.name = name
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case name
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.name = try container.decode(String.self, forKey: "name")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.name, forKey: "name")
     }
 }
 
 /// Parameters for updating organization data retention controls.
-public struct UpdateOrganizationDataRetentionBody: Codable, Hashable, Sendable {
+public struct UpdateOrganizationDataRetentionBody: OpenAIModel {
     /// The desired organization data retention type.
     public var retentionType: UpdateOrganizationDataRetentionBody.RetentionType
 
@@ -276,8 +354,14 @@ public struct UpdateOrganizationDataRetentionBody: Codable, Hashable, Sendable {
         self.retentionType = retentionType
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case retentionType = "retention_type"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.retentionType = try container.decode(UpdateOrganizationDataRetentionBody.RetentionType.self, forKey: "retention_type")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.retentionType, forKey: "retention_type")
     }
 
     /// The desired organization data retention type.
@@ -302,7 +386,7 @@ public struct UpdateOrganizationDataRetentionBody: Codable, Hashable, Sendable {
 }
 
 /// Parameters for the hard spend limit you want to create or replace.
-public struct UpdateOrganizationSpendLimitBody: Codable, Hashable, Sendable {
+public struct UpdateOrganizationSpendLimitBody: OpenAIModel {
     /// The hard spend limit amount, in cents.
     public var thresholdAmount: Int
     /// The currency for the threshold amount. Currently, only `USD` is supported.
@@ -316,15 +400,24 @@ public struct UpdateOrganizationSpendLimitBody: Codable, Hashable, Sendable {
         self.notificationChannel = notificationChannel
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case thresholdAmount = "threshold_amount"
-        case currency
-        case interval
-        case notificationChannel = "notification_channel"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.thresholdAmount = try container.decode(Int.self, forKey: "threshold_amount")
+        self.currency = try container.decodeIfPresent(String.self, forKey: "currency") ?? "USD"
+        self.interval = try container.decodeIfPresent(String.self, forKey: "interval") ?? "month"
+        self.notificationChannel = try container.decodeIfPresent(SpendLimitEmailNotificationChannelParams.self, forKey: "notification_channel")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.thresholdAmount, forKey: "threshold_amount")
+        try container.encode(self.currency, forKey: "currency")
+        try container.encode(self.interval, forKey: "interval")
+        try container.encodeIfPresent(self.notificationChannel, forKey: "notification_channel")
     }
 }
 
-public struct UpdatePlatformWorkloadIdentityFederationRuleBody: Codable, Hashable, Sendable {
+public struct UpdatePlatformWorkloadIdentityFederationRuleBody: OpenAIModel {
     public var name: String?
     public var description: String?
     public var attributeMatchers: [String: UpdatePlatformWorkloadIdentityFederationRuleBody.AttributeMatcher]?
@@ -345,15 +438,25 @@ public struct UpdatePlatformWorkloadIdentityFederationRuleBody: Codable, Hashabl
         self.enabled = enabled
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case name
-        case description
-        case attributeMatchers = "attribute_matchers"
-        case permissions
-        case enabled
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.description = try container.decodeIfPresent(String.self, forKey: "description")
+        self.attributeMatchers = try container.decodeIfPresent([String: UpdatePlatformWorkloadIdentityFederationRuleBody.AttributeMatcher].self, forKey: "attribute_matchers")
+        self.permissions = try container.decodeIfPresent(UpdatePlatformWorkloadIdentityFederationRuleBody.Permissions.self, forKey: "permissions")
+        self.enabled = try container.decodeIfPresent(Bool.self, forKey: "enabled")
     }
 
-    public indirect enum AttributeMatcher: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encodeIfPresent(self.description, forKey: "description")
+        try container.encodeIfPresent(self.attributeMatchers, forKey: "attribute_matchers")
+        try container.encodeIfPresent(self.permissions, forKey: "permissions")
+        try container.encodeIfPresent(self.enabled, forKey: "enabled")
+    }
+
+    public indirect enum AttributeMatcher: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         case string(String)
         case bool(Bool)
         case integer(Int)
@@ -404,7 +507,7 @@ public struct UpdatePlatformWorkloadIdentityFederationRuleBody: Codable, Hashabl
     }
 
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Permissions: Codable, Hashable, Sendable {
+    public indirect enum Permissions: OpenAIModel {
         /// `type`: `service_account_default`
         case serviceAccountDefault(DefaultPermissionsParam)
         /// `type`: `restricted`
@@ -444,7 +547,7 @@ public struct UpdatePlatformWorkloadIdentityFederationRuleBody: Codable, Hashabl
     }
 }
 
-public struct UpdatePlatformWorkloadIdentityProviderBody: Codable, Hashable, Sendable {
+public struct UpdatePlatformWorkloadIdentityProviderBody: OpenAIModel {
     public var name: String?
     public var issuer: String?
     public var audience: String?
@@ -471,18 +574,30 @@ public struct UpdatePlatformWorkloadIdentityProviderBody: Codable, Hashable, Sen
         self.enabled = enabled
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case name
-        case issuer
-        case audience
-        case verification
-        case description
-        case attributeTransformations = "attribute_transformations"
-        case enabled
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.issuer = try container.decodeIfPresent(String.self, forKey: "issuer")
+        self.audience = try container.decodeIfPresent(String.self, forKey: "audience")
+        self.verification = try container.decodeIfPresent(UpdatePlatformWorkloadIdentityProviderBody.Verification.self, forKey: "verification")
+        self.description = try container.decodeIfPresent(String.self, forKey: "description")
+        self.attributeTransformations = try container.decodeIfPresent([TransformationParam].self, forKey: "attribute_transformations")
+        self.enabled = try container.decodeIfPresent(Bool.self, forKey: "enabled")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encodeIfPresent(self.issuer, forKey: "issuer")
+        try container.encodeIfPresent(self.audience, forKey: "audience")
+        try container.encodeIfPresent(self.verification, forKey: "verification")
+        try container.encodeIfPresent(self.description, forKey: "description")
+        try container.encodeIfPresent(self.attributeTransformations, forKey: "attribute_transformations")
+        try container.encodeIfPresent(self.enabled, forKey: "enabled")
     }
 
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Verification: Codable, Hashable, Sendable {
+    public indirect enum Verification: OpenAIModel {
         /// `type`: `discovery`
         case discovery(DiscoveryVerificationParam)
         /// `type`: `uploaded_jwks`
@@ -522,7 +637,7 @@ public struct UpdatePlatformWorkloadIdentityProviderBody: Codable, Hashable, Sen
     }
 }
 
-public indirect enum UpdateProjectApiKeyBody: Codable, Hashable, Sendable {
+public indirect enum UpdateProjectApiKeyBody: OpenAIModel {
     case json(JSONValue)
     case json2(JSONValue)
     /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
@@ -547,7 +662,7 @@ public indirect enum UpdateProjectApiKeyBody: Codable, Hashable, Sendable {
 }
 
 /// Parameters for updating project data retention controls.
-public struct UpdateProjectDataRetentionBody: Codable, Hashable, Sendable {
+public struct UpdateProjectDataRetentionBody: OpenAIModel {
     /// The desired project data retention type.
     public var retentionType: UpdateProjectDataRetentionBody.RetentionType
 
@@ -555,8 +670,14 @@ public struct UpdateProjectDataRetentionBody: Codable, Hashable, Sendable {
         self.retentionType = retentionType
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case retentionType = "retention_type"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.retentionType = try container.decode(UpdateProjectDataRetentionBody.RetentionType.self, forKey: "retention_type")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.retentionType, forKey: "retention_type")
     }
 
     /// The desired project data retention type.
@@ -583,7 +704,7 @@ public struct UpdateProjectDataRetentionBody: Codable, Hashable, Sendable {
 }
 
 /// Parameters for updating a project service account.
-public struct UpdateProjectServiceAccountBody: Codable, Hashable, Sendable {
+public struct UpdateProjectServiceAccountBody: OpenAIModel {
     /// The updated service account name.
     public var name: String?
     /// The updated service account role.
@@ -594,9 +715,16 @@ public struct UpdateProjectServiceAccountBody: Codable, Hashable, Sendable {
         self.role = role
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case name
-        case role
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.role = try container.decodeIfPresent(UpdateProjectServiceAccountBody.Role.self, forKey: "role")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encodeIfPresent(self.role, forKey: "role")
     }
 
     /// The updated service account role.
@@ -618,7 +746,7 @@ public struct UpdateProjectServiceAccountBody: Codable, Hashable, Sendable {
     }
 }
 
-public indirect enum UpdateProjectServiceTierSettingsBody: Codable, Hashable, Sendable {
+public indirect enum UpdateProjectServiceTierSettingsBody: OpenAIModel {
     case json(JSONValue)
     case json2(JSONValue)
     /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
@@ -643,7 +771,7 @@ public indirect enum UpdateProjectServiceTierSettingsBody: Codable, Hashable, Se
 }
 
 /// Parameters for the hard spend limit you want to create or replace.
-public struct UpdateProjectSpendLimitBody: Codable, Hashable, Sendable {
+public struct UpdateProjectSpendLimitBody: OpenAIModel {
     /// The hard spend limit amount, in cents.
     public var thresholdAmount: Int
     /// The currency for the threshold amount. Currently, only `USD` is supported.
@@ -657,16 +785,25 @@ public struct UpdateProjectSpendLimitBody: Codable, Hashable, Sendable {
         self.notificationChannel = notificationChannel
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case thresholdAmount = "threshold_amount"
-        case currency
-        case interval
-        case notificationChannel = "notification_channel"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.thresholdAmount = try container.decode(Int.self, forKey: "threshold_amount")
+        self.currency = try container.decodeIfPresent(String.self, forKey: "currency") ?? "USD"
+        self.interval = try container.decodeIfPresent(String.self, forKey: "interval") ?? "month"
+        self.notificationChannel = try container.decodeIfPresent(SpendLimitEmailNotificationChannelParams.self, forKey: "notification_channel")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.thresholdAmount, forKey: "threshold_amount")
+        try container.encode(self.currency, forKey: "currency")
+        try container.encode(self.interval, forKey: "interval")
+        try container.encodeIfPresent(self.notificationChannel, forKey: "notification_channel")
     }
 }
 
 /// Agent settings that can change after session creation.
-public struct UpdateSessionAgentParam: Codable, Hashable, Sendable {
+public struct UpdateSessionAgentParam: OpenAIModel {
     /// Replaces the session tools. Functions and MCP servers change on the next model call. Built-in tools change by the next turn. Omit to keep the current tools, or pass null or an empty array to clear them.
     public var tools: [AgentToolConfigParam]?
     /// The model for subsequent turns. Omit to keep the current model.
@@ -688,16 +825,25 @@ public struct UpdateSessionAgentParam: Codable, Hashable, Sendable {
         self.serviceTier = serviceTier
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case tools
-        case model
-        case reasoning
-        case serviceTier = "service_tier"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.tools = try container.decodeIfPresent([AgentToolConfigParam].self, forKey: "tools")
+        self.model = try container.decodeIfPresent(String.self, forKey: "model")
+        self.reasoning = try container.decodeIfPresent(UpdateSessionReasoningParam.self, forKey: "reasoning")
+        self.serviceTier = try container.decodeIfPresent(ServiceTierParam.self, forKey: "service_tier")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.tools, forKey: "tools")
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encodeIfPresent(self.reasoning, forKey: "reasoning")
+        try container.encodeIfPresent(self.serviceTier, forKey: "service_tier")
     }
 }
 
 /// Reasoning effort for subsequent turns. The reasoning summary stays unchanged.
-public struct UpdateSessionReasoningParam: Codable, Hashable, Sendable {
+public struct UpdateSessionReasoningParam: OpenAIModel {
     /// Omit to keep the current effort. Null selects the model's default effort.
     public var effort: ReasoningEffortParam?
 
@@ -705,13 +851,19 @@ public struct UpdateSessionReasoningParam: Codable, Hashable, Sendable {
         self.effort = effort
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case effort
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.effort = try container.decodeIfPresent(ReasoningEffortParam.self, forKey: "effort")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.effort, forKey: "effort")
     }
 }
 
 /// Fields to replace on an active vault.
-public struct UpdateVaultParams: Codable, Hashable, Sendable {
+public struct UpdateVaultParams: OpenAIModel {
     /// Replaces all metadata. Omit to leave unchanged, or pass {} to clear it. Up to 16 string key-value pairs, with keys up to 64 and values up to 512 characters.
     public var metadata: [String: String]?
     /// A replacement name. Omit to leave unchanged, or pass null to clear it. The name is trimmed before storage. It must contain 1 to 256 UTF-8 bytes after trimming.
@@ -722,25 +874,38 @@ public struct UpdateVaultParams: Codable, Hashable, Sendable {
         self.name = name
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case metadata
-        case name
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.metadata = try container.decodeIfPresent([String: String].self, forKey: "metadata")
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
+        try container.encodeIfPresent(self.name, forKey: "name")
     }
 }
 
-public struct UpdateVectorStoreFileAttributesRequest: Codable, Hashable, Sendable {
+public struct UpdateVectorStoreFileAttributesRequest: OpenAIModel {
     public var attributes: VectorStoreFileAttributes?
 
     public init(attributes: VectorStoreFileAttributes? = nil) {
         self.attributes = attributes
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case attributes
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.attributes = try container.decodeIfPresent(VectorStoreFileAttributes.self, forKey: "attributes")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.attributes, forKey: "attributes")
     }
 }
 
-public struct UpdateVectorStoreRequest: Codable, Hashable, Sendable {
+public struct UpdateVectorStoreRequest: OpenAIModel {
     /// The name of the vector store.
     public var name: String?
     public var expiresAfter: JSONValue?
@@ -756,14 +921,22 @@ public struct UpdateVectorStoreRequest: Codable, Hashable, Sendable {
         self.metadata = metadata
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case name
-        case expiresAfter = "expires_after"
-        case metadata
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.expiresAfter = try container.decodeIfPresent(JSONValue.self, forKey: "expires_after")
+        self.metadata = try container.decodeIfPresent(Metadata.self, forKey: "metadata")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encodeIfPresent(self.expiresAfter, forKey: "expires_after")
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
     }
 }
 
-public struct UpdateVoiceConsentRequest: Codable, Hashable, Sendable {
+public struct UpdateVoiceConsentRequest: OpenAIModel {
     /// The updated label for this consent recording.
     public var name: String
 
@@ -771,7 +944,13 @@ public struct UpdateVoiceConsentRequest: Codable, Hashable, Sendable {
         self.name = name
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case name
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.name = try container.decode(String.self, forKey: "name")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.name, forKey: "name")
     }
 }

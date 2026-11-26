@@ -4,7 +4,7 @@
 import Foundation
 
 /// Indicates that a thread is locked and cannot accept new input.
-public struct LockedStatus: Codable, Hashable, Sendable {
+public struct LockedStatus: OpenAIModel {
     /// Status discriminator that is always `locked`.
     public var type: String = "locked"
     public var reason: String?
@@ -13,8 +13,15 @@ public struct LockedStatus: Codable, Hashable, Sendable {
         self.reason = reason
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case reason
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "locked"
+        self.reason = try container.decodeIfPresent(String.self, forKey: "reason")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.reason, forKey: "reason")
     }
 }

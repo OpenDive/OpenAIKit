@@ -6,7 +6,7 @@ import Foundation
 /// A file materialized in an OpenAI-hosted execution environment.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum HostedEnvironmentFileParam: Codable, Hashable, Sendable {
+public indirect enum HostedEnvironmentFileParam: OpenAIModel {
     /// `type`: `file_id`
     case fileId(HostedEnvironmentFileParamFileId)
     /// `type`: `inline`
@@ -46,7 +46,7 @@ public indirect enum HostedEnvironmentFileParam: Codable, Hashable, Sendable {
 }
 
 /// A file previously uploaded through the OpenAI Files API.
-public struct HostedEnvironmentFileParamFileId: Codable, Hashable, Sendable {
+public struct HostedEnvironmentFileParamFileId: OpenAIModel {
     /// The type of the object. Always `file_id`.
     public var type: String = "file_id"
     /// The ID of the uploaded file.
@@ -59,15 +59,23 @@ public struct HostedEnvironmentFileParamFileId: Codable, Hashable, Sendable {
         self.path = path
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case fileID = "file_id"
-        case path
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "file_id"
+        self.fileID = try container.decode(String.self, forKey: "file_id")
+        self.path = try container.decode(String.self, forKey: "path")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.fileID, forKey: "file_id")
+        try container.encode(self.path, forKey: "path")
     }
 }
 
 /// A file supplied directly as standard-base64 data.
-public struct HostedEnvironmentFileParamInline: Codable, Hashable, Sendable {
+public struct HostedEnvironmentFileParamInline: OpenAIModel {
     /// The type of the object. Always `inline`.
     public var type: String = "inline"
     /// The standard-base64-encoded file contents.
@@ -80,17 +88,25 @@ public struct HostedEnvironmentFileParamInline: Codable, Hashable, Sendable {
         self.path = path
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case data
-        case path
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "inline"
+        self.data = try container.decode(String.self, forKey: "data")
+        self.path = try container.decode(String.self, forKey: "path")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.data, forKey: "data")
+        try container.encode(self.path, forKey: "path")
     }
 }
 
 /// Metadata for a file materialized in an OpenAI-hosted execution environment.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum HostedEnvironmentFileResource: Codable, Hashable, Sendable {
+public indirect enum HostedEnvironmentFileResource: OpenAIModel {
     /// `type`: `file_id`
     case fileId(HostedEnvironmentFileResourceFileId)
     /// `type`: `inline`
@@ -130,7 +146,7 @@ public indirect enum HostedEnvironmentFileResource: Codable, Hashable, Sendable 
 }
 
 /// A file copied from the OpenAI Files API.
-public struct HostedEnvironmentFileResourceFileId: Codable, Hashable, Sendable {
+public struct HostedEnvironmentFileResourceFileId: OpenAIModel {
     /// The type of the object. Always `file_id`.
     public var type: String = "file_id"
     /// The session-scoped ID of the file in the execution environment.
@@ -154,17 +170,27 @@ public struct HostedEnvironmentFileResourceFileId: Codable, Hashable, Sendable {
         self.sizeBytes = sizeBytes
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case fileID = "file_id"
-        case path
-        case sizeBytes = "size_bytes"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "file_id"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.fileID = try container.decode(String.self, forKey: "file_id")
+        self.path = try container.decode(String.self, forKey: "path")
+        self.sizeBytes = try container.decode(Int64.self, forKey: "size_bytes")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.fileID, forKey: "file_id")
+        try container.encode(self.path, forKey: "path")
+        try container.encode(self.sizeBytes, forKey: "size_bytes")
     }
 }
 
 /// A file supplied inline when the session was created.
-public struct HostedEnvironmentFileResourceInline: Codable, Hashable, Sendable {
+public struct HostedEnvironmentFileResourceInline: OpenAIModel {
     /// The type of the object. Always `inline`.
     public var type: String = "inline"
     /// The session-scoped ID of the file in the execution environment.
@@ -184,11 +210,20 @@ public struct HostedEnvironmentFileResourceInline: Codable, Hashable, Sendable {
         self.sizeBytes = sizeBytes
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case path
-        case sizeBytes = "size_bytes"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "inline"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.path = try container.decode(String.self, forKey: "path")
+        self.sizeBytes = try container.decode(Int64.self, forKey: "size_bytes")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.path, forKey: "path")
+        try container.encode(self.sizeBytes, forKey: "size_bytes")
     }
 }
 
@@ -196,7 +231,7 @@ public struct HostedEnvironmentFileResourceInline: Codable, Hashable, Sendable {
 public typealias HostedPluginParam = HostedPluginParamInline
 
 /// Supplies a plugin ZIP directly in the session request.
-public struct HostedPluginParamInline: Codable, Hashable, Sendable {
+public struct HostedPluginParamInline: OpenAIModel {
     /// The type of the object. Always `inline`.
     public var type: String = "inline"
     /// The plugin name declared in `.codex-plugin/plugin.json`.
@@ -216,11 +251,20 @@ public struct HostedPluginParamInline: Codable, Hashable, Sendable {
         self.source = source
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
-        case description
-        case source
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "inline"
+        self.name = try container.decode(String.self, forKey: "name")
+        self.description = try container.decode(String.self, forKey: "description")
+        self.source = try container.decode(InlineCapabilitySourceParam.self, forKey: "source")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.description, forKey: "description")
+        try container.encode(self.source, forKey: "source")
     }
 }
 
@@ -228,7 +272,7 @@ public struct HostedPluginParamInline: Codable, Hashable, Sendable {
 public typealias HostedPluginResource = HostedPluginResourceInline
 
 /// A plugin installed from an inline ZIP archive.
-public struct HostedPluginResourceInline: Codable, Hashable, Sendable {
+public struct HostedPluginResourceInline: OpenAIModel {
     /// The type of the object. Always `inline`.
     public var type: String = "inline"
     /// The installed plugin name.
@@ -241,17 +285,25 @@ public struct HostedPluginResourceInline: Codable, Hashable, Sendable {
         self.description = description
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
-        case description
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "inline"
+        self.name = try container.decode(String.self, forKey: "name")
+        self.description = try container.decode(String.self, forKey: "description")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.description, forKey: "description")
     }
 }
 
 /// A skill installed in an OpenAI-hosted environment.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum HostedSkillParam: Codable, Hashable, Sendable {
+public indirect enum HostedSkillParam: OpenAIModel {
     /// `type`: `skill_reference`
     case skillReference(HostedSkillParamSkillReference)
     /// `type`: `inline`
@@ -291,7 +343,7 @@ public indirect enum HostedSkillParam: Codable, Hashable, Sendable {
 }
 
 /// Supplies a skill ZIP directly in the session request.
-public struct HostedSkillParamInline: Codable, Hashable, Sendable {
+public struct HostedSkillParamInline: OpenAIModel {
     /// The type of the object. Always `inline`.
     public var type: String = "inline"
     /// The skill name declared in `SKILL.md`.
@@ -311,16 +363,25 @@ public struct HostedSkillParamInline: Codable, Hashable, Sendable {
         self.source = source
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
-        case description
-        case source
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "inline"
+        self.name = try container.decode(String.self, forKey: "name")
+        self.description = try container.decode(String.self, forKey: "description")
+        self.source = try container.decode(InlineCapabilitySourceParam.self, forKey: "source")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.description, forKey: "description")
+        try container.encode(self.source, forKey: "source")
     }
 }
 
 /// References a skill uploaded through the Skills API.
-public struct HostedSkillParamSkillReference: Codable, Hashable, Sendable {
+public struct HostedSkillParamSkillReference: OpenAIModel {
     /// The type of the object. Always `skill_reference`.
     public var type: String = "skill_reference"
     /// The ID of the skill created through `/v1/skills`.
@@ -333,17 +394,25 @@ public struct HostedSkillParamSkillReference: Codable, Hashable, Sendable {
         self.version = version
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case skillID = "skill_id"
-        case version
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "skill_reference"
+        self.skillID = try container.decode(String.self, forKey: "skill_id")
+        self.version = try container.decodeIfPresent(String.self, forKey: "version")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.skillID, forKey: "skill_id")
+        try container.encodeIfPresent(self.version, forKey: "version")
     }
 }
 
 /// A skill installed in an OpenAI-hosted environment.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum HostedSkillResource: Codable, Hashable, Sendable {
+public indirect enum HostedSkillResource: OpenAIModel {
     /// `type`: `skill_reference`
     case skillReference(HostedSkillResourceSkillReference)
     /// `type`: `inline`
@@ -383,7 +452,7 @@ public indirect enum HostedSkillResource: Codable, Hashable, Sendable {
 }
 
 /// A skill installed from an inline ZIP archive.
-public struct HostedSkillResourceInline: Codable, Hashable, Sendable {
+public struct HostedSkillResourceInline: OpenAIModel {
     /// The type of the object. Always `inline`.
     public var type: String = "inline"
     /// The installed skill name.
@@ -396,15 +465,23 @@ public struct HostedSkillResourceInline: Codable, Hashable, Sendable {
         self.description = description
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
-        case description
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "inline"
+        self.name = try container.decode(String.self, forKey: "name")
+        self.description = try container.decode(String.self, forKey: "description")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.description, forKey: "description")
     }
 }
 
 /// A skill installed from the Skills API.
-public struct HostedSkillResourceSkillReference: Codable, Hashable, Sendable {
+public struct HostedSkillResourceSkillReference: OpenAIModel {
     /// The type of the object. Always `skill_reference`.
     public var type: String = "skill_reference"
     /// The referenced skill ID.
@@ -428,19 +505,29 @@ public struct HostedSkillResourceSkillReference: Codable, Hashable, Sendable {
         self.description = description
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case skillID = "skill_id"
-        case version
-        case name
-        case description
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "skill_reference"
+        self.skillID = try container.decode(String.self, forKey: "skill_id")
+        self.version = try container.decode(String.self, forKey: "version")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.description = try container.decode(String.self, forKey: "description")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.skillID, forKey: "skill_id")
+        try container.encode(self.version, forKey: "version")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.description, forKey: "description")
     }
 }
 
 /// Safe metadata for a file configured by an environment template.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum HostedTemplateFileResource: Codable, Hashable, Sendable {
+public indirect enum HostedTemplateFileResource: OpenAIModel {
     /// `type`: `file_id`
     case fileId(HostedTemplateFileResourceFileId)
     /// `type`: `inline`
@@ -480,7 +567,7 @@ public indirect enum HostedTemplateFileResource: Codable, Hashable, Sendable {
 }
 
 /// A project-scoped Files API reference resolved separately for each session.
-public struct HostedTemplateFileResourceFileId: Codable, Hashable, Sendable {
+public struct HostedTemplateFileResourceFileId: OpenAIModel {
     /// The type of the object. Always `file_id`.
     public var type: String = "file_id"
     /// The ID of the uploaded file.
@@ -493,15 +580,23 @@ public struct HostedTemplateFileResourceFileId: Codable, Hashable, Sendable {
         self.path = path
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case fileID = "file_id"
-        case path
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "file_id"
+        self.fileID = try container.decode(String.self, forKey: "file_id")
+        self.path = try container.decode(String.self, forKey: "path")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.fileID, forKey: "file_id")
+        try container.encode(self.path, forKey: "path")
     }
 }
 
 /// Metadata for confidential inline file contents.
-public struct HostedTemplateFileResourceInline: Codable, Hashable, Sendable {
+public struct HostedTemplateFileResourceInline: OpenAIModel {
     /// The type of the object. Always `inline`.
     public var type: String = "inline"
     /// The file's absolute path inside the environment.
@@ -514,17 +609,25 @@ public struct HostedTemplateFileResourceInline: Codable, Hashable, Sendable {
         self.sizeBytes = sizeBytes
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case path
-        case sizeBytes = "size_bytes"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "inline"
+        self.path = try container.decode(String.self, forKey: "path")
+        self.sizeBytes = try container.decode(Int64.self, forKey: "size_bytes")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.path, forKey: "path")
+        try container.encode(self.sizeBytes, forKey: "size_bytes")
     }
 }
 
 /// Safe metadata for a skill configured by an environment template.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum HostedTemplateSkillResource: Codable, Hashable, Sendable {
+public indirect enum HostedTemplateSkillResource: OpenAIModel {
     /// `type`: `skill_reference`
     case skillReference(HostedTemplateSkillResourceSkillReference)
     /// `type`: `inline`
@@ -564,7 +667,7 @@ public indirect enum HostedTemplateSkillResource: Codable, Hashable, Sendable {
 }
 
 /// Safe metadata for an inline skill archive.
-public struct HostedTemplateSkillResourceInline: Codable, Hashable, Sendable {
+public struct HostedTemplateSkillResourceInline: OpenAIModel {
     /// The type of the object. Always `inline`.
     public var type: String = "inline"
     /// The skill name declared in `SKILL.md`.
@@ -577,15 +680,23 @@ public struct HostedTemplateSkillResourceInline: Codable, Hashable, Sendable {
         self.description = description
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
-        case description
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "inline"
+        self.name = try container.decode(String.self, forKey: "name")
+        self.description = try container.decode(String.self, forKey: "description")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.description, forKey: "description")
     }
 }
 
 /// A skill resolved afresh from the Skills API whenever a session starts.
-public struct HostedTemplateSkillResourceSkillReference: Codable, Hashable, Sendable {
+public struct HostedTemplateSkillResourceSkillReference: OpenAIModel {
     /// The type of the object. Always `skill_reference`.
     public var type: String = "skill_reference"
     /// The referenced skill ID.
@@ -598,15 +709,23 @@ public struct HostedTemplateSkillResourceSkillReference: Codable, Hashable, Send
         self.version = version
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case skillID = "skill_id"
-        case version
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "skill_reference"
+        self.skillID = try container.decode(String.self, forKey: "skill_id")
+        self.version = try container.decodeIfPresent(String.self, forKey: "version")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.skillID, forKey: "skill_id")
+        try container.encodeIfPresent(self.version, forKey: "version")
     }
 }
 
 /// Permission state for a single hosted tool on a project.
-public struct HostedToolPermission: Codable, Hashable, Sendable {
+public struct HostedToolPermission: OpenAIModel {
     /// Whether the hosted tool is enabled for the project.
     public var enabled: Bool
 
@@ -614,12 +733,18 @@ public struct HostedToolPermission: Codable, Hashable, Sendable {
         self.enabled = enabled
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case enabled
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.enabled = try container.decode(Bool.self, forKey: "enabled")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.enabled, forKey: "enabled")
     }
 }
 
-public struct HostedToolPermissionUpdate: Codable, Hashable, Sendable {
+public struct HostedToolPermissionUpdate: OpenAIModel {
     /// Whether to enable the hosted tool for the project.
     public var enabled: Bool
 
@@ -627,7 +752,13 @@ public struct HostedToolPermissionUpdate: Codable, Hashable, Sendable {
         self.enabled = enabled
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case enabled
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.enabled = try container.decode(Bool.self, forKey: "enabled")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.enabled, forKey: "enabled")
     }
 }

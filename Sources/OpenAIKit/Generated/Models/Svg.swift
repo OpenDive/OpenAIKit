@@ -4,7 +4,7 @@
 import Foundation
 
 /// Selects the model and reasoning effort used to author SVG output. Requires output_format=svg and access to SVG model selection. When model selection is enabled, supply svg.model. When model selection is disabled, omit this object. The top-level model selects the image model that creates the reference image. SVG generation requires n=1 and does not support streaming, partial images, prompt_rewriter, or output_compression.
-public struct Svg: Codable, Hashable, Sendable {
+public struct Svg: OpenAIModel {
     /// Model used to author the SVG. Required when SVG model selection is enabled.
     public var model: String
     /// Reasoning settings for the SVG author, independent of image complexity. Omitted or null effort uses the author model's default. Supported efforts depend on the selected author model.
@@ -15,13 +15,20 @@ public struct Svg: Codable, Hashable, Sendable {
         self.reasoning = reasoning
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case model
-        case reasoning
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.model = try container.decode(String.self, forKey: "model")
+        self.reasoning = try container.decodeIfPresent(Svg.Reasoning.self, forKey: "reasoning")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.model, forKey: "model")
+        try container.encodeIfPresent(self.reasoning, forKey: "reasoning")
     }
 
     /// Reasoning settings for the SVG author, independent of image complexity. Omitted or null effort uses the author model's default. Supported efforts depend on the selected author model.
-    public struct Reasoning: Codable, Hashable, Sendable {
+    public struct Reasoning: OpenAIModel {
         /// Controls how much effort the SVG author spends on reasoning. Uses the author model's default when omitted or null.
         public var effort: ReasoningEffortEnum?
 
@@ -29,13 +36,19 @@ public struct Svg: Codable, Hashable, Sendable {
             self.effort = effort
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case effort
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.effort = try container.decodeIfPresent(ReasoningEffortEnum.self, forKey: "effort")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.effort, forKey: "effort")
         }
     }
 }
 
-public struct SvgParam: Codable, Hashable, Sendable {
+public struct SvgParam: OpenAIModel {
     public var model: String?
     public var reasoning: SvgReasoningParam?
 
@@ -44,26 +57,39 @@ public struct SvgParam: Codable, Hashable, Sendable {
         self.reasoning = reasoning
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case model
-        case reasoning
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.model = try container.decodeIfPresent(String.self, forKey: "model")
+        self.reasoning = try container.decodeIfPresent(SvgReasoningParam.self, forKey: "reasoning")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encodeIfPresent(self.reasoning, forKey: "reasoning")
     }
 }
 
 /// Reasoning effort for SVG authoring. When omitted, uses the author model's default in both Images and Responses.
-public struct SvgReasoningParam: Codable, Hashable, Sendable {
+public struct SvgReasoningParam: OpenAIModel {
     public var effort: ReasoningEffortEnum?
 
     public init(effort: ReasoningEffortEnum? = nil) {
         self.effort = effort
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case effort
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.effort = try container.decodeIfPresent(ReasoningEffortEnum.self, forKey: "effort")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.effort, forKey: "effort")
     }
 }
 
-public struct SvgUsage: Codable, Hashable, Sendable {
+public struct SvgUsage: OpenAIModel {
     public var model: String
     public var inputTokens: Int
     public var outputTokens: Int
@@ -84,11 +110,21 @@ public struct SvgUsage: Codable, Hashable, Sendable {
         self.reasoningTokens = reasoningTokens
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case model
-        case inputTokens = "input_tokens"
-        case outputTokens = "output_tokens"
-        case totalTokens = "total_tokens"
-        case reasoningTokens = "reasoning_tokens"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.model = try container.decode(String.self, forKey: "model")
+        self.inputTokens = try container.decode(Int.self, forKey: "input_tokens")
+        self.outputTokens = try container.decode(Int.self, forKey: "output_tokens")
+        self.totalTokens = try container.decode(Int.self, forKey: "total_tokens")
+        self.reasoningTokens = try container.decode(Int.self, forKey: "reasoning_tokens")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.model, forKey: "model")
+        try container.encode(self.inputTokens, forKey: "input_tokens")
+        try container.encode(self.outputTokens, forKey: "output_tokens")
+        try container.encode(self.totalTokens, forKey: "total_tokens")
+        try container.encode(self.reasoningTokens, forKey: "reasoning_tokens")
     }
 }

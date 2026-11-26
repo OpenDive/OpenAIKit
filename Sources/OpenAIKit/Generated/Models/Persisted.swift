@@ -6,7 +6,7 @@ import Foundation
 /// A tool that can be stored on a reusable agent without session credentials.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum PersistedAgentToolConfigParam: Codable, Hashable, Sendable {
+public indirect enum PersistedAgentToolConfigParam: OpenAIModel {
     /// `type`: `function`
     case function(PersistedAgentToolConfigParamFunction)
     /// `type`: `tool_search`
@@ -81,20 +81,26 @@ public indirect enum PersistedAgentToolConfigParam: Codable, Hashable, Sendable 
 }
 
 /// Lets the agent manage its own scheduled wakeups.
-public struct PersistedAgentToolConfigParamAutomations: Codable, Hashable, Sendable {
+public struct PersistedAgentToolConfigParamAutomations: OpenAIModel {
     /// The type of the object. Always `automations`.
     public var type: String = "automations"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "automations"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// Browser use in an OpenAI-hosted session.
-public struct PersistedAgentToolConfigParamComputerUse: Codable, Hashable, Sendable {
+public struct PersistedAgentToolConfigParamComputerUse: OpenAIModel {
     /// The type of the object. Always `computer_use`.
     public var type: String = "computer_use"
     /// Whether computer tool outputs include screenshots. Defaults to `false`.
@@ -104,14 +110,21 @@ public struct PersistedAgentToolConfigParamComputerUse: Codable, Hashable, Senda
         self.includeScreenshots = includeScreenshots
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case includeScreenshots = "include_screenshots"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "computer_use"
+        self.includeScreenshots = try container.decodeIfPresent(Bool.self, forKey: "include_screenshots")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.includeScreenshots, forKey: "include_screenshots")
     }
 }
 
 /// A function defined by the application.
-public struct PersistedAgentToolConfigParamFunction: Codable, Hashable, Sendable {
+public struct PersistedAgentToolConfigParamFunction: OpenAIModel {
     /// The type of the object. Always `function`.
     public var type: String = "function"
     /// The name of the function.
@@ -139,18 +152,29 @@ public struct PersistedAgentToolConfigParamFunction: Codable, Hashable, Sendable
         self.async = `async`
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
-        case description
-        case parameters
-        case deferLoading = "defer_loading"
-        case `async`
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "function"
+        self.name = try container.decode(String.self, forKey: "name")
+        self.description = try container.decode(String.self, forKey: "description")
+        self.parameters = try container.decode(JSONObject.self, forKey: "parameters")
+        self.deferLoading = try container.decodeIfPresent(Bool.self, forKey: "defer_loading")
+        self.async = try container.decodeIfPresent(Bool.self, forKey: "async")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.description, forKey: "description")
+        try container.encode(self.parameters, forKey: "parameters")
+        try container.encodeIfPresent(self.deferLoading, forKey: "defer_loading")
+        try container.encodeIfPresent(self.async, forKey: "async")
     }
 }
 
 /// Tools provided by a remote MCP server without stored credentials.
-public struct PersistedAgentToolConfigParamMcp: Codable, Hashable, Sendable {
+public struct PersistedAgentToolConfigParamMcp: OpenAIModel {
     /// The type of the object. Always `mcp`.
     public var type: String = "mcp"
     /// A label used to identify the MCP server in tool calls.
@@ -186,20 +210,33 @@ public struct PersistedAgentToolConfigParamMcp: Codable, Hashable, Sendable {
         self.connectionOrigin = connectionOrigin
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case serverLabel = "server_label"
-        case credentialID = "credential_id"
-        case transport
-        case requestMetadata = "request_metadata"
-        case allowedTools = "allowed_tools"
-        case required
-        case connectionOrigin = "connection_origin"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "mcp"
+        self.serverLabel = try container.decode(String.self, forKey: "server_label")
+        self.credentialID = try container.decodeIfPresent(String.self, forKey: "credential_id")
+        self.transport = try container.decode(PersistedMcpTransportConfigParam.self, forKey: "transport")
+        self.requestMetadata = try container.decodeIfPresent(JSONObject.self, forKey: "request_metadata")
+        self.allowedTools = try container.decodeIfPresent([String].self, forKey: "allowed_tools")
+        self.required = try container.decodeIfPresent(Bool.self, forKey: "required")
+        self.connectionOrigin = try container.decodeIfPresent(McpConnectionOriginParam.self, forKey: "connection_origin")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.serverLabel, forKey: "server_label")
+        try container.encodeIfPresent(self.credentialID, forKey: "credential_id")
+        try container.encode(self.transport, forKey: "transport")
+        try container.encodeIfPresent(self.requestMetadata, forKey: "request_metadata")
+        try container.encodeIfPresent(self.allowedTools, forKey: "allowed_tools")
+        try container.encodeIfPresent(self.required, forKey: "required")
+        try container.encodeIfPresent(self.connectionOrigin, forKey: "connection_origin")
     }
 }
 
 /// Enables calling tools from model-generated code.
-public struct PersistedAgentToolConfigParamProgrammaticToolCalling: Codable, Hashable, Sendable {
+public struct PersistedAgentToolConfigParamProgrammaticToolCalling: OpenAIModel {
     /// The type of the object. Always `programmatic_tool_calling`.
     public var type: String = "programmatic_tool_calling"
     /// Whether tools can be called from model-generated code. Defaults to `true`.
@@ -209,27 +246,40 @@ public struct PersistedAgentToolConfigParamProgrammaticToolCalling: Codable, Has
         self.enabled = enabled
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case enabled
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "programmatic_tool_calling"
+        self.enabled = try container.decodeIfPresent(Bool.self, forKey: "enabled")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.enabled, forKey: "enabled")
     }
 }
 
 /// Discovers deferred function tools and loads them into the model context.
-public struct PersistedAgentToolConfigParamToolSearch: Codable, Hashable, Sendable {
+public struct PersistedAgentToolConfigParamToolSearch: OpenAIModel {
     /// The type of the object. Always `tool_search`.
     public var type: String = "tool_search"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "tool_search"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// Web search.
-public struct PersistedAgentToolConfigParamWebSearch: Codable, Hashable, Sendable {
+public struct PersistedAgentToolConfigParamWebSearch: OpenAIModel {
     /// The type of the object. Always `web_search`.
     public var type: String = "web_search"
     /// The source used for web search results. Defaults to `live`.
@@ -253,19 +303,29 @@ public struct PersistedAgentToolConfigParamWebSearch: Codable, Hashable, Sendabl
         self.location = location
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case mode
-        case contextSize = "context_size"
-        case allowedDomains = "allowed_domains"
-        case location
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "web_search"
+        self.mode = try container.decodeIfPresent(WebSearchModeParam.self, forKey: "mode")
+        self.contextSize = try container.decodeIfPresent(WebSearchContextSizeParam.self, forKey: "context_size")
+        self.allowedDomains = try container.decodeIfPresent([String].self, forKey: "allowed_domains")
+        self.location = try container.decodeIfPresent(WebSearchLocationParam.self, forKey: "location")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.mode, forKey: "mode")
+        try container.encodeIfPresent(self.contextSize, forKey: "context_size")
+        try container.encodeIfPresent(self.allowedDomains, forKey: "allowed_domains")
+        try container.encodeIfPresent(self.location, forKey: "location")
     }
 }
 
 /// A credential-free tool available to a reusable agent.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum PersistedAgentToolResource: Codable, Hashable, Sendable {
+public indirect enum PersistedAgentToolResource: OpenAIModel {
     /// `type`: `function`
     case function(PersistedAgentToolResourceFunction)
     /// `type`: `tool_search`
@@ -340,20 +400,26 @@ public indirect enum PersistedAgentToolResource: Codable, Hashable, Sendable {
 }
 
 /// Lets the agent manage its own scheduled wakeups.
-public struct PersistedAgentToolResourceAutomations: Codable, Hashable, Sendable {
+public struct PersistedAgentToolResourceAutomations: OpenAIModel {
     /// The type of the object. Always `automations`.
     public var type: String = "automations"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "automations"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// Browser use in an OpenAI-hosted session.
-public struct PersistedAgentToolResourceComputerUse: Codable, Hashable, Sendable {
+public struct PersistedAgentToolResourceComputerUse: OpenAIModel {
     /// The type of the object. Always `computer_use`.
     public var type: String = "computer_use"
     /// Whether computer tool outputs include screenshots.
@@ -363,14 +429,21 @@ public struct PersistedAgentToolResourceComputerUse: Codable, Hashable, Sendable
         self.includeScreenshots = includeScreenshots
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case includeScreenshots = "include_screenshots"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "computer_use"
+        self.includeScreenshots = try container.decode(Bool.self, forKey: "include_screenshots")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.includeScreenshots, forKey: "include_screenshots")
     }
 }
 
 /// A function defined by the application.
-public struct PersistedAgentToolResourceFunction: Codable, Hashable, Sendable {
+public struct PersistedAgentToolResourceFunction: OpenAIModel {
     /// The type of the object. Always `function`.
     public var type: String = "function"
     /// The name of the function.
@@ -398,18 +471,29 @@ public struct PersistedAgentToolResourceFunction: Codable, Hashable, Sendable {
         self.async = `async`
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
-        case description
-        case parameters
-        case deferLoading = "defer_loading"
-        case `async`
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "function"
+        self.name = try container.decode(String.self, forKey: "name")
+        self.description = try container.decode(String.self, forKey: "description")
+        self.parameters = try container.decode(JSONObject.self, forKey: "parameters")
+        self.deferLoading = try container.decode(Bool.self, forKey: "defer_loading")
+        self.async = try container.decodeIfPresent(Bool.self, forKey: "async")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.description, forKey: "description")
+        try container.encode(self.parameters, forKey: "parameters")
+        try container.encode(self.deferLoading, forKey: "defer_loading")
+        try container.encodeIfPresent(self.async, forKey: "async")
     }
 }
 
 /// Tools provided by a remote MCP server without stored credentials.
-public struct PersistedAgentToolResourceMcp: Codable, Hashable, Sendable {
+public struct PersistedAgentToolResourceMcp: OpenAIModel {
     /// The type of the object. Always `mcp`.
     public var type: String = "mcp"
     /// A label used to identify the MCP server in tool calls.
@@ -445,20 +529,33 @@ public struct PersistedAgentToolResourceMcp: Codable, Hashable, Sendable {
         self.allowedTools = allowedTools
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case serverLabel = "server_label"
-        case credentialID = "credential_id"
-        case transport
-        case requestMetadata = "request_metadata"
-        case allowedTools = "allowed_tools"
-        case required
-        case connectionOrigin = "connection_origin"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "mcp"
+        self.serverLabel = try container.decode(String.self, forKey: "server_label")
+        self.credentialID = try container.decodeIfPresent(String.self, forKey: "credential_id")
+        self.transport = try container.decode(PersistedMcpTransportResource.self, forKey: "transport")
+        self.requestMetadata = try container.decode(JSONObject.self, forKey: "request_metadata")
+        self.allowedTools = try container.decodeIfPresent([String].self, forKey: "allowed_tools")
+        self.required = try container.decode(Bool.self, forKey: "required")
+        self.connectionOrigin = try container.decode(McpConnectionOriginResource.self, forKey: "connection_origin")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.serverLabel, forKey: "server_label")
+        try container.encodeIfPresent(self.credentialID, forKey: "credential_id")
+        try container.encode(self.transport, forKey: "transport")
+        try container.encode(self.requestMetadata, forKey: "request_metadata")
+        try container.encodeIfPresent(self.allowedTools, forKey: "allowed_tools")
+        try container.encode(self.required, forKey: "required")
+        try container.encode(self.connectionOrigin, forKey: "connection_origin")
     }
 }
 
 /// Enables calling tools from model-generated code.
-public struct PersistedAgentToolResourceProgrammaticToolCalling: Codable, Hashable, Sendable {
+public struct PersistedAgentToolResourceProgrammaticToolCalling: OpenAIModel {
     /// The type of the object. Always `programmatic_tool_calling`.
     public var type: String = "programmatic_tool_calling"
     /// Whether tools can be called from model-generated code.
@@ -468,27 +565,40 @@ public struct PersistedAgentToolResourceProgrammaticToolCalling: Codable, Hashab
         self.enabled = enabled
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case enabled
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "programmatic_tool_calling"
+        self.enabled = try container.decode(Bool.self, forKey: "enabled")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.enabled, forKey: "enabled")
     }
 }
 
 /// Discovers deferred function tools and loads them into the model context.
-public struct PersistedAgentToolResourceToolSearch: Codable, Hashable, Sendable {
+public struct PersistedAgentToolResourceToolSearch: OpenAIModel {
     /// The type of the object. Always `tool_search`.
     public var type: String = "tool_search"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "tool_search"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// Web search.
-public struct PersistedAgentToolResourceWebSearch: Codable, Hashable, Sendable {
+public struct PersistedAgentToolResourceWebSearch: OpenAIModel {
     /// The type of the object. Always `web_search`.
     public var type: String = "web_search"
     /// The source used for web search results.
@@ -512,19 +622,29 @@ public struct PersistedAgentToolResourceWebSearch: Codable, Hashable, Sendable {
         self.location = location
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case mode
-        case contextSize = "context_size"
-        case allowedDomains = "allowed_domains"
-        case location
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "web_search"
+        self.mode = try container.decode(WebSearchModeResource.self, forKey: "mode")
+        self.contextSize = try container.decode(WebSearchContextSizeResource.self, forKey: "context_size")
+        self.allowedDomains = try container.decodeIfPresent([String].self, forKey: "allowed_domains")
+        self.location = try container.decodeIfPresent(WebSearchLocationResource.self, forKey: "location")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.mode, forKey: "mode")
+        try container.encode(self.contextSize, forKey: "context_size")
+        try container.encodeIfPresent(self.allowedDomains, forKey: "allowed_domains")
+        try container.encodeIfPresent(self.location, forKey: "location")
     }
 }
 
 /// A credential-free transport used to connect to an MCP server.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum PersistedMcpTransportConfigParam: Codable, Hashable, Sendable {
+public indirect enum PersistedMcpTransportConfigParam: OpenAIModel {
     /// `type`: `http`
     case http(PersistedMcpTransportConfigParamHttp)
     /// `type`: `stdio`
@@ -564,7 +684,7 @@ public indirect enum PersistedMcpTransportConfigParam: Codable, Hashable, Sendab
 }
 
 /// Connects to an MCP server over HTTP.
-public struct PersistedMcpTransportConfigParamHttp: Codable, Hashable, Sendable {
+public struct PersistedMcpTransportConfigParamHttp: OpenAIModel {
     /// The type of the object. Always `http`.
     public var type: String = "http"
     /// The URL of the MCP server.
@@ -577,15 +697,23 @@ public struct PersistedMcpTransportConfigParamHttp: Codable, Hashable, Sendable 
         self.headers = headers
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case serverURL = "server_url"
-        case headers
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "http"
+        self.serverURL = try container.decode(String.self, forKey: "server_url")
+        self.headers = try container.decodeIfPresent([String: String].self, forKey: "headers")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.serverURL, forKey: "server_url")
+        try container.encodeIfPresent(self.headers, forKey: "headers")
     }
 }
 
 /// Starts an MCP server as a local process.
-public struct PersistedMcpTransportConfigParamStdio: Codable, Hashable, Sendable {
+public struct PersistedMcpTransportConfigParamStdio: OpenAIModel {
     /// The type of the object. Always `stdio`.
     public var type: String = "stdio"
     /// The command used to start the MCP server.
@@ -609,19 +737,29 @@ public struct PersistedMcpTransportConfigParamStdio: Codable, Hashable, Sendable
         self.envVars = envVars
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case command
-        case args
-        case cwd
-        case envVars = "env_vars"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "stdio"
+        self.command = try container.decode(String.self, forKey: "command")
+        self.args = try container.decodeIfPresent([String].self, forKey: "args")
+        self.cwd = try container.decode(String.self, forKey: "cwd")
+        self.envVars = try container.decodeIfPresent([String].self, forKey: "env_vars")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.command, forKey: "command")
+        try container.encodeIfPresent(self.args, forKey: "args")
+        try container.encode(self.cwd, forKey: "cwd")
+        try container.encodeIfPresent(self.envVars, forKey: "env_vars")
     }
 }
 
 /// A credential-free transport used to connect to an MCP server.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum PersistedMcpTransportResource: Codable, Hashable, Sendable {
+public indirect enum PersistedMcpTransportResource: OpenAIModel {
     /// `type`: `http`
     case http(PersistedMcpTransportResourceHttp)
     /// `type`: `stdio`
@@ -661,7 +799,7 @@ public indirect enum PersistedMcpTransportResource: Codable, Hashable, Sendable 
 }
 
 /// Connects to an MCP server over HTTP.
-public struct PersistedMcpTransportResourceHttp: Codable, Hashable, Sendable {
+public struct PersistedMcpTransportResourceHttp: OpenAIModel {
     /// The type of the object. Always `http`.
     public var type: String = "http"
     /// The URL of the MCP server.
@@ -674,15 +812,23 @@ public struct PersistedMcpTransportResourceHttp: Codable, Hashable, Sendable {
         self.headers = headers
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case serverURL = "server_url"
-        case headers
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "http"
+        self.serverURL = try container.decode(String.self, forKey: "server_url")
+        self.headers = try container.decode([String: String].self, forKey: "headers")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.serverURL, forKey: "server_url")
+        try container.encode(self.headers, forKey: "headers")
     }
 }
 
 /// Starts an MCP server as a local process.
-public struct PersistedMcpTransportResourceStdio: Codable, Hashable, Sendable {
+public struct PersistedMcpTransportResourceStdio: OpenAIModel {
     /// The type of the object. Always `stdio`.
     public var type: String = "stdio"
     /// The command used to start the MCP server.
@@ -706,11 +852,21 @@ public struct PersistedMcpTransportResourceStdio: Codable, Hashable, Sendable {
         self.envVars = envVars
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case command
-        case args
-        case cwd
-        case envVars = "env_vars"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "stdio"
+        self.command = try container.decode(String.self, forKey: "command")
+        self.args = try container.decode([String].self, forKey: "args")
+        self.cwd = try container.decode(String.self, forKey: "cwd")
+        self.envVars = try container.decode([String].self, forKey: "env_vars")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.command, forKey: "command")
+        try container.encode(self.args, forKey: "args")
+        try container.encode(self.cwd, forKey: "cwd")
+        try container.encode(self.envVars, forKey: "env_vars")
     }
 }

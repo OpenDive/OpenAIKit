@@ -4,7 +4,7 @@
 import Foundation
 
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum ThreadItem: Codable, Hashable, Sendable {
+public indirect enum ThreadItem: OpenAIModel {
     /// `type`: `chatkit.user_message`
     case chatkitUserMessage(UserMessageItem)
     /// `type`: `chatkit.assistant_message`
@@ -72,7 +72,7 @@ public indirect enum ThreadItem: Codable, Hashable, Sendable {
 }
 
 /// A paginated list of thread items rendered for the ChatKit API.
-public struct ThreadItemListResource: Codable, Hashable, Sendable {
+public struct ThreadItemListResource: OpenAIModel {
     /// The type of object returned, must be `list`.
     public var object: String = "list"
     /// A list of items
@@ -94,17 +94,27 @@ public struct ThreadItemListResource: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([ThreadItem].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
 /// A paginated list of ChatKit threads.
-public struct ThreadListResource: Codable, Hashable, Sendable {
+public struct ThreadListResource: OpenAIModel {
     /// The type of object returned, must be `list`.
     public var object: String = "list"
     /// A list of items
@@ -126,17 +136,27 @@ public struct ThreadListResource: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([ThreadResource].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
 /// Represents a thread that contains [messages](https://developers.openai.com/api/docs/assistants/migration).
-public struct ThreadObject: Codable, Hashable, Sendable {
+public struct ThreadObject: OpenAIModel {
     /// The identifier, which can be referenced in API endpoints.
     public var id: String
     /// The object type, which is always `thread`.
@@ -158,16 +178,26 @@ public struct ThreadObject: Codable, Hashable, Sendable {
         self.metadata = metadata
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
-        case toolResources = "tool_resources"
-        case metadata
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "thread"
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.toolResources = try container.decodeIfPresent(ThreadObject.ToolResources.self, forKey: "tool_resources")
+        self.metadata = try container.decodeIfPresent(Metadata.self, forKey: "metadata")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encodeIfPresent(self.toolResources, forKey: "tool_resources")
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
     }
 
     /// A set of resources that are made available to the assistant's tools in this thread. The resources are specific to the type of tool. For example, the `code_interpreter` tool requires a list of file IDs, while the `file_search` tool requires a list of vector store IDs.
-    public struct ToolResources: Codable, Hashable, Sendable {
+    public struct ToolResources: OpenAIModel {
         public var codeInterpreter: ThreadObject.ToolResources.CodeInterpreter?
         public var fileSearch: ThreadObject.ToolResources.FileSearch?
 
@@ -176,12 +206,19 @@ public struct ThreadObject: Codable, Hashable, Sendable {
             self.fileSearch = fileSearch
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case codeInterpreter = "code_interpreter"
-            case fileSearch = "file_search"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.codeInterpreter = try container.decodeIfPresent(ThreadObject.ToolResources.CodeInterpreter.self, forKey: "code_interpreter")
+            self.fileSearch = try container.decodeIfPresent(ThreadObject.ToolResources.FileSearch.self, forKey: "file_search")
         }
 
-        public struct CodeInterpreter: Codable, Hashable, Sendable {
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.codeInterpreter, forKey: "code_interpreter")
+            try container.encodeIfPresent(self.fileSearch, forKey: "file_search")
+        }
+
+        public struct CodeInterpreter: OpenAIModel {
             /// A list of [file](https://developers.openai.com/api/reference/resources/files) IDs made available to the `code_interpreter` tool. There can be a maximum of 20 files associated with the tool.
             public var fileIDs: [String]?
 
@@ -189,12 +226,18 @@ public struct ThreadObject: Codable, Hashable, Sendable {
                 self.fileIDs = fileIDs
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case fileIDs = "file_ids"
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.fileIDs = try container.decodeIfPresent([String].self, forKey: "file_ids")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.fileIDs, forKey: "file_ids")
             }
         }
 
-        public struct FileSearch: Codable, Hashable, Sendable {
+        public struct FileSearch: OpenAIModel {
             /// The [vector store](https://developers.openai.com/api/reference/resources/vector_stores) attached to this thread. There can be a maximum of 1 vector store attached to the thread.
             public var vectorStoreIDs: [String]?
 
@@ -202,15 +245,21 @@ public struct ThreadObject: Codable, Hashable, Sendable {
                 self.vectorStoreIDs = vectorStoreIDs
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case vectorStoreIDs = "vector_store_ids"
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.vectorStoreIDs = try container.decodeIfPresent([String].self, forKey: "vector_store_ids")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.vectorStoreIDs, forKey: "vector_store_ids")
             }
         }
     }
 }
 
 /// Represents a ChatKit thread and its current status.
-public struct ThreadResource: Codable, Hashable, Sendable {
+public struct ThreadResource: OpenAIModel {
     /// Identifier of the thread.
     public var id: String
     /// Type discriminator that is always `chatkit.thread`.
@@ -237,19 +286,30 @@ public struct ThreadResource: Codable, Hashable, Sendable {
         self.title = title
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
-        case title
-        case status
-        case user
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "chatkit.thread"
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.title = try container.decodeIfPresent(String.self, forKey: "title")
+        self.status = try container.decode(ThreadResource.Status.self, forKey: "status")
+        self.user = try container.decode(String.self, forKey: "user")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encodeIfPresent(self.title, forKey: "title")
+        try container.encode(self.status, forKey: "status")
+        try container.encode(self.user, forKey: "user")
     }
 
     /// Current status for the thread. Defaults to `active` for newly created threads.
     ///
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Status: Codable, Hashable, Sendable {
+    public indirect enum Status: OpenAIModel {
         /// `type`: `active`
         case active(ActiveStatus)
         /// `type`: `locked`
@@ -296,7 +356,15 @@ public struct ThreadResource: Codable, Hashable, Sendable {
     }
 }
 
-public struct ThreadStreamEvent: Codable, Hashable, Sendable {
+public struct ThreadStreamEvent: OpenAIModel {
     public init() {
+    }
+
+    public init(from decoder: any Decoder) throws {
+        _ = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        _ = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
     }
 }

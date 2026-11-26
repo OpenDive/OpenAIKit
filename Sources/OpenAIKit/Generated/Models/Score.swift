@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct ScoreLevelParam: Codable, Hashable, Sendable {
+public struct ScoreLevelParam: OpenAIModel {
     public var label: String
     public var description: String?
 
@@ -12,13 +12,20 @@ public struct ScoreLevelParam: Codable, Hashable, Sendable {
         self.description = description
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case label
-        case description
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.label = try container.decode(String.self, forKey: "label")
+        self.description = try container.decodeIfPresent(String.self, forKey: "description")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.label, forKey: "label")
+        try container.encodeIfPresent(self.description, forKey: "description")
     }
 }
 
-public struct ScoreProbabilityResource: Codable, Hashable, Sendable {
+public struct ScoreProbabilityResource: OpenAIModel {
     public var value: Int64
     public var label: String
     public var probability: Double
@@ -33,9 +40,17 @@ public struct ScoreProbabilityResource: Codable, Hashable, Sendable {
         self.probability = probability
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case value
-        case label
-        case probability
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.value = try container.decode(Int64.self, forKey: "value")
+        self.label = try container.decode(String.self, forKey: "label")
+        self.probability = try container.decode(Double.self, forKey: "probability")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.value, forKey: "value")
+        try container.encode(self.label, forKey: "label")
+        try container.encode(self.probability, forKey: "probability")
     }
 }

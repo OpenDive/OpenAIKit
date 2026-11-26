@@ -4,7 +4,7 @@
 import Foundation
 
 /// Annotation that references a URL.
-public struct UrlAnnotation: Codable, Hashable, Sendable {
+public struct UrlAnnotation: OpenAIModel {
     /// Type discriminator that is always `url` for this annotation.
     public var type: String = "url"
     /// URL referenced by the annotation.
@@ -14,14 +14,21 @@ public struct UrlAnnotation: Codable, Hashable, Sendable {
         self.source = source
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case source
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "url"
+        self.source = try container.decode(UrlAnnotationSource.self, forKey: "source")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.source, forKey: "source")
     }
 }
 
 /// URL backing an annotation entry.
-public struct UrlAnnotationSource: Codable, Hashable, Sendable {
+public struct UrlAnnotationSource: OpenAIModel {
     /// Type discriminator that is always `url`.
     public var type: String = "url"
     /// URL referenced by the annotation.
@@ -31,14 +38,21 @@ public struct UrlAnnotationSource: Codable, Hashable, Sendable {
         self.url = url
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case url
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "url"
+        self.url = try container.decode(String.self, forKey: "url")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.url, forKey: "url")
     }
 }
 
 /// A citation for a web resource used to generate a model response.
-public struct UrlCitationBody: Codable, Hashable, Sendable {
+public struct UrlCitationBody: OpenAIModel {
     /// The type of the URL citation. Always `url_citation`.
     public var type: String = "url_citation"
     /// The URL of the web resource.
@@ -62,16 +76,26 @@ public struct UrlCitationBody: Codable, Hashable, Sendable {
         self.title = title
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case url
-        case startIndex = "start_index"
-        case endIndex = "end_index"
-        case title
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "url_citation"
+        self.url = try container.decode(String.self, forKey: "url")
+        self.startIndex = try container.decode(Int.self, forKey: "start_index")
+        self.endIndex = try container.decode(Int.self, forKey: "end_index")
+        self.title = try container.decode(String.self, forKey: "title")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.url, forKey: "url")
+        try container.encode(self.startIndex, forKey: "start_index")
+        try container.encode(self.endIndex, forKey: "end_index")
+        try container.encode(self.title, forKey: "title")
     }
 }
 
-public struct UrlCitationParam: Codable, Hashable, Sendable {
+public struct UrlCitationParam: OpenAIModel {
     /// The citation type. Always `url_citation`.
     public var type: String = "url_citation"
     /// The index of the first character of the citation in the message.
@@ -95,11 +119,21 @@ public struct UrlCitationParam: Codable, Hashable, Sendable {
         self.title = title
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case startIndex = "start_index"
-        case endIndex = "end_index"
-        case url
-        case title
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "url_citation"
+        self.startIndex = try container.decode(Int.self, forKey: "start_index")
+        self.endIndex = try container.decode(Int.self, forKey: "end_index")
+        self.url = try container.decode(String.self, forKey: "url")
+        self.title = try container.decode(String.self, forKey: "title")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.startIndex, forKey: "start_index")
+        try container.encode(self.endIndex, forKey: "end_index")
+        try container.encode(self.url, forKey: "url")
+        try container.encode(self.title, forKey: "title")
     }
 }

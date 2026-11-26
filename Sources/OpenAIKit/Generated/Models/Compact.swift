@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct CompactResource: Codable, Hashable, Sendable {
+public struct CompactResource: OpenAIModel {
     public var image: ResolvedImageOptions?
     /// The unique identifier for the compacted response.
     public var id: String
@@ -37,19 +37,32 @@ public struct CompactResource: Codable, Hashable, Sendable {
         self.serviceTier = serviceTier
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case image
-        case id
-        case object
-        case safetyIdentifier = "safety_identifier"
-        case output
-        case createdAt = "created_at"
-        case serviceTier = "service_tier"
-        case usage
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.image = try container.decodeIfPresent(ResolvedImageOptions.self, forKey: "image")
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "response.compaction"
+        self.safetyIdentifier = try container.decodeIfPresent(String.self, forKey: "safety_identifier")
+        self.output = try container.decode([ItemField].self, forKey: "output")
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.serviceTier = try container.decodeIfPresent(String.self, forKey: "service_tier")
+        self.usage = try container.decode(ResponseUsage.self, forKey: "usage")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.image, forKey: "image")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encodeIfPresent(self.safetyIdentifier, forKey: "safety_identifier")
+        try container.encode(self.output, forKey: "output")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encodeIfPresent(self.serviceTier, forKey: "service_tier")
+        try container.encode(self.usage, forKey: "usage")
     }
 }
 
-public struct CompactResponseMethodPublicBody: Codable, Hashable, Sendable {
+public struct CompactResponseMethodPublicBody: OpenAIModel {
     public var model: ModelIdsCompaction?
     public var input: CompactResponseMethodPublicBody.Input?
     public var previousResponseID: String?
@@ -86,21 +99,36 @@ public struct CompactResponseMethodPublicBody: Codable, Hashable, Sendable {
         self.serviceTier = serviceTier
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case model
-        case input
-        case previousResponseID = "previous_response_id"
-        case instructions
-        case safetyIdentifier = "safety_identifier"
-        case image
-        case promptCacheKey = "prompt_cache_key"
-        case promptCacheRetention = "prompt_cache_retention"
-        case promptCacheOptions = "prompt_cache_options"
-        case serviceTier = "service_tier"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.model = try container.decodeIfPresent(ModelIdsCompaction.self, forKey: "model")
+        self.input = try container.decodeIfPresent(CompactResponseMethodPublicBody.Input.self, forKey: "input")
+        self.previousResponseID = try container.decodeIfPresent(String.self, forKey: "previous_response_id")
+        self.instructions = try container.decodeIfPresent(String.self, forKey: "instructions")
+        self.safetyIdentifier = try container.decodeIfPresent(String.self, forKey: "safety_identifier")
+        self.image = try container.decodeIfPresent(ImageOptionsParam.self, forKey: "image")
+        self.promptCacheKey = try container.decodeIfPresent(String.self, forKey: "prompt_cache_key")
+        self.promptCacheRetention = try container.decodeIfPresent(PromptCacheRetentionEnum.self, forKey: "prompt_cache_retention")
+        self.promptCacheOptions = try container.decodeIfPresent(PromptCacheOptionsParam.self, forKey: "prompt_cache_options")
+        self.serviceTier = try container.decodeIfPresent(ServiceTierEnum.self, forKey: "service_tier")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encodeIfPresent(self.input, forKey: "input")
+        try container.encodeIfPresent(self.previousResponseID, forKey: "previous_response_id")
+        try container.encodeIfPresent(self.instructions, forKey: "instructions")
+        try container.encodeIfPresent(self.safetyIdentifier, forKey: "safety_identifier")
+        try container.encodeIfPresent(self.image, forKey: "image")
+        try container.encodeIfPresent(self.promptCacheKey, forKey: "prompt_cache_key")
+        try container.encodeIfPresent(self.promptCacheRetention, forKey: "prompt_cache_retention")
+        try container.encodeIfPresent(self.promptCacheOptions, forKey: "prompt_cache_options")
+        try container.encodeIfPresent(self.serviceTier, forKey: "service_tier")
     }
 
     /// Text, image, or file inputs to the model, used to generate a response
-    public indirect enum Input: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public indirect enum Input: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         /// A text input to the model, equivalent to a text input with the `user` role.
         case string(String)
         /// A list of one or many input items to the model, containing different content types.

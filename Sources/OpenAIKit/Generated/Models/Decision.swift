@@ -4,7 +4,7 @@
 import Foundation
 
 /// The input to evaluate for every question. Provide a text string or an ordered array of messages, function calls and outputs, or custom tool calls and outputs. Each tool output must identify a matching call by call ID.
-public indirect enum DecisionInput: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+public indirect enum DecisionInput: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
     case string(String)
     case array([DecisionInput.Item])
     /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
@@ -40,7 +40,7 @@ public indirect enum DecisionInput: Codable, Hashable, Sendable, ExpressibleBySt
     }
 
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Item: Codable, Hashable, Sendable {
+    public indirect enum Item: OpenAIModel {
         /// `type`: `message`
         case message(DecisionInputMessage)
         /// `type`: `function_call`
@@ -102,7 +102,7 @@ public indirect enum DecisionInput: Codable, Hashable, Sendable, ExpressibleBySt
 }
 
 /// A text string or an ordered list of output text and refusal parts.
-public indirect enum DecisionInputAssistantContent: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+public indirect enum DecisionInputAssistantContent: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
     case string(String)
     case decisionInputAssistantContentParts(DecisionInputAssistantContentParts)
     /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
@@ -141,7 +141,7 @@ public indirect enum DecisionInputAssistantContent: Codable, Hashable, Sendable,
 public typealias DecisionInputAssistantContentParts = [DecisionInputAssistantContentPartsElement]
 
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum DecisionInputAssistantContentPartsElement: Codable, Hashable, Sendable {
+public indirect enum DecisionInputAssistantContentPartsElement: OpenAIModel {
     /// `type`: `output_text`
     case outputText(DecisionInputOutputText)
     /// `type`: `refusal`
@@ -181,7 +181,7 @@ public indirect enum DecisionInputAssistantContentPartsElement: Codable, Hashabl
 }
 
 /// An assistant message containing output text or refusals.
-public struct DecisionInputAssistantMessage: Codable, Hashable, Sendable {
+public struct DecisionInputAssistantMessage: OpenAIModel {
     public var role: String = "assistant"
     public var content: DecisionInputAssistantContent
     /// The phase of an assistant message.
@@ -193,16 +193,25 @@ public struct DecisionInputAssistantMessage: Codable, Hashable, Sendable {
         self.phase = phase
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case role
-        case content
-        case phase
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.role = try container.decodeIfPresent(String.self, forKey: "role") ?? "assistant"
+        self.content = try container.decode(DecisionInputAssistantContent.self, forKey: "content")
+        self.phase = try container.decodeIfPresent(MessagePhaseParam.self, forKey: "phase")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.role, forKey: "role")
+        try container.encode(self.content, forKey: "content")
+        try container.encodeIfPresent(self.phase, forKey: "phase")
+        try container.encodeIfPresent(self.type, forKey: "type")
     }
 }
 
 /// A text string or an ordered list of text, image, and JSON parts.
-public indirect enum DecisionInputContent: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+public indirect enum DecisionInputContent: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
     case string(String)
     case decisionInputContentParts(DecisionInputContentParts)
     /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
@@ -241,7 +250,7 @@ public indirect enum DecisionInputContent: Codable, Hashable, Sendable, Expressi
 public typealias DecisionInputContentParts = [DecisionInputContentPartsElement]
 
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum DecisionInputContentPartsElement: Codable, Hashable, Sendable {
+public indirect enum DecisionInputContentPartsElement: OpenAIModel {
     /// `type`: `input_text`
     case inputText(DecisionInputText)
     /// `type`: `input_image`
@@ -287,7 +296,7 @@ public indirect enum DecisionInputContentPartsElement: Codable, Hashable, Sendab
     }
 }
 
-public struct DecisionInputCustomToolCall: Codable, Hashable, Sendable {
+public struct DecisionInputCustomToolCall: OpenAIModel {
     public var id: String?
     public var callID: String
     public var namespace: String?
@@ -312,18 +321,30 @@ public struct DecisionInputCustomToolCall: Codable, Hashable, Sendable {
         self.status = status
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case callID = "call_id"
-        case namespace
-        case name
-        case input
-        case status
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.namespace = try container.decodeIfPresent(String.self, forKey: "namespace")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.input = try container.decode(String.self, forKey: "input")
+        self.status = try container.decodeIfPresent(FunctionCallStatusParam.self, forKey: "status")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "custom_tool_call"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encodeIfPresent(self.namespace, forKey: "namespace")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.input, forKey: "input")
+        try container.encodeIfPresent(self.status, forKey: "status")
+        try container.encode(self.type, forKey: "type")
     }
 }
 
-public struct DecisionInputCustomToolCallOutput: Codable, Hashable, Sendable {
+public struct DecisionInputCustomToolCallOutput: OpenAIModel {
     public var id: String?
     public var callID: String
     public var output: DecisionInputToolOutputContent
@@ -342,17 +363,27 @@ public struct DecisionInputCustomToolCallOutput: Codable, Hashable, Sendable {
         self.status = status
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case callID = "call_id"
-        case output
-        case status
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.output = try container.decode(DecisionInputToolOutputContent.self, forKey: "output")
+        self.status = try container.decodeIfPresent(FunctionCallStatusParam.self, forKey: "status")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "custom_tool_call_output"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encode(self.output, forKey: "output")
+        try container.encodeIfPresent(self.status, forKey: "status")
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// A text string or an ordered list of input text parts.
-public indirect enum DecisionInputDeveloperContent: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+public indirect enum DecisionInputDeveloperContent: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
     case string(String)
     case decisionInputDeveloperContentParts(DecisionInputDeveloperContentParts)
     /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
@@ -391,7 +422,7 @@ public indirect enum DecisionInputDeveloperContent: Codable, Hashable, Sendable,
 public typealias DecisionInputDeveloperContentParts = [DecisionInputText]
 
 /// A developer message containing input text.
-public struct DecisionInputDeveloperMessage: Codable, Hashable, Sendable {
+public struct DecisionInputDeveloperMessage: OpenAIModel {
     public var role: String = "developer"
     public var content: DecisionInputDeveloperContent
     public var type: String? = "message"
@@ -400,14 +431,22 @@ public struct DecisionInputDeveloperMessage: Codable, Hashable, Sendable {
         self.content = content
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case role
-        case content
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.role = try container.decodeIfPresent(String.self, forKey: "role") ?? "developer"
+        self.content = try container.decode(DecisionInputDeveloperContent.self, forKey: "content")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.role, forKey: "role")
+        try container.encode(self.content, forKey: "content")
+        try container.encodeIfPresent(self.type, forKey: "type")
     }
 }
 
-public struct DecisionInputFunctionCall: Codable, Hashable, Sendable {
+public struct DecisionInputFunctionCall: OpenAIModel {
     public var id: String?
     public var callID: String
     public var namespace: String?
@@ -432,18 +471,30 @@ public struct DecisionInputFunctionCall: Codable, Hashable, Sendable {
         self.status = status
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case callID = "call_id"
-        case namespace
-        case name
-        case arguments
-        case status
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.namespace = try container.decodeIfPresent(String.self, forKey: "namespace")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.arguments = try container.decode(String.self, forKey: "arguments")
+        self.status = try container.decodeIfPresent(FunctionCallStatusParam.self, forKey: "status")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "function_call"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encodeIfPresent(self.namespace, forKey: "namespace")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.arguments, forKey: "arguments")
+        try container.encodeIfPresent(self.status, forKey: "status")
+        try container.encode(self.type, forKey: "type")
     }
 }
 
-public struct DecisionInputFunctionCallOutput: Codable, Hashable, Sendable {
+public struct DecisionInputFunctionCallOutput: OpenAIModel {
     public var id: String?
     public var callID: String
     public var output: DecisionInputToolOutputContent
@@ -462,17 +513,27 @@ public struct DecisionInputFunctionCallOutput: Codable, Hashable, Sendable {
         self.status = status
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case callID = "call_id"
-        case output
-        case status
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.callID = try container.decode(String.self, forKey: "call_id")
+        self.output = try container.decode(DecisionInputToolOutputContent.self, forKey: "output")
+        self.status = try container.decodeIfPresent(FunctionCallStatusParam.self, forKey: "status")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "function_call_output"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encode(self.callID, forKey: "call_id")
+        try container.encode(self.output, forKey: "output")
+        try container.encodeIfPresent(self.status, forKey: "status")
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// An image provided as a base64 data URL or a publicly accessible HTTP(S) URL. File IDs are not supported.
-public struct DecisionInputImage: Codable, Hashable, Sendable {
+public struct DecisionInputImage: OpenAIModel {
     /// A base64-encoded image in a data URL or a publicly accessible HTTP(S) image URL.
     public var imageURL: String
     /// The image detail level, using the selected model's image profile. Defaults to auto.
@@ -491,29 +552,44 @@ public struct DecisionInputImage: Codable, Hashable, Sendable {
         self.promptCacheBreakpoint = promptCacheBreakpoint
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case imageURL = "image_url"
-        case detail
-        case promptCacheBreakpoint = "prompt_cache_breakpoint"
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.imageURL = try container.decode(String.self, forKey: "image_url")
+        self.detail = try container.decodeIfPresent(ImageDetailParam.self, forKey: "detail")
+        self.promptCacheBreakpoint = try container.decodeIfPresent(DecisionInputImage.PromptCacheBreakpoint.self, forKey: "prompt_cache_breakpoint")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "input_image"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.imageURL, forKey: "image_url")
+        try container.encodeIfPresent(self.detail, forKey: "detail")
+        try container.encodeIfPresent(self.promptCacheBreakpoint, forKey: "prompt_cache_breakpoint")
+        try container.encode(self.type, forKey: "type")
     }
 
     /// Marks the exact end of a reusable prompt prefix. The breakpoint inherits its TTL from the request's `prompt_cache_options.ttl`; the boundary is not rounded to a token block.
-    public struct PromptCacheBreakpoint: Codable, Hashable, Sendable {
+    public struct PromptCacheBreakpoint: OpenAIModel {
         /// The breakpoint mode. Always `explicit`.
         public var mode: String = "explicit"
 
         public init() {
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case mode
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.mode = try container.decodeIfPresent(String.self, forKey: "mode") ?? "explicit"
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.mode, forKey: "mode")
         }
     }
 }
 
 /// A JSON object or an array of objects rendered as text. Nested values may be any JSON value. Limited to 32 container levels, 10,000 values, and 256 KiB of compact UTF-8 JSON.
-public struct DecisionInputJson: Codable, Hashable, Sendable {
+public struct DecisionInputJson: OpenAIModel {
     public var type: String = "input_json"
     public var data: DecisionInputJson.DataValue
 
@@ -521,12 +597,19 @@ public struct DecisionInputJson: Codable, Hashable, Sendable {
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case data
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "input_json"
+        self.data = try container.decode(DecisionInputJson.DataValue.self, forKey: "data")
     }
 
-    public indirect enum DataValue: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.data, forKey: "data")
+    }
+
+    public indirect enum DataValue: OpenAIModel {
         case variant1([String: JSONValue?])
         case array([[String: JSONValue?]])
         /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
@@ -560,7 +643,7 @@ public struct DecisionInputJson: Codable, Hashable, Sendable {
 }
 
 /// Decoding picks the case from the `role` field. Values this version does not know decode as `.unknown`.
-public indirect enum DecisionInputMessage: Codable, Hashable, Sendable {
+public indirect enum DecisionInputMessage: OpenAIModel {
     /// `role`: `user`
     case user(DecisionInputUserMessage)
     /// `role`: `developer`
@@ -613,7 +696,7 @@ public indirect enum DecisionInputMessage: Codable, Hashable, Sendable {
     }
 }
 
-public struct DecisionInputOutputText: Codable, Hashable, Sendable {
+public struct DecisionInputOutputText: OpenAIModel {
     public var type: String = "output_text"
     public var text: String
 
@@ -621,13 +704,20 @@ public struct DecisionInputOutputText: Codable, Hashable, Sendable {
         self.text = text
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case text
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "output_text"
+        self.text = try container.decode(String.self, forKey: "text")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.text, forKey: "text")
     }
 }
 
-public struct DecisionInputRefusal: Codable, Hashable, Sendable {
+public struct DecisionInputRefusal: OpenAIModel {
     public var type: String = "refusal"
     public var refusal: String
 
@@ -635,14 +725,21 @@ public struct DecisionInputRefusal: Codable, Hashable, Sendable {
         self.refusal = refusal
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case refusal
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "refusal"
+        self.refusal = try container.decode(String.self, forKey: "refusal")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.refusal, forKey: "refusal")
     }
 }
 
 /// A system message containing input text.
-public struct DecisionInputSystemMessage: Codable, Hashable, Sendable {
+public struct DecisionInputSystemMessage: OpenAIModel {
     public var role: String = "system"
     public var content: DecisionInputDeveloperContent
     public var type: String? = "message"
@@ -651,14 +748,22 @@ public struct DecisionInputSystemMessage: Codable, Hashable, Sendable {
         self.content = content
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case role
-        case content
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.role = try container.decodeIfPresent(String.self, forKey: "role") ?? "system"
+        self.content = try container.decode(DecisionInputDeveloperContent.self, forKey: "content")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.role, forKey: "role")
+        try container.encode(self.content, forKey: "content")
+        try container.encodeIfPresent(self.type, forKey: "type")
     }
 }
 
-public struct DecisionInputText: Codable, Hashable, Sendable {
+public struct DecisionInputText: OpenAIModel {
     public var type: String = "input_text"
     public var text: String
     /// Marks the exact end of a reusable prompt prefix. The breakpoint inherits its TTL from the request's `prompt_cache_options.ttl`; the boundary is not rounded to a token block.
@@ -669,28 +774,42 @@ public struct DecisionInputText: Codable, Hashable, Sendable {
         self.promptCacheBreakpoint = promptCacheBreakpoint
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case text
-        case promptCacheBreakpoint = "prompt_cache_breakpoint"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "input_text"
+        self.text = try container.decode(String.self, forKey: "text")
+        self.promptCacheBreakpoint = try container.decodeIfPresent(DecisionInputText.PromptCacheBreakpoint.self, forKey: "prompt_cache_breakpoint")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.text, forKey: "text")
+        try container.encodeIfPresent(self.promptCacheBreakpoint, forKey: "prompt_cache_breakpoint")
     }
 
     /// Marks the exact end of a reusable prompt prefix. The breakpoint inherits its TTL from the request's `prompt_cache_options.ttl`; the boundary is not rounded to a token block.
-    public struct PromptCacheBreakpoint: Codable, Hashable, Sendable {
+    public struct PromptCacheBreakpoint: OpenAIModel {
         /// The breakpoint mode. Always `explicit`.
         public var mode: String = "explicit"
 
         public init() {
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case mode
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.mode = try container.decodeIfPresent(String.self, forKey: "mode") ?? "explicit"
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.mode, forKey: "mode")
         }
     }
 }
 
 /// Text evidence or an ordered list of text and image parts.
-public indirect enum DecisionInputToolOutputContent: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+public indirect enum DecisionInputToolOutputContent: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
     case string(String)
     case decisionInputToolOutputContentParts(DecisionInputToolOutputContentParts)
     /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
@@ -729,7 +848,7 @@ public indirect enum DecisionInputToolOutputContent: Codable, Hashable, Sendable
 public typealias DecisionInputToolOutputContentParts = [DecisionInputToolOutputContentPartsElement]
 
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum DecisionInputToolOutputContentPartsElement: Codable, Hashable, Sendable {
+public indirect enum DecisionInputToolOutputContentPartsElement: OpenAIModel {
     /// `type`: `input_text`
     case inputText(DecisionInputText)
     /// `type`: `input_image`
@@ -769,7 +888,7 @@ public indirect enum DecisionInputToolOutputContentPartsElement: Codable, Hashab
 }
 
 /// A user message containing input text, images, or JSON.
-public struct DecisionInputUserMessage: Codable, Hashable, Sendable {
+public struct DecisionInputUserMessage: OpenAIModel {
     public var role: String = "user"
     public var content: DecisionInputContent
     public var type: String? = "message"
@@ -778,15 +897,23 @@ public struct DecisionInputUserMessage: Codable, Hashable, Sendable {
         self.content = content
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case role
-        case content
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.role = try container.decodeIfPresent(String.self, forKey: "role") ?? "user"
+        self.content = try container.decode(DecisionInputContent.self, forKey: "content")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.role, forKey: "role")
+        try container.encode(self.content, forKey: "content")
+        try container.encodeIfPresent(self.type, forKey: "type")
     }
 }
 
 /// An image provided as a base64 data URL or a publicly accessible HTTP(S) URL. File IDs are not supported.
-public struct DecisionQuestionInputImage: Codable, Hashable, Sendable {
+public struct DecisionQuestionInputImage: OpenAIModel {
     /// A base64-encoded image in a data URL or a publicly accessible HTTP(S) image URL.
     public var imageURL: String
     /// The image detail level, using the selected model's image profile. Defaults to auto.
@@ -798,17 +925,25 @@ public struct DecisionQuestionInputImage: Codable, Hashable, Sendable {
         self.detail = detail
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case imageURL = "image_url"
-        case detail
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.imageURL = try container.decode(String.self, forKey: "image_url")
+        self.detail = try container.decodeIfPresent(ImageDetailParam.self, forKey: "detail")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "input_image"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.imageURL, forKey: "image_url")
+        try container.encodeIfPresent(self.detail, forKey: "detail")
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// A text, image, or JSON content part in a question instruction.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum DecisionQuestionInputPart: Codable, Hashable, Sendable {
+public indirect enum DecisionQuestionInputPart: OpenAIModel {
     /// `type`: `input_text`
     case inputText(DecisionQuestionInputText)
     /// `type`: `input_image`
@@ -854,7 +989,7 @@ public indirect enum DecisionQuestionInputPart: Codable, Hashable, Sendable {
     }
 }
 
-public struct DecisionQuestionInputText: Codable, Hashable, Sendable {
+public struct DecisionQuestionInputText: OpenAIModel {
     public var type: String = "input_text"
     public var text: String
 
@@ -862,13 +997,20 @@ public struct DecisionQuestionInputText: Codable, Hashable, Sendable {
         self.text = text
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case text
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "input_text"
+        self.text = try container.decode(String.self, forKey: "text")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.text, forKey: "text")
     }
 }
 
-public struct DecisionRequest: Codable, Hashable, Sendable {
+public struct DecisionRequest: OpenAIModel {
     /// The model to use. Only `gpt-6-luna` is supported.
     public var model: String
     public var input: DecisionInput
@@ -897,17 +1039,28 @@ public struct DecisionRequest: Codable, Hashable, Sendable {
         self.promptCacheOptions = promptCacheOptions
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case model
-        case input
-        case questions
-        case safetyIdentifier = "safety_identifier"
-        case promptCacheKey = "prompt_cache_key"
-        case promptCacheOptions = "prompt_cache_options"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.model = try container.decode(String.self, forKey: "model")
+        self.input = try container.decode(DecisionInput.self, forKey: "input")
+        self.questions = try container.decode([QuestionParam].self, forKey: "questions")
+        self.safetyIdentifier = try container.decodeIfPresent(String.self, forKey: "safety_identifier")
+        self.promptCacheKey = try container.decodeIfPresent(String.self, forKey: "prompt_cache_key")
+        self.promptCacheOptions = try container.decodeIfPresent(DecisionRequest.PromptCacheOptions.self, forKey: "prompt_cache_options")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.model, forKey: "model")
+        try container.encode(self.input, forKey: "input")
+        try container.encode(self.questions, forKey: "questions")
+        try container.encodeIfPresent(self.safetyIdentifier, forKey: "safety_identifier")
+        try container.encodeIfPresent(self.promptCacheKey, forKey: "prompt_cache_key")
+        try container.encodeIfPresent(self.promptCacheOptions, forKey: "prompt_cache_options")
     }
 
     /// Options for prompt caching. Supported for `gpt-5.6` and later models. By default, OpenAI automatically chooses one implicit cache breakpoint. You can add explicit breakpoints to content blocks with `prompt_cache_breakpoint`. Each request can write up to four breakpoints. For cache matching, OpenAI considers up to the latest 80 breakpoints in the conversation, without a content-block lookback limit. Set `mode` to `explicit` to disable the implicit breakpoint. The `ttl` defaults to `30m`, which is currently the only supported value. See the [prompt caching guide](https://developers.openai.com/api/docs/guides/prompt-caching) for current details.
-    public struct PromptCacheOptions: Codable, Hashable, Sendable {
+    public struct PromptCacheOptions: OpenAIModel {
         /// The minimum lifetime applied to every implicit and explicit cache breakpoint written by the request. Defaults to `30m`, which is currently the only supported value. The backend may retain cache entries for longer.
         public var ttl: String? = "30m"
         /// Controls whether OpenAI automatically creates an implicit cache breakpoint. Defaults to `implicit`. With `implicit`, OpenAI creates one implicit breakpoint and writes up to the latest three explicit breakpoints in the request. With `explicit`, OpenAI does not create an implicit breakpoint and writes up to the latest four explicit breakpoints. If there are no explicit breakpoints, the request does not use prompt caching.
@@ -917,9 +1070,16 @@ public struct DecisionRequest: Codable, Hashable, Sendable {
             self.mode = mode
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case ttl
-            case mode
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.ttl = try container.decodeIfPresent(String.self, forKey: "ttl")
+            self.mode = try container.decodeIfPresent(DecisionRequest.PromptCacheOptions.Mode.self, forKey: "mode")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.ttl, forKey: "ttl")
+            try container.encodeIfPresent(self.mode, forKey: "mode")
         }
 
         /// Controls whether OpenAI automatically creates an implicit cache breakpoint. Defaults to `implicit`. With `implicit`, OpenAI creates one implicit breakpoint and writes up to the latest three explicit breakpoints in the request. With `explicit`, OpenAI does not create an implicit breakpoint and writes up to the latest four explicit breakpoints. If there are no explicit breakpoints, the request does not use prompt caching.
@@ -942,7 +1102,7 @@ public struct DecisionRequest: Codable, Hashable, Sendable {
     }
 }
 
-public struct DecisionResponse: Codable, Hashable, Sendable {
+public struct DecisionResponse: OpenAIModel {
     /// The model used.
     public var model: String
     /// Answers in question order. Any question can return a refusal instead of an answer; other questions can still receive answers. A refusal has `type: "refusal"` and the question's `name`, or `null` if it was unnamed.
@@ -960,9 +1120,17 @@ public struct DecisionResponse: Codable, Hashable, Sendable {
         self.usage = usage
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case model
-        case answers
-        case usage
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.model = try container.decode(String.self, forKey: "model")
+        self.answers = try container.decode([AnswerResource].self, forKey: "answers")
+        self.usage = try container.decode(ResponseUsageResource.self, forKey: "usage")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.model, forKey: "model")
+        try container.encode(self.answers, forKey: "answers")
+        try container.encode(self.usage, forKey: "usage")
     }
 }

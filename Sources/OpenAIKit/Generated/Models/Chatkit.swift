@@ -4,7 +4,7 @@
 import Foundation
 
 /// Optional per-session configuration settings for ChatKit behavior.
-public struct ChatkitConfigurationParam: Codable, Hashable, Sendable {
+public struct ChatkitConfigurationParam: OpenAIModel {
     /// Configuration for automatic thread titling. When omitted, automatic thread titling is enabled by default.
     public var automaticThreadTitling: AutomaticThreadTitlingParam?
     /// Configuration for upload enablement and limits. When omitted, uploads are disabled by default (max_files 10, max_file_size 512 MB).
@@ -22,15 +22,23 @@ public struct ChatkitConfigurationParam: Codable, Hashable, Sendable {
         self.history = history
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case automaticThreadTitling = "automatic_thread_titling"
-        case fileUpload = "file_upload"
-        case history
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.automaticThreadTitling = try container.decodeIfPresent(AutomaticThreadTitlingParam.self, forKey: "automatic_thread_titling")
+        self.fileUpload = try container.decodeIfPresent(FileUploadParam.self, forKey: "file_upload")
+        self.history = try container.decodeIfPresent(HistoryParam.self, forKey: "history")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.automaticThreadTitling, forKey: "automatic_thread_titling")
+        try container.encodeIfPresent(self.fileUpload, forKey: "file_upload")
+        try container.encodeIfPresent(self.history, forKey: "history")
     }
 }
 
 /// Workflow metadata and state returned for the session.
-public struct ChatkitWorkflow: Codable, Hashable, Sendable {
+public struct ChatkitWorkflow: OpenAIModel {
     /// Identifier of the workflow backing the session.
     public var id: String
     public var version: String?
@@ -50,14 +58,23 @@ public struct ChatkitWorkflow: Codable, Hashable, Sendable {
         self.stateVariables = stateVariables
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case version
-        case stateVariables = "state_variables"
-        case tracing
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.version = try container.decodeIfPresent(String.self, forKey: "version")
+        self.stateVariables = try container.decodeIfPresent([String: ChatkitWorkflow.StateVariable?].self, forKey: "state_variables")
+        self.tracing = try container.decode(ChatkitWorkflowTracing.self, forKey: "tracing")
     }
 
-    public indirect enum StateVariable: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encodeIfPresent(self.version, forKey: "version")
+        try container.encodeIfPresent(self.stateVariables, forKey: "state_variables")
+        try container.encode(self.tracing, forKey: "tracing")
+    }
+
+    public indirect enum StateVariable: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         case string(String)
         case integer(Int)
         case bool(Bool)
@@ -109,7 +126,7 @@ public struct ChatkitWorkflow: Codable, Hashable, Sendable {
 }
 
 /// Controls diagnostic tracing during the session.
-public struct ChatkitWorkflowTracing: Codable, Hashable, Sendable {
+public struct ChatkitWorkflowTracing: OpenAIModel {
     /// Indicates whether tracing is enabled.
     public var enabled: Bool
 
@@ -117,7 +134,13 @@ public struct ChatkitWorkflowTracing: Codable, Hashable, Sendable {
         self.enabled = enabled
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case enabled
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.enabled = try container.decode(Bool.self, forKey: "enabled")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.enabled, forKey: "enabled")
     }
 }

@@ -21,7 +21,7 @@ public struct SafetyAlertErrorType: OpenAIStringEnum {
     }
 }
 
-public struct SafetyAlertResource: Codable, Hashable, Sendable {
+public struct SafetyAlertResource: OpenAIModel {
     public var id: String
     public var object: String = "safety.alert"
     public var createdAt: Int
@@ -56,29 +56,50 @@ public struct SafetyAlertResource: Codable, Hashable, Sendable {
         self.detailedExplanation = detailedExplanation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
-        case requestID = "request_id"
-        case responseID = "response_id"
-        case model
-        case requestPaused = "request_paused"
-        case errorType = "error_type"
-        case reason
-        case detailedExplanation = "detailed_explanation"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "safety.alert"
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.requestID = try container.decode(String.self, forKey: "request_id")
+        self.responseID = try container.decode(String.self, forKey: "response_id")
+        self.model = try container.decode(String.self, forKey: "model")
+        self.requestPaused = try container.decode(Bool.self, forKey: "request_paused")
+        self.errorType = try container.decode(SafetyAlertErrorType.self, forKey: "error_type")
+        self.reason = try container.decodeIfPresent(String.self, forKey: "reason")
+        self.detailedExplanation = try container.decodeIfPresent(String.self, forKey: "detailed_explanation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.requestID, forKey: "request_id")
+        try container.encode(self.responseID, forKey: "response_id")
+        try container.encode(self.model, forKey: "model")
+        try container.encode(self.requestPaused, forKey: "request_paused")
+        try container.encode(self.errorType, forKey: "error_type")
+        try container.encodeIfPresent(self.reason, forKey: "reason")
+        try container.encodeIfPresent(self.detailedExplanation, forKey: "detailed_explanation")
     }
 }
 
-public struct SafetyCaseNotice: Codable, Hashable, Sendable {
+public struct SafetyCaseNotice: OpenAIModel {
     public var type: SafetyCaseNoticeType
 
     public init(type: SafetyCaseNoticeType) {
         self.type = type
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decode(SafetyCaseNoticeType.self, forKey: "type")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
@@ -98,7 +119,7 @@ public struct SafetyCaseNoticeType: OpenAIStringEnum {
     }
 }
 
-public struct SafetyCaseResource: Codable, Hashable, Sendable {
+public struct SafetyCaseResource: OpenAIModel {
     public var id: String
     public var object: String = "safety.case"
     public var createdAt: Int
@@ -120,13 +141,24 @@ public struct SafetyCaseResource: Codable, Hashable, Sendable {
         self.reason = reason
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
-        case entityIdentifier = "entity_identifier"
-        case reason
-        case notice
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "safety.case"
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.entityIdentifier = try container.decode(String.self, forKey: "entity_identifier")
+        self.reason = try container.decodeIfPresent(String.self, forKey: "reason")
+        self.notice = try container.decode(SafetyCaseNotice.self, forKey: "notice")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.entityIdentifier, forKey: "entity_identifier")
+        try container.encodeIfPresent(self.reason, forKey: "reason")
+        try container.encode(self.notice, forKey: "notice")
     }
 }
 

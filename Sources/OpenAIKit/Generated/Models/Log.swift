@@ -4,7 +4,7 @@
 import Foundation
 
 /// The log probability of a token.
-public struct LogProb: Codable, Hashable, Sendable {
+public struct LogProb: OpenAIModel {
     public var token: String
     public var logprob: Double
     public var bytes: [Int]
@@ -22,16 +22,25 @@ public struct LogProb: Codable, Hashable, Sendable {
         self.topLogprobs = topLogprobs
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case token
-        case logprob
-        case bytes
-        case topLogprobs = "top_logprobs"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.token = try container.decode(String.self, forKey: "token")
+        self.logprob = try container.decode(Double.self, forKey: "logprob")
+        self.bytes = try container.decode([Int].self, forKey: "bytes")
+        self.topLogprobs = try container.decode([TopLogProb].self, forKey: "top_logprobs")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.token, forKey: "token")
+        try container.encode(self.logprob, forKey: "logprob")
+        try container.encode(self.bytes, forKey: "bytes")
+        try container.encode(self.topLogprobs, forKey: "top_logprobs")
     }
 }
 
 /// A log probability object.
-public struct LogProbProperties: Codable, Hashable, Sendable {
+public struct LogProbProperties: OpenAIModel {
     /// The token that was used to generate the log probability.
     public var token: String
     /// The log probability of the token.
@@ -49,9 +58,17 @@ public struct LogProbProperties: Codable, Hashable, Sendable {
         self.bytes = bytes
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case token
-        case logprob
-        case bytes
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.token = try container.decode(String.self, forKey: "token")
+        self.logprob = try container.decode(Double.self, forKey: "logprob")
+        self.bytes = try container.decode([Int].self, forKey: "bytes")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.token, forKey: "token")
+        try container.encode(self.logprob, forKey: "logprob")
+        try container.encode(self.bytes, forKey: "bytes")
     }
 }

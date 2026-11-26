@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct EmailNotificationChannel: Codable, Hashable, Sendable {
+public struct EmailNotificationChannel: OpenAIModel {
     public var type: String = "email"
     public var recipients: [String]
     public var subjectPrefix: String?
@@ -13,9 +13,17 @@ public struct EmailNotificationChannel: Codable, Hashable, Sendable {
         self.subjectPrefix = subjectPrefix
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case recipients
-        case subjectPrefix = "subject_prefix"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "email"
+        self.recipients = try container.decode([String].self, forKey: "recipients")
+        self.subjectPrefix = try container.decodeIfPresent(String.self, forKey: "subject_prefix")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.recipients, forKey: "recipients")
+        try container.encodeIfPresent(self.subjectPrefix, forKey: "subject_prefix")
     }
 }

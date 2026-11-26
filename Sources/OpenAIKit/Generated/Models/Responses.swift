@@ -6,7 +6,7 @@ import Foundation
 /// Client events accepted by the Responses WebSocket server.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum ResponsesClientEvent: Codable, Hashable, Sendable {
+public indirect enum ResponsesClientEvent: OpenAIModel {
     /// `type`: `response.create`
     case responseCreate(ResponsesClientEventResponseCreate)
     /// `type`: `response.steer`
@@ -53,7 +53,7 @@ public indirect enum ResponsesClientEvent: Codable, Hashable, Sendable {
 /// - `stream` is implicit over WebSocket and should not be sent.
 /// - `background` is not supported over WebSocket.
 /// - `stream_id` is WebSocket-only and is not part of `POST /v1/responses`.
-public struct ResponsesClientEventResponseCreate: Codable, Hashable, Sendable {
+public struct ResponsesClientEventResponseCreate: OpenAIModel {
     /// The type of the client event. Always `response.create`.
     public var type: String = "response.create"
     /// Whether to generate output for this response. Defaults to true when omitted.
@@ -197,44 +197,86 @@ public struct ResponsesClientEventResponseCreate: Codable, Hashable, Sendable {
         self.maxOutputTokens = maxOutputTokens
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case generate
-        case streamID = "stream_id"
-        case metadata
-        case topLogprobs = "top_logprobs"
-        case temperature
-        case topP = "top_p"
-        case user
-        case safetyIdentifier = "safety_identifier"
-        case promptCacheKey = "prompt_cache_key"
-        case promptCacheRetention = "prompt_cache_retention"
-        case previousResponseID = "previous_response_id"
-        case model
-        case background
-        case maxToolCalls = "max_tool_calls"
-        case text
-        case tools
-        case toolChoice = "tool_choice"
-        case prompt
-        case accessPrograms = "access_programs"
-        case image
-        case promptCacheOptions = "prompt_cache_options"
-        case serviceTier = "service_tier"
-        case truncation
-        case reasoning
-        case input
-        case include
-        case parallelToolCalls = "parallel_tool_calls"
-        case store
-        case instructions
-        case moderation
-        case backgroundOptions = "background_options"
-        case stream
-        case streamOptions = "stream_options"
-        case conversation
-        case contextManagement = "context_management"
-        case maxOutputTokens = "max_output_tokens"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.create"
+        self.generate = try container.decodeIfPresent(Bool.self, forKey: "generate")
+        self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        self.metadata = try container.decodeIfPresent(Metadata.self, forKey: "metadata")
+        self.topLogprobs = try container.decodeIfPresent(Int.self, forKey: "top_logprobs")
+        self.temperature = try container.decodeIfPresent(Double.self, forKey: "temperature")
+        self.topP = try container.decodeIfPresent(Double.self, forKey: "top_p")
+        self.user = try container.decodeIfPresent(String.self, forKey: "user")
+        self.safetyIdentifier = try container.decodeIfPresent(String.self, forKey: "safety_identifier")
+        self.promptCacheKey = try container.decodeIfPresent(String.self, forKey: "prompt_cache_key")
+        self.promptCacheRetention = try container.decodeIfPresent(ResponsesClientEventResponseCreate.PromptCacheRetention.self, forKey: "prompt_cache_retention")
+        self.previousResponseID = try container.decodeIfPresent(String.self, forKey: "previous_response_id")
+        self.model = try container.decodeIfPresent(ModelIdsResponses.self, forKey: "model")
+        self.background = try container.decodeIfPresent(Bool.self, forKey: "background")
+        self.maxToolCalls = try container.decodeIfPresent(Int.self, forKey: "max_tool_calls")
+        self.text = try container.decodeIfPresent(ResponseTextParam.self, forKey: "text")
+        self.tools = try container.decodeIfPresent(ToolsArray.self, forKey: "tools")
+        self.toolChoice = try container.decodeIfPresent(ToolChoiceParam.self, forKey: "tool_choice")
+        self.prompt = try container.decodeIfPresent(Prompt.self, forKey: "prompt")
+        self.accessPrograms = try container.decodeIfPresent(AccessProgramsParam.self, forKey: "access_programs")
+        self.image = try container.decodeIfPresent(ImageOptionsParam.self, forKey: "image")
+        self.promptCacheOptions = try container.decodeIfPresent(ResponsePromptCacheOptionsParam.self, forKey: "prompt_cache_options")
+        self.serviceTier = try container.decodeIfPresent(ServiceTierResponses.self, forKey: "service_tier")
+        self.truncation = try container.decodeIfPresent(ResponsesClientEventResponseCreate.Truncation.self, forKey: "truncation")
+        self.reasoning = try container.decodeIfPresent(Reasoning.self, forKey: "reasoning")
+        self.input = try container.decodeIfPresent(InputParam.self, forKey: "input")
+        self.include = try container.decodeIfPresent([IncludeEnum].self, forKey: "include")
+        self.parallelToolCalls = try container.decodeIfPresent(Bool.self, forKey: "parallel_tool_calls")
+        self.store = try container.decodeIfPresent(Bool.self, forKey: "store")
+        self.instructions = try container.decodeIfPresent(String.self, forKey: "instructions")
+        self.moderation = try container.decodeIfPresent(ModerationParam.self, forKey: "moderation")
+        self.backgroundOptions = try container.decodeIfPresent(BackgroundOptionsParam.self, forKey: "background_options")
+        self.stream = try container.decodeIfPresent(Bool.self, forKey: "stream")
+        self.streamOptions = try container.decodeIfPresent(ResponseStreamOptions.self, forKey: "stream_options")
+        self.conversation = try container.decodeIfPresent(ConversationParam.self, forKey: "conversation")
+        self.contextManagement = try container.decodeIfPresent([ContextManagementParam].self, forKey: "context_management")
+        self.maxOutputTokens = try container.decodeIfPresent(Int.self, forKey: "max_output_tokens")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.generate, forKey: "generate")
+        try container.encodeIfPresent(self.streamID, forKey: "stream_id")
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
+        try container.encodeIfPresent(self.topLogprobs, forKey: "top_logprobs")
+        try container.encodeIfPresent(self.temperature, forKey: "temperature")
+        try container.encodeIfPresent(self.topP, forKey: "top_p")
+        try container.encodeIfPresent(self.user, forKey: "user")
+        try container.encodeIfPresent(self.safetyIdentifier, forKey: "safety_identifier")
+        try container.encodeIfPresent(self.promptCacheKey, forKey: "prompt_cache_key")
+        try container.encodeIfPresent(self.promptCacheRetention, forKey: "prompt_cache_retention")
+        try container.encodeIfPresent(self.previousResponseID, forKey: "previous_response_id")
+        try container.encodeIfPresent(self.model, forKey: "model")
+        try container.encodeIfPresent(self.background, forKey: "background")
+        try container.encodeIfPresent(self.maxToolCalls, forKey: "max_tool_calls")
+        try container.encodeIfPresent(self.text, forKey: "text")
+        try container.encodeIfPresent(self.tools, forKey: "tools")
+        try container.encodeIfPresent(self.toolChoice, forKey: "tool_choice")
+        try container.encodeIfPresent(self.prompt, forKey: "prompt")
+        try container.encodeIfPresent(self.accessPrograms, forKey: "access_programs")
+        try container.encodeIfPresent(self.image, forKey: "image")
+        try container.encodeIfPresent(self.promptCacheOptions, forKey: "prompt_cache_options")
+        try container.encodeIfPresent(self.serviceTier, forKey: "service_tier")
+        try container.encodeIfPresent(self.truncation, forKey: "truncation")
+        try container.encodeIfPresent(self.reasoning, forKey: "reasoning")
+        try container.encodeIfPresent(self.input, forKey: "input")
+        try container.encodeIfPresent(self.include, forKey: "include")
+        try container.encodeIfPresent(self.parallelToolCalls, forKey: "parallel_tool_calls")
+        try container.encodeIfPresent(self.store, forKey: "store")
+        try container.encodeIfPresent(self.instructions, forKey: "instructions")
+        try container.encodeIfPresent(self.moderation, forKey: "moderation")
+        try container.encodeIfPresent(self.backgroundOptions, forKey: "background_options")
+        try container.encodeIfPresent(self.stream, forKey: "stream")
+        try container.encodeIfPresent(self.streamOptions, forKey: "stream_options")
+        try container.encodeIfPresent(self.conversation, forKey: "conversation")
+        try container.encodeIfPresent(self.contextManagement, forKey: "context_management")
+        try container.encodeIfPresent(self.maxOutputTokens, forKey: "max_output_tokens")
     }
 
     /// Deprecated. Use `prompt_cache_options.ttl` instead.
@@ -294,7 +336,7 @@ public struct ResponsesClientEventResponseCreate: Codable, Hashable, Sendable {
 /// Server events emitted by the Responses WebSocket server.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
+public indirect enum ResponsesServerEvent: OpenAIModel {
     /// Emitted when there is a partial audio response.
     ///
     /// `type`: `response.audio.delta`
@@ -892,7 +934,7 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
     }
 
     /// Emitted when there is a partial audio response.
-    public struct ResponseAudioWsDelta: Codable, Hashable, Sendable {
+    public struct ResponseAudioWsDelta: OpenAIModel {
         /// The type of the event. Always `response.audio.delta`.
         public var type: String = "response.audio.delta"
         /// A sequence number for this chunk of the stream response.
@@ -914,16 +956,25 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case sequenceNumber = "sequence_number"
-            case delta
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.audio.delta"
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.delta = try container.decode(String.self, forKey: "delta")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encode(self.delta, forKey: "delta")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when the audio response is complete.
-    public struct ResponseAudioWsDone: Codable, Hashable, Sendable {
+    public struct ResponseAudioWsDone: OpenAIModel {
         /// The type of the event. Always `response.audio.done`.
         public var type: String = "response.audio.done"
         /// The sequence number of the delta.
@@ -938,15 +989,23 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.audio.done"
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when there is a partial transcript of audio.
-    public struct ResponseAudioTranscriptWsDelta: Codable, Hashable, Sendable {
+    public struct ResponseAudioTranscriptWsDelta: OpenAIModel {
         /// The type of the event. Always `response.audio.transcript.delta`.
         public var type: String = "response.audio.transcript.delta"
         /// The partial transcript of the audio response.
@@ -968,16 +1027,25 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case delta
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.audio.transcript.delta"
+            self.delta = try container.decode(String.self, forKey: "delta")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.delta, forKey: "delta")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when the full audio transcript is completed.
-    public struct ResponseAudioTranscriptWsDone: Codable, Hashable, Sendable {
+    public struct ResponseAudioTranscriptWsDone: OpenAIModel {
         /// The type of the event. Always `response.audio.transcript.done`.
         public var type: String = "response.audio.transcript.done"
         /// The sequence number of this event.
@@ -992,15 +1060,23 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.audio.transcript.done"
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when a partial code snippet is streamed by the code interpreter.
-    public struct ResponseCodeInterpreterCallCodeWsDelta: Codable, Hashable, Sendable {
+    public struct ResponseCodeInterpreterCallCodeWsDelta: OpenAIModel {
         /// The type of the event. Always `response.code_interpreter_call_code.delta`.
         public var type: String = "response.code_interpreter_call_code.delta"
         /// The index of the output item in the response for which the code is being streamed.
@@ -1030,18 +1106,29 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case delta
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.code_interpreter_call_code.delta"
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.delta = try container.decode(String.self, forKey: "delta")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.delta, forKey: "delta")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when the code snippet is finalized by the code interpreter.
-    public struct ResponseCodeInterpreterCallCodeWsDone: Codable, Hashable, Sendable {
+    public struct ResponseCodeInterpreterCallCodeWsDone: OpenAIModel {
         /// The type of the event. Always `response.code_interpreter_call_code.done`.
         public var type: String = "response.code_interpreter_call_code.done"
         /// The index of the output item in the response for which the code is finalized.
@@ -1071,18 +1158,29 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case code
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.code_interpreter_call_code.done"
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.code = try container.decode(String.self, forKey: "code")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.code, forKey: "code")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when the code interpreter call is completed.
-    public struct ResponseCodeInterpreterCallWsCompleted: Codable, Hashable, Sendable {
+    public struct ResponseCodeInterpreterCallWsCompleted: OpenAIModel {
         /// The type of the event. Always `response.code_interpreter_call.completed`.
         public var type: String = "response.code_interpreter_call.completed"
         /// The index of the output item in the response for which the code interpreter call is completed.
@@ -1108,17 +1206,27 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.code_interpreter_call.completed"
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when a code interpreter call is in progress.
-    public struct ResponseCodeInterpreterCallInWsProgress: Codable, Hashable, Sendable {
+    public struct ResponseCodeInterpreterCallInWsProgress: OpenAIModel {
         /// The type of the event. Always `response.code_interpreter_call.in_progress`.
         public var type: String = "response.code_interpreter_call.in_progress"
         /// The index of the output item in the response for which the code interpreter call is in progress.
@@ -1144,17 +1252,27 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.code_interpreter_call.in_progress"
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when the code interpreter is actively interpreting the code snippet.
-    public struct ResponseCodeInterpreterCallWsInterpreting: Codable, Hashable, Sendable {
+    public struct ResponseCodeInterpreterCallWsInterpreting: OpenAIModel {
         /// The type of the event. Always `response.code_interpreter_call.interpreting`.
         public var type: String = "response.code_interpreter_call.interpreting"
         /// The index of the output item in the response for which the code interpreter is interpreting code.
@@ -1180,17 +1298,27 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.code_interpreter_call.interpreting"
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when new summary content is sampled for a compaction trigger. Contains no summary content.
-    public struct ResponseCompactionWsCompacting: Codable, Hashable, Sendable {
+    public struct ResponseCompactionWsCompacting: OpenAIModel {
         /// The type of the event, always `response.compaction.compacting`.
         public var type: String = "response.compaction.compacting"
         /// The sequence number of the event that was emitted.
@@ -1216,17 +1344,27 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case sequenceNumber = "sequence_number"
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.compaction.compacting"
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when the model response is complete.
-    public struct ResponseWsCompleted: Codable, Hashable, Sendable {
+    public struct ResponseWsCompleted: OpenAIModel {
         /// The type of the event. Always `response.completed`.
         public var type: String = "response.completed"
         /// Properties of the completed response.
@@ -1248,16 +1386,25 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case response
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.completed"
+            self.response = try container.decode(Response.self, forKey: "response")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.response, forKey: "response")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when a new content part is added.
-    public struct ResponseContentPartWsAdded: Codable, Hashable, Sendable {
+    public struct ResponseContentPartWsAdded: OpenAIModel {
         /// The type of the event. Always `response.content_part.added`.
         public var type: String = "response.content_part.added"
         /// The ID of the output item that the content part was added to.
@@ -1291,19 +1438,31 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case contentIndex = "content_index"
-            case part
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.content_part.added"
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.contentIndex = try container.decode(Int.self, forKey: "content_index")
+            self.part = try container.decode(OutputContent.self, forKey: "part")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.contentIndex, forKey: "content_index")
+            try container.encode(self.part, forKey: "part")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when a content part is done.
-    public struct ResponseContentPartWsDone: Codable, Hashable, Sendable {
+    public struct ResponseContentPartWsDone: OpenAIModel {
         /// The type of the event. Always `response.content_part.done`.
         public var type: String = "response.content_part.done"
         /// The ID of the output item that the content part was added to.
@@ -1337,19 +1496,31 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case contentIndex = "content_index"
-            case sequenceNumber = "sequence_number"
-            case part
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.content_part.done"
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.contentIndex = try container.decode(Int.self, forKey: "content_index")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.part = try container.decode(OutputContent.self, forKey: "part")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.contentIndex, forKey: "content_index")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encode(self.part, forKey: "part")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// An event that is emitted when a response is created.
-    public struct ResponseWsCreated: Codable, Hashable, Sendable {
+    public struct ResponseWsCreated: OpenAIModel {
         /// The type of the event. Always `response.created`.
         public var type: String = "response.created"
         /// The response that was created.
@@ -1371,16 +1542,25 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case response
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.created"
+            self.response = try container.decode(Response.self, forKey: "response")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.response, forKey: "response")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when a file search call is completed (results found).
-    public struct ResponseFileSearchCallWsCompleted: Codable, Hashable, Sendable {
+    public struct ResponseFileSearchCallWsCompleted: OpenAIModel {
         /// The type of the event. Always `response.file_search_call.completed`.
         public var type: String = "response.file_search_call.completed"
         /// The index of the output item that the file search call is initiated.
@@ -1406,17 +1586,27 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.file_search_call.completed"
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when a file search call is initiated.
-    public struct ResponseFileSearchCallInWsProgress: Codable, Hashable, Sendable {
+    public struct ResponseFileSearchCallInWsProgress: OpenAIModel {
         /// The type of the event. Always `response.file_search_call.in_progress`.
         public var type: String = "response.file_search_call.in_progress"
         /// The index of the output item that the file search call is initiated.
@@ -1442,17 +1632,27 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.file_search_call.in_progress"
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when a file search is currently searching.
-    public struct ResponseFileSearchCallWsSearching: Codable, Hashable, Sendable {
+    public struct ResponseFileSearchCallWsSearching: OpenAIModel {
         /// The type of the event. Always `response.file_search_call.searching`.
         public var type: String = "response.file_search_call.searching"
         /// The index of the output item that the file search call is searching.
@@ -1478,17 +1678,27 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.file_search_call.searching"
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when there is a partial function-call arguments delta.
-    public struct ResponseFunctionCallArgumentsWsDelta: Codable, Hashable, Sendable {
+    public struct ResponseFunctionCallArgumentsWsDelta: OpenAIModel {
         /// The type of the event. Always `response.function_call_arguments.delta`.
         public var type: String = "response.function_call_arguments.delta"
         /// The ID of the output item that the function-call arguments delta is added to.
@@ -1518,18 +1728,29 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case sequenceNumber = "sequence_number"
-            case delta
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.function_call_arguments.delta"
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.delta = try container.decode(String.self, forKey: "delta")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encode(self.delta, forKey: "delta")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when function-call arguments are finalized.
-    public struct ResponseFunctionCallArgumentsWsDone: Codable, Hashable, Sendable {
+    public struct ResponseFunctionCallArgumentsWsDone: OpenAIModel {
         public var type: String = "response.function_call_arguments.done"
         /// The ID of the item.
         public var itemID: String
@@ -1558,18 +1779,29 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case sequenceNumber = "sequence_number"
-            case arguments
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.function_call_arguments.done"
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.arguments = try container.decode(String.self, forKey: "arguments")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encode(self.arguments, forKey: "arguments")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// A streaming event that indicated a shell command was added to a tool call.
-    public struct ResponseShellCallCommandWsAdded: Codable, Hashable, Sendable {
+    public struct ResponseShellCallCommandWsAdded: OpenAIModel {
         /// The type of the event, always `response.shell_call_command.added`.
         public var type: String = "response.shell_call_command.added"
         /// The sequence number of the event that was emitted.
@@ -1599,18 +1831,29 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case sequenceNumber = "sequence_number"
-            case outputIndex = "output_index"
-            case commandIndex = "command_index"
-            case command
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.shell_call_command.added"
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.commandIndex = try container.decode(Int.self, forKey: "command_index")
+            self.command = try container.decode(String.self, forKey: "command")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.commandIndex, forKey: "command_index")
+            try container.encode(self.command, forKey: "command")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// A streaming event that indicated a shell command was incrementally updated.
-    public struct ResponseShellCallCommandWsDelta: Codable, Hashable, Sendable {
+    public struct ResponseShellCallCommandWsDelta: OpenAIModel {
         /// The type of the event, always `response.shell_call_command.delta`.
         public var type: String = "response.shell_call_command.delta"
         /// The sequence number of the event that was emitted.
@@ -1644,19 +1887,31 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case sequenceNumber = "sequence_number"
-            case outputIndex = "output_index"
-            case commandIndex = "command_index"
-            case delta
-            case obfuscation
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.shell_call_command.delta"
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.commandIndex = try container.decode(Int.self, forKey: "command_index")
+            self.delta = try container.decode(String.self, forKey: "delta")
+            self.obfuscation = try container.decodeIfPresent(String.self, forKey: "obfuscation")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.commandIndex, forKey: "command_index")
+            try container.encode(self.delta, forKey: "delta")
+            try container.encodeIfPresent(self.obfuscation, forKey: "obfuscation")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// A streaming event that indicated a shell command was completed.
-    public struct ResponseShellCallCommandWsDone: Codable, Hashable, Sendable {
+    public struct ResponseShellCallCommandWsDone: OpenAIModel {
         /// The type of the event, always `response.shell_call_command.done`.
         public var type: String = "response.shell_call_command.done"
         /// The sequence number of the event that was emitted.
@@ -1686,18 +1941,29 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case sequenceNumber = "sequence_number"
-            case outputIndex = "output_index"
-            case commandIndex = "command_index"
-            case command
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.shell_call_command.done"
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.commandIndex = try container.decode(Int.self, forKey: "command_index")
+            self.command = try container.decode(String.self, forKey: "command")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.commandIndex, forKey: "command_index")
+            try container.encode(self.command, forKey: "command")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// A streaming event that indicated shell call output was incrementally added.
-    public struct ResponseShellCallOutputContentWsDelta: Codable, Hashable, Sendable {
+    public struct ResponseShellCallOutputContentWsDelta: OpenAIModel {
         /// The type of the event, always `response.shell_call_output_content.delta`.
         public var type: String = "response.shell_call_output_content.delta"
         /// The sequence number of the event that was emitted.
@@ -1731,19 +1997,31 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case sequenceNumber = "sequence_number"
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case commandIndex = "command_index"
-            case delta
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.shell_call_output_content.delta"
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.commandIndex = try container.decode(Int.self, forKey: "command_index")
+            self.delta = try container.decode(ShellCallOutputDelta.self, forKey: "delta")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.commandIndex, forKey: "command_index")
+            try container.encode(self.delta, forKey: "delta")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// A streaming event that indicated shell call output was completed.
-    public struct ResponseShellCallOutputContentWsDone: Codable, Hashable, Sendable {
+    public struct ResponseShellCallOutputContentWsDone: OpenAIModel {
         /// The type of the event, always `response.shell_call_output_content.done`.
         public var type: String = "response.shell_call_output_content.done"
         /// The sequence number of the event that was emitted.
@@ -1777,19 +2055,31 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case sequenceNumber = "sequence_number"
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case commandIndex = "command_index"
-            case output
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.shell_call_output_content.done"
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.commandIndex = try container.decode(Int.self, forKey: "command_index")
+            self.output = try container.decode([FunctionShellCallOutputContent].self, forKey: "output")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.commandIndex, forKey: "command_index")
+            try container.encode(self.output, forKey: "output")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when the response is in progress.
-    public struct ResponseInWsProgress: Codable, Hashable, Sendable {
+    public struct ResponseInWsProgress: OpenAIModel {
         /// The type of the event. Always `response.in_progress`.
         public var type: String = "response.in_progress"
         /// The response that is in progress.
@@ -1811,16 +2101,25 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case response
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.in_progress"
+            self.response = try container.decode(Response.self, forKey: "response")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.response, forKey: "response")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// An event that is emitted when a response fails.
-    public struct ResponseWsFailed: Codable, Hashable, Sendable {
+    public struct ResponseWsFailed: OpenAIModel {
         /// The type of the event. Always `response.failed`.
         public var type: String = "response.failed"
         /// The sequence number of this event.
@@ -1842,11 +2141,20 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case sequenceNumber = "sequence_number"
-            case response
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.failed"
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.response = try container.decode(Response.self, forKey: "response")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encode(self.response, forKey: "response")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
@@ -1855,7 +2163,7 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
     /// Over WebSocket, steering can finish a response with
     /// `response.incomplete_details.reason` set to `steered`, followed automatically
     /// by a successor `response.created` that commits the queued steering input.
-    public struct ResponseWsIncomplete: Codable, Hashable, Sendable {
+    public struct ResponseWsIncomplete: OpenAIModel {
         /// The type of the event. Always `response.incomplete`.
         public var type: String = "response.incomplete"
         /// The response that was incomplete.
@@ -1877,16 +2185,25 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case response
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.incomplete"
+            self.response = try container.decode(Response.self, forKey: "response")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.response, forKey: "response")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when a new output item is added.
-    public struct ResponseOutputItemWsAdded: Codable, Hashable, Sendable {
+    public struct ResponseOutputItemWsAdded: OpenAIModel {
         /// The type of the event. Always `response.output_item.added`.
         public var type: String = "response.output_item.added"
         /// The index of the output item that was added.
@@ -1915,17 +2232,27 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case outputIndex = "output_index"
-            case sequenceNumber = "sequence_number"
-            case item
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.output_item.added"
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.item = try container.decode(OutputItem.self, forKey: "item")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encode(self.item, forKey: "item")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when an output item is marked done.
-    public struct ResponseOutputItemWsDone: Codable, Hashable, Sendable {
+    public struct ResponseOutputItemWsDone: OpenAIModel {
         /// The type of the event. Always `response.output_item.done`.
         public var type: String = "response.output_item.done"
         /// The index of the output item that was marked done.
@@ -1951,17 +2278,27 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case outputIndex = "output_index"
-            case sequenceNumber = "sequence_number"
-            case item
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.output_item.done"
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.item = try container.decode(OutputItem.self, forKey: "item")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encode(self.item, forKey: "item")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when a new reasoning summary part is added.
-    public struct ResponseReasoningSummaryPartWsAdded: Codable, Hashable, Sendable {
+    public struct ResponseReasoningSummaryPartWsAdded: OpenAIModel {
         /// The type of the event. Always `response.reasoning_summary_part.added`.
         public var type: String = "response.reasoning_summary_part.added"
         /// The ID of the item this summary part is associated with.
@@ -1995,18 +2332,30 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case summaryIndex = "summary_index"
-            case sequenceNumber = "sequence_number"
-            case part
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.reasoning_summary_part.added"
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.summaryIndex = try container.decode(Int.self, forKey: "summary_index")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.part = try container.decode(ResponsesServerEvent.ResponseReasoningSummaryPartWsAdded.Part.self, forKey: "part")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.summaryIndex, forKey: "summary_index")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encode(self.part, forKey: "part")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
 
         /// The summary part that was added.
-        public struct Part: Codable, Hashable, Sendable {
+        public struct Part: OpenAIModel {
             /// The type of the summary part. Always `summary_text`.
             public var type: String = "summary_text"
             /// The text of the summary part.
@@ -2016,15 +2365,22 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
                 self.text = text
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case type
-                case text
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "summary_text"
+                self.text = try container.decode(String.self, forKey: "text")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encode(self.type, forKey: "type")
+                try container.encode(self.text, forKey: "text")
             }
         }
     }
 
     /// Emitted when a reasoning summary part is completed.
-    public struct ResponseReasoningSummaryPartWsDone: Codable, Hashable, Sendable {
+    public struct ResponseReasoningSummaryPartWsDone: OpenAIModel {
         /// The type of the event. Always `response.reasoning_summary_part.done`.
         public var type: String = "response.reasoning_summary_part.done"
         /// The ID of the item this summary part is associated with.
@@ -2061,19 +2417,32 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case summaryIndex = "summary_index"
-            case status
-            case sequenceNumber = "sequence_number"
-            case part
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.reasoning_summary_part.done"
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.summaryIndex = try container.decode(Int.self, forKey: "summary_index")
+            self.status = try container.decodeIfPresent(String.self, forKey: "status")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.part = try container.decode(ResponsesServerEvent.ResponseReasoningSummaryPartWsDone.Part.self, forKey: "part")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.summaryIndex, forKey: "summary_index")
+            try container.encodeIfPresent(self.status, forKey: "status")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encode(self.part, forKey: "part")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
 
         /// The completed summary part.
-        public struct Part: Codable, Hashable, Sendable {
+        public struct Part: OpenAIModel {
             /// The type of the summary part. Always `summary_text`.
             public var type: String = "summary_text"
             /// The text of the summary part.
@@ -2083,15 +2452,22 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
                 self.text = text
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case type
-                case text
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "summary_text"
+                self.text = try container.decode(String.self, forKey: "text")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encode(self.type, forKey: "type")
+                try container.encode(self.text, forKey: "text")
             }
         }
     }
 
     /// Emitted when a delta is added to a reasoning summary text.
-    public struct ResponseReasoningSummaryTextWsDelta: Codable, Hashable, Sendable {
+    public struct ResponseReasoningSummaryTextWsDelta: OpenAIModel {
         /// The type of the event. Always `response.reasoning_summary_text.delta`.
         public var type: String = "response.reasoning_summary_text.delta"
         /// The ID of the item this summary text delta is associated with.
@@ -2125,19 +2501,31 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case summaryIndex = "summary_index"
-            case delta
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.reasoning_summary_text.delta"
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.summaryIndex = try container.decode(Int.self, forKey: "summary_index")
+            self.delta = try container.decode(String.self, forKey: "delta")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.summaryIndex, forKey: "summary_index")
+            try container.encode(self.delta, forKey: "delta")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when a reasoning summary text is completed.
-    public struct ResponseReasoningSummaryTextWsDone: Codable, Hashable, Sendable {
+    public struct ResponseReasoningSummaryTextWsDone: OpenAIModel {
         /// The type of the event. Always `response.reasoning_summary_text.done`.
         public var type: String = "response.reasoning_summary_text.done"
         /// The ID of the item this summary text is associated with.
@@ -2171,19 +2559,31 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case summaryIndex = "summary_index"
-            case text
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.reasoning_summary_text.done"
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.summaryIndex = try container.decode(Int.self, forKey: "summary_index")
+            self.text = try container.decode(String.self, forKey: "text")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.summaryIndex, forKey: "summary_index")
+            try container.encode(self.text, forKey: "text")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when a delta is added to a reasoning text.
-    public struct ResponseReasoningTextWsDelta: Codable, Hashable, Sendable {
+    public struct ResponseReasoningTextWsDelta: OpenAIModel {
         /// The type of the event. Always `response.reasoning_text.delta`.
         public var type: String = "response.reasoning_text.delta"
         /// The ID of the item this reasoning text delta is associated with.
@@ -2217,19 +2617,31 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case contentIndex = "content_index"
-            case delta
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.reasoning_text.delta"
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.contentIndex = try container.decode(Int.self, forKey: "content_index")
+            self.delta = try container.decode(String.self, forKey: "delta")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.contentIndex, forKey: "content_index")
+            try container.encode(self.delta, forKey: "delta")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when a reasoning text is completed.
-    public struct ResponseReasoningTextWsDone: Codable, Hashable, Sendable {
+    public struct ResponseReasoningTextWsDone: OpenAIModel {
         /// The type of the event. Always `response.reasoning_text.done`.
         public var type: String = "response.reasoning_text.done"
         /// The ID of the item this reasoning text is associated with.
@@ -2263,19 +2675,31 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case contentIndex = "content_index"
-            case text
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.reasoning_text.done"
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.contentIndex = try container.decode(Int.self, forKey: "content_index")
+            self.text = try container.decode(String.self, forKey: "text")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.contentIndex, forKey: "content_index")
+            try container.encode(self.text, forKey: "text")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when there is a partial refusal text.
-    public struct ResponseRefusalWsDelta: Codable, Hashable, Sendable {
+    public struct ResponseRefusalWsDelta: OpenAIModel {
         /// The type of the event. Always `response.refusal.delta`.
         public var type: String = "response.refusal.delta"
         /// The ID of the output item that the refusal text is added to.
@@ -2309,19 +2733,31 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case contentIndex = "content_index"
-            case delta
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.refusal.delta"
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.contentIndex = try container.decode(Int.self, forKey: "content_index")
+            self.delta = try container.decode(String.self, forKey: "delta")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.contentIndex, forKey: "content_index")
+            try container.encode(self.delta, forKey: "delta")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when refusal text is finalized.
-    public struct ResponseRefusalWsDone: Codable, Hashable, Sendable {
+    public struct ResponseRefusalWsDone: OpenAIModel {
         /// The type of the event. Always `response.refusal.done`.
         public var type: String = "response.refusal.done"
         /// The ID of the output item that the refusal text is finalized.
@@ -2355,19 +2791,31 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case contentIndex = "content_index"
-            case refusal
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.refusal.done"
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.contentIndex = try container.decode(Int.self, forKey: "content_index")
+            self.refusal = try container.decode(String.self, forKey: "refusal")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.contentIndex, forKey: "content_index")
+            try container.encode(self.refusal, forKey: "refusal")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when there is an additional text delta.
-    public struct ResponseTextWsDelta: Codable, Hashable, Sendable {
+    public struct ResponseTextWsDelta: OpenAIModel {
         /// The type of the event. Always `response.output_text.delta`.
         public var type: String = "response.output_text.delta"
         /// The ID of the output item that the text delta was added to.
@@ -2405,20 +2853,33 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case contentIndex = "content_index"
-            case delta
-            case sequenceNumber = "sequence_number"
-            case logprobs
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.output_text.delta"
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.contentIndex = try container.decode(Int.self, forKey: "content_index")
+            self.delta = try container.decode(String.self, forKey: "delta")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.logprobs = try container.decode([ResponseLogProb].self, forKey: "logprobs")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.contentIndex, forKey: "content_index")
+            try container.encode(self.delta, forKey: "delta")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encode(self.logprobs, forKey: "logprobs")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when text content is finalized.
-    public struct ResponseTextWsDone: Codable, Hashable, Sendable {
+    public struct ResponseTextWsDone: OpenAIModel {
         /// The type of the event. Always `response.output_text.done`.
         public var type: String = "response.output_text.done"
         /// The ID of the output item that the text content is finalized.
@@ -2456,20 +2917,33 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case contentIndex = "content_index"
-            case text
-            case sequenceNumber = "sequence_number"
-            case logprobs
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.output_text.done"
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.contentIndex = try container.decode(Int.self, forKey: "content_index")
+            self.text = try container.decode(String.self, forKey: "text")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.logprobs = try container.decode([ResponseLogProb].self, forKey: "logprobs")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.contentIndex, forKey: "content_index")
+            try container.encode(self.text, forKey: "text")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encode(self.logprobs, forKey: "logprobs")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when a web search call is completed.
-    public struct ResponseWebSearchCallWsCompleted: Codable, Hashable, Sendable {
+    public struct ResponseWebSearchCallWsCompleted: OpenAIModel {
         /// The type of the event. Always `response.web_search_call.completed`.
         public var type: String = "response.web_search_call.completed"
         /// The index of the output item that the web search call is associated with.
@@ -2495,17 +2969,27 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.web_search_call.completed"
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when a web search call is initiated.
-    public struct ResponseWebSearchCallInWsProgress: Codable, Hashable, Sendable {
+    public struct ResponseWebSearchCallInWsProgress: OpenAIModel {
         /// The type of the event. Always `response.web_search_call.in_progress`.
         public var type: String = "response.web_search_call.in_progress"
         /// The index of the output item that the web search call is associated with.
@@ -2531,17 +3015,27 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.web_search_call.in_progress"
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when a web search call is executing.
-    public struct ResponseWebSearchCallWsSearching: Codable, Hashable, Sendable {
+    public struct ResponseWebSearchCallWsSearching: OpenAIModel {
         /// The type of the event. Always `response.web_search_call.searching`.
         public var type: String = "response.web_search_call.searching"
         /// The index of the output item that the web search call is associated with.
@@ -2567,17 +3061,27 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.web_search_call.searching"
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when an image generation tool call has completed and the final image is available.
-    public struct ResponseImageGenCallWsCompleted: Codable, Hashable, Sendable {
+    public struct ResponseImageGenCallWsCompleted: OpenAIModel {
         /// The type of the event. Always 'response.image_generation_call.completed'.
         public var type: String = "response.image_generation_call.completed"
         /// The index of the output item in the response's output array.
@@ -2603,17 +3107,27 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case outputIndex = "output_index"
-            case sequenceNumber = "sequence_number"
-            case itemID = "item_id"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.image_generation_call.completed"
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when an image generation tool call is actively generating an image (intermediate state).
-    public struct ResponseImageGenCallWsGenerating: Codable, Hashable, Sendable {
+    public struct ResponseImageGenCallWsGenerating: OpenAIModel {
         /// The type of the event. Always 'response.image_generation_call.generating'.
         public var type: String = "response.image_generation_call.generating"
         /// The index of the output item in the response's output array.
@@ -2639,17 +3153,27 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.image_generation_call.generating"
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when an image generation tool call is in progress.
-    public struct ResponseImageGenCallInWsProgress: Codable, Hashable, Sendable {
+    public struct ResponseImageGenCallInWsProgress: OpenAIModel {
         /// The type of the event. Always 'response.image_generation_call.in_progress'.
         public var type: String = "response.image_generation_call.in_progress"
         /// The index of the output item in the response's output array.
@@ -2675,17 +3199,27 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.image_generation_call.in_progress"
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when a partial image is available during image generation streaming.
-    public struct ResponseImageGenCallPartialWsImage: Codable, Hashable, Sendable {
+    public struct ResponseImageGenCallPartialWsImage: OpenAIModel {
         /// The type of the event. Always 'response.image_generation_call.partial_image'.
         public var type: String = "response.image_generation_call.partial_image"
         /// The index of the output item in the response's output array.
@@ -2735,23 +3269,39 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case sequenceNumber = "sequence_number"
-            case partialImageIndex = "partial_image_index"
-            case partialImageB64 = "partial_image_b64"
-            case size
-            case quality
-            case background
-            case outputFormat = "output_format"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.image_generation_call.partial_image"
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.partialImageIndex = try container.decode(Int.self, forKey: "partial_image_index")
+            self.partialImageB64 = try container.decode(String.self, forKey: "partial_image_b64")
+            self.size = try container.decodeIfPresent(String.self, forKey: "size")
+            self.quality = try container.decodeIfPresent(String.self, forKey: "quality")
+            self.background = try container.decodeIfPresent(String.self, forKey: "background")
+            self.outputFormat = try container.decodeIfPresent(String.self, forKey: "output_format")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encode(self.partialImageIndex, forKey: "partial_image_index")
+            try container.encode(self.partialImageB64, forKey: "partial_image_b64")
+            try container.encodeIfPresent(self.size, forKey: "size")
+            try container.encodeIfPresent(self.quality, forKey: "quality")
+            try container.encodeIfPresent(self.background, forKey: "background")
+            try container.encodeIfPresent(self.outputFormat, forKey: "output_format")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when there is a delta (partial update) to the arguments of an MCP tool call.
-    public struct ResponseMcpCallArgumentsWsDelta: Codable, Hashable, Sendable {
+    public struct ResponseMcpCallArgumentsWsDelta: OpenAIModel {
         /// The type of the event. Always 'response.mcp_call_arguments.delta'.
         public var type: String = "response.mcp_call_arguments.delta"
         /// The index of the output item in the response's output array.
@@ -2781,18 +3331,29 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case delta
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.mcp_call_arguments.delta"
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.delta = try container.decode(String.self, forKey: "delta")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.delta, forKey: "delta")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when the arguments for an MCP tool call are finalized.
-    public struct ResponseMcpCallArgumentsWsDone: Codable, Hashable, Sendable {
+    public struct ResponseMcpCallArgumentsWsDone: OpenAIModel {
         /// The type of the event. Always 'response.mcp_call_arguments.done'.
         public var type: String = "response.mcp_call_arguments.done"
         /// The index of the output item in the response's output array.
@@ -2822,18 +3383,29 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case arguments
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.mcp_call_arguments.done"
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.arguments = try container.decode(String.self, forKey: "arguments")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.arguments, forKey: "arguments")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when an MCP  tool call has completed successfully.
-    public struct ResponseMcpCallWsCompleted: Codable, Hashable, Sendable {
+    public struct ResponseMcpCallWsCompleted: OpenAIModel {
         /// The type of the event. Always 'response.mcp_call.completed'.
         public var type: String = "response.mcp_call.completed"
         /// The ID of the MCP tool call item that completed.
@@ -2859,17 +3431,27 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.mcp_call.completed"
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when an MCP  tool call has failed.
-    public struct ResponseMcpCallWsFailed: Codable, Hashable, Sendable {
+    public struct ResponseMcpCallWsFailed: OpenAIModel {
         /// The type of the event. Always 'response.mcp_call.failed'.
         public var type: String = "response.mcp_call.failed"
         /// The ID of the MCP tool call item that failed.
@@ -2895,17 +3477,27 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.mcp_call.failed"
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when an MCP  tool call is in progress.
-    public struct ResponseMcpCallInWsProgress: Codable, Hashable, Sendable {
+    public struct ResponseMcpCallInWsProgress: OpenAIModel {
         /// The type of the event. Always 'response.mcp_call.in_progress'.
         public var type: String = "response.mcp_call.in_progress"
         /// The sequence number of this event.
@@ -2931,17 +3523,27 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case sequenceNumber = "sequence_number"
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.mcp_call.in_progress"
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when the list of available MCP tools has been successfully retrieved.
-    public struct ResponseMcpListToolsWsCompleted: Codable, Hashable, Sendable {
+    public struct ResponseMcpListToolsWsCompleted: OpenAIModel {
         /// The type of the event. Always 'response.mcp_list_tools.completed'.
         public var type: String = "response.mcp_list_tools.completed"
         /// The ID of the MCP tool call item that produced this output.
@@ -2967,17 +3569,27 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.mcp_list_tools.completed"
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when the attempt to list available MCP tools has failed.
-    public struct ResponseMcpListToolsWsFailed: Codable, Hashable, Sendable {
+    public struct ResponseMcpListToolsWsFailed: OpenAIModel {
         /// The type of the event. Always 'response.mcp_list_tools.failed'.
         public var type: String = "response.mcp_list_tools.failed"
         /// The ID of the MCP tool call item that failed.
@@ -3003,17 +3615,27 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.mcp_list_tools.failed"
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when the system is in the process of retrieving the list of available MCP tools.
-    public struct ResponseMcpListToolsInWsProgress: Codable, Hashable, Sendable {
+    public struct ResponseMcpListToolsInWsProgress: OpenAIModel {
         /// The type of the event. Always 'response.mcp_list_tools.in_progress'.
         public var type: String = "response.mcp_list_tools.in_progress"
         /// The ID of the MCP tool call item that is being processed.
@@ -3039,17 +3661,27 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.mcp_list_tools.in_progress"
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when an annotation is added to output text content.
-    public struct ResponseOutputTextAnnotationWsAdded: Codable, Hashable, Sendable {
+    public struct ResponseOutputTextAnnotationWsAdded: OpenAIModel {
         /// The type of the event. Always 'response.output_text.annotation.added'.
         public var type: String = "response.output_text.annotation.added"
         /// The unique identifier of the item to which the annotation is being added.
@@ -3087,20 +3719,33 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case itemID = "item_id"
-            case outputIndex = "output_index"
-            case contentIndex = "content_index"
-            case annotationIndex = "annotation_index"
-            case sequenceNumber = "sequence_number"
-            case annotation
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.output_text.annotation.added"
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.contentIndex = try container.decode(Int.self, forKey: "content_index")
+            self.annotationIndex = try container.decode(Int.self, forKey: "annotation_index")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.annotation = try container.decodeIfPresent(Annotation.self, forKey: "annotation")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.contentIndex, forKey: "content_index")
+            try container.encode(self.annotationIndex, forKey: "annotation_index")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.annotation, forKey: "annotation")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Emitted when a response is queued and waiting to be processed.
-    public struct ResponseWsQueued: Codable, Hashable, Sendable {
+    public struct ResponseWsQueued: OpenAIModel {
         /// The type of the event. Always 'response.queued'.
         public var type: String = "response.queued"
         /// The full response object that is queued.
@@ -3122,16 +3767,25 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case response
-            case sequenceNumber = "sequence_number"
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.queued"
+            self.response = try container.decode(Response.self, forKey: "response")
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.response, forKey: "response")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Event representing a delta (partial update) to the input of a custom tool call.
-    public struct ResponseCustomToolCallInputWsDelta: Codable, Hashable, Sendable {
+    public struct ResponseCustomToolCallInputWsDelta: OpenAIModel {
         /// The event type identifier.
         public var type: String = "response.custom_tool_call_input.delta"
         /// The sequence number of this event.
@@ -3161,18 +3815,29 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case sequenceNumber = "sequence_number"
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case delta
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.custom_tool_call_input.delta"
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.delta = try container.decode(String.self, forKey: "delta")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.delta, forKey: "delta")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 
     /// Event indicating that input for a custom tool call is complete.
-    public struct ResponseCustomToolCallInputWsDone: Codable, Hashable, Sendable {
+    public struct ResponseCustomToolCallInputWsDone: OpenAIModel {
         /// The event type identifier.
         public var type: String = "response.custom_tool_call_input.done"
         /// The sequence number of this event.
@@ -3202,13 +3867,24 @@ public indirect enum ResponsesServerEvent: Codable, Hashable, Sendable {
             self.streamID = streamID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case sequenceNumber = "sequence_number"
-            case outputIndex = "output_index"
-            case itemID = "item_id"
-            case input
-            case streamID = "stream_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "response.custom_tool_call_input.done"
+            self.sequenceNumber = try container.decode(Int.self, forKey: "sequence_number")
+            self.outputIndex = try container.decode(Int.self, forKey: "output_index")
+            self.itemID = try container.decode(String.self, forKey: "item_id")
+            self.input = try container.decode(String.self, forKey: "input")
+            self.streamID = try container.decodeIfPresent(String.self, forKey: "stream_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encode(self.type, forKey: "type")
+            try container.encode(self.sequenceNumber, forKey: "sequence_number")
+            try container.encode(self.outputIndex, forKey: "output_index")
+            try container.encode(self.itemID, forKey: "item_id")
+            try container.encode(self.input, forKey: "input")
+            try container.encodeIfPresent(self.streamID, forKey: "stream_id")
         }
     }
 }

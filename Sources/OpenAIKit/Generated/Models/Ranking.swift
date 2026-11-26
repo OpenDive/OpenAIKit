@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct RankingOptions: Codable, Hashable, Sendable {
+public struct RankingOptions: OpenAIModel {
     /// The ranker to use for the file search.
     public var ranker: RankerVersionType?
     /// The score threshold for the file search, a number between 0 and 1. Numbers closer to 1 will attempt to return only the most relevant results, but may return fewer results.
@@ -21,9 +21,17 @@ public struct RankingOptions: Codable, Hashable, Sendable {
         self.hybridSearch = hybridSearch
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case ranker
-        case scoreThreshold = "score_threshold"
-        case hybridSearch = "hybrid_search"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.ranker = try container.decodeIfPresent(RankerVersionType.self, forKey: "ranker")
+        self.scoreThreshold = try container.decodeIfPresent(Double.self, forKey: "score_threshold")
+        self.hybridSearch = try container.decodeIfPresent(HybridSearchOptions.self, forKey: "hybrid_search")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.ranker, forKey: "ranker")
+        try container.encodeIfPresent(self.scoreThreshold, forKey: "score_threshold")
+        try container.encodeIfPresent(self.hybridSearch, forKey: "hybrid_search")
     }
 }

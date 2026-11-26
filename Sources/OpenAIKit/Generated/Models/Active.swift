@@ -4,14 +4,20 @@
 import Foundation
 
 /// Indicates that a thread is active.
-public struct ActiveStatus: Codable, Hashable, Sendable {
+public struct ActiveStatus: OpenAIModel {
     /// Status discriminator that is always `active`.
     public var type: String = "active"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "active"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }

@@ -42,7 +42,7 @@ public struct NetworkAccessResource: OpenAIStringEnum {
 }
 
 /// Network access for an OpenAI-hosted environment.
-public struct NetworkPolicyParam: Codable, Hashable, Sendable {
+public struct NetworkPolicyParam: OpenAIModel {
     /// The environment's network access mode.
     public var access: NetworkAccessParam
     /// Domains the environment may access when network access is restricted.
@@ -60,15 +60,23 @@ public struct NetworkPolicyParam: Codable, Hashable, Sendable {
         self.blockedDomains = blockedDomains
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case access
-        case allowedDomains = "allowed_domains"
-        case blockedDomains = "blocked_domains"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.access = try container.decode(NetworkAccessParam.self, forKey: "access")
+        self.allowedDomains = try container.decodeIfPresent([String].self, forKey: "allowed_domains")
+        self.blockedDomains = try container.decodeIfPresent([String].self, forKey: "blocked_domains")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.access, forKey: "access")
+        try container.encodeIfPresent(self.allowedDomains, forKey: "allowed_domains")
+        try container.encodeIfPresent(self.blockedDomains, forKey: "blocked_domains")
     }
 }
 
 /// Network access for an OpenAI-hosted environment.
-public struct NetworkPolicyResource: Codable, Hashable, Sendable {
+public struct NetworkPolicyResource: OpenAIModel {
     /// The environment's network access mode.
     public var access: NetworkAccessResource
     /// Domains the environment may access when network access is restricted.
@@ -79,8 +87,15 @@ public struct NetworkPolicyResource: Codable, Hashable, Sendable {
         self.allowedDomains = allowedDomains
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case access
-        case allowedDomains = "allowed_domains"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.access = try container.decode(NetworkAccessResource.self, forKey: "access")
+        self.allowedDomains = try container.decode([String].self, forKey: "allowed_domains")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.access, forKey: "access")
+        try container.encode(self.allowedDomains, forKey: "allowed_domains")
     }
 }

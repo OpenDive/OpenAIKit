@@ -4,7 +4,7 @@
 import Foundation
 
 /// A request to wait for one or more subagents.
-public struct WaitForSubagentsCallItemResource: Codable, Hashable, Sendable {
+public struct WaitForSubagentsCallItemResource: OpenAIModel {
     /// The item type. Always `wait_for_subagents_call`.
     public var type: String = "wait_for_subagents_call"
     /// The ID of the tool call item.
@@ -32,25 +32,42 @@ public struct WaitForSubagentsCallItemResource: Codable, Hashable, Sendable {
         self.recipientAgentIDs = recipientAgentIDs
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case turnID = "turn_id"
-        case status
-        case senderAgentID = "sender_agent_id"
-        case recipientAgentIDs = "recipient_agent_ids"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "wait_for_subagents_call"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.turnID = try container.decode(String.self, forKey: "turn_id")
+        self.status = try container.decode(FunctionCallStatusResource.self, forKey: "status")
+        self.senderAgentID = try container.decode(String.self, forKey: "sender_agent_id")
+        self.recipientAgentIDs = try container.decode([String].self, forKey: "recipient_agent_ids")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.turnID, forKey: "turn_id")
+        try container.encode(self.status, forKey: "status")
+        try container.encode(self.senderAgentID, forKey: "sender_agent_id")
+        try container.encode(self.recipientAgentIDs, forKey: "recipient_agent_ids")
     }
 }
 
 /// A wait action.
-public struct WaitParam: Codable, Hashable, Sendable {
+public struct WaitParam: OpenAIModel {
     /// Specifies the event type. For a wait action, this property is always set to `wait`.
     public var type: String = "wait"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "wait"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }

@@ -4,7 +4,7 @@
 import Foundation
 
 /// Represents an individual certificate configured at the organization level.
-public struct OrganizationCertificate: Codable, Hashable, Sendable {
+public struct OrganizationCertificate: OpenAIModel {
     /// The object type, which is always `organization.certificate`.
     public var object: String = "organization.certificate"
     /// The identifier, which can be referenced in API endpoints
@@ -31,16 +31,27 @@ public struct OrganizationCertificate: Codable, Hashable, Sendable {
         self.name = name
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case id
-        case name
-        case createdAt = "created_at"
-        case certificateDetails = "certificate_details"
-        case active
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.certificate"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.certificateDetails = try container.decode(OrganizationCertificate.CertificateDetails.self, forKey: "certificate_details")
+        self.active = try container.decode(Bool.self, forKey: "active")
     }
 
-    public struct CertificateDetails: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.id, forKey: "id")
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.certificateDetails, forKey: "certificate_details")
+        try container.encode(self.active, forKey: "active")
+    }
+
+    public struct CertificateDetails: OpenAIModel {
         /// The Unix timestamp (in seconds) of when the certificate becomes valid.
         public var validAt: Int?
         /// The Unix timestamp (in seconds) of when the certificate expires.
@@ -51,14 +62,21 @@ public struct OrganizationCertificate: Codable, Hashable, Sendable {
             self.expiresAt = expiresAt
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case validAt = "valid_at"
-            case expiresAt = "expires_at"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.validAt = try container.decodeIfPresent(Int.self, forKey: "valid_at")
+            self.expiresAt = try container.decodeIfPresent(Int.self, forKey: "expires_at")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.validAt, forKey: "valid_at")
+            try container.encodeIfPresent(self.expiresAt, forKey: "expires_at")
         }
     }
 }
 
-public struct OrganizationCertificateActivationResponse: Codable, Hashable, Sendable {
+public struct OrganizationCertificateActivationResponse: OpenAIModel {
     /// The organization certificate activation result type.
     public var object: String = "organization.certificate.activation"
     public var data: [OrganizationCertificate]
@@ -67,13 +85,20 @@ public struct OrganizationCertificateActivationResponse: Codable, Hashable, Send
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.certificate.activation"
+        self.data = try container.decode([OrganizationCertificate].self, forKey: "data")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
     }
 }
 
-public struct OrganizationCertificateDeactivationResponse: Codable, Hashable, Sendable {
+public struct OrganizationCertificateDeactivationResponse: OpenAIModel {
     /// The organization certificate deactivation result type.
     public var object: String = "organization.certificate.deactivation"
     public var data: [OrganizationCertificate]
@@ -82,14 +107,21 @@ public struct OrganizationCertificateDeactivationResponse: Codable, Hashable, Se
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.certificate.deactivation"
+        self.data = try container.decode([OrganizationCertificate].self, forKey: "data")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
     }
 }
 
 /// Represents the organization's data retention control setting.
-public struct OrganizationDataRetention: Codable, Hashable, Sendable {
+public struct OrganizationDataRetention: OpenAIModel {
     /// The object type, which is always `organization.data_retention`.
     public var object: String = "organization.data_retention"
     /// The configured organization data retention type.
@@ -99,9 +131,16 @@ public struct OrganizationDataRetention: Codable, Hashable, Sendable {
         self.type = type
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.data_retention"
+        self.type = try container.decode(OrganizationDataRetention.Kind.self, forKey: "type")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.type, forKey: "type")
     }
 
     /// The configured organization data retention type.
@@ -126,7 +165,7 @@ public struct OrganizationDataRetention: Codable, Hashable, Sendable {
 }
 
 /// Represents an individual certificate configured at the project level.
-public struct OrganizationProjectCertificate: Codable, Hashable, Sendable {
+public struct OrganizationProjectCertificate: OpenAIModel {
     /// The object type, which is always `organization.project.certificate`.
     public var object: String = "organization.project.certificate"
     /// The identifier, which can be referenced in API endpoints
@@ -153,16 +192,27 @@ public struct OrganizationProjectCertificate: Codable, Hashable, Sendable {
         self.name = name
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case id
-        case name
-        case createdAt = "created_at"
-        case certificateDetails = "certificate_details"
-        case active
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.project.certificate"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.certificateDetails = try container.decode(OrganizationProjectCertificate.CertificateDetails.self, forKey: "certificate_details")
+        self.active = try container.decode(Bool.self, forKey: "active")
     }
 
-    public struct CertificateDetails: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.id, forKey: "id")
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.certificateDetails, forKey: "certificate_details")
+        try container.encode(self.active, forKey: "active")
+    }
+
+    public struct CertificateDetails: OpenAIModel {
         /// The Unix timestamp (in seconds) of when the certificate becomes valid.
         public var validAt: Int?
         /// The Unix timestamp (in seconds) of when the certificate expires.
@@ -173,14 +223,21 @@ public struct OrganizationProjectCertificate: Codable, Hashable, Sendable {
             self.expiresAt = expiresAt
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case validAt = "valid_at"
-            case expiresAt = "expires_at"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.validAt = try container.decodeIfPresent(Int.self, forKey: "valid_at")
+            self.expiresAt = try container.decodeIfPresent(Int.self, forKey: "expires_at")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.validAt, forKey: "valid_at")
+            try container.encodeIfPresent(self.expiresAt, forKey: "expires_at")
         }
     }
 }
 
-public struct OrganizationProjectCertificateActivationResponse: Codable, Hashable, Sendable {
+public struct OrganizationProjectCertificateActivationResponse: OpenAIModel {
     /// The project certificate activation result type.
     public var object: String = "organization.project.certificate.activation"
     public var data: [OrganizationProjectCertificate]
@@ -189,13 +246,20 @@ public struct OrganizationProjectCertificateActivationResponse: Codable, Hashabl
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.project.certificate.activation"
+        self.data = try container.decode([OrganizationProjectCertificate].self, forKey: "data")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
     }
 }
 
-public struct OrganizationProjectCertificateDeactivationResponse: Codable, Hashable, Sendable {
+public struct OrganizationProjectCertificateDeactivationResponse: OpenAIModel {
     /// The project certificate deactivation result type.
     public var object: String = "organization.project.certificate.deactivation"
     public var data: [OrganizationProjectCertificate]
@@ -204,14 +268,21 @@ public struct OrganizationProjectCertificateDeactivationResponse: Codable, Hasha
         self.data = data
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.project.certificate.deactivation"
+        self.data = try container.decode([OrganizationProjectCertificate].self, forKey: "data")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
     }
 }
 
 /// Represents a spend alert configured at the organization level.
-public struct OrganizationSpendAlert: Codable, Hashable, Sendable {
+public struct OrganizationSpendAlert: OpenAIModel {
     /// The identifier, which can be referenced in API endpoints.
     public var id: String
     /// The object type, which is always `organization.spend_alert`.
@@ -234,18 +305,29 @@ public struct OrganizationSpendAlert: Codable, Hashable, Sendable {
         self.notificationChannel = notificationChannel
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case thresholdAmount = "threshold_amount"
-        case currency
-        case interval
-        case notificationChannel = "notification_channel"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.spend_alert"
+        self.thresholdAmount = try container.decode(Int.self, forKey: "threshold_amount")
+        self.currency = try container.decodeIfPresent(String.self, forKey: "currency") ?? "USD"
+        self.interval = try container.decodeIfPresent(String.self, forKey: "interval") ?? "month"
+        self.notificationChannel = try container.decode(SpendAlertNotificationChannel.self, forKey: "notification_channel")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.thresholdAmount, forKey: "threshold_amount")
+        try container.encode(self.currency, forKey: "currency")
+        try container.encode(self.interval, forKey: "interval")
+        try container.encode(self.notificationChannel, forKey: "notification_channel")
     }
 }
 
 /// Confirmation payload returned after deleting an organization spend alert.
-public struct OrganizationSpendAlertDeletedResource: Codable, Hashable, Sendable {
+public struct OrganizationSpendAlertDeletedResource: OpenAIModel {
     /// The deleted spend alert ID.
     public var id: String
     /// Always `organization.spend_alert.deleted`.
@@ -258,15 +340,23 @@ public struct OrganizationSpendAlertDeletedResource: Codable, Hashable, Sendable
         self.deleted = deleted
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case deleted
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.spend_alert.deleted"
+        self.deleted = try container.decode(Bool.self, forKey: "deleted")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.deleted, forKey: "deleted")
     }
 }
 
 /// Paginated list of organization spend alerts.
-public struct OrganizationSpendAlertListResource: Codable, Hashable, Sendable {
+public struct OrganizationSpendAlertListResource: OpenAIModel {
     /// Always `list`.
     public var object: String = "list"
     /// Spend alerts returned in the current page.
@@ -290,17 +380,27 @@ public struct OrganizationSpendAlertListResource: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([OrganizationSpendAlert].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
 /// Confirmation payload returned after deleting an organization hard spend limit.
-public struct OrganizationSpendLimitDeletedResource: Codable, Hashable, Sendable {
+public struct OrganizationSpendLimitDeletedResource: OpenAIModel {
     /// The object type, which is always `organization.spend_limit.deleted`.
     public var object: String = "organization.spend_limit.deleted"
     /// Whether the hard spend limit was deleted.
@@ -310,14 +410,21 @@ public struct OrganizationSpendLimitDeletedResource: Codable, Hashable, Sendable
         self.deleted = deleted
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case deleted
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.spend_limit.deleted"
+        self.deleted = try container.decode(Bool.self, forKey: "deleted")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.deleted, forKey: "deleted")
     }
 }
 
 /// Represents a hard spend limit configured at the organization level.
-public struct OrganizationSpendLimitResource: Codable, Hashable, Sendable {
+public struct OrganizationSpendLimitResource: OpenAIModel {
     /// The object type, which is always `organization.spend_limit`.
     public var object: String = "organization.spend_limit"
     /// The hard spend limit amount, in cents.
@@ -345,12 +452,23 @@ public struct OrganizationSpendLimitResource: Codable, Hashable, Sendable {
         self.notificationChannel = notificationChannel
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case thresholdAmount = "threshold_amount"
-        case currency
-        case interval
-        case enforcement
-        case notificationChannel = "notification_channel"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.spend_limit"
+        self.thresholdAmount = try container.decode(Int.self, forKey: "threshold_amount")
+        self.currency = try container.decode(SpendLimitCurrency.self, forKey: "currency")
+        self.interval = try container.decode(SpendLimitInterval.self, forKey: "interval")
+        self.enforcement = try container.decode(SpendLimitEnforcement.self, forKey: "enforcement")
+        self.notificationChannel = try container.decodeIfPresent(EmailNotificationChannel.self, forKey: "notification_channel")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.thresholdAmount, forKey: "threshold_amount")
+        try container.encode(self.currency, forKey: "currency")
+        try container.encode(self.interval, forKey: "interval")
+        try container.encode(self.enforcement, forKey: "enforcement")
+        try container.encodeIfPresent(self.notificationChannel, forKey: "notification_channel")
     }
 }

@@ -4,7 +4,7 @@
 import Foundation
 
 /// A log of a user action or configuration change within this organization.
-public struct AuditLog: Codable, Hashable, Sendable {
+public struct AuditLog: OpenAIModel {
     /// The ID of this log.
     public var id: String
     public var type: AuditLogEventType
@@ -256,73 +256,140 @@ public struct AuditLog: Codable, Hashable, Sendable {
         self.certificatesDeactivated = certificatesDeactivated
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case type
-        case effectiveAt = "effective_at"
-        case project
-        case actor
-        case apiKeyCreated = "api_key.created"
-        case apiKeyUpdated = "api_key.updated"
-        case apiKeyDeleted = "api_key.deleted"
-        case checkpointPermissionCreated = "checkpoint.permission.created"
-        case checkpointPermissionDeleted = "checkpoint.permission.deleted"
-        case externalKeyRegistered = "external_key.registered"
-        case externalKeyRemoved = "external_key.removed"
-        case externalStorageRegistered = "external_storage.registered"
-        case externalStorageRemoved = "external_storage.removed"
-        case groupCreated = "group.created"
-        case groupUpdated = "group.updated"
-        case groupDeleted = "group.deleted"
-        case scimEnabled = "scim.enabled"
-        case scimDisabled = "scim.disabled"
-        case inviteSent = "invite.sent"
-        case inviteAccepted = "invite.accepted"
-        case inviteDeleted = "invite.deleted"
-        case ipAllowlistCreated = "ip_allowlist.created"
-        case ipAllowlistUpdated = "ip_allowlist.updated"
-        case ipAllowlistDeleted = "ip_allowlist.deleted"
-        case ipAllowlistConfigActivated = "ip_allowlist.config.activated"
-        case ipAllowlistConfigDeactivated = "ip_allowlist.config.deactivated"
-        case loginSucceeded = "login.succeeded"
-        case loginFailed = "login.failed"
-        case logoutSucceeded = "logout.succeeded"
-        case logoutFailed = "logout.failed"
-        case organizationUpdated = "organization.updated"
-        case projectCreated = "project.created"
-        case projectUpdated = "project.updated"
-        case projectArchived = "project.archived"
-        case projectDeleted = "project.deleted"
-        case rateLimitUpdated = "rate_limit.updated"
-        case rateLimitDeleted = "rate_limit.deleted"
-        case roleCreated = "role.created"
-        case roleUpdated = "role.updated"
-        case roleDeleted = "role.deleted"
-        case roleAssignmentCreated = "role.assignment.created"
-        case roleAssignmentDeleted = "role.assignment.deleted"
-        case roleBoundToResource = "role.bound_to_resource"
-        case roleUnboundFromResource = "role.unbound_from_resource"
-        case serviceAccountCreated = "service_account.created"
-        case serviceAccountUpdated = "service_account.updated"
-        case serviceAccountDeleted = "service_account.deleted"
-        case workloadIdentityProviderCreated = "workload_identity_provider.created"
-        case workloadIdentityProviderUpdated = "workload_identity_provider.updated"
-        case workloadIdentityProviderDeleted = "workload_identity_provider.deleted"
-        case workloadIdentityProviderMappingCreated = "workload_identity_provider_mapping.created"
-        case workloadIdentityProviderMappingUpdated = "workload_identity_provider_mapping.updated"
-        case workloadIdentityProviderMappingDeleted = "workload_identity_provider_mapping.deleted"
-        case userAdded = "user.added"
-        case userUpdated = "user.updated"
-        case userDeleted = "user.deleted"
-        case certificateCreated = "certificate.created"
-        case certificateUpdated = "certificate.updated"
-        case certificateDeleted = "certificate.deleted"
-        case certificatesActivated = "certificates.activated"
-        case certificatesDeactivated = "certificates.deactivated"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.type = try container.decode(AuditLogEventType.self, forKey: "type")
+        self.effectiveAt = try container.decode(Int.self, forKey: "effective_at")
+        self.project = try container.decodeIfPresent(AuditLog.Project.self, forKey: "project")
+        self.actor = try container.decodeIfPresent(AuditLogActor.self, forKey: "actor")
+        self.apiKeyCreated = try container.decodeIfPresent(AuditLog.APIKeyCreated.self, forKey: "api_key.created")
+        self.apiKeyUpdated = try container.decodeIfPresent(AuditLog.APIKeyUpdated.self, forKey: "api_key.updated")
+        self.apiKeyDeleted = try container.decodeIfPresent(AuditLog.APIKeyDeleted.self, forKey: "api_key.deleted")
+        self.checkpointPermissionCreated = try container.decodeIfPresent(AuditLog.CheckpointPermissionCreated.self, forKey: "checkpoint.permission.created")
+        self.checkpointPermissionDeleted = try container.decodeIfPresent(AuditLog.CheckpointPermissionDeleted.self, forKey: "checkpoint.permission.deleted")
+        self.externalKeyRegistered = try container.decodeIfPresent(AuditLog.ExternalKeyRegistered.self, forKey: "external_key.registered")
+        self.externalKeyRemoved = try container.decodeIfPresent(AuditLog.ExternalKeyRemoved.self, forKey: "external_key.removed")
+        self.externalStorageRegistered = try container.decodeIfPresent(AuditLog.ExternalStorageRegistered.self, forKey: "external_storage.registered")
+        self.externalStorageRemoved = try container.decodeIfPresent(AuditLog.ExternalStorageRemoved.self, forKey: "external_storage.removed")
+        self.groupCreated = try container.decodeIfPresent(AuditLog.GroupCreated.self, forKey: "group.created")
+        self.groupUpdated = try container.decodeIfPresent(AuditLog.GroupUpdated.self, forKey: "group.updated")
+        self.groupDeleted = try container.decodeIfPresent(AuditLog.GroupDeleted.self, forKey: "group.deleted")
+        self.scimEnabled = try container.decodeIfPresent(AuditLog.ScimEnabled.self, forKey: "scim.enabled")
+        self.scimDisabled = try container.decodeIfPresent(AuditLog.ScimDisabled.self, forKey: "scim.disabled")
+        self.inviteSent = try container.decodeIfPresent(AuditLog.InviteSent.self, forKey: "invite.sent")
+        self.inviteAccepted = try container.decodeIfPresent(AuditLog.InviteAccepted.self, forKey: "invite.accepted")
+        self.inviteDeleted = try container.decodeIfPresent(AuditLog.InviteDeleted.self, forKey: "invite.deleted")
+        self.ipAllowlistCreated = try container.decodeIfPresent(AuditLog.IpAllowlistCreated.self, forKey: "ip_allowlist.created")
+        self.ipAllowlistUpdated = try container.decodeIfPresent(AuditLog.IpAllowlistUpdated.self, forKey: "ip_allowlist.updated")
+        self.ipAllowlistDeleted = try container.decodeIfPresent(AuditLog.IpAllowlistDeleted.self, forKey: "ip_allowlist.deleted")
+        self.ipAllowlistConfigActivated = try container.decodeIfPresent(AuditLog.IpAllowlistConfigActivated.self, forKey: "ip_allowlist.config.activated")
+        self.ipAllowlistConfigDeactivated = try container.decodeIfPresent(AuditLog.IpAllowlistConfigDeactivated.self, forKey: "ip_allowlist.config.deactivated")
+        self.loginSucceeded = try container.decodeIfPresent(JSONObject.self, forKey: "login.succeeded")
+        self.loginFailed = try container.decodeIfPresent(AuditLog.LoginFailed.self, forKey: "login.failed")
+        self.logoutSucceeded = try container.decodeIfPresent(JSONObject.self, forKey: "logout.succeeded")
+        self.logoutFailed = try container.decodeIfPresent(AuditLog.LogoutFailed.self, forKey: "logout.failed")
+        self.organizationUpdated = try container.decodeIfPresent(AuditLog.OrganizationUpdated.self, forKey: "organization.updated")
+        self.projectCreated = try container.decodeIfPresent(AuditLog.ProjectCreated.self, forKey: "project.created")
+        self.projectUpdated = try container.decodeIfPresent(AuditLog.ProjectUpdated.self, forKey: "project.updated")
+        self.projectArchived = try container.decodeIfPresent(AuditLog.ProjectArchived.self, forKey: "project.archived")
+        self.projectDeleted = try container.decodeIfPresent(AuditLog.ProjectDeleted.self, forKey: "project.deleted")
+        self.rateLimitUpdated = try container.decodeIfPresent(AuditLog.RateLimitUpdated.self, forKey: "rate_limit.updated")
+        self.rateLimitDeleted = try container.decodeIfPresent(AuditLog.RateLimitDeleted.self, forKey: "rate_limit.deleted")
+        self.roleCreated = try container.decodeIfPresent(AuditLog.RoleCreated.self, forKey: "role.created")
+        self.roleUpdated = try container.decodeIfPresent(AuditLog.RoleUpdated.self, forKey: "role.updated")
+        self.roleDeleted = try container.decodeIfPresent(AuditLog.RoleDeleted.self, forKey: "role.deleted")
+        self.roleAssignmentCreated = try container.decodeIfPresent(AuditLog.RoleAssignmentCreated.self, forKey: "role.assignment.created")
+        self.roleAssignmentDeleted = try container.decodeIfPresent(AuditLog.RoleAssignmentDeleted.self, forKey: "role.assignment.deleted")
+        self.roleBoundToResource = try container.decodeIfPresent(AuditLog.RoleBoundToResource.self, forKey: "role.bound_to_resource")
+        self.roleUnboundFromResource = try container.decodeIfPresent(AuditLog.RoleUnboundFromResource.self, forKey: "role.unbound_from_resource")
+        self.serviceAccountCreated = try container.decodeIfPresent(AuditLog.ServiceAccountCreated.self, forKey: "service_account.created")
+        self.serviceAccountUpdated = try container.decodeIfPresent(AuditLog.ServiceAccountUpdated.self, forKey: "service_account.updated")
+        self.serviceAccountDeleted = try container.decodeIfPresent(AuditLog.ServiceAccountDeleted.self, forKey: "service_account.deleted")
+        self.workloadIdentityProviderCreated = try container.decodeIfPresent(AuditLog.WorkloadIdentityProviderCreated.self, forKey: "workload_identity_provider.created")
+        self.workloadIdentityProviderUpdated = try container.decodeIfPresent(AuditLog.WorkloadIdentityProviderUpdated.self, forKey: "workload_identity_provider.updated")
+        self.workloadIdentityProviderDeleted = try container.decodeIfPresent(AuditLog.WorkloadIdentityProviderDeleted.self, forKey: "workload_identity_provider.deleted")
+        self.workloadIdentityProviderMappingCreated = try container.decodeIfPresent(AuditLog.WorkloadIdentityProviderMappingCreated.self, forKey: "workload_identity_provider_mapping.created")
+        self.workloadIdentityProviderMappingUpdated = try container.decodeIfPresent(AuditLog.WorkloadIdentityProviderMappingUpdated.self, forKey: "workload_identity_provider_mapping.updated")
+        self.workloadIdentityProviderMappingDeleted = try container.decodeIfPresent(AuditLog.WorkloadIdentityProviderMappingDeleted.self, forKey: "workload_identity_provider_mapping.deleted")
+        self.userAdded = try container.decodeIfPresent(AuditLog.UserAdded.self, forKey: "user.added")
+        self.userUpdated = try container.decodeIfPresent(AuditLog.UserUpdated.self, forKey: "user.updated")
+        self.userDeleted = try container.decodeIfPresent(AuditLog.UserDeleted.self, forKey: "user.deleted")
+        self.certificateCreated = try container.decodeIfPresent(AuditLog.CertificateCreated.self, forKey: "certificate.created")
+        self.certificateUpdated = try container.decodeIfPresent(AuditLog.CertificateUpdated.self, forKey: "certificate.updated")
+        self.certificateDeleted = try container.decodeIfPresent(AuditLog.CertificateDeleted.self, forKey: "certificate.deleted")
+        self.certificatesActivated = try container.decodeIfPresent(AuditLog.CertificatesActivated.self, forKey: "certificates.activated")
+        self.certificatesDeactivated = try container.decodeIfPresent(AuditLog.CertificatesDeactivated.self, forKey: "certificates.deactivated")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.effectiveAt, forKey: "effective_at")
+        try container.encodeIfPresent(self.project, forKey: "project")
+        try container.encodeIfPresent(self.actor, forKey: "actor")
+        try container.encodeIfPresent(self.apiKeyCreated, forKey: "api_key.created")
+        try container.encodeIfPresent(self.apiKeyUpdated, forKey: "api_key.updated")
+        try container.encodeIfPresent(self.apiKeyDeleted, forKey: "api_key.deleted")
+        try container.encodeIfPresent(self.checkpointPermissionCreated, forKey: "checkpoint.permission.created")
+        try container.encodeIfPresent(self.checkpointPermissionDeleted, forKey: "checkpoint.permission.deleted")
+        try container.encodeIfPresent(self.externalKeyRegistered, forKey: "external_key.registered")
+        try container.encodeIfPresent(self.externalKeyRemoved, forKey: "external_key.removed")
+        try container.encodeIfPresent(self.externalStorageRegistered, forKey: "external_storage.registered")
+        try container.encodeIfPresent(self.externalStorageRemoved, forKey: "external_storage.removed")
+        try container.encodeIfPresent(self.groupCreated, forKey: "group.created")
+        try container.encodeIfPresent(self.groupUpdated, forKey: "group.updated")
+        try container.encodeIfPresent(self.groupDeleted, forKey: "group.deleted")
+        try container.encodeIfPresent(self.scimEnabled, forKey: "scim.enabled")
+        try container.encodeIfPresent(self.scimDisabled, forKey: "scim.disabled")
+        try container.encodeIfPresent(self.inviteSent, forKey: "invite.sent")
+        try container.encodeIfPresent(self.inviteAccepted, forKey: "invite.accepted")
+        try container.encodeIfPresent(self.inviteDeleted, forKey: "invite.deleted")
+        try container.encodeIfPresent(self.ipAllowlistCreated, forKey: "ip_allowlist.created")
+        try container.encodeIfPresent(self.ipAllowlistUpdated, forKey: "ip_allowlist.updated")
+        try container.encodeIfPresent(self.ipAllowlistDeleted, forKey: "ip_allowlist.deleted")
+        try container.encodeIfPresent(self.ipAllowlistConfigActivated, forKey: "ip_allowlist.config.activated")
+        try container.encodeIfPresent(self.ipAllowlistConfigDeactivated, forKey: "ip_allowlist.config.deactivated")
+        try container.encodeIfPresent(self.loginSucceeded, forKey: "login.succeeded")
+        try container.encodeIfPresent(self.loginFailed, forKey: "login.failed")
+        try container.encodeIfPresent(self.logoutSucceeded, forKey: "logout.succeeded")
+        try container.encodeIfPresent(self.logoutFailed, forKey: "logout.failed")
+        try container.encodeIfPresent(self.organizationUpdated, forKey: "organization.updated")
+        try container.encodeIfPresent(self.projectCreated, forKey: "project.created")
+        try container.encodeIfPresent(self.projectUpdated, forKey: "project.updated")
+        try container.encodeIfPresent(self.projectArchived, forKey: "project.archived")
+        try container.encodeIfPresent(self.projectDeleted, forKey: "project.deleted")
+        try container.encodeIfPresent(self.rateLimitUpdated, forKey: "rate_limit.updated")
+        try container.encodeIfPresent(self.rateLimitDeleted, forKey: "rate_limit.deleted")
+        try container.encodeIfPresent(self.roleCreated, forKey: "role.created")
+        try container.encodeIfPresent(self.roleUpdated, forKey: "role.updated")
+        try container.encodeIfPresent(self.roleDeleted, forKey: "role.deleted")
+        try container.encodeIfPresent(self.roleAssignmentCreated, forKey: "role.assignment.created")
+        try container.encodeIfPresent(self.roleAssignmentDeleted, forKey: "role.assignment.deleted")
+        try container.encodeIfPresent(self.roleBoundToResource, forKey: "role.bound_to_resource")
+        try container.encodeIfPresent(self.roleUnboundFromResource, forKey: "role.unbound_from_resource")
+        try container.encodeIfPresent(self.serviceAccountCreated, forKey: "service_account.created")
+        try container.encodeIfPresent(self.serviceAccountUpdated, forKey: "service_account.updated")
+        try container.encodeIfPresent(self.serviceAccountDeleted, forKey: "service_account.deleted")
+        try container.encodeIfPresent(self.workloadIdentityProviderCreated, forKey: "workload_identity_provider.created")
+        try container.encodeIfPresent(self.workloadIdentityProviderUpdated, forKey: "workload_identity_provider.updated")
+        try container.encodeIfPresent(self.workloadIdentityProviderDeleted, forKey: "workload_identity_provider.deleted")
+        try container.encodeIfPresent(self.workloadIdentityProviderMappingCreated, forKey: "workload_identity_provider_mapping.created")
+        try container.encodeIfPresent(self.workloadIdentityProviderMappingUpdated, forKey: "workload_identity_provider_mapping.updated")
+        try container.encodeIfPresent(self.workloadIdentityProviderMappingDeleted, forKey: "workload_identity_provider_mapping.deleted")
+        try container.encodeIfPresent(self.userAdded, forKey: "user.added")
+        try container.encodeIfPresent(self.userUpdated, forKey: "user.updated")
+        try container.encodeIfPresent(self.userDeleted, forKey: "user.deleted")
+        try container.encodeIfPresent(self.certificateCreated, forKey: "certificate.created")
+        try container.encodeIfPresent(self.certificateUpdated, forKey: "certificate.updated")
+        try container.encodeIfPresent(self.certificateDeleted, forKey: "certificate.deleted")
+        try container.encodeIfPresent(self.certificatesActivated, forKey: "certificates.activated")
+        try container.encodeIfPresent(self.certificatesDeactivated, forKey: "certificates.deactivated")
     }
 
     /// The project that the action was scoped to. Absent for actions not scoped to projects. Note that any admin actions taken via Admin API keys are associated with the default project.
-    public struct Project: Codable, Hashable, Sendable {
+    public struct Project: OpenAIModel {
         /// The project ID.
         public var id: String?
         /// The project title.
@@ -333,14 +400,21 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.name = name
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case name
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.name, forKey: "name")
         }
     }
 
     /// The details for events with this `type`.
-    public struct APIKeyCreated: Codable, Hashable, Sendable {
+    public struct APIKeyCreated: OpenAIModel {
         /// The tracking ID of the API key.
         public var id: String?
         /// The payload used to create the API key.
@@ -351,13 +425,20 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.data = try container.decodeIfPresent(AuditLog.APIKeyCreated.DataValue.self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.data, forKey: "data")
         }
 
         /// The payload used to create the API key.
-        public struct DataValue: Codable, Hashable, Sendable {
+        public struct DataValue: OpenAIModel {
             /// A list of scopes allowed for the API key, e.g. `["api.model.request"]`
             public var scopes: [String]?
 
@@ -365,14 +446,20 @@ public struct AuditLog: Codable, Hashable, Sendable {
                 self.scopes = scopes
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case scopes
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.scopes = try container.decodeIfPresent([String].self, forKey: "scopes")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.scopes, forKey: "scopes")
             }
         }
     }
 
     /// The details for events with this `type`.
-    public struct APIKeyUpdated: Codable, Hashable, Sendable {
+    public struct APIKeyUpdated: OpenAIModel {
         /// The tracking ID of the API key.
         public var id: String?
         /// The payload used to update the API key.
@@ -383,13 +470,20 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.changesRequested = changesRequested
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case changesRequested = "changes_requested"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.changesRequested = try container.decodeIfPresent(AuditLog.APIKeyUpdated.ChangesRequested.self, forKey: "changes_requested")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.changesRequested, forKey: "changes_requested")
         }
 
         /// The payload used to update the API key.
-        public struct ChangesRequested: Codable, Hashable, Sendable {
+        public struct ChangesRequested: OpenAIModel {
             /// A list of scopes allowed for the API key, e.g. `["api.model.request"]`
             public var scopes: [String]?
             /// Number of seconds from the update request until the API key expires.
@@ -400,15 +494,22 @@ public struct AuditLog: Codable, Hashable, Sendable {
                 self.expiresInSeconds = expiresInSeconds
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case scopes
-                case expiresInSeconds = "expires_in_seconds"
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.scopes = try container.decodeIfPresent([String].self, forKey: "scopes")
+                self.expiresInSeconds = try container.decodeIfPresent(Int.self, forKey: "expires_in_seconds")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.scopes, forKey: "scopes")
+                try container.encodeIfPresent(self.expiresInSeconds, forKey: "expires_in_seconds")
             }
         }
     }
 
     /// The details for events with this `type`.
-    public struct APIKeyDeleted: Codable, Hashable, Sendable {
+    public struct APIKeyDeleted: OpenAIModel {
         /// The tracking ID of the API key.
         public var id: String?
 
@@ -416,13 +517,19 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
         }
     }
 
     /// The project and fine-tuned model checkpoint that the checkpoint permission was created for.
-    public struct CheckpointPermissionCreated: Codable, Hashable, Sendable {
+    public struct CheckpointPermissionCreated: OpenAIModel {
         /// The ID of the checkpoint permission.
         public var id: String?
         /// The payload used to create the checkpoint permission.
@@ -433,13 +540,20 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.data = try container.decodeIfPresent(AuditLog.CheckpointPermissionCreated.DataValue.self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.data, forKey: "data")
         }
 
         /// The payload used to create the checkpoint permission.
-        public struct DataValue: Codable, Hashable, Sendable {
+        public struct DataValue: OpenAIModel {
             /// The ID of the project that the checkpoint permission was created for.
             public var projectID: String?
             /// The ID of the fine-tuned model checkpoint.
@@ -450,15 +564,22 @@ public struct AuditLog: Codable, Hashable, Sendable {
                 self.fineTunedModelCheckpoint = fineTunedModelCheckpoint
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case projectID = "project_id"
-                case fineTunedModelCheckpoint = "fine_tuned_model_checkpoint"
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.projectID = try container.decodeIfPresent(String.self, forKey: "project_id")
+                self.fineTunedModelCheckpoint = try container.decodeIfPresent(String.self, forKey: "fine_tuned_model_checkpoint")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.projectID, forKey: "project_id")
+                try container.encodeIfPresent(self.fineTunedModelCheckpoint, forKey: "fine_tuned_model_checkpoint")
             }
         }
     }
 
     /// The details for events with this `type`.
-    public struct CheckpointPermissionDeleted: Codable, Hashable, Sendable {
+    public struct CheckpointPermissionDeleted: OpenAIModel {
         /// The ID of the checkpoint permission.
         public var id: String?
 
@@ -466,13 +587,19 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
         }
     }
 
     /// The details for events with this `type`.
-    public struct ExternalKeyRegistered: Codable, Hashable, Sendable {
+    public struct ExternalKeyRegistered: OpenAIModel {
         /// The ID of the external key configuration.
         public var id: String?
         /// The configuration for the external key.
@@ -483,14 +610,21 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.data = try container.decodeIfPresent(JSONObject.self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.data, forKey: "data")
         }
     }
 
     /// The details for events with this `type`.
-    public struct ExternalKeyRemoved: Codable, Hashable, Sendable {
+    public struct ExternalKeyRemoved: OpenAIModel {
         /// The ID of the external key configuration.
         public var id: String?
 
@@ -498,13 +632,19 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
         }
     }
 
     /// The details for events with this `type`.
-    public struct ExternalStorageRegistered: Codable, Hashable, Sendable {
+    public struct ExternalStorageRegistered: OpenAIModel {
         /// The ID of the external storage configuration.
         public var id: String?
         /// The configuration for the external storage.
@@ -515,13 +655,20 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.data = try container.decodeIfPresent(AuditLog.ExternalStorageRegistered.DataValue.self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.data, forKey: "data")
         }
 
         /// The configuration for the external storage.
-        public struct DataValue: Codable, Hashable, Sendable {
+        public struct DataValue: OpenAIModel {
             /// The external storage provider configuration.
             public var provider: Provider?
             /// The OpenAI geography derived from the storage region.
@@ -532,15 +679,22 @@ public struct AuditLog: Codable, Hashable, Sendable {
                 self.geography = geography
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case provider
-                case geography
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.provider = try container.decodeIfPresent(Provider.self, forKey: "provider")
+                self.geography = try container.decodeIfPresent(String.self, forKey: "geography")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.provider, forKey: "provider")
+                try container.encodeIfPresent(self.geography, forKey: "geography")
             }
         }
     }
 
     /// The details for events with this `type`.
-    public struct ExternalStorageRemoved: Codable, Hashable, Sendable {
+    public struct ExternalStorageRemoved: OpenAIModel {
         /// The ID of the external storage configuration.
         public var id: String?
 
@@ -548,13 +702,19 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
         }
     }
 
     /// The details for events with this `type`.
-    public struct GroupCreated: Codable, Hashable, Sendable {
+    public struct GroupCreated: OpenAIModel {
         /// The ID of the group.
         public var id: String?
         /// Information about the created group.
@@ -565,13 +725,20 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.data = try container.decodeIfPresent(AuditLog.GroupCreated.DataValue.self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.data, forKey: "data")
         }
 
         /// Information about the created group.
-        public struct DataValue: Codable, Hashable, Sendable {
+        public struct DataValue: OpenAIModel {
             /// The group name.
             public var groupName: String?
 
@@ -579,14 +746,20 @@ public struct AuditLog: Codable, Hashable, Sendable {
                 self.groupName = groupName
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case groupName = "group_name"
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.groupName = try container.decodeIfPresent(String.self, forKey: "group_name")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.groupName, forKey: "group_name")
             }
         }
     }
 
     /// The details for events with this `type`.
-    public struct GroupUpdated: Codable, Hashable, Sendable {
+    public struct GroupUpdated: OpenAIModel {
         /// The ID of the group.
         public var id: String?
         /// The payload used to update the group.
@@ -597,13 +770,20 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.changesRequested = changesRequested
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case changesRequested = "changes_requested"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.changesRequested = try container.decodeIfPresent(AuditLog.GroupUpdated.ChangesRequested.self, forKey: "changes_requested")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.changesRequested, forKey: "changes_requested")
         }
 
         /// The payload used to update the group.
-        public struct ChangesRequested: Codable, Hashable, Sendable {
+        public struct ChangesRequested: OpenAIModel {
             /// The updated group name.
             public var groupName: String?
 
@@ -611,14 +791,20 @@ public struct AuditLog: Codable, Hashable, Sendable {
                 self.groupName = groupName
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case groupName = "group_name"
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.groupName = try container.decodeIfPresent(String.self, forKey: "group_name")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.groupName, forKey: "group_name")
             }
         }
     }
 
     /// The details for events with this `type`.
-    public struct GroupDeleted: Codable, Hashable, Sendable {
+    public struct GroupDeleted: OpenAIModel {
         /// The ID of the group.
         public var id: String?
 
@@ -626,13 +812,19 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
         }
     }
 
     /// The details for events with this `type`.
-    public struct ScimEnabled: Codable, Hashable, Sendable {
+    public struct ScimEnabled: OpenAIModel {
         /// The ID of the SCIM was enabled for.
         public var id: String?
 
@@ -640,13 +832,19 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
         }
     }
 
     /// The details for events with this `type`.
-    public struct ScimDisabled: Codable, Hashable, Sendable {
+    public struct ScimDisabled: OpenAIModel {
         /// The ID of the SCIM was disabled for.
         public var id: String?
 
@@ -654,13 +852,19 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
         }
     }
 
     /// The details for events with this `type`.
-    public struct InviteSent: Codable, Hashable, Sendable {
+    public struct InviteSent: OpenAIModel {
         /// The ID of the invite.
         public var id: String?
         /// The payload used to create the invite.
@@ -671,13 +875,20 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.data = try container.decodeIfPresent(AuditLog.InviteSent.DataValue.self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.data, forKey: "data")
         }
 
         /// The payload used to create the invite.
-        public struct DataValue: Codable, Hashable, Sendable {
+        public struct DataValue: OpenAIModel {
             /// The email invited to the organization.
             public var email: String?
             /// The role the email was invited to be. Is either `owner` or `member`.
@@ -688,15 +899,22 @@ public struct AuditLog: Codable, Hashable, Sendable {
                 self.role = role
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case email
-                case role
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.email = try container.decodeIfPresent(String.self, forKey: "email")
+                self.role = try container.decodeIfPresent(String.self, forKey: "role")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.email, forKey: "email")
+                try container.encodeIfPresent(self.role, forKey: "role")
             }
         }
     }
 
     /// The details for events with this `type`.
-    public struct InviteAccepted: Codable, Hashable, Sendable {
+    public struct InviteAccepted: OpenAIModel {
         /// The ID of the invite.
         public var id: String?
 
@@ -704,13 +922,19 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
         }
     }
 
     /// The details for events with this `type`.
-    public struct InviteDeleted: Codable, Hashable, Sendable {
+    public struct InviteDeleted: OpenAIModel {
         /// The ID of the invite.
         public var id: String?
 
@@ -718,13 +942,19 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
         }
     }
 
     /// The details for events with this `type`.
-    public struct IpAllowlistCreated: Codable, Hashable, Sendable {
+    public struct IpAllowlistCreated: OpenAIModel {
         /// The ID of the IP allowlist configuration.
         public var id: String?
         /// The name of the IP allowlist configuration.
@@ -742,15 +972,23 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.allowedIps = allowedIps
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case name
-            case allowedIps = "allowed_ips"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.name = try container.decodeIfPresent(String.self, forKey: "name")
+            self.allowedIps = try container.decodeIfPresent([String].self, forKey: "allowed_ips")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.name, forKey: "name")
+            try container.encodeIfPresent(self.allowedIps, forKey: "allowed_ips")
         }
     }
 
     /// The details for events with this `type`.
-    public struct IpAllowlistUpdated: Codable, Hashable, Sendable {
+    public struct IpAllowlistUpdated: OpenAIModel {
         /// The ID of the IP allowlist configuration.
         public var id: String?
         /// The updated set of IP addresses or CIDR ranges in the configuration.
@@ -761,14 +999,21 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.allowedIps = allowedIps
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case allowedIps = "allowed_ips"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.allowedIps = try container.decodeIfPresent([String].self, forKey: "allowed_ips")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.allowedIps, forKey: "allowed_ips")
         }
     }
 
     /// The details for events with this `type`.
-    public struct IpAllowlistDeleted: Codable, Hashable, Sendable {
+    public struct IpAllowlistDeleted: OpenAIModel {
         /// The ID of the IP allowlist configuration.
         public var id: String?
         /// The name of the IP allowlist configuration.
@@ -786,15 +1031,23 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.allowedIps = allowedIps
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case name
-            case allowedIps = "allowed_ips"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.name = try container.decodeIfPresent(String.self, forKey: "name")
+            self.allowedIps = try container.decodeIfPresent([String].self, forKey: "allowed_ips")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.name, forKey: "name")
+            try container.encodeIfPresent(self.allowedIps, forKey: "allowed_ips")
         }
     }
 
     /// The details for events with this `type`.
-    public struct IpAllowlistConfigActivated: Codable, Hashable, Sendable {
+    public struct IpAllowlistConfigActivated: OpenAIModel {
         /// The configurations that were activated.
         public var configs: [AuditLog.IpAllowlistConfigActivated.Config]?
 
@@ -802,11 +1055,17 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.configs = configs
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case configs
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.configs = try container.decodeIfPresent([AuditLog.IpAllowlistConfigActivated.Config].self, forKey: "configs")
         }
 
-        public struct Config: Codable, Hashable, Sendable {
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.configs, forKey: "configs")
+        }
+
+        public struct Config: OpenAIModel {
             /// The ID of the IP allowlist configuration.
             public var id: String?
             /// The name of the IP allowlist configuration.
@@ -817,15 +1076,22 @@ public struct AuditLog: Codable, Hashable, Sendable {
                 self.name = name
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case id
-                case name
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.id = try container.decodeIfPresent(String.self, forKey: "id")
+                self.name = try container.decodeIfPresent(String.self, forKey: "name")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.id, forKey: "id")
+                try container.encodeIfPresent(self.name, forKey: "name")
             }
         }
     }
 
     /// The details for events with this `type`.
-    public struct IpAllowlistConfigDeactivated: Codable, Hashable, Sendable {
+    public struct IpAllowlistConfigDeactivated: OpenAIModel {
         /// The configurations that were deactivated.
         public var configs: [AuditLog.IpAllowlistConfigDeactivated.Config]?
 
@@ -833,11 +1099,17 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.configs = configs
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case configs
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.configs = try container.decodeIfPresent([AuditLog.IpAllowlistConfigDeactivated.Config].self, forKey: "configs")
         }
 
-        public struct Config: Codable, Hashable, Sendable {
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.configs, forKey: "configs")
+        }
+
+        public struct Config: OpenAIModel {
             /// The ID of the IP allowlist configuration.
             public var id: String?
             /// The name of the IP allowlist configuration.
@@ -848,15 +1120,22 @@ public struct AuditLog: Codable, Hashable, Sendable {
                 self.name = name
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case id
-                case name
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.id = try container.decodeIfPresent(String.self, forKey: "id")
+                self.name = try container.decodeIfPresent(String.self, forKey: "name")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.id, forKey: "id")
+                try container.encodeIfPresent(self.name, forKey: "name")
             }
         }
     }
 
     /// The details for events with this `type`.
-    public struct LoginFailed: Codable, Hashable, Sendable {
+    public struct LoginFailed: OpenAIModel {
         /// The error code of the failure.
         public var errorCode: String?
         /// The error message of the failure.
@@ -867,14 +1146,21 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.errorMessage = errorMessage
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case errorCode = "error_code"
-            case errorMessage = "error_message"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.errorCode = try container.decodeIfPresent(String.self, forKey: "error_code")
+            self.errorMessage = try container.decodeIfPresent(String.self, forKey: "error_message")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.errorCode, forKey: "error_code")
+            try container.encodeIfPresent(self.errorMessage, forKey: "error_message")
         }
     }
 
     /// The details for events with this `type`.
-    public struct LogoutFailed: Codable, Hashable, Sendable {
+    public struct LogoutFailed: OpenAIModel {
         /// The error code of the failure.
         public var errorCode: String?
         /// The error message of the failure.
@@ -885,14 +1171,21 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.errorMessage = errorMessage
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case errorCode = "error_code"
-            case errorMessage = "error_message"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.errorCode = try container.decodeIfPresent(String.self, forKey: "error_code")
+            self.errorMessage = try container.decodeIfPresent(String.self, forKey: "error_message")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.errorCode, forKey: "error_code")
+            try container.encodeIfPresent(self.errorMessage, forKey: "error_message")
         }
     }
 
     /// The details for events with this `type`.
-    public struct OrganizationUpdated: Codable, Hashable, Sendable {
+    public struct OrganizationUpdated: OpenAIModel {
         /// The organization ID.
         public var id: String?
         /// The payload used to update the organization settings.
@@ -903,13 +1196,20 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.changesRequested = changesRequested
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case changesRequested = "changes_requested"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.changesRequested = try container.decodeIfPresent(AuditLog.OrganizationUpdated.ChangesRequested.self, forKey: "changes_requested")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.changesRequested, forKey: "changes_requested")
         }
 
         /// The payload used to update the organization settings.
-        public struct ChangesRequested: Codable, Hashable, Sendable {
+        public struct ChangesRequested: OpenAIModel {
             /// The organization title.
             public var title: String?
             /// The organization description.
@@ -943,20 +1243,32 @@ public struct AuditLog: Codable, Hashable, Sendable {
                 self.apiCallLoggingProjectIDs = apiCallLoggingProjectIDs
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case title
-                case description
-                case name
-                case threadsUiVisibility = "threads_ui_visibility"
-                case usageDashboardVisibility = "usage_dashboard_visibility"
-                case apiCallLogging = "api_call_logging"
-                case apiCallLoggingProjectIDs = "api_call_logging_project_ids"
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.title = try container.decodeIfPresent(String.self, forKey: "title")
+                self.description = try container.decodeIfPresent(String.self, forKey: "description")
+                self.name = try container.decodeIfPresent(String.self, forKey: "name")
+                self.threadsUiVisibility = try container.decodeIfPresent(String.self, forKey: "threads_ui_visibility")
+                self.usageDashboardVisibility = try container.decodeIfPresent(String.self, forKey: "usage_dashboard_visibility")
+                self.apiCallLogging = try container.decodeIfPresent(String.self, forKey: "api_call_logging")
+                self.apiCallLoggingProjectIDs = try container.decodeIfPresent(String.self, forKey: "api_call_logging_project_ids")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.title, forKey: "title")
+                try container.encodeIfPresent(self.description, forKey: "description")
+                try container.encodeIfPresent(self.name, forKey: "name")
+                try container.encodeIfPresent(self.threadsUiVisibility, forKey: "threads_ui_visibility")
+                try container.encodeIfPresent(self.usageDashboardVisibility, forKey: "usage_dashboard_visibility")
+                try container.encodeIfPresent(self.apiCallLogging, forKey: "api_call_logging")
+                try container.encodeIfPresent(self.apiCallLoggingProjectIDs, forKey: "api_call_logging_project_ids")
             }
         }
     }
 
     /// The details for events with this `type`.
-    public struct ProjectCreated: Codable, Hashable, Sendable {
+    public struct ProjectCreated: OpenAIModel {
         /// The project ID.
         public var id: String?
         /// The payload used to create the project.
@@ -967,13 +1279,20 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.data = try container.decodeIfPresent(AuditLog.ProjectCreated.DataValue.self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.data, forKey: "data")
         }
 
         /// The payload used to create the project.
-        public struct DataValue: Codable, Hashable, Sendable {
+        public struct DataValue: OpenAIModel {
             /// The project name.
             public var name: String?
             /// The title of the project as seen on the dashboard.
@@ -984,15 +1303,22 @@ public struct AuditLog: Codable, Hashable, Sendable {
                 self.title = title
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case name
-                case title
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.name = try container.decodeIfPresent(String.self, forKey: "name")
+                self.title = try container.decodeIfPresent(String.self, forKey: "title")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.name, forKey: "name")
+                try container.encodeIfPresent(self.title, forKey: "title")
             }
         }
     }
 
     /// The details for events with this `type`.
-    public struct ProjectUpdated: Codable, Hashable, Sendable {
+    public struct ProjectUpdated: OpenAIModel {
         /// The project ID.
         public var id: String?
         /// The payload used to update the project.
@@ -1003,13 +1329,20 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.changesRequested = changesRequested
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case changesRequested = "changes_requested"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.changesRequested = try container.decodeIfPresent(AuditLog.ProjectUpdated.ChangesRequested.self, forKey: "changes_requested")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.changesRequested, forKey: "changes_requested")
         }
 
         /// The payload used to update the project.
-        public struct ChangesRequested: Codable, Hashable, Sendable {
+        public struct ChangesRequested: OpenAIModel {
             /// The title of the project as seen on the dashboard.
             public var title: String?
 
@@ -1017,14 +1350,20 @@ public struct AuditLog: Codable, Hashable, Sendable {
                 self.title = title
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case title
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.title = try container.decodeIfPresent(String.self, forKey: "title")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.title, forKey: "title")
             }
         }
     }
 
     /// The details for events with this `type`.
-    public struct ProjectArchived: Codable, Hashable, Sendable {
+    public struct ProjectArchived: OpenAIModel {
         /// The project ID.
         public var id: String?
 
@@ -1032,13 +1371,19 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
         }
     }
 
     /// The details for events with this `type`.
-    public struct ProjectDeleted: Codable, Hashable, Sendable {
+    public struct ProjectDeleted: OpenAIModel {
         /// The project ID.
         public var id: String?
 
@@ -1046,13 +1391,19 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
         }
     }
 
     /// The details for events with this `type`.
-    public struct RateLimitUpdated: Codable, Hashable, Sendable {
+    public struct RateLimitUpdated: OpenAIModel {
         /// The rate limit ID
         public var id: String?
         /// The payload used to update the rate limits.
@@ -1063,13 +1414,20 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.changesRequested = changesRequested
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case changesRequested = "changes_requested"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.changesRequested = try container.decodeIfPresent(AuditLog.RateLimitUpdated.ChangesRequested.self, forKey: "changes_requested")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.changesRequested, forKey: "changes_requested")
         }
 
         /// The payload used to update the rate limits.
-        public struct ChangesRequested: Codable, Hashable, Sendable {
+        public struct ChangesRequested: OpenAIModel {
             /// The maximum requests per minute.
             public var maxRequestsPer1Minute: Int?
             /// The maximum tokens per minute.
@@ -1099,19 +1457,30 @@ public struct AuditLog: Codable, Hashable, Sendable {
                 self.batch1DayMaxInputTokens = batch1DayMaxInputTokens
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case maxRequestsPer1Minute = "max_requests_per_1_minute"
-                case maxTokensPer1Minute = "max_tokens_per_1_minute"
-                case maxImagesPer1Minute = "max_images_per_1_minute"
-                case maxAudioMegabytesPer1Minute = "max_audio_megabytes_per_1_minute"
-                case maxRequestsPer1Day = "max_requests_per_1_day"
-                case batch1DayMaxInputTokens = "batch_1_day_max_input_tokens"
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.maxRequestsPer1Minute = try container.decodeIfPresent(Int.self, forKey: "max_requests_per_1_minute")
+                self.maxTokensPer1Minute = try container.decodeIfPresent(Int.self, forKey: "max_tokens_per_1_minute")
+                self.maxImagesPer1Minute = try container.decodeIfPresent(Int.self, forKey: "max_images_per_1_minute")
+                self.maxAudioMegabytesPer1Minute = try container.decodeIfPresent(Int.self, forKey: "max_audio_megabytes_per_1_minute")
+                self.maxRequestsPer1Day = try container.decodeIfPresent(Int.self, forKey: "max_requests_per_1_day")
+                self.batch1DayMaxInputTokens = try container.decodeIfPresent(Int.self, forKey: "batch_1_day_max_input_tokens")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.maxRequestsPer1Minute, forKey: "max_requests_per_1_minute")
+                try container.encodeIfPresent(self.maxTokensPer1Minute, forKey: "max_tokens_per_1_minute")
+                try container.encodeIfPresent(self.maxImagesPer1Minute, forKey: "max_images_per_1_minute")
+                try container.encodeIfPresent(self.maxAudioMegabytesPer1Minute, forKey: "max_audio_megabytes_per_1_minute")
+                try container.encodeIfPresent(self.maxRequestsPer1Day, forKey: "max_requests_per_1_day")
+                try container.encodeIfPresent(self.batch1DayMaxInputTokens, forKey: "batch_1_day_max_input_tokens")
             }
         }
     }
 
     /// The details for events with this `type`.
-    public struct RateLimitDeleted: Codable, Hashable, Sendable {
+    public struct RateLimitDeleted: OpenAIModel {
         /// The rate limit ID
         public var id: String?
 
@@ -1119,13 +1488,19 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
         }
     }
 
     /// The details for events with this `type`.
-    public struct RoleCreated: Codable, Hashable, Sendable {
+    public struct RoleCreated: OpenAIModel {
         /// The role ID.
         public var id: String?
         /// The name of the role.
@@ -1151,17 +1526,27 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.resourceID = resourceID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case roleName = "role_name"
-            case permissions
-            case resourceType = "resource_type"
-            case resourceID = "resource_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.roleName = try container.decodeIfPresent(String.self, forKey: "role_name")
+            self.permissions = try container.decodeIfPresent([String].self, forKey: "permissions")
+            self.resourceType = try container.decodeIfPresent(String.self, forKey: "resource_type")
+            self.resourceID = try container.decodeIfPresent(String.self, forKey: "resource_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.roleName, forKey: "role_name")
+            try container.encodeIfPresent(self.permissions, forKey: "permissions")
+            try container.encodeIfPresent(self.resourceType, forKey: "resource_type")
+            try container.encodeIfPresent(self.resourceID, forKey: "resource_id")
         }
     }
 
     /// The details for events with this `type`.
-    public struct RoleUpdated: Codable, Hashable, Sendable {
+    public struct RoleUpdated: OpenAIModel {
         /// The role ID.
         public var id: String?
         /// The payload used to update the role.
@@ -1172,13 +1557,20 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.changesRequested = changesRequested
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case changesRequested = "changes_requested"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.changesRequested = try container.decodeIfPresent(AuditLog.RoleUpdated.ChangesRequested.self, forKey: "changes_requested")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.changesRequested, forKey: "changes_requested")
         }
 
         /// The payload used to update the role.
-        public struct ChangesRequested: Codable, Hashable, Sendable {
+        public struct ChangesRequested: OpenAIModel {
             /// The updated role name, when provided.
             public var roleName: String?
             /// The resource the role is scoped to.
@@ -1212,20 +1604,32 @@ public struct AuditLog: Codable, Hashable, Sendable {
                 self.metadata = metadata
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case roleName = "role_name"
-                case resourceID = "resource_id"
-                case resourceType = "resource_type"
-                case permissionsAdded = "permissions_added"
-                case permissionsRemoved = "permissions_removed"
-                case description
-                case metadata
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.roleName = try container.decodeIfPresent(String.self, forKey: "role_name")
+                self.resourceID = try container.decodeIfPresent(String.self, forKey: "resource_id")
+                self.resourceType = try container.decodeIfPresent(String.self, forKey: "resource_type")
+                self.permissionsAdded = try container.decodeIfPresent([String].self, forKey: "permissions_added")
+                self.permissionsRemoved = try container.decodeIfPresent([String].self, forKey: "permissions_removed")
+                self.description = try container.decodeIfPresent(String.self, forKey: "description")
+                self.metadata = try container.decodeIfPresent(JSONObject.self, forKey: "metadata")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.roleName, forKey: "role_name")
+                try container.encodeIfPresent(self.resourceID, forKey: "resource_id")
+                try container.encodeIfPresent(self.resourceType, forKey: "resource_type")
+                try container.encodeIfPresent(self.permissionsAdded, forKey: "permissions_added")
+                try container.encodeIfPresent(self.permissionsRemoved, forKey: "permissions_removed")
+                try container.encodeIfPresent(self.description, forKey: "description")
+                try container.encodeIfPresent(self.metadata, forKey: "metadata")
             }
         }
     }
 
     /// The details for events with this `type`.
-    public struct RoleDeleted: Codable, Hashable, Sendable {
+    public struct RoleDeleted: OpenAIModel {
         /// The role ID.
         public var id: String?
 
@@ -1233,13 +1637,19 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
         }
     }
 
     /// The details for events with this `type`.
-    public struct RoleAssignmentCreated: Codable, Hashable, Sendable {
+    public struct RoleAssignmentCreated: OpenAIModel {
         /// The identifier of the role assignment.
         public var id: String?
         /// The principal (user or group) that received the role.
@@ -1265,17 +1675,27 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.resourceType = resourceType
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case principalID = "principal_id"
-            case principalType = "principal_type"
-            case resourceID = "resource_id"
-            case resourceType = "resource_type"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.principalID = try container.decodeIfPresent(String.self, forKey: "principal_id")
+            self.principalType = try container.decodeIfPresent(String.self, forKey: "principal_type")
+            self.resourceID = try container.decodeIfPresent(String.self, forKey: "resource_id")
+            self.resourceType = try container.decodeIfPresent(String.self, forKey: "resource_type")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.principalID, forKey: "principal_id")
+            try container.encodeIfPresent(self.principalType, forKey: "principal_type")
+            try container.encodeIfPresent(self.resourceID, forKey: "resource_id")
+            try container.encodeIfPresent(self.resourceType, forKey: "resource_type")
         }
     }
 
     /// The details for events with this `type`.
-    public struct RoleAssignmentDeleted: Codable, Hashable, Sendable {
+    public struct RoleAssignmentDeleted: OpenAIModel {
         /// The identifier of the role assignment.
         public var id: String?
         /// The principal (user or group) that had the role removed.
@@ -1301,17 +1721,27 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.resourceType = resourceType
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case principalID = "principal_id"
-            case principalType = "principal_type"
-            case resourceID = "resource_id"
-            case resourceType = "resource_type"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.principalID = try container.decodeIfPresent(String.self, forKey: "principal_id")
+            self.principalType = try container.decodeIfPresent(String.self, forKey: "principal_type")
+            self.resourceID = try container.decodeIfPresent(String.self, forKey: "resource_id")
+            self.resourceType = try container.decodeIfPresent(String.self, forKey: "resource_type")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.principalID, forKey: "principal_id")
+            try container.encodeIfPresent(self.principalType, forKey: "principal_type")
+            try container.encodeIfPresent(self.resourceID, forKey: "resource_id")
+            try container.encodeIfPresent(self.resourceType, forKey: "resource_type")
         }
     }
 
     /// The details for events with this `type`.
-    public struct RoleBoundToResource: Codable, Hashable, Sendable {
+    public struct RoleBoundToResource: OpenAIModel {
         /// The ID of the resource the role was bound to. ChatGPT workspace connector resources use `<workspace_id>__<connector_id>`.
         public var id: String?
         /// The ID of the role that was bound to the resource.
@@ -1357,17 +1787,32 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.source = source
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case roleID = "role_id"
-            case resourceID = "resource_id"
-            case resourceType = "resource_type"
-            case permissions
-            case workspaceID = "workspace_id"
-            case connectorID = "connector_id"
-            case connectorName = "connector_name"
-            case enabled
-            case source
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.roleID = try container.decodeIfPresent(String.self, forKey: "role_id")
+            self.resourceID = try container.decodeIfPresent(String.self, forKey: "resource_id")
+            self.resourceType = try container.decodeIfPresent(String.self, forKey: "resource_type")
+            self.permissions = try container.decodeIfPresent([String].self, forKey: "permissions")
+            self.workspaceID = try container.decodeIfPresent(String.self, forKey: "workspace_id")
+            self.connectorID = try container.decodeIfPresent(String.self, forKey: "connector_id")
+            self.connectorName = try container.decodeIfPresent(String.self, forKey: "connector_name")
+            self.enabled = try container.decodeIfPresent(Bool.self, forKey: "enabled")
+            self.source = try container.decodeIfPresent(AuditLog.RoleBoundToResource.Source.self, forKey: "source")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.roleID, forKey: "role_id")
+            try container.encodeIfPresent(self.resourceID, forKey: "resource_id")
+            try container.encodeIfPresent(self.resourceType, forKey: "resource_type")
+            try container.encodeIfPresent(self.permissions, forKey: "permissions")
+            try container.encodeIfPresent(self.workspaceID, forKey: "workspace_id")
+            try container.encodeIfPresent(self.connectorID, forKey: "connector_id")
+            try container.encodeIfPresent(self.connectorName, forKey: "connector_name")
+            try container.encodeIfPresent(self.enabled, forKey: "enabled")
+            try container.encodeIfPresent(self.source, forKey: "source")
         }
 
         /// The connector role mutation path that produced the event.
@@ -1393,7 +1838,7 @@ public struct AuditLog: Codable, Hashable, Sendable {
     }
 
     /// The details for events with this `type`.
-    public struct RoleUnboundFromResource: Codable, Hashable, Sendable {
+    public struct RoleUnboundFromResource: OpenAIModel {
         /// The ID of the resource the role was unbound from. ChatGPT workspace connector resources use `<workspace_id>__<connector_id>`.
         public var id: String?
         /// The ID of the role that was unbound from the resource.
@@ -1439,17 +1884,32 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.source = source
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case roleID = "role_id"
-            case resourceID = "resource_id"
-            case resourceType = "resource_type"
-            case permissions
-            case workspaceID = "workspace_id"
-            case connectorID = "connector_id"
-            case connectorName = "connector_name"
-            case enabled
-            case source
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.roleID = try container.decodeIfPresent(String.self, forKey: "role_id")
+            self.resourceID = try container.decodeIfPresent(String.self, forKey: "resource_id")
+            self.resourceType = try container.decodeIfPresent(String.self, forKey: "resource_type")
+            self.permissions = try container.decodeIfPresent([String].self, forKey: "permissions")
+            self.workspaceID = try container.decodeIfPresent(String.self, forKey: "workspace_id")
+            self.connectorID = try container.decodeIfPresent(String.self, forKey: "connector_id")
+            self.connectorName = try container.decodeIfPresent(String.self, forKey: "connector_name")
+            self.enabled = try container.decodeIfPresent(Bool.self, forKey: "enabled")
+            self.source = try container.decodeIfPresent(AuditLog.RoleUnboundFromResource.Source.self, forKey: "source")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.roleID, forKey: "role_id")
+            try container.encodeIfPresent(self.resourceID, forKey: "resource_id")
+            try container.encodeIfPresent(self.resourceType, forKey: "resource_type")
+            try container.encodeIfPresent(self.permissions, forKey: "permissions")
+            try container.encodeIfPresent(self.workspaceID, forKey: "workspace_id")
+            try container.encodeIfPresent(self.connectorID, forKey: "connector_id")
+            try container.encodeIfPresent(self.connectorName, forKey: "connector_name")
+            try container.encodeIfPresent(self.enabled, forKey: "enabled")
+            try container.encodeIfPresent(self.source, forKey: "source")
         }
 
         /// The connector role mutation path that produced the event.
@@ -1475,7 +1935,7 @@ public struct AuditLog: Codable, Hashable, Sendable {
     }
 
     /// The details for events with this `type`.
-    public struct ServiceAccountCreated: Codable, Hashable, Sendable {
+    public struct ServiceAccountCreated: OpenAIModel {
         /// The service account ID.
         public var id: String?
         /// The payload used to create the service account.
@@ -1486,13 +1946,20 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.data = try container.decodeIfPresent(AuditLog.ServiceAccountCreated.DataValue.self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.data, forKey: "data")
         }
 
         /// The payload used to create the service account.
-        public struct DataValue: Codable, Hashable, Sendable {
+        public struct DataValue: OpenAIModel {
             /// The role of the service account. Is either `owner` or `member`.
             public var role: String?
 
@@ -1500,14 +1967,20 @@ public struct AuditLog: Codable, Hashable, Sendable {
                 self.role = role
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case role
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.role = try container.decodeIfPresent(String.self, forKey: "role")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.role, forKey: "role")
             }
         }
     }
 
     /// The details for events with this `type`.
-    public struct ServiceAccountUpdated: Codable, Hashable, Sendable {
+    public struct ServiceAccountUpdated: OpenAIModel {
         /// The service account ID.
         public var id: String?
         /// The payload used to updated the service account.
@@ -1518,13 +1991,20 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.changesRequested = changesRequested
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case changesRequested = "changes_requested"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.changesRequested = try container.decodeIfPresent(AuditLog.ServiceAccountUpdated.ChangesRequested.self, forKey: "changes_requested")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.changesRequested, forKey: "changes_requested")
         }
 
         /// The payload used to updated the service account.
-        public struct ChangesRequested: Codable, Hashable, Sendable {
+        public struct ChangesRequested: OpenAIModel {
             /// The role of the service account. Is either `owner` or `member`.
             public var role: String?
 
@@ -1532,14 +2012,20 @@ public struct AuditLog: Codable, Hashable, Sendable {
                 self.role = role
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case role
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.role = try container.decodeIfPresent(String.self, forKey: "role")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.role, forKey: "role")
             }
         }
     }
 
     /// The details for events with this `type`.
-    public struct ServiceAccountDeleted: Codable, Hashable, Sendable {
+    public struct ServiceAccountDeleted: OpenAIModel {
         /// The service account ID.
         public var id: String?
 
@@ -1547,13 +2033,19 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
         }
     }
 
     /// The details for events with this `type`.
-    public struct WorkloadIdentityProviderCreated: Codable, Hashable, Sendable {
+    public struct WorkloadIdentityProviderCreated: OpenAIModel {
         /// The workload identity provider ID.
         public var id: String?
         /// The payload used to create the workload identity provider.
@@ -1564,14 +2056,21 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.data = try container.decodeIfPresent(JSONObject.self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.data, forKey: "data")
         }
     }
 
     /// The details for events with this `type`.
-    public struct WorkloadIdentityProviderUpdated: Codable, Hashable, Sendable {
+    public struct WorkloadIdentityProviderUpdated: OpenAIModel {
         /// The workload identity provider ID.
         public var id: String?
         /// The payload used to update the workload identity provider.
@@ -1582,14 +2081,21 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.changesRequested = changesRequested
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case changesRequested = "changes_requested"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.changesRequested = try container.decodeIfPresent(JSONObject.self, forKey: "changes_requested")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.changesRequested, forKey: "changes_requested")
         }
     }
 
     /// The details for events with this `type`.
-    public struct WorkloadIdentityProviderDeleted: Codable, Hashable, Sendable {
+    public struct WorkloadIdentityProviderDeleted: OpenAIModel {
         /// The workload identity provider ID.
         public var id: String?
         /// The workload identity provider name.
@@ -1600,14 +2106,21 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.name = name
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case name
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.name, forKey: "name")
         }
     }
 
     /// The details for events with this `type`.
-    public struct WorkloadIdentityProviderMappingCreated: Codable, Hashable, Sendable {
+    public struct WorkloadIdentityProviderMappingCreated: OpenAIModel {
         /// The workload identity provider mapping ID.
         public var id: String?
         /// The workload identity provider ID.
@@ -1625,15 +2138,23 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case identityProviderID = "identity_provider_id"
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.identityProviderID = try container.decodeIfPresent(String.self, forKey: "identity_provider_id")
+            self.data = try container.decodeIfPresent(JSONObject.self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.identityProviderID, forKey: "identity_provider_id")
+            try container.encodeIfPresent(self.data, forKey: "data")
         }
     }
 
     /// The details for events with this `type`.
-    public struct WorkloadIdentityProviderMappingUpdated: Codable, Hashable, Sendable {
+    public struct WorkloadIdentityProviderMappingUpdated: OpenAIModel {
         /// The workload identity provider mapping ID.
         public var id: String?
         /// The workload identity provider ID.
@@ -1651,15 +2172,23 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.changesRequested = changesRequested
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case identityProviderID = "identity_provider_id"
-            case changesRequested = "changes_requested"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.identityProviderID = try container.decodeIfPresent(String.self, forKey: "identity_provider_id")
+            self.changesRequested = try container.decodeIfPresent(JSONObject.self, forKey: "changes_requested")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.identityProviderID, forKey: "identity_provider_id")
+            try container.encodeIfPresent(self.changesRequested, forKey: "changes_requested")
         }
     }
 
     /// The details for events with this `type`.
-    public struct WorkloadIdentityProviderMappingDeleted: Codable, Hashable, Sendable {
+    public struct WorkloadIdentityProviderMappingDeleted: OpenAIModel {
         /// The workload identity provider mapping ID.
         public var id: String?
         /// The workload identity provider ID.
@@ -1681,16 +2210,25 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.serviceAccountID = serviceAccountID
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case identityProviderID = "identity_provider_id"
-            case projectID = "project_id"
-            case serviceAccountID = "service_account_id"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.identityProviderID = try container.decodeIfPresent(String.self, forKey: "identity_provider_id")
+            self.projectID = try container.decodeIfPresent(String.self, forKey: "project_id")
+            self.serviceAccountID = try container.decodeIfPresent(String.self, forKey: "service_account_id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.identityProviderID, forKey: "identity_provider_id")
+            try container.encodeIfPresent(self.projectID, forKey: "project_id")
+            try container.encodeIfPresent(self.serviceAccountID, forKey: "service_account_id")
         }
     }
 
     /// The details for events with this `type`.
-    public struct UserAdded: Codable, Hashable, Sendable {
+    public struct UserAdded: OpenAIModel {
         /// The user ID.
         public var id: String?
         /// The payload used to add the user to the project.
@@ -1701,13 +2239,20 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.data = data
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case data
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.data = try container.decodeIfPresent(AuditLog.UserAdded.DataValue.self, forKey: "data")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.data, forKey: "data")
         }
 
         /// The payload used to add the user to the project.
-        public struct DataValue: Codable, Hashable, Sendable {
+        public struct DataValue: OpenAIModel {
             /// The role of the user. Is either `owner` or `member`.
             public var role: String?
 
@@ -1715,14 +2260,20 @@ public struct AuditLog: Codable, Hashable, Sendable {
                 self.role = role
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case role
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.role = try container.decodeIfPresent(String.self, forKey: "role")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.role, forKey: "role")
             }
         }
     }
 
     /// The details for events with this `type`.
-    public struct UserUpdated: Codable, Hashable, Sendable {
+    public struct UserUpdated: OpenAIModel {
         /// The project ID.
         public var id: String?
         /// The payload used to update the user.
@@ -1733,13 +2284,20 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.changesRequested = changesRequested
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case changesRequested = "changes_requested"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.changesRequested = try container.decodeIfPresent(AuditLog.UserUpdated.ChangesRequested.self, forKey: "changes_requested")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.changesRequested, forKey: "changes_requested")
         }
 
         /// The payload used to update the user.
-        public struct ChangesRequested: Codable, Hashable, Sendable {
+        public struct ChangesRequested: OpenAIModel {
             /// The role of the user. Is either `owner` or `member`.
             public var role: String?
 
@@ -1747,14 +2305,20 @@ public struct AuditLog: Codable, Hashable, Sendable {
                 self.role = role
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case role
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.role = try container.decodeIfPresent(String.self, forKey: "role")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.role, forKey: "role")
             }
         }
     }
 
     /// The details for events with this `type`.
-    public struct UserDeleted: Codable, Hashable, Sendable {
+    public struct UserDeleted: OpenAIModel {
         /// The user ID.
         public var id: String?
 
@@ -1762,13 +2326,19 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.id = id
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
         }
     }
 
     /// The details for events with this `type`.
-    public struct CertificateCreated: Codable, Hashable, Sendable {
+    public struct CertificateCreated: OpenAIModel {
         /// The certificate ID.
         public var id: String?
         /// The name of the certificate.
@@ -1779,14 +2349,21 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.name = name
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case name
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.name, forKey: "name")
         }
     }
 
     /// The details for events with this `type`.
-    public struct CertificateUpdated: Codable, Hashable, Sendable {
+    public struct CertificateUpdated: OpenAIModel {
         /// The certificate ID.
         public var id: String?
         /// The name of the certificate.
@@ -1797,14 +2374,21 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.name = name
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case name
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.name, forKey: "name")
         }
     }
 
     /// The details for events with this `type`.
-    public struct CertificateDeleted: Codable, Hashable, Sendable {
+    public struct CertificateDeleted: OpenAIModel {
         /// The certificate ID.
         public var id: String?
         /// The name of the certificate.
@@ -1822,26 +2406,40 @@ public struct AuditLog: Codable, Hashable, Sendable {
             self.certificate = certificate
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case name
-            case certificate
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: "id")
+            self.name = try container.decodeIfPresent(String.self, forKey: "name")
+            self.certificate = try container.decodeIfPresent(String.self, forKey: "certificate")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.id, forKey: "id")
+            try container.encodeIfPresent(self.name, forKey: "name")
+            try container.encodeIfPresent(self.certificate, forKey: "certificate")
         }
     }
 
     /// The details for events with this `type`.
-    public struct CertificatesActivated: Codable, Hashable, Sendable {
+    public struct CertificatesActivated: OpenAIModel {
         public var certificates: [AuditLog.CertificatesActivated.Certificate]?
 
         public init(certificates: [AuditLog.CertificatesActivated.Certificate]? = nil) {
             self.certificates = certificates
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case certificates
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.certificates = try container.decodeIfPresent([AuditLog.CertificatesActivated.Certificate].self, forKey: "certificates")
         }
 
-        public struct Certificate: Codable, Hashable, Sendable {
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.certificates, forKey: "certificates")
+        }
+
+        public struct Certificate: OpenAIModel {
             /// The certificate ID.
             public var id: String?
             /// The name of the certificate.
@@ -1852,26 +2450,39 @@ public struct AuditLog: Codable, Hashable, Sendable {
                 self.name = name
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case id
-                case name
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.id = try container.decodeIfPresent(String.self, forKey: "id")
+                self.name = try container.decodeIfPresent(String.self, forKey: "name")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.id, forKey: "id")
+                try container.encodeIfPresent(self.name, forKey: "name")
             }
         }
     }
 
     /// The details for events with this `type`.
-    public struct CertificatesDeactivated: Codable, Hashable, Sendable {
+    public struct CertificatesDeactivated: OpenAIModel {
         public var certificates: [AuditLog.CertificatesDeactivated.Certificate]?
 
         public init(certificates: [AuditLog.CertificatesDeactivated.Certificate]? = nil) {
             self.certificates = certificates
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case certificates
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.certificates = try container.decodeIfPresent([AuditLog.CertificatesDeactivated.Certificate].self, forKey: "certificates")
         }
 
-        public struct Certificate: Codable, Hashable, Sendable {
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.certificates, forKey: "certificates")
+        }
+
+        public struct Certificate: OpenAIModel {
             /// The certificate ID.
             public var id: String?
             /// The name of the certificate.
@@ -1882,16 +2493,23 @@ public struct AuditLog: Codable, Hashable, Sendable {
                 self.name = name
             }
 
-            private enum CodingKeys: String, CodingKey {
-                case id
-                case name
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                self.id = try container.decodeIfPresent(String.self, forKey: "id")
+                self.name = try container.decodeIfPresent(String.self, forKey: "name")
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+                try container.encodeIfPresent(self.id, forKey: "id")
+                try container.encodeIfPresent(self.name, forKey: "name")
             }
         }
     }
 }
 
 /// The actor who performed the audit logged action.
-public struct AuditLogActor: Codable, Hashable, Sendable {
+public struct AuditLogActor: OpenAIModel {
     /// The type of actor. Is either `session` or `api_key`.
     public var type: AuditLogActor.Kind?
     public var session: AuditLogActorSession?
@@ -1907,10 +2525,18 @@ public struct AuditLogActor: Codable, Hashable, Sendable {
         self.apiKey = apiKey
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case session
-        case apiKey = "api_key"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(AuditLogActor.Kind.self, forKey: "type")
+        self.session = try container.decodeIfPresent(AuditLogActorSession.self, forKey: "session")
+        self.apiKey = try container.decodeIfPresent(AuditLogActorApiKey.self, forKey: "api_key")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.type, forKey: "type")
+        try container.encodeIfPresent(self.session, forKey: "session")
+        try container.encodeIfPresent(self.apiKey, forKey: "api_key")
     }
 
     /// The type of actor. Is either `session` or `api_key`.
@@ -1933,7 +2559,7 @@ public struct AuditLogActor: Codable, Hashable, Sendable {
 }
 
 /// The API Key used to perform the audit logged action.
-public struct AuditLogActorApiKey: Codable, Hashable, Sendable {
+public struct AuditLogActorApiKey: OpenAIModel {
     /// The tracking id of the API key.
     public var id: String?
     /// The type of API key. Can be either `user` or `service_account`.
@@ -1953,11 +2579,20 @@ public struct AuditLogActorApiKey: Codable, Hashable, Sendable {
         self.serviceAccount = serviceAccount
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case type
-        case user
-        case serviceAccount = "service_account"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.type = try container.decodeIfPresent(AuditLogActorApiKey.Kind.self, forKey: "type")
+        self.user = try container.decodeIfPresent(AuditLogActorUser.self, forKey: "user")
+        self.serviceAccount = try container.decodeIfPresent(AuditLogActorServiceAccount.self, forKey: "service_account")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encodeIfPresent(self.type, forKey: "type")
+        try container.encodeIfPresent(self.user, forKey: "user")
+        try container.encodeIfPresent(self.serviceAccount, forKey: "service_account")
     }
 
     /// The type of API key. Can be either `user` or `service_account`.
@@ -1980,7 +2615,7 @@ public struct AuditLogActorApiKey: Codable, Hashable, Sendable {
 }
 
 /// The service account that performed the audit logged action.
-public struct AuditLogActorServiceAccount: Codable, Hashable, Sendable {
+public struct AuditLogActorServiceAccount: OpenAIModel {
     /// The service account id.
     public var id: String?
 
@@ -1988,13 +2623,19 @@ public struct AuditLogActorServiceAccount: Codable, Hashable, Sendable {
         self.id = id
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.id, forKey: "id")
     }
 }
 
 /// The session in which the audit logged action was performed.
-public struct AuditLogActorSession: Codable, Hashable, Sendable {
+public struct AuditLogActorSession: OpenAIModel {
     public var user: AuditLogActorUser?
     /// The IP address from which the action was performed.
     public var ipAddress: String?
@@ -2004,14 +2645,21 @@ public struct AuditLogActorSession: Codable, Hashable, Sendable {
         self.ipAddress = ipAddress
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case user
-        case ipAddress = "ip_address"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.user = try container.decodeIfPresent(AuditLogActorUser.self, forKey: "user")
+        self.ipAddress = try container.decodeIfPresent(String.self, forKey: "ip_address")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.user, forKey: "user")
+        try container.encodeIfPresent(self.ipAddress, forKey: "ip_address")
     }
 }
 
 /// The user who performed the audit logged action.
-public struct AuditLogActorUser: Codable, Hashable, Sendable {
+public struct AuditLogActorUser: OpenAIModel {
     /// The user id.
     public var id: String?
     /// The user email.
@@ -2022,9 +2670,16 @@ public struct AuditLogActorUser: Codable, Hashable, Sendable {
         self.email = email
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case email
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decodeIfPresent(String.self, forKey: "id")
+        self.email = try container.decodeIfPresent(String.self, forKey: "email")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.id, forKey: "id")
+        try container.encodeIfPresent(self.email, forKey: "email")
     }
 }
 

@@ -4,7 +4,7 @@
 import Foundation
 
 /// Inline agent configuration without a generated session-local identity.
-public struct AutomationAgentConfigResource: Codable, Hashable, Sendable {
+public struct AutomationAgentConfigResource: OpenAIModel {
     /// The requested model name.
     public var model: String
     /// The configured reasoning policy.
@@ -46,23 +46,37 @@ public struct AutomationAgentConfigResource: Codable, Hashable, Sendable {
         self.experimental = experimental
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case model
-        case reasoning
-        case text
-        case serviceTier = "service_tier"
-        case instructions
-        case tools
-        case multiAgent = "multi_agent"
-        case compaction
-        case experimental
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.model = try container.decode(String.self, forKey: "model")
+        self.reasoning = try container.decode(ReasoningResource.self, forKey: "reasoning")
+        self.text = try container.decode(TextResource.self, forKey: "text")
+        self.serviceTier = try container.decode(ServiceTierResource.self, forKey: "service_tier")
+        self.instructions = try container.decodeIfPresent(String.self, forKey: "instructions")
+        self.tools = try container.decode([AgentToolResource].self, forKey: "tools")
+        self.multiAgent = try container.decode(MultiAgentConfigResource.self, forKey: "multi_agent")
+        self.compaction = try container.decodeIfPresent(CompactionResource.self, forKey: "compaction")
+        self.experimental = try container.decodeIfPresent(ExperimentalConfigResource.self, forKey: "experimental")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.model, forKey: "model")
+        try container.encode(self.reasoning, forKey: "reasoning")
+        try container.encode(self.text, forKey: "text")
+        try container.encode(self.serviceTier, forKey: "service_tier")
+        try container.encodeIfPresent(self.instructions, forKey: "instructions")
+        try container.encode(self.tools, forKey: "tools")
+        try container.encode(self.multiAgent, forKey: "multi_agent")
+        try container.encodeIfPresent(self.compaction, forKey: "compaction")
+        try container.encodeIfPresent(self.experimental, forKey: "experimental")
     }
 }
 
 /// How the automation was created, independently of how an invocation started.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum AutomationCreatedByResource: Codable, Hashable, Sendable {
+public indirect enum AutomationCreatedByResource: OpenAIModel {
     /// `type`: `developer`
     case developer(AutomationCreatedByResourceDeveloper)
     /// `type`: `agent`
@@ -101,7 +115,7 @@ public indirect enum AutomationCreatedByResource: Codable, Hashable, Sendable {
     }
 }
 
-public struct AutomationCreatedByResourceAgent: Codable, Hashable, Sendable {
+public struct AutomationCreatedByResourceAgent: OpenAIModel {
     /// The type of the object. Always `agent`.
     public var type: String = "agent"
     /// The creator session, which is also the automation's target.
@@ -114,29 +128,43 @@ public struct AutomationCreatedByResourceAgent: Codable, Hashable, Sendable {
         self.toolCallID = toolCallID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case sessionID = "session_id"
-        case toolCallID = "tool_call_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent"
+        self.sessionID = try container.decode(String.self, forKey: "session_id")
+        self.toolCallID = try container.decode(String.self, forKey: "tool_call_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.sessionID, forKey: "session_id")
+        try container.encode(self.toolCallID, forKey: "tool_call_id")
     }
 }
 
-public struct AutomationCreatedByResourceDeveloper: Codable, Hashable, Sendable {
+public struct AutomationCreatedByResourceDeveloper: OpenAIModel {
     /// The type of the object. Always `developer`.
     public var type: String = "developer"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "developer"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// Environment selection saved before an invocation creates its session.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum AutomationEnvironmentResource: Codable, Hashable, Sendable {
+public indirect enum AutomationEnvironmentResource: OpenAIModel {
     /// `type`: `none`
     case noneValue(AutomationEnvironmentResourceNone)
     /// `type`: `openai_hosted`
@@ -182,20 +210,26 @@ public indirect enum AutomationEnvironmentResource: Codable, Hashable, Sendable 
     }
 }
 
-public struct AutomationEnvironmentResourceNone: Codable, Hashable, Sendable {
+public struct AutomationEnvironmentResourceNone: OpenAIModel {
     /// The type of the object. Always `none`.
     public var type: String = "none"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "none"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// Hosted environment selection with confidential setup commands and variables omitted.
-public struct AutomationEnvironmentResourceOpenaiHosted: Codable, Hashable, Sendable {
+public struct AutomationEnvironmentResourceOpenaiHosted: OpenAIModel {
     /// The type of the object. Always `openai_hosted`.
     public var type: String = "openai_hosted"
     /// An existing environment reference, or null when provisioning a new environment.
@@ -243,22 +277,38 @@ public struct AutomationEnvironmentResourceOpenaiHosted: Codable, Hashable, Send
         self.files = files
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case environmentID = "environment_id"
-        case environmentTemplateID = "environment_template_id"
-        case containerSize = "container_size"
-        case packages
-        case network
-        case desktop
-        case capabilityDirectories = "capability_directories"
-        case skills
-        case plugins
-        case files
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "openai_hosted"
+        self.environmentID = try container.decodeIfPresent(String.self, forKey: "environment_id")
+        self.environmentTemplateID = try container.decodeIfPresent(String.self, forKey: "environment_template_id")
+        self.containerSize = try container.decodeIfPresent(ContainerSizeResource.self, forKey: "container_size")
+        self.packages = try container.decodeIfPresent(EnvironmentPackagesResource.self, forKey: "packages")
+        self.network = try container.decodeIfPresent(NetworkPolicyResource.self, forKey: "network")
+        self.desktop = try container.decodeIfPresent(DesktopResource.self, forKey: "desktop")
+        self.capabilityDirectories = try container.decodeIfPresent([String].self, forKey: "capability_directories")
+        self.skills = try container.decodeIfPresent([HostedTemplateSkillResource].self, forKey: "skills")
+        self.plugins = try container.decodeIfPresent([HostedPluginResource].self, forKey: "plugins")
+        self.files = try container.decodeIfPresent([HostedTemplateFileResource].self, forKey: "files")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.environmentID, forKey: "environment_id")
+        try container.encodeIfPresent(self.environmentTemplateID, forKey: "environment_template_id")
+        try container.encodeIfPresent(self.containerSize, forKey: "container_size")
+        try container.encodeIfPresent(self.packages, forKey: "packages")
+        try container.encodeIfPresent(self.network, forKey: "network")
+        try container.encodeIfPresent(self.desktop, forKey: "desktop")
+        try container.encodeIfPresent(self.capabilityDirectories, forKey: "capability_directories")
+        try container.encodeIfPresent(self.skills, forKey: "skills")
+        try container.encodeIfPresent(self.plugins, forKey: "plugins")
+        try container.encodeIfPresent(self.files, forKey: "files")
     }
 }
 
-public struct AutomationEnvironmentResourceSelfHosted: Codable, Hashable, Sendable {
+public struct AutomationEnvironmentResourceSelfHosted: OpenAIModel {
     /// The type of the object. Always `self_hosted`.
     public var type: String = "self_hosted"
     /// An existing registration, or null to create a session-owned environment.
@@ -278,15 +328,24 @@ public struct AutomationEnvironmentResourceSelfHosted: Codable, Hashable, Sendab
         self.environmentID = environmentID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case environmentID = "environment_id"
-        case workspaceDirectory = "workspace_directory"
-        case capabilityDirectories = "capability_directories"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "self_hosted"
+        self.environmentID = try container.decodeIfPresent(String.self, forKey: "environment_id")
+        self.workspaceDirectory = try container.decode(String.self, forKey: "workspace_directory")
+        self.capabilityDirectories = try container.decode([String].self, forKey: "capability_directories")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.environmentID, forKey: "environment_id")
+        try container.encode(self.workspaceDirectory, forKey: "workspace_directory")
+        try container.encode(self.capabilityDirectories, forKey: "capability_directories")
     }
 }
 
-public struct AutomationInvocationErrorResource: Codable, Hashable, Sendable {
+public struct AutomationInvocationErrorResource: OpenAIModel {
     /// A machine-readable error code.
     public var code: String
     /// A public explanation of the delivery failure.
@@ -297,14 +356,21 @@ public struct AutomationInvocationErrorResource: Codable, Hashable, Sendable {
         self.message = message
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case code
-        case message
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.code = try container.decode(String.self, forKey: "code")
+        self.message = try container.decode(String.self, forKey: "message")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.code, forKey: "code")
+        try container.encode(self.message, forKey: "message")
     }
 }
 
 /// One attempted delivery by an automation.
-public struct AutomationInvocationResource: Codable, Hashable, Sendable {
+public struct AutomationInvocationResource: OpenAIModel {
     /// The invocation ID.
     public var id: String
     /// Always `agent.automation.invocation`.
@@ -346,22 +412,37 @@ public struct AutomationInvocationResource: Codable, Hashable, Sendable {
         self.error = error
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case automationID = "automation_id"
-        case createdAt = "created_at"
-        case source
-        case scheduledAt = "scheduled_at"
-        case sessionID = "session_id"
-        case status
-        case skipReason = "skip_reason"
-        case error
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "agent.automation.invocation"
+        self.automationID = try container.decode(String.self, forKey: "automation_id")
+        self.createdAt = try container.decode(Int64.self, forKey: "created_at")
+        self.source = try container.decode(AutomationInvocationSourceResource.self, forKey: "source")
+        self.scheduledAt = try container.decodeIfPresent(Int64.self, forKey: "scheduled_at")
+        self.sessionID = try container.decodeIfPresent(String.self, forKey: "session_id")
+        self.status = try container.decode(AutomationInvocationStatusResource.self, forKey: "status")
+        self.skipReason = try container.decodeIfPresent(String.self, forKey: "skip_reason")
+        self.error = try container.decodeIfPresent(AutomationInvocationErrorResource.self, forKey: "error")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.automationID, forKey: "automation_id")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.source, forKey: "source")
+        try container.encodeIfPresent(self.scheduledAt, forKey: "scheduled_at")
+        try container.encodeIfPresent(self.sessionID, forKey: "session_id")
+        try container.encode(self.status, forKey: "status")
+        try container.encodeIfPresent(self.skipReason, forKey: "skip_reason")
+        try container.encodeIfPresent(self.error, forKey: "error")
     }
 }
 
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum AutomationInvocationSourceResource: Codable, Hashable, Sendable {
+public indirect enum AutomationInvocationSourceResource: OpenAIModel {
     /// `type`: `manual`
     case manual(AutomationInvocationSourceResourceManual)
     /// `type`: `automation`
@@ -400,7 +481,7 @@ public indirect enum AutomationInvocationSourceResource: Codable, Hashable, Send
     }
 }
 
-public struct AutomationInvocationSourceResourceAutomation: Codable, Hashable, Sendable {
+public struct AutomationInvocationSourceResourceAutomation: OpenAIModel {
     /// The type of the object. Always `automation`.
     public var type: String = "automation"
     /// The automation snapshot for this occurrence, excluding confidential values.
@@ -410,21 +491,34 @@ public struct AutomationInvocationSourceResourceAutomation: Codable, Hashable, S
         self.automation = automation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case automation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "automation"
+        self.automation = try container.decode(AutomationResource.self, forKey: "automation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.automation, forKey: "automation")
     }
 }
 
-public struct AutomationInvocationSourceResourceManual: Codable, Hashable, Sendable {
+public struct AutomationInvocationSourceResourceManual: OpenAIModel {
     /// The type of the object. Always `manual`.
     public var type: String = "manual"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "manual"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
@@ -449,7 +543,7 @@ public struct AutomationInvocationStatusResource: OpenAIStringEnum {
 /// A saved automation and its schedule.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum AutomationResource: Codable, Hashable, Sendable {
+public indirect enum AutomationResource: OpenAIModel {
     /// `type`: `periodic`
     case periodic(AutomationResourcePeriodic)
     /// `type`: `once`
@@ -489,7 +583,7 @@ public indirect enum AutomationResource: Codable, Hashable, Sendable {
 }
 
 /// Fields shared by periodic and one-time automations.
-public struct AutomationResourceOnce: Codable, Hashable, Sendable {
+public struct AutomationResourceOnce: OpenAIModel {
     /// The type of the object. Always `once`.
     public var type: String = "once"
     /// The automation ID.
@@ -533,23 +627,39 @@ public struct AutomationResourceOnce: Codable, Hashable, Sendable {
         self.status = status
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case object
-        case createdAt = "created_at"
-        case name
-        case target
-        case metadata
-        case createdBy = "created_by"
-        case pauseReason = "pause_reason"
-        case runAt = "run_at"
-        case status
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "once"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "agent.automation"
+        self.createdAt = try container.decode(Int64.self, forKey: "created_at")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.target = try container.decode(AutomationTargetResource.self, forKey: "target")
+        self.metadata = try container.decode([String: String].self, forKey: "metadata")
+        self.createdBy = try container.decode(AutomationCreatedByResource.self, forKey: "created_by")
+        self.pauseReason = try container.decodeIfPresent(String.self, forKey: "pause_reason")
+        self.runAt = try container.decode(Int64.self, forKey: "run_at")
+        self.status = try container.decode(OnceAutomationStatusResource.self, forKey: "status")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.target, forKey: "target")
+        try container.encode(self.metadata, forKey: "metadata")
+        try container.encode(self.createdBy, forKey: "created_by")
+        try container.encodeIfPresent(self.pauseReason, forKey: "pause_reason")
+        try container.encode(self.runAt, forKey: "run_at")
+        try container.encode(self.status, forKey: "status")
     }
 }
 
 /// Fields shared by periodic and one-time automations.
-public struct AutomationResourcePeriodic: Codable, Hashable, Sendable {
+public struct AutomationResourcePeriodic: OpenAIModel {
     /// The type of the object. Always `periodic`.
     public var type: String = "periodic"
     /// The automation ID.
@@ -597,26 +707,43 @@ public struct AutomationResourcePeriodic: Codable, Hashable, Sendable {
         self.status = status
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case object
-        case createdAt = "created_at"
-        case name
-        case target
-        case metadata
-        case createdBy = "created_by"
-        case pauseReason = "pause_reason"
-        case expression
-        case timezone
-        case status
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "periodic"
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "agent.automation"
+        self.createdAt = try container.decode(Int64.self, forKey: "created_at")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.target = try container.decode(AutomationTargetResource.self, forKey: "target")
+        self.metadata = try container.decode([String: String].self, forKey: "metadata")
+        self.createdBy = try container.decode(AutomationCreatedByResource.self, forKey: "created_by")
+        self.pauseReason = try container.decodeIfPresent(String.self, forKey: "pause_reason")
+        self.expression = try container.decode(String.self, forKey: "expression")
+        self.timezone = try container.decode(String.self, forKey: "timezone")
+        self.status = try container.decode(PeriodicAutomationStatusResource.self, forKey: "status")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.target, forKey: "target")
+        try container.encode(self.metadata, forKey: "metadata")
+        try container.encode(self.createdBy, forKey: "created_by")
+        try container.encodeIfPresent(self.pauseReason, forKey: "pause_reason")
+        try container.encode(self.expression, forKey: "expression")
+        try container.encode(self.timezone, forKey: "timezone")
+        try container.encode(self.status, forKey: "status")
     }
 }
 
 /// The session an automation invocation targets.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum AutomationTargetParam: Codable, Hashable, Sendable {
+public indirect enum AutomationTargetParam: OpenAIModel {
     /// `type`: `new_session`
     case newSession(AutomationTargetParamNewSession)
     /// `type`: `existing_session`
@@ -656,7 +783,7 @@ public indirect enum AutomationTargetParam: Codable, Hashable, Sendable {
 }
 
 /// Deliver instructions to an existing session.
-public struct AutomationTargetParamExistingSession: Codable, Hashable, Sendable {
+public struct AutomationTargetParamExistingSession: OpenAIModel {
     /// The type of the object. Always `existing_session`.
     public var type: String = "existing_session"
     /// The session receiving each invocation.
@@ -669,15 +796,23 @@ public struct AutomationTargetParamExistingSession: Codable, Hashable, Sendable 
         self.sessionID = sessionID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case sessionID = "session_id"
-        case instructions
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "existing_session"
+        self.sessionID = try container.decode(String.self, forKey: "session_id")
+        self.instructions = try container.decode(String.self, forKey: "instructions")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.sessionID, forKey: "session_id")
+        try container.encode(self.instructions, forKey: "instructions")
     }
 }
 
 /// Create a session for each invocation.
-public struct AutomationTargetParamNewSession: Codable, Hashable, Sendable {
+public struct AutomationTargetParamNewSession: OpenAIModel {
     /// The type of the object. Always `new_session`.
     public var type: String = "new_session"
     /// Inline agent configuration. Provide exactly one of agent and agent_id.
@@ -709,21 +844,33 @@ public struct AutomationTargetParamNewSession: Codable, Hashable, Sendable {
         self.metadata = metadata
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case agent
-        case agentID = "agent_id"
-        case environment
-        case input
-        case vaultIDs = "vault_ids"
-        case metadata
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "new_session"
+        self.agent = try container.decodeIfPresent(SessionAgentConfigParam.self, forKey: "agent")
+        self.agentID = try container.decodeIfPresent(String.self, forKey: "agent_id")
+        self.environment = try container.decode(EnvironmentParam.self, forKey: "environment")
+        self.input = try container.decode([InputMessageParam].self, forKey: "input")
+        self.vaultIDs = try container.decodeIfPresent([String].self, forKey: "vault_ids")
+        self.metadata = try container.decodeIfPresent([String: String].self, forKey: "metadata")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encodeIfPresent(self.agentID, forKey: "agent_id")
+        try container.encode(self.environment, forKey: "environment")
+        try container.encode(self.input, forKey: "input")
+        try container.encodeIfPresent(self.vaultIDs, forKey: "vault_ids")
+        try container.encodeIfPresent(self.metadata, forKey: "metadata")
     }
 }
 
 /// Saved target configuration, excluding confidential request-only values.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum AutomationTargetResource: Codable, Hashable, Sendable {
+public indirect enum AutomationTargetResource: OpenAIModel {
     /// `type`: `new_session`
     case newSession(AutomationTargetResourceNewSession)
     /// `type`: `existing_session`
@@ -762,7 +909,7 @@ public indirect enum AutomationTargetResource: Codable, Hashable, Sendable {
     }
 }
 
-public struct AutomationTargetResourceExistingSession: Codable, Hashable, Sendable {
+public struct AutomationTargetResourceExistingSession: OpenAIModel {
     /// The type of the object. Always `existing_session`.
     public var type: String = "existing_session"
     /// The session receiving each invocation.
@@ -775,14 +922,22 @@ public struct AutomationTargetResourceExistingSession: Codable, Hashable, Sendab
         self.sessionID = sessionID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case sessionID = "session_id"
-        case instructions
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "existing_session"
+        self.sessionID = try container.decode(String.self, forKey: "session_id")
+        self.instructions = try container.decode(String.self, forKey: "instructions")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.sessionID, forKey: "session_id")
+        try container.encode(self.instructions, forKey: "instructions")
     }
 }
 
-public struct AutomationTargetResourceNewSession: Codable, Hashable, Sendable {
+public struct AutomationTargetResourceNewSession: OpenAIModel {
     /// The type of the object. Always `new_session`.
     public var type: String = "new_session"
     /// The saved agent reference, or null when an inline agent is configured.
@@ -814,13 +969,25 @@ public struct AutomationTargetResourceNewSession: Codable, Hashable, Sendable {
         self.agent = agent
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case agentID = "agent_id"
-        case agent
-        case environment
-        case input
-        case vaultIDs = "vault_ids"
-        case metadata
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "new_session"
+        self.agentID = try container.decodeIfPresent(String.self, forKey: "agent_id")
+        self.agent = try container.decodeIfPresent(AutomationAgentConfigResource.self, forKey: "agent")
+        self.environment = try container.decode(AutomationEnvironmentResource.self, forKey: "environment")
+        self.input = try container.decode([InputMessageResource2].self, forKey: "input")
+        self.vaultIDs = try container.decode([String].self, forKey: "vault_ids")
+        self.metadata = try container.decode([String: String].self, forKey: "metadata")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.agentID, forKey: "agent_id")
+        try container.encodeIfPresent(self.agent, forKey: "agent")
+        try container.encode(self.environment, forKey: "environment")
+        try container.encode(self.input, forKey: "input")
+        try container.encode(self.vaultIDs, forKey: "vault_ids")
+        try container.encode(self.metadata, forKey: "metadata")
     }
 }

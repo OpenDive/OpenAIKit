@@ -4,7 +4,7 @@
 import Foundation
 
 /// The aggregated costs details of the specific time bucket.
-public struct CostsResult: Codable, Hashable, Sendable {
+public struct CostsResult: OpenAIModel {
     /// When grouped by `api_source`, `agents_api` identifies attributed Agents API activity and `unlabeled` includes all records without published source attribution, including historical and unknown origins. Unlabeled does not imply direct API usage. Without source grouping, this field is null.
     public var apiSource: CostsResult.APISource?
     public var object: String = "organization.costs.result"
@@ -38,16 +38,30 @@ public struct CostsResult: Codable, Hashable, Sendable {
         self.quantityUnit = quantityUnit
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case apiSource = "api_source"
-        case object
-        case amount
-        case lineItem = "line_item"
-        case projectID = "project_id"
-        case userID = "user_id"
-        case apiKeyID = "api_key_id"
-        case quantity
-        case quantityUnit = "quantity_unit"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.apiSource = try container.decodeIfPresent(CostsResult.APISource.self, forKey: "api_source")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.costs.result"
+        self.amount = try container.decodeIfPresent(CostsResult.Amount.self, forKey: "amount")
+        self.lineItem = try container.decodeIfPresent(String.self, forKey: "line_item")
+        self.projectID = try container.decodeIfPresent(String.self, forKey: "project_id")
+        self.userID = try container.decodeIfPresent(String.self, forKey: "user_id")
+        self.apiKeyID = try container.decodeIfPresent(String.self, forKey: "api_key_id")
+        self.quantity = try container.decodeIfPresent(Double.self, forKey: "quantity")
+        self.quantityUnit = try container.decodeIfPresent(CostsResult.QuantityUnit.self, forKey: "quantity_unit")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.apiSource, forKey: "api_source")
+        try container.encode(self.object, forKey: "object")
+        try container.encodeIfPresent(self.amount, forKey: "amount")
+        try container.encodeIfPresent(self.lineItem, forKey: "line_item")
+        try container.encodeIfPresent(self.projectID, forKey: "project_id")
+        try container.encodeIfPresent(self.userID, forKey: "user_id")
+        try container.encodeIfPresent(self.apiKeyID, forKey: "api_key_id")
+        try container.encodeIfPresent(self.quantity, forKey: "quantity")
+        try container.encodeIfPresent(self.quantityUnit, forKey: "quantity_unit")
     }
 
     /// When grouped by `api_source`, `agents_api` identifies attributed Agents API activity and `unlabeled` includes all records without published source attribution, including historical and unknown origins. Unlabeled does not imply direct API usage. Without source grouping, this field is null.
@@ -69,7 +83,7 @@ public struct CostsResult: Codable, Hashable, Sendable {
     }
 
     /// The monetary value in its associated currency.
-    public struct Amount: Codable, Hashable, Sendable {
+    public struct Amount: OpenAIModel {
         /// The numeric value of the cost.
         public var value: Double?
         /// Lowercase ISO-4217 currency e.g. "usd"
@@ -80,9 +94,16 @@ public struct CostsResult: Codable, Hashable, Sendable {
             self.currency = currency
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case value
-            case currency
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.value = try container.decodeIfPresent(Double.self, forKey: "value")
+            self.currency = try container.decodeIfPresent(String.self, forKey: "currency")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.value, forKey: "value")
+            try container.encodeIfPresent(self.currency, forKey: "currency")
         }
     }
 

@@ -6,7 +6,7 @@ import Foundation
 /// A question about the request's input, with an optional correlation name.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum QuestionParam: Codable, Hashable, Sendable {
+public indirect enum QuestionParam: OpenAIModel {
     /// `type`: `predicate`
     case predicate(QuestionParamPredicate)
     /// `type`: `choice`
@@ -53,7 +53,7 @@ public indirect enum QuestionParam: Codable, Hashable, Sendable {
 }
 
 /// Choose from the supplied options based on the input.
-public struct QuestionParamChoice: Codable, Hashable, Sendable {
+public struct QuestionParamChoice: OpenAIModel {
     /// The type of the object. Always `choice`.
     public var type: String = "choice"
     public var name: String?
@@ -71,14 +71,23 @@ public struct QuestionParamChoice: Codable, Hashable, Sendable {
         self.name = name
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
-        case instructions
-        case choices
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "choice"
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.instructions = try container.decode(QuestionParamChoice.Instructions.self, forKey: "instructions")
+        self.choices = try container.decode([ChoiceOptionParam].self, forKey: "choices")
     }
 
-    public indirect enum Instructions: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encode(self.instructions, forKey: "instructions")
+        try container.encode(self.choices, forKey: "choices")
+    }
+
+    public indirect enum Instructions: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         case string(String)
         case array([DecisionQuestionInputPart])
         /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
@@ -116,7 +125,7 @@ public struct QuestionParamChoice: Codable, Hashable, Sendable {
 }
 
 /// Estimate how likely it is that a statement about the input is true.
-public struct QuestionParamPredicate: Codable, Hashable, Sendable {
+public struct QuestionParamPredicate: OpenAIModel {
     /// The type of the object. Always `predicate`.
     public var type: String = "predicate"
     public var name: String?
@@ -127,13 +136,21 @@ public struct QuestionParamPredicate: Codable, Hashable, Sendable {
         self.name = name
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
-        case instructions
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "predicate"
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.instructions = try container.decode(QuestionParamPredicate.Instructions.self, forKey: "instructions")
     }
 
-    public indirect enum Instructions: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encode(self.instructions, forKey: "instructions")
+    }
+
+    public indirect enum Instructions: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         case string(String)
         case array([DecisionQuestionInputPart])
         /// A value this version of OpenAIKit does not recognize, kept as raw JSON.
@@ -171,7 +188,7 @@ public struct QuestionParamPredicate: Codable, Hashable, Sendable {
 }
 
 /// Rate the input against the supplied ordered levels.
-public struct QuestionParamScore: Codable, Hashable, Sendable {
+public struct QuestionParamScore: OpenAIModel {
     /// The type of the object. Always `score`.
     public var type: String = "score"
     public var name: String?
@@ -188,14 +205,23 @@ public struct QuestionParamScore: Codable, Hashable, Sendable {
         self.name = name
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
-        case instructions
-        case levels
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "score"
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.instructions = try container.decode(QuestionParamScore.Instructions.self, forKey: "instructions")
+        self.levels = try container.decode([ScoreLevelParam].self, forKey: "levels")
     }
 
-    public indirect enum Instructions: Codable, Hashable, Sendable, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encode(self.instructions, forKey: "instructions")
+        try container.encode(self.levels, forKey: "levels")
+    }
+
+    public indirect enum Instructions: OpenAIModel, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
         case string(String)
         case array([DecisionQuestionInputPart])
         /// A value this version of OpenAIKit does not recognize, kept as raw JSON.

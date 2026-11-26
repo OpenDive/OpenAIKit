@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct SubmitToolOutputsRunRequest: Codable, Hashable, Sendable {
+public struct SubmitToolOutputsRunRequest: OpenAIModel {
     /// A list of tools for which the outputs are being submitted.
     public var toolOutputs: [SubmitToolOutputsRunRequest.ToolOutput]
     public var stream: Bool?
@@ -13,12 +13,19 @@ public struct SubmitToolOutputsRunRequest: Codable, Hashable, Sendable {
         self.stream = stream
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case toolOutputs = "tool_outputs"
-        case stream
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.toolOutputs = try container.decode([SubmitToolOutputsRunRequest.ToolOutput].self, forKey: "tool_outputs")
+        self.stream = try container.decodeIfPresent(Bool.self, forKey: "stream")
     }
 
-    public struct ToolOutput: Codable, Hashable, Sendable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.toolOutputs, forKey: "tool_outputs")
+        try container.encodeIfPresent(self.stream, forKey: "stream")
+    }
+
+    public struct ToolOutput: OpenAIModel {
         /// The ID of the tool call in the `required_action` object within the run object the output is being submitted for.
         public var toolCallID: String?
         /// The output of the tool call to be submitted to continue the run.
@@ -29,9 +36,16 @@ public struct SubmitToolOutputsRunRequest: Codable, Hashable, Sendable {
             self.output = output
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case toolCallID = "tool_call_id"
-            case output
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.toolCallID = try container.decodeIfPresent(String.self, forKey: "tool_call_id")
+            self.output = try container.decodeIfPresent(String.self, forKey: "output")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.toolCallID, forKey: "tool_call_id")
+            try container.encodeIfPresent(self.output, forKey: "output")
         }
     }
 }

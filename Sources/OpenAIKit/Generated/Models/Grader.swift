@@ -5,7 +5,7 @@ import Foundation
 
 /// A LabelModelGrader object which uses a model to assign labels to each item
 /// in the evaluation.
-public struct GraderLabelModel: Codable, Hashable, Sendable {
+public struct GraderLabelModel: OpenAIModel {
     /// The object type, which is always `label_model`.
     public var type: String = "label_model"
     /// The name of the grader.
@@ -32,18 +32,29 @@ public struct GraderLabelModel: Codable, Hashable, Sendable {
         self.passingLabels = passingLabels
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
-        case model
-        case input
-        case labels
-        case passingLabels = "passing_labels"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "label_model"
+        self.name = try container.decode(String.self, forKey: "name")
+        self.model = try container.decode(String.self, forKey: "model")
+        self.input = try container.decode([EvalItem].self, forKey: "input")
+        self.labels = try container.decode([String].self, forKey: "labels")
+        self.passingLabels = try container.decode([String].self, forKey: "passing_labels")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.model, forKey: "model")
+        try container.encode(self.input, forKey: "input")
+        try container.encode(self.labels, forKey: "labels")
+        try container.encode(self.passingLabels, forKey: "passing_labels")
     }
 }
 
 /// A MultiGrader object combines the output of multiple graders to produce a single score.
-public struct GraderMulti: Codable, Hashable, Sendable {
+public struct GraderMulti: OpenAIModel {
     /// The object type, which is always `multi`.
     public var type: String = "multi"
     /// The name of the grader.
@@ -62,15 +73,24 @@ public struct GraderMulti: Codable, Hashable, Sendable {
         self.calculateOutput = calculateOutput
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
-        case graders
-        case calculateOutput = "calculate_output"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "multi"
+        self.name = try container.decode(String.self, forKey: "name")
+        self.graders = try container.decode([String: GraderMulti.Grader].self, forKey: "graders")
+        self.calculateOutput = try container.decode(String.self, forKey: "calculate_output")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.graders, forKey: "graders")
+        try container.encode(self.calculateOutput, forKey: "calculate_output")
     }
 
     /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-    public indirect enum Grader: Codable, Hashable, Sendable {
+    public indirect enum Grader: OpenAIModel {
         /// `type`: `string_check`
         case stringCheck(GraderStringCheck)
         /// `type`: `text_similarity`
@@ -132,7 +152,7 @@ public struct GraderMulti: Codable, Hashable, Sendable {
 }
 
 /// A PythonGrader object that runs a python script on the input.
-public struct GraderPython: Codable, Hashable, Sendable {
+public struct GraderPython: OpenAIModel {
     /// The object type, which is always `python`.
     public var type: String = "python"
     /// The name of the grader.
@@ -152,16 +172,25 @@ public struct GraderPython: Codable, Hashable, Sendable {
         self.imageTag = imageTag
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
-        case source
-        case imageTag = "image_tag"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "python"
+        self.name = try container.decode(String.self, forKey: "name")
+        self.source = try container.decode(String.self, forKey: "source")
+        self.imageTag = try container.decodeIfPresent(String.self, forKey: "image_tag")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.source, forKey: "source")
+        try container.encodeIfPresent(self.imageTag, forKey: "image_tag")
     }
 }
 
 /// A ScoreModelGrader object that uses a model to assign a score to the input.
-public struct GraderScoreModel: Codable, Hashable, Sendable {
+public struct GraderScoreModel: OpenAIModel {
     /// The object type, which is always `score_model`.
     public var type: String = "score_model"
     /// The name of the grader.
@@ -189,17 +218,28 @@ public struct GraderScoreModel: Codable, Hashable, Sendable {
         self.range = range
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
-        case model
-        case samplingParams = "sampling_params"
-        case input
-        case range
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "score_model"
+        self.name = try container.decode(String.self, forKey: "name")
+        self.model = try container.decode(String.self, forKey: "model")
+        self.samplingParams = try container.decodeIfPresent(GraderScoreModel.SamplingParams.self, forKey: "sampling_params")
+        self.input = try container.decode([EvalItem].self, forKey: "input")
+        self.range = try container.decodeIfPresent([Double].self, forKey: "range")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.model, forKey: "model")
+        try container.encodeIfPresent(self.samplingParams, forKey: "sampling_params")
+        try container.encode(self.input, forKey: "input")
+        try container.encodeIfPresent(self.range, forKey: "range")
     }
 
     /// The sampling parameters for the model.
-    public struct SamplingParams: Codable, Hashable, Sendable {
+    public struct SamplingParams: OpenAIModel {
         public var seed: Int?
         public var topP: Double?
         public var temperature: Double?
@@ -220,18 +260,28 @@ public struct GraderScoreModel: Codable, Hashable, Sendable {
             self.reasoningEffort = reasoningEffort
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case seed
-            case topP = "top_p"
-            case temperature
-            case maxCompletionsTokens = "max_completions_tokens"
-            case reasoningEffort = "reasoning_effort"
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            self.seed = try container.decodeIfPresent(Int.self, forKey: "seed")
+            self.topP = try container.decodeIfPresent(Double.self, forKey: "top_p")
+            self.temperature = try container.decodeIfPresent(Double.self, forKey: "temperature")
+            self.maxCompletionsTokens = try container.decodeIfPresent(Int.self, forKey: "max_completions_tokens")
+            self.reasoningEffort = try container.decodeIfPresent(ReasoningEffort.self, forKey: "reasoning_effort")
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+            try container.encodeIfPresent(self.seed, forKey: "seed")
+            try container.encodeIfPresent(self.topP, forKey: "top_p")
+            try container.encodeIfPresent(self.temperature, forKey: "temperature")
+            try container.encodeIfPresent(self.maxCompletionsTokens, forKey: "max_completions_tokens")
+            try container.encodeIfPresent(self.reasoningEffort, forKey: "reasoning_effort")
         }
     }
 }
 
 /// A StringCheckGrader object that performs a string comparison between input and reference using a specified operation.
-public struct GraderStringCheck: Codable, Hashable, Sendable {
+public struct GraderStringCheck: OpenAIModel {
     /// The object type, which is always `string_check`.
     public var type: String = "string_check"
     /// The name of the grader.
@@ -255,12 +305,22 @@ public struct GraderStringCheck: Codable, Hashable, Sendable {
         self.operation = operation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
-        case input
-        case reference
-        case operation
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "string_check"
+        self.name = try container.decode(String.self, forKey: "name")
+        self.input = try container.decode(String.self, forKey: "input")
+        self.reference = try container.decode(String.self, forKey: "reference")
+        self.operation = try container.decode(GraderStringCheck.OperationValue.self, forKey: "operation")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.input, forKey: "input")
+        try container.encode(self.reference, forKey: "reference")
+        try container.encode(self.operation, forKey: "operation")
     }
 
     /// The string check operation to perform. One of `eq`, `ne`, `like`, or `ilike`.
@@ -285,7 +345,7 @@ public struct GraderStringCheck: Codable, Hashable, Sendable {
 }
 
 /// A TextSimilarityGrader object which grades text based on similarity metrics.
-public struct GraderTextSimilarity: Codable, Hashable, Sendable {
+public struct GraderTextSimilarity: OpenAIModel {
     /// The type of grader.
     public var type: String = "text_similarity"
     /// The name of the grader.
@@ -311,12 +371,22 @@ public struct GraderTextSimilarity: Codable, Hashable, Sendable {
         self.evaluationMetric = evaluationMetric
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
-        case input
-        case reference
-        case evaluationMetric = "evaluation_metric"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "text_similarity"
+        self.name = try container.decode(String.self, forKey: "name")
+        self.input = try container.decode(String.self, forKey: "input")
+        self.reference = try container.decode(String.self, forKey: "reference")
+        self.evaluationMetric = try container.decode(GraderTextSimilarity.EvaluationMetric.self, forKey: "evaluation_metric")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.input, forKey: "input")
+        try container.encode(self.reference, forKey: "reference")
+        try container.encode(self.evaluationMetric, forKey: "evaluation_metric")
     }
 
     /// The evaluation metric to use. One of `cosine`, `fuzzy_match`, `bleu`,

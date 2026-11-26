@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct ContextManagementParam: Codable, Hashable, Sendable {
+public struct ContextManagementParam: OpenAIModel {
     /// The context management entry type. Currently only 'compaction' is supported.
     public var type: String
     public var compactThreshold: Int?
@@ -13,8 +13,15 @@ public struct ContextManagementParam: Codable, Hashable, Sendable {
         self.compactThreshold = compactThreshold
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case compactThreshold = "compact_threshold"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decode(String.self, forKey: "type")
+        self.compactThreshold = try container.decodeIfPresent(Int.self, forKey: "compact_threshold")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.compactThreshold, forKey: "compact_threshold")
     }
 }

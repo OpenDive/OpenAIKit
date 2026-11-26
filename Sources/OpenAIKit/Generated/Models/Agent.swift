@@ -6,7 +6,7 @@ import Foundation
 /// A plaintext or encrypted content part exchanged between agents.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum AgentContentResource: Codable, Hashable, Sendable {
+public indirect enum AgentContentResource: OpenAIModel {
     /// `type`: `output_text`
     case outputText(OutputTextResource)
     /// `type`: `encrypted_content`
@@ -46,7 +46,7 @@ public indirect enum AgentContentResource: Codable, Hashable, Sendable {
 }
 
 /// Identifies the environment whose lifecycle changed.
-public struct AgentEnvironmentEvent: Codable, Hashable, Sendable {
+public struct AgentEnvironmentEvent: OpenAIModel {
     /// The ID of the environment.
     public var id: String
 
@@ -54,13 +54,19 @@ public struct AgentEnvironmentEvent: Codable, Hashable, Sendable {
         self.id = id
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
     }
 }
 
 /// A page of Agents API resources, with IDs for retrieving additional pages.
-public struct AgentEnvironmentListResource: Codable, Hashable, Sendable {
+public struct AgentEnvironmentListResource: OpenAIModel {
     /// The object type, which is always `list`.
     public var object: String = "list"
     /// The resources returned in this page, in the requested sort order.
@@ -84,17 +90,27 @@ public struct AgentEnvironmentListResource: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([PublicEnvironmentResource].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
 /// A page of Agents API resources, with IDs for retrieving additional pages.
-public struct AgentListResource: Codable, Hashable, Sendable {
+public struct AgentListResource: OpenAIModel {
     /// The object type, which is always `list`.
     public var object: String = "list"
     /// The resources returned in this page, in the requested sort order.
@@ -118,17 +134,27 @@ public struct AgentListResource: Codable, Hashable, Sendable {
         self.lastID = lastID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case data
-        case firstID = "first_id"
-        case lastID = "last_id"
-        case hasMore = "has_more"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "list"
+        self.data = try container.decode([AgentResource].self, forKey: "data")
+        self.firstID = try container.decodeIfPresent(String.self, forKey: "first_id")
+        self.lastID = try container.decodeIfPresent(String.self, forKey: "last_id")
+        self.hasMore = try container.decode(Bool.self, forKey: "has_more")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.data, forKey: "data")
+        try container.encodeIfPresent(self.firstID, forKey: "first_id")
+        try container.encodeIfPresent(self.lastID, forKey: "last_id")
+        try container.encode(self.hasMore, forKey: "has_more")
     }
 }
 
 /// A message exchanged between agent threads.
-public struct AgentMessageItemResource: Codable, Hashable, Sendable {
+public struct AgentMessageItemResource: OpenAIModel {
     /// The ID of the message.
     public var id: String
     /// The ID of the turn that contains this item.
@@ -156,20 +182,31 @@ public struct AgentMessageItemResource: Codable, Hashable, Sendable {
         self.content = content
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case turnID = "turn_id"
-        case type
-        case senderAgentID = "sender_agent_id"
-        case recipientAgentID = "recipient_agent_id"
-        case content
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.turnID = try container.decode(String.self, forKey: "turn_id")
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "agent_message"
+        self.senderAgentID = try container.decode(String.self, forKey: "sender_agent_id")
+        self.recipientAgentID = try container.decode(String.self, forKey: "recipient_agent_id")
+        self.content = try container.decode([AgentContentResource].self, forKey: "content")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.turnID, forKey: "turn_id")
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.senderAgentID, forKey: "sender_agent_id")
+        try container.encode(self.recipientAgentID, forKey: "recipient_agent_id")
+        try container.encode(self.content, forKey: "content")
     }
 }
 
 /// An output item produced by an agent.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum AgentOutputItemResource: Codable, Hashable, Sendable {
+public indirect enum AgentOutputItemResource: OpenAIModel {
     /// `type`: `message`
     case message(AssistantMessageItemResource)
     /// `type`: `reasoning`
@@ -293,7 +330,7 @@ public indirect enum AgentOutputItemResource: Codable, Hashable, Sendable {
 }
 
 /// A reusable agent scoped to the caller's project.
-public struct AgentResource: Codable, Hashable, Sendable {
+public struct AgentResource: OpenAIModel {
     /// The ID of the reusable agent.
     public var id: String
     /// The object type. Always `agent`.
@@ -357,26 +394,46 @@ public struct AgentResource: Codable, Hashable, Sendable {
         self.experimental = experimental
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case createdAt = "created_at"
-        case updatedAt = "updated_at"
-        case name
-        case metadata
-        case model
-        case reasoning
-        case text
-        case serviceTier = "service_tier"
-        case instructions
-        case tools
-        case multiAgent = "multi_agent"
-        case compaction
-        case experimental
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "agent"
+        self.createdAt = try container.decode(Int64.self, forKey: "created_at")
+        self.updatedAt = try container.decode(Int64.self, forKey: "updated_at")
+        self.name = try container.decodeIfPresent(String.self, forKey: "name")
+        self.metadata = try container.decode([String: String].self, forKey: "metadata")
+        self.model = try container.decode(String.self, forKey: "model")
+        self.reasoning = try container.decode(ReasoningResource.self, forKey: "reasoning")
+        self.text = try container.decode(TextResource.self, forKey: "text")
+        self.serviceTier = try container.decode(ServiceTierResource.self, forKey: "service_tier")
+        self.instructions = try container.decodeIfPresent(String.self, forKey: "instructions")
+        self.tools = try container.decode([PersistedAgentToolResource].self, forKey: "tools")
+        self.multiAgent = try container.decode(MultiAgentConfigResource.self, forKey: "multi_agent")
+        self.compaction = try container.decodeIfPresent(CompactionResource.self, forKey: "compaction")
+        self.experimental = try container.decodeIfPresent(ExperimentalConfigResource.self, forKey: "experimental")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encode(self.updatedAt, forKey: "updated_at")
+        try container.encodeIfPresent(self.name, forKey: "name")
+        try container.encode(self.metadata, forKey: "metadata")
+        try container.encode(self.model, forKey: "model")
+        try container.encode(self.reasoning, forKey: "reasoning")
+        try container.encode(self.text, forKey: "text")
+        try container.encode(self.serviceTier, forKey: "service_tier")
+        try container.encodeIfPresent(self.instructions, forKey: "instructions")
+        try container.encode(self.tools, forKey: "tools")
+        try container.encode(self.multiAgent, forKey: "multi_agent")
+        try container.encodeIfPresent(self.compaction, forKey: "compaction")
+        try container.encodeIfPresent(self.experimental, forKey: "experimental")
     }
 }
 
-public struct AgentSessionActionRequiredPayloadResource: Codable, Hashable, Sendable {
+public struct AgentSessionActionRequiredPayloadResource: OpenAIModel {
     /// The ID of the session.
     public var id: String
     /// The action type. Retrieve the session for action details.
@@ -387,13 +444,20 @@ public struct AgentSessionActionRequiredPayloadResource: Codable, Hashable, Send
         self.requiredAction = requiredAction
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case requiredAction = "required_action"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.requiredAction = try container.decode(AgentSessionRequiredActionPayloadResource.self, forKey: "required_action")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.requiredAction, forKey: "required_action")
     }
 }
 
-public struct AgentSessionConnectPayloadResource: Codable, Hashable, Sendable {
+public struct AgentSessionConnectPayloadResource: OpenAIModel {
     /// The URL used to connect the self-hosted environment.
     public var remoteURL: String
 
@@ -401,12 +465,18 @@ public struct AgentSessionConnectPayloadResource: Codable, Hashable, Sendable {
         self.remoteURL = remoteURL
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case remoteURL = "remote_url"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.remoteURL = try container.decode(String.self, forKey: "remote_url")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.remoteURL, forKey: "remote_url")
     }
 }
 
-public struct AgentSessionCreatedPayloadResource: Codable, Hashable, Sendable {
+public struct AgentSessionCreatedPayloadResource: OpenAIModel {
     /// The ID of the session.
     public var id: String
     /// The ID of the environment, when one exists.
@@ -427,15 +497,24 @@ public struct AgentSessionCreatedPayloadResource: Codable, Hashable, Sendable {
         self.connect = connect
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case environmentID = "environment_id"
-        case environmentType = "environment_type"
-        case connect
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.environmentID = try container.decodeIfPresent(String.self, forKey: "environment_id")
+        self.environmentType = try container.decode(String.self, forKey: "environment_type")
+        self.connect = try container.decodeIfPresent(AgentSessionConnectPayloadResource.self, forKey: "connect")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encodeIfPresent(self.environmentID, forKey: "environment_id")
+        try container.encode(self.environmentType, forKey: "environment_type")
+        try container.encodeIfPresent(self.connect, forKey: "connect")
     }
 }
 
-public struct AgentSessionEnvironmentPayloadResource: Codable, Hashable, Sendable {
+public struct AgentSessionEnvironmentPayloadResource: OpenAIModel {
     /// The ID of the session.
     public var id: String
     /// The ID of the environment, when one exists.
@@ -453,22 +532,36 @@ public struct AgentSessionEnvironmentPayloadResource: Codable, Hashable, Sendabl
         self.environmentID = environmentID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case environmentID = "environment_id"
-        case environmentType = "environment_type"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.environmentID = try container.decodeIfPresent(String.self, forKey: "environment_id")
+        self.environmentType = try container.decode(String.self, forKey: "environment_type")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encodeIfPresent(self.environmentID, forKey: "environment_id")
+        try container.encode(self.environmentType, forKey: "environment_type")
     }
 }
 
-public struct AgentSessionRequiredActionPayloadResource: Codable, Hashable, Sendable {
+public struct AgentSessionRequiredActionPayloadResource: OpenAIModel {
     public var type: AgentSessionRequiredActionTypeResource
 
     public init(type: AgentSessionRequiredActionTypeResource) {
         self.type = type
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decode(AgentSessionRequiredActionTypeResource.self, forKey: "type")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
@@ -493,7 +586,7 @@ public struct AgentSessionRequiredActionTypeResource: OpenAIStringEnum {
 /// A tool available to the agent.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum AgentToolConfigParam: Codable, Hashable, Sendable {
+public indirect enum AgentToolConfigParam: OpenAIModel {
     /// `type`: `function`
     case function(AgentToolConfigParamFunction)
     /// `type`: `tool_search`
@@ -568,20 +661,26 @@ public indirect enum AgentToolConfigParam: Codable, Hashable, Sendable {
 }
 
 /// Lets the agent manage its own scheduled wakeups.
-public struct AgentToolConfigParamAutomations: Codable, Hashable, Sendable {
+public struct AgentToolConfigParamAutomations: OpenAIModel {
     /// The type of the object. Always `automations`.
     public var type: String = "automations"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "automations"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// Browser use in an OpenAI-hosted session.
-public struct AgentToolConfigParamComputerUse: Codable, Hashable, Sendable {
+public struct AgentToolConfigParamComputerUse: OpenAIModel {
     /// The type of the object. Always `computer_use`.
     public var type: String = "computer_use"
     /// Whether computer tool outputs include screenshots. Defaults to `false`.
@@ -591,14 +690,21 @@ public struct AgentToolConfigParamComputerUse: Codable, Hashable, Sendable {
         self.includeScreenshots = includeScreenshots
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case includeScreenshots = "include_screenshots"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "computer_use"
+        self.includeScreenshots = try container.decodeIfPresent(Bool.self, forKey: "include_screenshots")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.includeScreenshots, forKey: "include_screenshots")
     }
 }
 
 /// A function defined by the application.
-public struct AgentToolConfigParamFunction: Codable, Hashable, Sendable {
+public struct AgentToolConfigParamFunction: OpenAIModel {
     /// The type of the object. Always `function`.
     public var type: String = "function"
     /// The name of the function.
@@ -626,18 +732,29 @@ public struct AgentToolConfigParamFunction: Codable, Hashable, Sendable {
         self.async = `async`
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
-        case description
-        case parameters
-        case deferLoading = "defer_loading"
-        case `async`
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "function"
+        self.name = try container.decode(String.self, forKey: "name")
+        self.description = try container.decode(String.self, forKey: "description")
+        self.parameters = try container.decode(JSONObject.self, forKey: "parameters")
+        self.deferLoading = try container.decodeIfPresent(Bool.self, forKey: "defer_loading")
+        self.async = try container.decodeIfPresent(Bool.self, forKey: "async")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.description, forKey: "description")
+        try container.encode(self.parameters, forKey: "parameters")
+        try container.encodeIfPresent(self.deferLoading, forKey: "defer_loading")
+        try container.encodeIfPresent(self.async, forKey: "async")
     }
 }
 
 /// Tools provided by a remote MCP server.
-public struct AgentToolConfigParamMcp: Codable, Hashable, Sendable {
+public struct AgentToolConfigParamMcp: OpenAIModel {
     /// The type of the object. Always `mcp`.
     public var type: String = "mcp"
     /// A label used to identify the MCP server in tool calls.
@@ -673,20 +790,33 @@ public struct AgentToolConfigParamMcp: Codable, Hashable, Sendable {
         self.connectionOrigin = connectionOrigin
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case serverLabel = "server_label"
-        case credentialID = "credential_id"
-        case transport
-        case requestMetadata = "request_metadata"
-        case allowedTools = "allowed_tools"
-        case required
-        case connectionOrigin = "connection_origin"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "mcp"
+        self.serverLabel = try container.decode(String.self, forKey: "server_label")
+        self.credentialID = try container.decodeIfPresent(String.self, forKey: "credential_id")
+        self.transport = try container.decode(McpTransportConfigParam.self, forKey: "transport")
+        self.requestMetadata = try container.decodeIfPresent(JSONObject.self, forKey: "request_metadata")
+        self.allowedTools = try container.decodeIfPresent([String].self, forKey: "allowed_tools")
+        self.required = try container.decodeIfPresent(Bool.self, forKey: "required")
+        self.connectionOrigin = try container.decodeIfPresent(McpConnectionOriginParam.self, forKey: "connection_origin")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.serverLabel, forKey: "server_label")
+        try container.encodeIfPresent(self.credentialID, forKey: "credential_id")
+        try container.encode(self.transport, forKey: "transport")
+        try container.encodeIfPresent(self.requestMetadata, forKey: "request_metadata")
+        try container.encodeIfPresent(self.allowedTools, forKey: "allowed_tools")
+        try container.encodeIfPresent(self.required, forKey: "required")
+        try container.encodeIfPresent(self.connectionOrigin, forKey: "connection_origin")
     }
 }
 
 /// Enables calling tools from model-generated code.
-public struct AgentToolConfigParamProgrammaticToolCalling: Codable, Hashable, Sendable {
+public struct AgentToolConfigParamProgrammaticToolCalling: OpenAIModel {
     /// The type of the object. Always `programmatic_tool_calling`.
     public var type: String = "programmatic_tool_calling"
     /// Whether tools can be called from model-generated code. Defaults to `true`.
@@ -696,27 +826,40 @@ public struct AgentToolConfigParamProgrammaticToolCalling: Codable, Hashable, Se
         self.enabled = enabled
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case enabled
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "programmatic_tool_calling"
+        self.enabled = try container.decodeIfPresent(Bool.self, forKey: "enabled")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.enabled, forKey: "enabled")
     }
 }
 
 /// Discovers deferred function tools and loads them into the model context.
-public struct AgentToolConfigParamToolSearch: Codable, Hashable, Sendable {
+public struct AgentToolConfigParamToolSearch: OpenAIModel {
     /// The type of the object. Always `tool_search`.
     public var type: String = "tool_search"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "tool_search"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// Web search.
-public struct AgentToolConfigParamWebSearch: Codable, Hashable, Sendable {
+public struct AgentToolConfigParamWebSearch: OpenAIModel {
     /// The type of the object. Always `web_search`.
     public var type: String = "web_search"
     /// The source used for web search results. Defaults to `live`.
@@ -740,19 +883,29 @@ public struct AgentToolConfigParamWebSearch: Codable, Hashable, Sendable {
         self.location = location
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case mode
-        case contextSize = "context_size"
-        case allowedDomains = "allowed_domains"
-        case location
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "web_search"
+        self.mode = try container.decodeIfPresent(WebSearchModeParam.self, forKey: "mode")
+        self.contextSize = try container.decodeIfPresent(WebSearchContextSizeParam.self, forKey: "context_size")
+        self.allowedDomains = try container.decodeIfPresent([String].self, forKey: "allowed_domains")
+        self.location = try container.decodeIfPresent(WebSearchLocationParam.self, forKey: "location")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encodeIfPresent(self.mode, forKey: "mode")
+        try container.encodeIfPresent(self.contextSize, forKey: "context_size")
+        try container.encodeIfPresent(self.allowedDomains, forKey: "allowed_domains")
+        try container.encodeIfPresent(self.location, forKey: "location")
     }
 }
 
 /// A tool available to the agent.
 ///
 /// Decoding picks the case from the `type` field. Values this version does not know decode as `.unknown`.
-public indirect enum AgentToolResource: Codable, Hashable, Sendable {
+public indirect enum AgentToolResource: OpenAIModel {
     /// `type`: `function`
     case function(AgentToolResourceFunction)
     /// `type`: `programmatic_tool_calling`
@@ -820,20 +973,26 @@ public indirect enum AgentToolResource: Codable, Hashable, Sendable {
 }
 
 /// Lets the agent manage its own scheduled wakeups.
-public struct AgentToolResourceAutomations: Codable, Hashable, Sendable {
+public struct AgentToolResourceAutomations: OpenAIModel {
     /// The type of the object. Always `automations`.
     public var type: String = "automations"
 
     public init() {
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "automations"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
     }
 }
 
 /// Browser use in an OpenAI-hosted session.
-public struct AgentToolResourceComputerUse: Codable, Hashable, Sendable {
+public struct AgentToolResourceComputerUse: OpenAIModel {
     /// The type of the object. Always `computer_use`.
     public var type: String = "computer_use"
     /// Whether computer tool outputs include screenshots.
@@ -843,14 +1002,21 @@ public struct AgentToolResourceComputerUse: Codable, Hashable, Sendable {
         self.includeScreenshots = includeScreenshots
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case includeScreenshots = "include_screenshots"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "computer_use"
+        self.includeScreenshots = try container.decode(Bool.self, forKey: "include_screenshots")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.includeScreenshots, forKey: "include_screenshots")
     }
 }
 
 /// A function defined by the application.
-public struct AgentToolResourceFunction: Codable, Hashable, Sendable {
+public struct AgentToolResourceFunction: OpenAIModel {
     /// The type of the object. Always `function`.
     public var type: String = "function"
     /// The name of the function.
@@ -878,18 +1044,29 @@ public struct AgentToolResourceFunction: Codable, Hashable, Sendable {
         self.async = `async`
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case name
-        case description
-        case parameters
-        case deferLoading = "defer_loading"
-        case `async`
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "function"
+        self.name = try container.decode(String.self, forKey: "name")
+        self.description = try container.decode(String.self, forKey: "description")
+        self.parameters = try container.decode(JSONObject.self, forKey: "parameters")
+        self.deferLoading = try container.decode(Bool.self, forKey: "defer_loading")
+        self.async = try container.decodeIfPresent(Bool.self, forKey: "async")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.description, forKey: "description")
+        try container.encode(self.parameters, forKey: "parameters")
+        try container.encode(self.deferLoading, forKey: "defer_loading")
+        try container.encodeIfPresent(self.async, forKey: "async")
     }
 }
 
 /// Tools provided by a remote MCP server.
-public struct AgentToolResourceMcp: Codable, Hashable, Sendable {
+public struct AgentToolResourceMcp: OpenAIModel {
     /// The type of the object. Always `mcp`.
     public var type: String = "mcp"
     /// A label used to identify the MCP server in tool calls.
@@ -925,20 +1102,33 @@ public struct AgentToolResourceMcp: Codable, Hashable, Sendable {
         self.allowedTools = allowedTools
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case serverLabel = "server_label"
-        case credentialID = "credential_id"
-        case transport
-        case requestMetadata = "request_metadata"
-        case allowedTools = "allowed_tools"
-        case required
-        case connectionOrigin = "connection_origin"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "mcp"
+        self.serverLabel = try container.decode(String.self, forKey: "server_label")
+        self.credentialID = try container.decodeIfPresent(String.self, forKey: "credential_id")
+        self.transport = try container.decode(McpTransportResource.self, forKey: "transport")
+        self.requestMetadata = try container.decode(JSONObject.self, forKey: "request_metadata")
+        self.allowedTools = try container.decodeIfPresent([String].self, forKey: "allowed_tools")
+        self.required = try container.decode(Bool.self, forKey: "required")
+        self.connectionOrigin = try container.decode(McpConnectionOriginResource.self, forKey: "connection_origin")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.serverLabel, forKey: "server_label")
+        try container.encodeIfPresent(self.credentialID, forKey: "credential_id")
+        try container.encode(self.transport, forKey: "transport")
+        try container.encode(self.requestMetadata, forKey: "request_metadata")
+        try container.encodeIfPresent(self.allowedTools, forKey: "allowed_tools")
+        try container.encode(self.required, forKey: "required")
+        try container.encode(self.connectionOrigin, forKey: "connection_origin")
     }
 }
 
 /// Enables calling tools from model-generated code.
-public struct AgentToolResourceProgrammaticToolCalling: Codable, Hashable, Sendable {
+public struct AgentToolResourceProgrammaticToolCalling: OpenAIModel {
     /// The type of the object. Always `programmatic_tool_calling`.
     public var type: String = "programmatic_tool_calling"
     /// Whether tools can be called from model-generated code.
@@ -948,14 +1138,21 @@ public struct AgentToolResourceProgrammaticToolCalling: Codable, Hashable, Senda
         self.enabled = enabled
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case enabled
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "programmatic_tool_calling"
+        self.enabled = try container.decode(Bool.self, forKey: "enabled")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.enabled, forKey: "enabled")
     }
 }
 
 /// Web search.
-public struct AgentToolResourceWebSearch: Codable, Hashable, Sendable {
+public struct AgentToolResourceWebSearch: OpenAIModel {
     /// The type of the object. Always `web_search`.
     public var type: String = "web_search"
     /// The source used for web search results.
@@ -979,11 +1176,21 @@ public struct AgentToolResourceWebSearch: Codable, Hashable, Sendable {
         self.location = location
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case mode
-        case contextSize = "context_size"
-        case allowedDomains = "allowed_domains"
-        case location
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.type = try container.decodeIfPresent(String.self, forKey: "type") ?? "web_search"
+        self.mode = try container.decode(WebSearchModeResource.self, forKey: "mode")
+        self.contextSize = try container.decode(WebSearchContextSizeResource.self, forKey: "context_size")
+        self.allowedDomains = try container.decodeIfPresent([String].self, forKey: "allowed_domains")
+        self.location = try container.decodeIfPresent(WebSearchLocationResource.self, forKey: "location")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.type, forKey: "type")
+        try container.encode(self.mode, forKey: "mode")
+        try container.encode(self.contextSize, forKey: "context_size")
+        try container.encodeIfPresent(self.allowedDomains, forKey: "allowed_domains")
+        try container.encodeIfPresent(self.location, forKey: "location")
     }
 }

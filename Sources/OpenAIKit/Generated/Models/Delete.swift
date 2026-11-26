@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct DeleteAssistantResponse: Codable, Hashable, Sendable {
+public struct DeleteAssistantResponse: OpenAIModel {
     public var id: String
     public var deleted: Bool
     public var object: String = "assistant.deleted"
@@ -13,14 +13,22 @@ public struct DeleteAssistantResponse: Codable, Hashable, Sendable {
         self.deleted = deleted
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case deleted
-        case object
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.deleted = try container.decode(Bool.self, forKey: "deleted")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "assistant.deleted"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.deleted, forKey: "deleted")
+        try container.encode(self.object, forKey: "object")
     }
 }
 
-public struct DeleteCertificateResponse: Codable, Hashable, Sendable {
+public struct DeleteCertificateResponse: OpenAIModel {
     /// The object type, must be `certificate.deleted`.
     public var object: String = "certificate.deleted"
     /// The ID of the certificate that was deleted.
@@ -30,13 +38,20 @@ public struct DeleteCertificateResponse: Codable, Hashable, Sendable {
         self.id = id
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case id
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "certificate.deleted"
+        self.id = try container.decode(String.self, forKey: "id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.id, forKey: "id")
     }
 }
 
-public struct DeleteContainerFileResponse: Codable, Hashable, Sendable {
+public struct DeleteContainerFileResponse: OpenAIModel {
     public var object: String = "container.file.deleted"
     public var deleted: Bool
     public var id: String
@@ -46,14 +61,22 @@ public struct DeleteContainerFileResponse: Codable, Hashable, Sendable {
         self.id = id
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case deleted
-        case id
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "container.file.deleted"
+        self.deleted = try container.decode(Bool.self, forKey: "deleted")
+        self.id = try container.decode(String.self, forKey: "id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.deleted, forKey: "deleted")
+        try container.encode(self.id, forKey: "id")
     }
 }
 
-public struct DeleteContainerResponse: Codable, Hashable, Sendable {
+public struct DeleteContainerResponse: OpenAIModel {
     public var object: String = "container.deleted"
     public var deleted: Bool
     public var id: String
@@ -63,14 +86,22 @@ public struct DeleteContainerResponse: Codable, Hashable, Sendable {
         self.id = id
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case deleted
-        case id
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "container.deleted"
+        self.deleted = try container.decode(Bool.self, forKey: "deleted")
+        self.id = try container.decode(String.self, forKey: "id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.deleted, forKey: "deleted")
+        try container.encode(self.id, forKey: "id")
     }
 }
 
-public struct DeleteEvalResponse: Codable, Hashable, Sendable {
+public struct DeleteEvalResponse: OpenAIModel {
     public var object: String
     public var deleted: Bool
     public var evalID: String
@@ -85,14 +116,22 @@ public struct DeleteEvalResponse: Codable, Hashable, Sendable {
         self.evalID = evalID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case deleted
-        case evalID = "eval_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decode(String.self, forKey: "object")
+        self.deleted = try container.decode(Bool.self, forKey: "deleted")
+        self.evalID = try container.decode(String.self, forKey: "eval_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.deleted, forKey: "deleted")
+        try container.encode(self.evalID, forKey: "eval_id")
     }
 }
 
-public struct DeleteEvalRunResponse: Codable, Hashable, Sendable {
+public struct DeleteEvalRunResponse: OpenAIModel {
     public var object: String?
     public var deleted: Bool?
     public var runID: String?
@@ -107,14 +146,22 @@ public struct DeleteEvalRunResponse: Codable, Hashable, Sendable {
         self.runID = runID
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case deleted
-        case runID = "run_id"
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object")
+        self.deleted = try container.decodeIfPresent(Bool.self, forKey: "deleted")
+        self.runID = try container.decodeIfPresent(String.self, forKey: "run_id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encodeIfPresent(self.object, forKey: "object")
+        try container.encodeIfPresent(self.deleted, forKey: "deleted")
+        try container.encodeIfPresent(self.runID, forKey: "run_id")
     }
 }
 
-public struct DeleteFileResponse: Codable, Hashable, Sendable {
+public struct DeleteFileResponse: OpenAIModel {
     public var id: String
     public var object: String = "file"
     public var deleted: Bool
@@ -124,14 +171,22 @@ public struct DeleteFileResponse: Codable, Hashable, Sendable {
         self.deleted = deleted
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case deleted
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "file"
+        self.deleted = try container.decode(Bool.self, forKey: "deleted")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.deleted, forKey: "deleted")
     }
 }
 
-public struct DeleteFineTuningCheckpointPermissionResponse: Codable, Hashable, Sendable {
+public struct DeleteFineTuningCheckpointPermissionResponse: OpenAIModel {
     /// The ID of the fine-tuned model checkpoint permission that was deleted.
     public var id: String
     /// The object type, which is always "checkpoint.permission".
@@ -144,14 +199,22 @@ public struct DeleteFineTuningCheckpointPermissionResponse: Codable, Hashable, S
         self.deleted = deleted
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case object
-        case deleted
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "checkpoint.permission"
+        self.deleted = try container.decode(Bool.self, forKey: "deleted")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.deleted, forKey: "deleted")
     }
 }
 
-public struct DeleteMessageResponse: Codable, Hashable, Sendable {
+public struct DeleteMessageResponse: OpenAIModel {
     public var id: String
     public var deleted: Bool
     public var object: String = "thread.message.deleted"
@@ -161,14 +224,22 @@ public struct DeleteMessageResponse: Codable, Hashable, Sendable {
         self.deleted = deleted
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case deleted
-        case object
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.deleted = try container.decode(Bool.self, forKey: "deleted")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "thread.message.deleted"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.deleted, forKey: "deleted")
+        try container.encode(self.object, forKey: "object")
     }
 }
 
-public struct DeleteModelResponse: Codable, Hashable, Sendable {
+public struct DeleteModelResponse: OpenAIModel {
     public var id: String
     public var deleted: Bool
     public var object: String
@@ -183,14 +254,22 @@ public struct DeleteModelResponse: Codable, Hashable, Sendable {
         self.object = object
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case deleted
-        case object
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.deleted = try container.decode(Bool.self, forKey: "deleted")
+        self.object = try container.decode(String.self, forKey: "object")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.deleted, forKey: "deleted")
+        try container.encode(self.object, forKey: "object")
     }
 }
 
-public struct DeleteResponseResponse: Codable, Hashable, Sendable {
+public struct DeleteResponseResponse: OpenAIModel {
     public var object: String = "response.deleted"
     public var deleted: Bool
     public var id: String
@@ -200,14 +279,22 @@ public struct DeleteResponseResponse: Codable, Hashable, Sendable {
         self.id = id
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case deleted
-        case id
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "response.deleted"
+        self.deleted = try container.decode(Bool.self, forKey: "deleted")
+        self.id = try container.decode(String.self, forKey: "id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.deleted, forKey: "deleted")
+        try container.encode(self.id, forKey: "id")
     }
 }
 
-public struct DeleteThreadResponse: Codable, Hashable, Sendable {
+public struct DeleteThreadResponse: OpenAIModel {
     public var id: String
     public var deleted: Bool
     public var object: String = "thread.deleted"
@@ -217,14 +304,22 @@ public struct DeleteThreadResponse: Codable, Hashable, Sendable {
         self.deleted = deleted
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case deleted
-        case object
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.deleted = try container.decode(Bool.self, forKey: "deleted")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "thread.deleted"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.deleted, forKey: "deleted")
+        try container.encode(self.object, forKey: "object")
     }
 }
 
-public struct DeleteVectorStoreFileResponse: Codable, Hashable, Sendable {
+public struct DeleteVectorStoreFileResponse: OpenAIModel {
     public var id: String
     public var deleted: Bool
     public var object: String = "vector_store.file.deleted"
@@ -234,14 +329,22 @@ public struct DeleteVectorStoreFileResponse: Codable, Hashable, Sendable {
         self.deleted = deleted
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case deleted
-        case object
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.deleted = try container.decode(Bool.self, forKey: "deleted")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "vector_store.file.deleted"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.deleted, forKey: "deleted")
+        try container.encode(self.object, forKey: "object")
     }
 }
 
-public struct DeleteVectorStoreResponse: Codable, Hashable, Sendable {
+public struct DeleteVectorStoreResponse: OpenAIModel {
     public var id: String
     public var deleted: Bool
     public var object: String = "vector_store.deleted"
@@ -251,9 +354,17 @@ public struct DeleteVectorStoreResponse: Codable, Hashable, Sendable {
         self.deleted = deleted
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case deleted
-        case object
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.id = try container.decode(String.self, forKey: "id")
+        self.deleted = try container.decode(Bool.self, forKey: "deleted")
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "vector_store.deleted"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.id, forKey: "id")
+        try container.encode(self.deleted, forKey: "deleted")
+        try container.encode(self.object, forKey: "object")
     }
 }

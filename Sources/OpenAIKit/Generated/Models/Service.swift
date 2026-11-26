@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct ServiceAccountApiKeyBody: Codable, Hashable, Sendable {
+public struct ServiceAccountApiKeyBody: OpenAIModel {
     /// The object type, which is always `organization.project.service_account.api_key`
     public var object: String = "organization.project.service_account.api_key"
     /// The unredacted API key value.
@@ -30,13 +30,24 @@ public struct ServiceAccountApiKeyBody: Codable, Hashable, Sendable {
         self.expiresAt = expiresAt
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case object
-        case value
-        case name
-        case createdAt = "created_at"
-        case expiresAt = "expires_at"
-        case id
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        self.object = try container.decodeIfPresent(String.self, forKey: "object") ?? "organization.project.service_account.api_key"
+        self.value = try container.decode(String.self, forKey: "value")
+        self.name = try container.decode(String.self, forKey: "name")
+        self.createdAt = try container.decode(Int.self, forKey: "created_at")
+        self.expiresAt = try container.decodeIfPresent(Int.self, forKey: "expires_at")
+        self.id = try container.decode(String.self, forKey: "id")
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: OpenAIDynamicCodingKey.self)
+        try container.encode(self.object, forKey: "object")
+        try container.encode(self.value, forKey: "value")
+        try container.encode(self.name, forKey: "name")
+        try container.encode(self.createdAt, forKey: "created_at")
+        try container.encodeIfPresent(self.expiresAt, forKey: "expires_at")
+        try container.encode(self.id, forKey: "id")
     }
 }
 
