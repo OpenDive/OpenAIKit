@@ -1,0 +1,105 @@
+{
+  "access_programs": {
+    "cyber": "standard"
+  },
+  "background": false,
+  "billing": {
+    "payer": "openai"
+  },
+  "completed_at": 1795665782,
+  "created_at": 1795665773,
+  "error": null,
+  "frequency_penalty": 0.0,
+  "id": "resp_0924444842c523e3006b07af6da58487d1a4ea5a1bfbf31f9b",
+  "image": {
+    "context_compression": "disabled"
+  },
+  "incomplete_details": null,
+  "input_transformations": [],
+  "instructions": null,
+  "max_output_tokens": null,
+  "max_tool_calls": null,
+  "model": "gpt-6.2-astra",
+  "moderation": null,
+  "object": "response",
+  "output": [
+    {
+      "content": [
+        {
+          "annotations": [],
+          "logprobs": [],
+          "text": "Swift concurrency lets you write code that can pause while waiting for a result without blocking a thread. You mark a function `async` if it can suspend and write `await` at a call site to show where your task might pause. While the task is suspended, the thread is free to do other work. When the result is ready, the task resumes where it left off.\n\n`await` doesn’t start a new task or automatically run calls in parallel. If you await one download and then await another, the second starts after the first finishes. When the downloads are independent, you can use `async let` to start both before waiting for either result:\n\n```swift\nasync let avatar = fetchAvatar()\nasync let cover = fetchCover()\nlet images = await (avatar, cover)\n```\n\nEach `async let` creates a child task. This is **structured concurrency**: child tasks cannot outlive the scope that created them. For a number of tasks known only at runtime, such as one download per URL, use a task group. Cancellation is cooperative: canceling a parent signals its children, but running code must check for cancellation or call an operation that responds to it.\n\n**Actors** protect shared mutable state by allowing only one task at a time to execute code isolated to a given actor. If that code suspends at an `await`, another task can access the actor before the first resumes. `@MainActor` applies this isolation to UI-related code, keeping updates on the main actor.",
+          "type": "output_text"
+        }
+      ],
+      "id": "msg_0924444842c523e3006b07af6f4a1487d18855968eac07ce5f",
+      "phase": "final_answer",
+      "role": "assistant",
+      "status": "completed",
+      "type": "message"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "presence_penalty": 0.0,
+  "previous_response_id": null,
+  "prompt_cache_key": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "all_turns",
+    "effort": "medium",
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "status": "completed",
+  "store": true,
+  "temperature": 1.0,
+  "text": {
+    "format": {
+      "type": "text"
+    },
+    "verbosity": "medium"
+  },
+  "tool_choice": "auto",
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  },
+  "tools": [],
+  "top_logprobs": 0,
+  "top_p": 1.0,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 17,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cache_write_tokens_details": {
+        "ttl_12h_tokens": 0,
+        "ttl_30m_tokens": 0
+      },
+      "cached_tokens": 0
+    },
+    "output_tokens": 307,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 324
+  },
+  "user": null,
+  "metadata": {}
+}

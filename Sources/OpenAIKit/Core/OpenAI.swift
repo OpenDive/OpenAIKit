@@ -100,20 +100,15 @@ public final class OpenAI: Sendable {
                     var parser = ServerSentEventParser()
                     let decoder = JSONDecoder()
                     func handle(_ event: ServerSentEvent) throws -> Bool {
-                        if event.data == "[DONE]" { return false }
-                        if event.data.isEmpty { return true }
-                        let data = Data(event.data.utf8)
-                        // Like the official SDKs: a payload with a top-level `error` object ends the
+                        let data = event.dataBytes
+                        if data.isEmpty { return true }
+                        if Self.isDone(data) { return false }
+                        // Like the official SDKs: a payload whose top level is an `error` object ends the
                         // stream with an error. Typed error events (Responses `type: "error"`) are yielded.
-                        if let json = try? decoder.decode(JSONValue.self, from: data),
-                           let error = json["error"], !error.isNull, error.objectValue != nil || error.stringValue != nil {
+                        if Self.startsWithErrorKey(data) {
                             throw OpenAIAPIError(statusCode: 0, body: data, headers: [:])
                         }
-                        var payload = data
-                        if wrapped, let name = event.event {
-                            let inner = try decoder.decode(JSONValue.self, from: data)
-                            payload = try JSONEncoder.openAI.encode(JSONValue.object(["event": .string(name), "data": inner]))
-                        }
+                        let payload = wrapped ? Self.wrap(data, event: event.event) : data
                         do {
                             continuation.yield(try decoder.decode(Event.self, from: payload))
                         } catch {
@@ -142,6 +137,40 @@ public final class OpenAI: Sendable {
             }
             continuation.onTermination = { _ in task.cancel() }
         }
+    }
+
+    private static let errorKey = Data("\"error\"".utf8)
+
+    static func isDone(_ data: Data) -> Bool {
+        guard data.count < 16, data.contains(0x5B) else { return false }
+        return String(decoding: data, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines) == "[DONE]"
+    }
+
+    /// Whether the payload is a JSON object whose first key is `"error"`, checked without parsing it.
+    static func startsWithErrorKey(_ data: Data) -> Bool {
+        var index = data.startIndex
+        func skipWhitespace() {
+            while index < data.endIndex, data[index] == 0x20 || data[index] == 0x0A || data[index] == 0x0D || data[index] == 0x09 {
+                index += 1
+            }
+        }
+        skipWhitespace()
+        guard index < data.endIndex, data[index] == 0x7B else { return false }
+        index += 1
+        skipWhitespace()
+        guard data.endIndex - index >= errorKey.count else { return false }
+        return data[index..<(index + errorKey.count)].elementsEqual(errorKey)
+    }
+
+    /// `{"event": <name>, "data": <payload>}` built from bytes, without re-encoding the payload.
+    static func wrap(_ data: Data, event: String?) -> Data {
+        guard let event else { return data }
+        var wrapped = Data("{\"event\":".utf8)
+        wrapped.append((try? JSONEncoder().encode(event)) ?? Data("\"\"".utf8))
+        wrapped.append(Data(",\"data\":".utf8))
+        wrapped.append(data)
+        wrapped.append(0x7D)
+        return wrapped
     }
 
     private func openStream(_ urlRequest: URLRequest, options: OpenAIRequestOptions) async throws -> AsyncThrowingStream<Data, any Error> {

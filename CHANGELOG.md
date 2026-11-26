@@ -2,6 +2,15 @@
 
 All notable changes to this project are documented in this file.
 
+## Unreleased
+
+### Changed
+- Streaming is 2.3× faster with 40% less CPU (chat stream replay: 45.2 → 19.9 ms). The server-sent event parser works on bytes, each event is decoded once instead of twice, and streamed bodies arrive in network-sized chunks through a delegate-based `URLSession` instead of byte by byte.
+- `ServerSentEvent` exposes the raw `dataBytes`; `data` is now computed from them.
+
+### Added
+- `Benchmarks/`: a harness that compares OpenAIKit with MacPaw/OpenAI on recorded API traffic replayed through a local server, plus Instruments profiling and binary-size probes. See `Benchmarks/PLAN-4.1.md`.
+
 ## 4.0.0 - 2026-11-25
 
 OpenAIKit 4.0 is generated from OpenAI's OpenAPI specification (openai/openai-openapi `abe304d`, spec version 2.3.0) and covers the whole API. See [MIGRATION.md](MIGRATION.md) to upgrade from 3.x.
