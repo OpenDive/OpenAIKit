@@ -1,13 +1,14 @@
 // Copyright (c) 2023-2026 OpenDive. Released under the MIT License.
 
+#if canImport(Network)
 import Foundation
 import Network
 
 /// A minimal HTTP/1.1 server that replays recorded OpenAI responses on 127.0.0.1.
 ///
-/// Both SDKs under test talk to it through a real `URLSession` and real sockets, so the numbers
-/// include everything an app pays for except the internet: connection handling, header parsing,
-/// body delivery, SSE framing and JSON decoding.
+/// End-to-end tests point OpenAIKit at it, so requests go through a real `URLSession` and real
+/// sockets: connection handling, header parsing, body delivery, SSE framing and JSON decoding all
+/// run as they do against the API. Nothing leaves the machine.
 final class ReplayServer: @unchecked Sendable {
     struct Route: Sendable {
         enum Body: Sendable {
@@ -22,6 +23,8 @@ final class ReplayServer: @unchecked Sendable {
     private let queue = DispatchQueue(label: "replay-server", qos: .userInitiated)
     private let lock = NSLock()
     private var routes: [String: Route] = [:]
+    private var served: [String] = []
+    private var connections = 0
     /// Monotonic send time of each SSE event written since the last reset, in order.
     private var sentTimes: [UInt64] = []
     private(set) var port: UInt16 = 0
@@ -50,6 +53,22 @@ final class ReplayServer: @unchecked Sendable {
         lock.lock(); routes[path] = route; lock.unlock()
     }
 
+    /// Paths of requests served so far, in order.
+    var servedPaths: [String] {
+        lock.lock(); defer { lock.unlock() }
+        return served
+    }
+
+    /// TCP connections accepted so far.
+    var connectionCount: Int {
+        lock.lock(); defer { lock.unlock() }
+        return connections
+    }
+
+    func stop() {
+        listener.cancel()
+    }
+
     func resetSentTimes() {
         lock.lock(); sentTimes.removeAll(keepingCapacity: true); lock.unlock()
     }
@@ -67,6 +86,7 @@ final class ReplayServer: @unchecked Sendable {
     // MARK: Connection handling
 
     private func serve(_ connection: NWConnection) {
+        lock.lock(); connections += 1; lock.unlock()
         connection.start(queue: queue)
         readRequest(on: connection, buffer: Data())
     }
@@ -98,6 +118,7 @@ final class ReplayServer: @unchecked Sendable {
         }
         let leftover = remaining.count > request.contentLength ? Data(remaining.dropFirst(request.contentLength)) : Data()
         let path = request.path.split(separator: "?").first.map(String.init) ?? request.path
+        lock.lock(); served.append(path); lock.unlock()
         guard let route = route(for: path) else {
             send(status: "404 Not Found", body: Data(#"{"error":{"message":"No fixture for \#(path)"}}"#.utf8), on: connection, then: leftover)
             return
@@ -166,3 +187,4 @@ struct HTTPRequestHead {
         return HTTPRequestHead(method: String(parts[0]), path: String(parts[1]), contentLength: length)
     }
 }
+#endif

@@ -49,7 +49,8 @@ How to find the right call:
 
 ```bash
 swift build
-swift test                                   # never touches the network
+swift test                                   # offline: mocks and a local replay server
+OPENAI_API_KEY=sk-... swift test --filter LiveAPITests   # optional, against the real API
 python3 Generator/generate.py generate       # after changing the generator
 python3 Generator/generate.py check          # what CI runs: fails if generated files are stale
 python3 Generator/generate.py bump           # pin the newest spec and naming, regenerate, then run swift test
@@ -62,7 +63,7 @@ xcodebuild -project Examples/iOS_Example/iOS_Example.xcodeproj -scheme iOS_Examp
 - **Generated code:** fix the generator, regenerate, and commit the generator change and the regenerated files together.
 - **No dependencies.** Keep Linux building: guard networking with `#if canImport(FoundationNetworking)`, and don't use CryptoKit without the portable fallback in `Core/Webhooks.swift`.
 - **Swift 6 language mode.** Every public type is `Sendable`. Keep the build free of warnings.
-- **Tests:** never touch the network. Use `MockTransport` in `Tests/OpenAIKitTests/Support/`. Add a test for each behavior change.
+- **Tests:** never reach the internet by default. Unit tests use `MockTransport` in `Tests/OpenAIKitTests/Support/`. End-to-end tests replay recorded traffic from `Tests/OpenAIKitTests/Fixtures/Recorded/` through `EndToEnd/ReplayServer.swift` on 127.0.0.1. `LiveAPITests` run only when `OPENAI_API_KEY` is set. Add a test for each behavior change, and scrub account IDs and personal model names from new recordings.
 - **README:** when you change a code sample, change `ReadmeSnippets.swift` the same way, and the reverse.
 - **Public API changes:** update `README.md`, `MIGRATION.md` if they break 3.x users, and `CHANGELOG.md`.
 - **Secrets:** never commit API keys. The example apps read `OPENAI_API_KEY` from the environment; keep it that way.
