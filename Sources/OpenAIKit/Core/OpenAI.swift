@@ -7,7 +7,7 @@ import FoundationNetworking
 
 /// The OpenAIKit version, sent in the `User-Agent` header.
 public enum OpenAIKitVersion {
-    public static let current = "4.0.0"
+    public static let current = "4.0.1"
 }
 
 /// A client for the OpenAI API.
@@ -201,11 +201,17 @@ public final class OpenAI: Sendable {
 
         switch request.authentication {
         case .apiKey:
-            guard let key = configuration.apiKey, !key.isEmpty else { throw OpenAIError.missingAPIKey }
-            urlRequest.setValue("Bearer \(key)", forHTTPHeaderField: "Authorization")
+            if let key = configuration.apiKey, !key.isEmpty {
+                urlRequest.setValue("Bearer \(key)", forHTTPHeaderField: "Authorization")
+            } else if configuration.talksToOpenAIDirectly {
+                throw OpenAIError.missingAPIKey
+            }
         case .admin:
-            guard let key = configuration.adminAPIKey, !key.isEmpty else { throw OpenAIError.missingAdminAPIKey }
-            urlRequest.setValue("Bearer \(key)", forHTTPHeaderField: "Authorization")
+            if let key = configuration.adminAPIKey, !key.isEmpty {
+                urlRequest.setValue("Bearer \(key)", forHTTPHeaderField: "Authorization")
+            } else if configuration.talksToOpenAIDirectly {
+                throw OpenAIError.missingAdminAPIKey
+            }
         }
         if let organization = configuration.organizationId, !organization.isEmpty {
             urlRequest.setValue(organization, forHTTPHeaderField: "OpenAI-Organization")

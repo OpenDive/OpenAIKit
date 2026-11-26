@@ -88,6 +88,30 @@ struct RequestTests {
         }
     }
 
+    @Test func proxiesWithoutAnAPIKey() async throws {
+        // Your server holds the key; the app authenticates to it with its own header.
+        let configuration = Configuration(
+            baseURL: URL(string: "https://proxy.example.com/openai/v1")!,
+            requestOptions: OpenAIRequestOptions(additionalHeaders: ["X-Session": "user-token"])
+        )
+        let (client, transport) = makeClient([.json(#"{"object":"list","data":[]}"#)], configuration: configuration)
+        _ = try await client.models.list()
+        let request = try #require(transport.lastRequest)
+        #expect(request.url?.absoluteString == "https://proxy.example.com/openai/v1/models")
+        #expect(request.value(forHTTPHeaderField: "Authorization") == nil)
+        #expect(request.value(forHTTPHeaderField: "X-Session") == "user-token")
+    }
+
+    @Test func letsAProxyReplaceTheAuthorizationHeader() async throws {
+        let configuration = Configuration(
+            baseURL: URL(string: "https://proxy.example.com/v1")!,
+            requestOptions: OpenAIRequestOptions(additionalHeaders: ["Authorization": "Bearer user-session"])
+        )
+        let (client, transport) = makeClient([.json(#"{"object":"list","data":[]}"#)], configuration: configuration)
+        _ = try await client.models.list()
+        #expect(transport.lastRequest?.value(forHTTPHeaderField: "Authorization") == "Bearer user-session")
+    }
+
     @Test func appliesPerRequestOptions() async throws {
         let (client, transport) = makeClient([.json(#"{"object":"list","data":[]}"#)])
         let options = OpenAIRequestOptions(timeoutInterval: 5, additionalHeaders: ["X-Trace": "1"], additionalQuery: ["debug": "yes"])

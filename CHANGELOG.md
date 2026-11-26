@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented in this file.
 
+## 4.0.1 - 2026-11-25
+
+### Fixed
+- Requests to a custom `baseURL`, such as your own proxy, no longer need an API key. Without one, no `Authorization` header is sent, so the server can add OpenAI's key and the app can authenticate with its own headers ([#37](https://github.com/OpenDive/OpenAIKit/issues/37)). A missing key against `api.openai.com` still throws `OpenAIError.missingAPIKey`.
+
 ## 4.0.0 - 2026-11-25
 
 OpenAIKit 4.0 is generated from OpenAI's OpenAPI specification (openai/openai-openapi `abe304d`, spec version 2.3.0) and covers the whole API. See [MIGRATION.md](MIGRATION.md) to upgrade from 3.x.

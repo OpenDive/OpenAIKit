@@ -43,6 +43,16 @@ enum ReadmeSnippets {
         _ = (client, fromEnvironment)
     }
 
+    static func proxy(userSessionToken: String) {
+        // Your server adds the OpenAI key, so the app never holds it.
+        // With a base URL other than api.openai.com, no API key is required.
+        let client = OpenAI(Configuration(
+            baseURL: URL(string: "https://api.example.com/openai/v1")!,
+            requestOptions: OpenAIRequestOptions(additionalHeaders: ["Authorization": "Bearer \(userSessionToken)"])
+        ))
+        _ = client
+    }
+
     static func streaming(client: OpenAI) async throws {
         let request = CreateResponse(model: "gpt-6.2-astra", input: "Tell me a short story.")
         for try await event in client.responses.createStream(request) {
